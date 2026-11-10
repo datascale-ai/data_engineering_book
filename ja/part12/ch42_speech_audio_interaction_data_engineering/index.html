@@ -1,0 +1,1129 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part12/ch42_speech_audio_interaction_data_engineering/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第42章：语音数据工程：控制与安全 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#42" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第42章：语音数据工程：控制与安全
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part12/ch42_speech_audio_interaction_data_engineering/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part12/ch42_speech_audio_interaction_data_engineering/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voicestylecontrol" class="md-nav__link">
+    <span class="md-ellipsis">
+      VoiceStyleControl：语义响应与声音风格控制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VoiceStyleControl：语义响应与声音风格控制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#421" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.1 为什么语音对话需要显式风格控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-s2s-tts" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.2 数据集概览：S2S 与 TTS 两个互补子集
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.3 样本 schema：语义通道与风格通道分开建模
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#424" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.4 构建流水线：从文本对话到可控语音记录
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#425" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.5 质量评估与闭环修复
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#426" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.6 评测协议：让控制能力可比较
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#427" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.7 隐私、授权与滥用风险治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#428" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.8 与前后章节的数据工程连接
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#429" class="md-nav__link">
+    <span class="md-ellipsis">
+      42.9 小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="42">第42章：语音数据工程：控制与安全<a class="headerlink" href="#42" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">陈凤欣；李轩</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章以 VoiceStyleControl 为案例，讨论语音与音频交互数据如何同时表达语义响应、声音风格、控制标签和安全边界。与纯文本对话不同，语音数据工程需要把 语音到语音（speech-to-speech，S2S）、文本转语音（text-to-speech，TTS）、说话风格、情感强度、授权状态、质量评估和滥用风险纳入同一条可复查链路，使模型既能生成合适内容，也能遵守声音使用和交互控制约束。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>语音数据工程；音频交互；VoiceStyleControl；风格控制；S2S；TTS；安全治理</p>
+<h2 id="voicestylecontrol">VoiceStyleControl：语义响应与声音风格控制<a class="headerlink" href="#voicestylecontrol" title="Permanent link">&para;</a></h2>
+<h3 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>通过本章学习，读者应能够：</p>
+<ul>
+<li>解释语音交互数据为何必须在语义层之外显式记录声音条件、情绪与离散语音 token，而不能沿用纯文本对话的监督目标。</li>
+<li>区分语义通道、风格通道与声学监督通道各自承担的字段责任，并理解输入侧用户状态与输出侧助手目标的分离原则。</li>
+<li>掌握 S2SEmoControl 与 TTSSpeakerControl 两个子集在规模、字段结构与训练价值上的互补关系。</li>
+<li>设计覆盖文本一致、音频可用、声音条件一致、情绪可感知与授权可追溯的多维样本验收规则。</li>
+<li>识别语音身份、授权许可、情绪滥用、防伪溯源与隐私保护等风险，并在数据流程中加以治理。</li>
+</ul>
+<h3 id="421">42.1 为什么语音对话需要显式风格控制<a class="headerlink" href="#421" title="Permanent link">&para;</a></h3>
+<p>普通文本对话样本通常由角色、上下文、用户请求和助手回答构成。只要角色边界、文本长度、安全标签和训练 mask 清楚，模型就能在文本 token 上学习输入输出映射。语音样本则多出一层文本无法替代的声学状态：采样率、时长、静音、响度、噪声、说话人身份、韵律、情绪和离散语音 token 都会影响训练结果。仅有回答文本只能说明“说了什么”，不能说明“应该怎么说”。</p>
+<p>因此，可控语音交互数据和普通 ASR/TTS 语料的差异，首先不是字段数量更多，而是问题定义变了。ASR 关心“这段声音对应哪段文字”，普通 TTS 关心“这段文字能否被自然读出来”；可控语音交互还要关心“这段回答应当以什么声音、什么情绪、什么强度进入对话”。如果这些条件不被显式表达，模型只能把声音差异当成训练音频里的随机变化，很难在推理时稳定响应“用某种情绪说”“用某类声音说”这样的控制条件。</p>
+<p>第一，语音对话需要把“内容”和“表达”分开。用户说了什么、助手应该回答什么，是语义层；这句话由什么声音说出、语速快慢、能量高低、停顿如何、情绪是否明显，是表达层。文本对话数据通常只要组织好语义层，语音生成数据却必须让表达层也成为训练监督的一部分。否则，同一句回答在中性、开心、害怕或愤怒状态下的差别就会被数据管线抹平。</p>
+<p>第二，语音对话需要区分“理解用户声音”和“生成助手声音”。真实系统中，用户可能焦急、愤怒、犹豫，也可能口音很重、背景嘈杂；助手则通常需要依据产品设定保持稳定的声音条件和情绪策略。一个客服助手面对愤怒用户时不应自动变得愤怒，一个陪伴助手也不应在每轮对话中无缘由地改变音色。显式风格控制的意义，就是让数据在样本层就区分输入侧状态和输出侧目标，而不是默认二者相同。</p>
+<p>第三，语音对话需要把情绪从“文本描述”落实到“声音表现”。开心、愤怒、害怕、中性、悲伤这些状态不只是标签，它们会体现在音高、能量、语速、停顿和韵律上。对模型来说，真正的学习目标不是记住某个情绪词，而是在给定目标表达状态时，生成与之相符的语音。也正因为如此，可控语音数据必须同时保存文本内容、目标风格说明和对应语音监督，让情绪控制能够进入生成过程。</p>
+<p>第四，语音对话需要可复查的声学监督。文本可以直接作为 token 序列进入训练，语音则要经历音频文件、采样率、时长、响度、静音、离散语音 token 等一系列工程处理。显式风格控制不能只在旁边写一句“开心地说”，还要有一段实际语音作为目标，让模型知道这种风格条件在声学上应该如何呈现。</p>
+<p>从产品体验看，这种边界关键。一个陪伴型助手可以被设计为温和、稳定、少戏剧化；一个有声书角色可以被设计为情绪更强、角色感更明显；一个客服助手则通常需要在用户愤怒时保持中性和清晰。三者都可能使用同一套语义回答能力，但它们对声音身份、情绪强度和风险边界的要求不同。如果训练样本没有显式区分这些条件，模型只能把声音风格当作音频中的随机噪声，推理时就很难稳定控制。</p>
+<p>从数据工程看，显式风格控制还改变了样本验收方式。文本样本只要用户问题与助手回答匹配，通常就能进入候选池；语音样本则必须同时满足文本一致、音频可用、目标声音条件一致、情绪可感知和授权可追溯。任何一个维度失败，都会影响训练：文本对但声音条件错，会削弱条件控制；声音条件对但情绪错，会削弱情绪控制；情绪明显但内容危险，则会把风险行为转化为更有感染力的输出。</p>
+<h3 id="422-s2s-tts">42.2 数据集概览：S2S 与 TTS 两个互补子集<a class="headerlink" href="#422-s2s-tts" title="Permanent link">&para;</a></h3>
+<p>VoiceStyleControl 由两类任务共同组成：一类是语音到语音的对话生成，另一类是文本条件下的可控语音生成。两者都服务于同一个目标：让模型能够根据语义内容、声音条件和情绪风格生成带情绪的语音，但它们提供的监督角度不同。</p>
+<p>VoiceStyleControl 共包含 154,906 条样本。其中，S2SEmoControl 包含 20,117 条样本，占全量约 13.0%，面向 style-controllable speech-to-speech dialogue generation；TTSSpeakerControl 包含 134,789 条样本，占全量约 87.0%，面向 controllable text-to-speech generation。前者更接近真实语音助手场景：模型要理解用户说出的请求，再生成助手侧语音回答；后者更集中地训练模型根据风格文本、声音条件和情绪风格生成目标语音。</p>
+<p><em>表 42-1：VoiceStyleControl 数据规模与情绪分布</em></p>
+<table>
+<thead>
+<tr>
+<th>Emotion</th>
+<th style="text-align: right;">S2SEmoControl</th>
+<th style="text-align: right;">TTSSpeakerControl</th>
+<th style="text-align: right;">Total</th>
+<th style="text-align: right;">Total ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>happy</td>
+<td style="text-align: right;">4,050</td>
+<td style="text-align: right;">38,500</td>
+<td style="text-align: right;">42,550</td>
+<td style="text-align: right;">27.5%</td>
+</tr>
+<tr>
+<td>angry</td>
+<td style="text-align: right;">4,104</td>
+<td style="text-align: right;">38,054</td>
+<td style="text-align: right;">42,158</td>
+<td style="text-align: right;">27.2%</td>
+</tr>
+<tr>
+<td>fearful</td>
+<td style="text-align: right;">4,010</td>
+<td style="text-align: right;">24,925</td>
+<td style="text-align: right;">28,935</td>
+<td style="text-align: right;">18.7%</td>
+</tr>
+<tr>
+<td>neutral</td>
+<td style="text-align: right;">3,825</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">3,825</td>
+<td style="text-align: right;">2.5%</td>
+</tr>
+<tr>
+<td>sad</td>
+<td style="text-align: right;">4,128</td>
+<td style="text-align: right;">33,310</td>
+<td style="text-align: right;">37,438</td>
+<td style="text-align: right;">24.2%</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>20,117</strong></td>
+<td style="text-align: right;"><strong>134,789</strong></td>
+<td style="text-align: right;"><strong>154,906</strong></td>
+<td style="text-align: right;"><strong>100.0%</strong></td>
+</tr>
+</tbody>
+</table>
+<p>表42-1显示，S2SEmoControl 的五类情绪接近均衡，每类约 3.8k 至 4.1k；TTSSpeakerControl 则覆盖 happy、angry、fearful、sad 四类表达性情绪，不显式包含 neutral。这个设计并不是偶然的。S2S 对话需要 neutral 作为稳定基准，否则模型容易把所有回答都学成高强度情绪表达；TTS 可控生成子集样本更多，则把容量集中在“开心地说”“愤怒地说”“有点害怕”“伤心地说”等更需要声学变化的表达上。</p>
+<p>从记录组成看，两个子集都不是单纯的“文本 + 音频”。每条样本至少包含五类信息：任务来源与任务类型、文本侧内容、声音与情绪条件、语音生成监督、基础音频配置。这些信息共同决定一条语音样本是否能用于训练条件化、带情绪的语音生成：任务信息决定加载方式，文本内容提供语义目标，声音与情绪条件规定生成风格，语音监督提供可学习的声学目标，基础音频配置保证训练和评测能够复现。</p>
+<p>两个子集分别承担“能力底座”和“交互落地”的角色。TTSSpeakerControl 样本量更大，直接教模型把自然语言风格描述、声音条件和情绪风格映射到目标声音；S2SEmoControl 样本量较小，但更接近真实语音助手：模型要先理解用户侧语音，再生成助手侧语音回答。联合使用时，TTS 子集提供风格生成的稳定监督，S2S 子集则把这种能力放回对话语境中，让模型学习用户声音状态和助手生成目标之间的转换。</p>
+<p>因此，VoiceStyleControl 不能被简单理解为一个 TTS 数据集。普通 TTS 语料的核心监督是“给定文本，读出文本”；VoiceStyleControl 的核心监督是“给定语义内容和风格条件，生成符合对话目标的声音”。前者主要关心发音、自然度和音质，后者还要关心用户状态、助手声音条件、情绪选择、跨轮一致性和安全边界。数据目标一旦不同，schema、配平、切分和评测都会随之改变。</p>
+<h3 id="423-schema">42.3 样本 schema：语义通道与风格通道分开建模<a class="headerlink" href="#423-schema" title="Permanent link">&para;</a></h3>
+<p><a class="glightbox" href="../../../images/part12/Chen-Chap42-Fig01-ZH.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图42-1：语义响应与风格控制双通道 schema" src="../../../images/part12/Chen-Chap42-Fig01-ZH.svg" /></a></p>
+<p><em>图42-1：语义响应与风格控制双通道 schema</em></p>
+<p>图42-1展示了 VoiceStyleControl 的核心结构。语义通道负责 <code>query</code>、<code>answer</code>、<code>task</code>、<code>language</code> 等字段；风格通道负责 <code>query_gender</code>、<code>answer_gender</code>、<code>query_mood</code>、<code>answer_mood</code>、<code>query_id</code>、<code>answer_id</code> 等字段；声学监督通道负责 <code>query_audio_path</code>、<code>answer_audio_path</code>、<code>query_token_25hz</code>、<code>answer_token_25hz</code> 和 <code>sample_rate</code>。三个通道在训练记录中合并，但在构建、质检和评测时必须分开检查。</p>
+<p>分通道建模能够定位失败来源。若模型生成的回答文本正确但音色不稳定，问题通常在风格通道或参考语音池；若声音条件正确但读错了字，问题在语义通道、ASR 反查或合成文本对齐；若音频能播放但 token 路径无法读取，问题在声学监督通道或封装 manifest。把所有信息都压成一个自由文本 prompt，虽然便于快速拼装样本，却会让后续的数据修复和实验归因变得困难。</p>
+<p>S2SEmoControl 的记录表达了从用户侧 <code>(query_audio, query_text, query_gender, query_mood)</code> 到助手侧 <code>(answer_text, answer_audio, answer_gender, answer_mood)</code> 的映射。中文对话内容、声音条件、情绪标签、音频文件和 speech token 被绑定在同一条记录中，因此它不是“文本问答 + 附件音频”的松散组合，而是一条完整的语音交互训练样本。</p>
+<p>代码清单42-1给出了JSON 数据示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1977946a067ee3442&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;6750567505b5d5170356ae61&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2S&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;给我讲个小故事呗。&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;好的，让我给您编一个小故事。从前有一个非常勤奋的小夜莺...&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;query_gender&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;female&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;answer_gender&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;male&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">&quot;query_mood&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;neutral&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">&quot;answer_mood&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;neutral&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;zh&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">&quot;sample_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16000</span><span class="p">,</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="nt">&quot;query_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;female-neutral-1&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">&quot;answer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;male-neutral-2&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="nt">&quot;query_token_25hz&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../query_token_0.ark:3121&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="nt">&quot;query_audio_ark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../query_audio_0.ark:1024&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">&quot;query_audio_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../1977946a06cf564f1-query.wav&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span><span class="nt">&quot;answer_token_25hz&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../answer_token_0.ark:22637&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span><span class="nt">&quot;answer_audio_ark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../answer_audio_0.ark:8192&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="nt">&quot;answer_audio_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl/.../1977946a06cf564f1-answer.wav&quot;</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单42-1：JSON 数据示例</em></p>
+<p>这条样本中，用户说“给我讲个小故事呗。”，助手回答“好的，让我给您编一个小故事。从前有一个非常勤奋的小夜莺...”。<code>query_gender</code> 为 <code>female</code>，<code>answer_gender</code> 为 <code>male</code>；<code>query_mood</code> 和 <code>answer_mood</code> 都是 <code>neutral</code>。训练时，<code>query_audio_path</code> 和 <code>query_token_25hz</code> 可以作为语音理解输入，<code>query</code> 提供转写后的语义锚点；<code>answer</code> 是语义目标，<code>answer_token_25hz</code> 和 <code>answer_audio_path</code> 是语音生成监督；<code>answer_gender</code> 与 <code>answer_mood</code> 规定输出声音的风格条件。</p>
+<p>TTSSpeakerControl 则把控制能力集中到 text-to-speech 形态。输入文本被拆成两部分：<code>text</code> 描述声音应该如何表达，<code>answer</code> 才是要读出的内容。例如 <code>text</code> 为“女，有点害怕，手心冒汗，声音发抖”，<code>answer</code> 为“你快跑，这里不安全”。这样的记录表明，TTS 子集不是给句子随机贴 mood，而是在构造 style-content pair：自然语言风格描述、结构化标签和待合成内容要相互支持。</p>
+<p>代码清单42-2给出了JSON 数据示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;c6810929-8962-4cc1-b3b5-aadd4cbb1106&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;197b764f5a31c2-female-fearful&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTSSpeakerControl&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTS&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;女，有点害怕，手心冒汗，声音发抖&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;你快跑，这里不安全&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">&quot;answer_gender&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;female&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">&quot;answer_mood&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fearful&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;zh&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">&quot;sample_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">16000</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;女，有点害怕，手心冒汗，声音发抖&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">&quot;answer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;female-fearful-1&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="nt">&quot;answer_token_25hz&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTSSpeakerControl/.../answer_token_0.ark:1379&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span><span class="nt">&quot;answer_audio_ark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTSSpeakerControl/.../answer_audio_0.ark:4096&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">  </span><span class="nt">&quot;answer_audio_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTSSpeakerControl/.../c6810929-8962-4cc1-b3b5-aadd4cbb1106-answer.wav&quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单42-2：JSON 数据示例</em></p>
+<p>综合 S2S 与 TTS 两类样本，VoiceStyleControl 的字段可以分成六层：任务标识、文本内容、声音条件、情绪条件、语音监督、基础音频配置。S2S 样本同时包含用户侧和助手侧，因此字段会区分查询侧与回答侧；TTS 样本只生成回答侧语音，因此字段更集中。<code>language</code> 固定语种，<code>sample_rate</code> 固定音频采样配置；这些基础字段是训练加载和评测复现的底层契约，不能只靠路径名或文件夹约定隐式推断。</p>
+<p>表42-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 42-2：说话人、情绪与采样标签字段说明</em></p>
+<table>
+<thead>
+<tr>
+<th>标签层</th>
+<th>字段</th>
+<th>取值/例值</th>
+<th>分布或工程要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查询侧说话人</td>
+<td><code>query_gender</code></td>
+<td><code>female</code> / <code>male</code>，如 <code>female</code></td>
+<td>按 query 侧单独统计。</td>
+</tr>
+<tr>
+<td>回答侧声音条件</td>
+<td><code>answer_gender</code></td>
+<td><code>male</code> / <code>female</code></td>
+<td>训练前应按回答侧 gender、mood 和参考声音条件监控配平，避免输出声音偏置。</td>
+</tr>
+<tr>
+<td>查询侧情绪</td>
+<td><code>query_mood</code></td>
+<td><code>happy</code>、<code>angry</code>、<code>fearful</code>、<code>neutral</code>、<code>sad</code></td>
+<td>S2SEmoControl 五类接近均衡。</td>
+</tr>
+<tr>
+<td>回答侧情绪</td>
+<td><code>answer_mood</code></td>
+<td>同上</td>
+<td>总量以表42-1为准；TTSSpeakerControl 不显式包含 <code>neutral</code>。</td>
+</tr>
+<tr>
+<td>语种与采样</td>
+<td><code>language</code> / <code>sample_rate</code></td>
+<td><code>zh</code> / <code>16000</code></td>
+<td>作为加载、重采样和评测复现字段，非路径隐式推断。</td>
+</tr>
+<tr>
+<td>参考声音引用</td>
+<td><code>query_id</code> / <code>answer_id</code></td>
+<td><code>female-neutral-1</code> 等</td>
+<td>指向授权参考语音池中的风格实例，不暴露真实身份。</td>
+</tr>
+</tbody>
+</table>
+<p>在 VoiceStyleControl 中，emotion 分布只是第一层配平信息。真正进入训练和评测时，样本还会沿着输入侧与输出侧拆开：<code>query_gender × query_mood</code> 描述用户语音的状态分布，<code>answer_gender × answer_mood</code> 描述助手生成语音的目标分布，参考声音 ID 则约束同一种声音条件在不同文本和情绪下的复用方式。语言和采样率看似基础，却决定了加载、重采样和音频指标是否可比。把这些轴放在一起观察，才能判断某类情绪是否只集中在某个声音条件上，某个参考音色是否过度出现在训练集和评测集中，以及模型失败究竟来自语义、声音条件还是情绪控制。</p>
+<p>落到数据合成阶段，上述字段差异会体现为两套条件组织方式：S2SEmoControl 需要同时处理 query/answer 两侧的参考语音选择与情绪注入，TTSSpeakerControl 则把风格描述与待朗读内容拆开后再合成回答侧语音。具体合成逻辑见 42.4 第四步与第五步；本节先把字段契约固定下来。</p>
+<p>联合 JSON Schema 按任务类型约束必填字段；生产级 manifest 还应增加枚举约束、路径存在性校验、文件哈希、授权 ID、tokenizer 名称、tokenizer 版本和 token 帧率声明。</p>
+<p>代码清单42-3给出了JSON Schema 示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://json-schema.org/draft/2020-12/schema&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;VoiceStyleControlRecord&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="s2">&quot;source&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="s2">&quot;task&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="s2">&quot;language&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="s2">&quot;sample_rate&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="s2">&quot;answer_audio_path&quot;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="nt">&quot;oneOf&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2SEmoControl&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">        </span><span class="s2">&quot;query&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">        </span><span class="s2">&quot;query_gender&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">        </span><span class="s2">&quot;answer_gender&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">        </span><span class="s2">&quot;query_mood&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">        </span><span class="s2">&quot;answer_mood&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">        </span><span class="s2">&quot;query_id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">        </span><span class="s2">&quot;answer_id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">        </span><span class="s2">&quot;query_audio_path&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">        </span><span class="s2">&quot;answer_audio_path&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">        </span><span class="s2">&quot;query_token_25hz&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">        </span><span class="s2">&quot;answer_token_25hz&quot;</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">      </span><span class="p">],</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="w">        </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="w">          </span><span class="nt">&quot;const&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;S2S&quot;</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTSSpeakerControl&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="w">      </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a><span class="w">        </span><span class="s2">&quot;text&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a><span class="w">        </span><span class="s2">&quot;answer_gender&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="w">        </span><span class="s2">&quot;answer_mood&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a><span class="w">        </span><span class="s2">&quot;answer_id&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a><span class="w">        </span><span class="s2">&quot;answer_token_25hz&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a><span class="w">        </span><span class="s2">&quot;answer_audio_path&quot;</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a><span class="w">      </span><span class="p">],</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a><span class="w">      </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a><span class="w">        </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="w">          </span><span class="nt">&quot;const&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TTS&quot;</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a><span class="w">  </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a><span class="w">    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a><span class="w">    </span><span class="nt">&quot;task&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a><span class="w">      </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;S2S&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;TTS&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a><span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;spoken user query 的转写文本，仅 S2S 使用&quot;</span>
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a><span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;自然语言风格描述，仅 TTS 使用&quot;</span>
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a><span class="w">    </span><span class="nt">&quot;answer&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-68" name="__codelineno-2-68" href="#__codelineno-2-68"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-69" name="__codelineno-2-69" href="#__codelineno-2-69"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant response 或待合成内容&quot;</span>
+<a id="__codelineno-2-70" name="__codelineno-2-70" href="#__codelineno-2-70"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-71" name="__codelineno-2-71" href="#__codelineno-2-71"></a><span class="w">    </span><span class="nt">&quot;query_gender&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-72" name="__codelineno-2-72" href="#__codelineno-2-72"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-73" name="__codelineno-2-73" href="#__codelineno-2-73"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-74" name="__codelineno-2-74" href="#__codelineno-2-74"></a><span class="w">    </span><span class="nt">&quot;answer_gender&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-75" name="__codelineno-2-75" href="#__codelineno-2-75"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-76" name="__codelineno-2-76" href="#__codelineno-2-76"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-77" name="__codelineno-2-77" href="#__codelineno-2-77"></a><span class="w">    </span><span class="nt">&quot;query_mood&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-78" name="__codelineno-2-78" href="#__codelineno-2-78"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-79" name="__codelineno-2-79" href="#__codelineno-2-79"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-80" name="__codelineno-2-80" href="#__codelineno-2-80"></a><span class="w">    </span><span class="nt">&quot;answer_mood&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-81" name="__codelineno-2-81" href="#__codelineno-2-81"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-82" name="__codelineno-2-82" href="#__codelineno-2-82"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-83" name="__codelineno-2-83" href="#__codelineno-2-83"></a><span class="w">    </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-84" name="__codelineno-2-84" href="#__codelineno-2-84"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-85" name="__codelineno-2-85" href="#__codelineno-2-85"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-86" name="__codelineno-2-86" href="#__codelineno-2-86"></a><span class="w">    </span><span class="nt">&quot;sample_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-87" name="__codelineno-2-87" href="#__codelineno-2-87"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span>
+<a id="__codelineno-2-88" name="__codelineno-2-88" href="#__codelineno-2-88"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-89" name="__codelineno-2-89" href="#__codelineno-2-89"></a><span class="w">    </span><span class="nt">&quot;query_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-90" name="__codelineno-2-90" href="#__codelineno-2-90"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-91" name="__codelineno-2-91" href="#__codelineno-2-91"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-92" name="__codelineno-2-92" href="#__codelineno-2-92"></a><span class="w">    </span><span class="nt">&quot;answer_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-93" name="__codelineno-2-93" href="#__codelineno-2-93"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-94" name="__codelineno-2-94" href="#__codelineno-2-94"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-95" name="__codelineno-2-95" href="#__codelineno-2-95"></a><span class="w">    </span><span class="nt">&quot;query_token_25hz&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-96" name="__codelineno-2-96" href="#__codelineno-2-96"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-97" name="__codelineno-2-97" href="#__codelineno-2-97"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-98" name="__codelineno-2-98" href="#__codelineno-2-98"></a><span class="w">    </span><span class="nt">&quot;answer_token_25hz&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-99" name="__codelineno-2-99" href="#__codelineno-2-99"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-100" name="__codelineno-2-100" href="#__codelineno-2-100"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-101" name="__codelineno-2-101" href="#__codelineno-2-101"></a><span class="w">    </span><span class="nt">&quot;query_audio_ark&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-102" name="__codelineno-2-102" href="#__codelineno-2-102"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-103" name="__codelineno-2-103" href="#__codelineno-2-103"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-104" name="__codelineno-2-104" href="#__codelineno-2-104"></a><span class="w">    </span><span class="nt">&quot;answer_audio_ark&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-105" name="__codelineno-2-105" href="#__codelineno-2-105"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-106" name="__codelineno-2-106" href="#__codelineno-2-106"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-107" name="__codelineno-2-107" href="#__codelineno-2-107"></a><span class="w">    </span><span class="nt">&quot;query_audio_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-108" name="__codelineno-2-108" href="#__codelineno-2-108"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-109" name="__codelineno-2-109" href="#__codelineno-2-109"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-110" name="__codelineno-2-110" href="#__codelineno-2-110"></a><span class="w">    </span><span class="nt">&quot;answer_audio_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-111" name="__codelineno-2-111" href="#__codelineno-2-111"></a><span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-2-112" name="__codelineno-2-112" href="#__codelineno-2-112"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-113" name="__codelineno-2-113" href="#__codelineno-2-113"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-2-114" name="__codelineno-2-114" href="#__codelineno-2-114"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单42-3：JSON Schema 示例</em></p>
+<p>联合 schema 将训练入口拆成三部分：语义输入是 <code>query</code>、<code>text</code> 或 <code>answer</code> 文本 token，风格输入是 <code>query_gender</code>、<code>answer_gender</code>、<code>query_mood</code>、<code>answer_mood</code> 与参考声音 ID，声学目标是回答侧 speech token 或音频。<code>answer_gender</code>、<code>answer_mood</code> 不能只留在离线 metadata 中，它们必须在 dataloader 中被映射为控制条件或条件文本，否则模型不会真正获得可控生成能力。</p>
+<p>训练样本进入 dataloader 后，会从标准 schema 投影成不同任务视图。S2S 视图可以是 <code>query_audio + answer_gender + answer_mood -&gt; answer_token</code>，也可以加入 <code>query</code> 转写作为辅助语义输入；TTS 视图可以是 <code>text + answer + answer_gender + answer_mood -&gt; answer_token</code>。评测视图则反向固定某些字段、改变另一些字段，例如固定 <code>answer</code> 改变 <code>answer_mood</code>，或固定 <code>answer_mood</code> 改变 <code>answer_id</code>。这种“记录契约稳定、训练视图可变”的设计，服务的是可控语音生成实验，而不是额外的身份识别或声纹建模实验。</p>
+<h3 id="424">42.4 构建流水线：从文本对话到可控语音记录<a class="headerlink" href="#424" title="Permanent link">&para;</a></h3>
+<p>图42-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part12/Chen-Chap42-Fig02-ZH.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图42-2：VoiceStyleControl 数据构建流水线" src="../../../images/part12/Chen-Chap42-Fig02-ZH.svg" /></a></p>
+<p><em>图42-2：VoiceStyleControl 数据构建流水线</em></p>
+<p>VoiceStyleControl 的构建可以分为七步：文本对话或风格内容生成、风格属性分配、授权参考语音池准备、语音合成或采集、离散语音标记、质检配平、封装发布。相关脚本见 <a href="https://github.com/Chanfungjan/VoiceStyleControl">https://github.com/Chanfungjan/VoiceStyleControl</a>。每一步都同时影响语义质量、风格质量和合规风险。</p>
+<p>这条流水线不是简单的顺序生产线，而是一组连续的数据门禁。文本内容生成之后，要判断语义是否适合指定情绪；参考语音选择之后，要判断授权是否覆盖当前任务；语音合成之后，要判断音频、文本、声音条件和 emotion 是否同时通过。任何一步发现问题，都不应简单“带病流入下一步”，而要回到对应队列修复。否则，后续评测只能发现模型不稳定，却很难解释不稳定来自哪里。</p>
+<p>第一步是生成或收集文本内容。S2SEmoControl 消费经过清洗的对话 JSONL，每条记录包含用户 <code>query</code> 和助手 <code>answer</code>，覆盖日常请求、情绪表达、故事、解释、提醒等场景；answer 保持自然、完整，并保留安全边界。TTSSpeakerControl 则使用 Qwen3-8B 配合情绪特定 prompt 生成 style-content pair，让风格描述与待说内容相互支持。例如 fearful 样本可以更急迫，sad 样本可以更低落，但不能把情绪标签变成危险诱导。</p>
+<p>文本内容的验收不只看语法是否通顺，还要看情绪和语义是否相容。<code>fearful</code> 可以对应“你快跑，这里不安全”，但不应对应轻松闲聊中的夸张恐吓；<code>angry</code> 可以用于角色化表达，但不应把辱骂、威胁或歧视性内容当作情绪增强。对话生成阶段如果不设边界，随后的语音合成会把风险文本转化为更有冲击力的声音，风险会被声学表达放大。</p>
+<p>第二步是分配风格属性。S2S 需要分别为 query 侧和 answer 侧赋予 gender 与 mood，TTS 则为回答侧赋予 gender 与 mood，并在 <code>text</code> 中写出自然语言风格描述。分配策略要同时考虑均衡和组合覆盖：均衡保证每种 emotion 都有足够样本，组合覆盖则让模型见过不同用户风格到不同助手风格的迁移。如果数据里只有同 gender、同 mood 的组合，模型很容易把输入风格和输出风格绑定在一起，削弱回答侧控制能力。</p>
+<p>组合覆盖尤其影响 S2S 子集。用户侧 angry 并不意味着助手侧也要 angry，用户侧 fearful 也不意味着助手侧要同样 fearful。相反，很多真实产品需要助手在用户高压情绪下保持中性、清楚和可执行。数据构建时应保留足够多的跨组合样本，例如 female-angry query 对应 male-neutral answer，或 male-sad query 对应 female-neutral answer。这样模型才能学会把用户状态作为理解信号，而不是直接复制成输出风格。</p>
+<p>第三步是准备参考语音池。VoiceStyleControl 使用多说话人、多情绪参考池，并通过 CosyVoice2 以 zero-shot voice cloning 方式合成指定风格语音。工程关键不是“克隆得越像越好”，而是“可授权、可复用、可撤回”。参考音频应记录参考声音 ID、emotion condition、采集时间、用途范围、授权状态和撤回状态；<code>query_id</code> 与 <code>answer_id</code> 只应暴露工程引用，不应包含真实姓名或可反查身份的信息。</p>
+<p>第四步是语音合成或采集。S2S 需要分别生成 query speech 和 answer speech，并让两侧音频与文本逐条绑定；TTS 则按 <code>text</code> 和 <code>answer</code> 生成回答侧语音（具体实现见第五步示例）。合成时应固定或显式记录采样率，控制响度、静音、最大时长和文件编码，避免 dataloader 在训练时因为音频长度或格式异常而不稳定。若采用真实采集，还要额外处理环境噪声、麦克风差异、说话人疲劳和第三方背景声。</p>
+<p>以下以 S2SEmoControl 为例，展示 schema 字段如何进入合成过程：<code>query_id</code> 与 <code>answer_id</code> 选择两侧参考语音；当 <code>answer_mood</code> 不是 <code>neutral</code> 时，情绪指令会拼入 query 侧合成文本，使输入语音携带输出风格控制意图。</p>
+<p>代码清单42-4给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_synthesis_inputs</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">query_content</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">answer_content</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">answer_mood</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_mood&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">query_prompt_id</span><span class="p">,</span> <span class="n">answer_prompt_id</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">select_prompt_speech</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="k">if</span> <span class="n">answer_mood</span> <span class="o">!=</span> <span class="s2">&quot;neutral&quot;</span><span class="p">:</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">prompt</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">INSTRUCT</span><span class="p">[</span><span class="n">language</span><span class="p">])</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mood</span><span class="o">=</span><span class="n">answer_mood</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">record</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prompt</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="n">query_content</span> <span class="o">=</span> <span class="n">prompt</span> <span class="o">+</span> <span class="n">query_content</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>            <span class="n">query_content</span> <span class="o">=</span> <span class="n">query_content</span> <span class="o">+</span> <span class="n">prompt</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="k">return</span> <span class="p">(</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="n">record</span><span class="p">,</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="n">PROMPT_TEXT</span><span class="p">[</span><span class="n">language</span><span class="p">][</span><span class="n">query_prompt_id</span><span class="p">],</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="n">query_content</span><span class="p">,</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>        <span class="n">PROMPT_TEXT</span><span class="p">[</span><span class="n">language</span><span class="p">][</span><span class="n">answer_prompt_id</span><span class="p">],</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>        <span class="n">answer_content</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span class="p">)</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="n">record</span><span class="p">,</span> <span class="n">q_instruct</span><span class="p">,</span> <span class="n">q_content</span><span class="p">,</span> <span class="n">a_instruct</span><span class="p">,</span> <span class="n">a_content</span> <span class="o">=</span> <span class="n">build_synthesis_inputs</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="n">language</span> <span class="o">=</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="n">q_tokens</span><span class="p">,</span> <span class="n">q_speech</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_zeroshot_speech_token</span><span class="p">(</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="n">q_instruct</span><span class="p">,</span> <span class="n">audio_dict</span><span class="p">[</span><span class="n">language</span><span class="p">][</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;query_id&quot;</span><span class="p">]],</span> <span class="n">q_content</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="p">)</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="n">a_tokens</span><span class="p">,</span> <span class="n">a_speech</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">compute_zeroshot_speech_token</span><span class="p">(</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="n">a_instruct</span><span class="p">,</span> <span class="n">audio_dict</span><span class="p">[</span><span class="n">language</span><span class="p">][</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_id&quot;</span><span class="p">]],</span> <span class="n">a_content</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单42-4：Python 实现片段</em></p>
+<p>这个示例体现了 S2S 侧的关键分支：<code>answer_mood</code> 决定是否注入情绪指令，<code>q_tokens</code>、<code>a_tokens</code> 与对应波形则与 manifest 中的 <code>query_token_25hz</code>、<code>answer_token_25hz</code> 字段对接。</p>
+<p>第五步是离散语音标记。语音生成训练需要把声学目标整理为离散 speech token，使生成任务可以被组织为序列建模问题。通用做法是对已有波形用 S3Tokenizer 等 tokenizer 编码；VoiceStyleControl 则走 CosyVoice 生成式路径——合成时同步产出 speech token 并解码为可播放音频，因此本仓库并不存在单独的「先合成、再标记」后处理步骤。S2S 记录写入 <code>query_token_25hz</code> 和 <code>answer_token_25hz</code>，TTS 记录写入回答侧 <code>answer_token_25hz</code>；帧率为 25Hz（CosyVoice2 的 <code>token_frame_rate</code>），manifest 字段名与之对应。数据发布时仍应绑定 tokenizer 名称、版本、帧率、码本配置和重建方式。训练集最怕“同名字段不同含义”：如果同一字段在不同批次中被不同帧率或不同 tokenizer 版本生成，模型会在时序长度和声学粒度上接收到混乱监督。</p>
+<p>TTSSpeakerControl 采用另一条合成路径：<code>answer</code> 是要说出的内容，<code>text</code> 或 <code>prompt</code> 是风格描述。从数据工程角度看，关键不是展开 CosyVoice 内部 flow 与 vocoder 的全部参数，而是把一条稳定的数据流固定下来：先从记录中抽取内容和风格指令，再调用合成函数得到回答侧 token 与音频，最后把监督地址写回同一条 manifest 记录。</p>
+<p>代码清单42-5给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">for</span> <span class="n">sample_idx</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">id2meta</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">text_content</span><span class="p">,</span> <span class="n">instruction_text</span> <span class="o">=</span> <span class="n">extract_tts_fields</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_content</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">512</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="k">continue</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">sample_key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sample_idx</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">speech_token</span><span class="p">,</span> <span class="n">speech_audio</span> <span class="o">=</span> <span class="n">compute_tts_speech_token</span><span class="p">(</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="n">text_content</span><span class="p">,</span> <span class="n">instruction_text</span><span class="p">,</span> <span class="n">SPK_ID</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">token_offset</span> <span class="o">=</span> <span class="n">answer_token_writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">speech_token</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">audio_offset</span> <span class="o">=</span> <span class="n">answer_audio_writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sample_idx</span><span class="p">,</span> <span class="n">speech_audio</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_token_25hz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">paths</span><span class="o">.</span><span class="n">answer_token_ark</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">token_offset</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_audio_ark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">paths</span><span class="o">.</span><span class="n">answer_audio_ark</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">audio_offset</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_audio_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="n">paths</span><span class="o">.</span><span class="n">answer_wav_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sample_key</span><span class="si">}</span><span class="s2">-answer.wav&quot;</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="p">)</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">wavfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer_audio_path&quot;</span><span class="p">],</span> <span class="n">ARK_SAMPLE_RATE</span><span class="p">,</span> <span class="n">speech_audio</span><span class="p">)</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">write_jsonl_record</span><span class="p">(</span><span class="n">jsonlf</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单42-5：Python 实现片段</em></p>
+<p>这个示例对应的是“自然语言风格描述如何变成可训练语音监督”的核心链路：<code>instruction_text</code> 进入合成函数，<code>speech_token</code> 成为后续训练可以直接建模的离散目标，<code>speech_audio</code> 用于听感质检、反向 ASR 和人工抽检。token offset、audio offset 和 wav 路径被写回同一条记录后，样本才真正具备可追溯性。</p>
+<p>第六步是质检、配平和切分。质检不应只看音频能否播放，还要检查文本与音频是否一致、目标声音条件是否匹配、emotion 是否可感知、音质是否稳定、路径是否存在、token 是否能读取。配平也不只按 emotion 总量做，还要按 <code>task</code>、<code>language</code>、<code>sample_rate</code>、参考声音 ID、文本长度和音频时长监控。切分时应按参考声音 ID 做隔离，避免同一参考音色同时出现在训练集和测试集，造成声音条件评测虚高。</p>
+<p>第七步是封装。最终样本可以存为 JSONL、Parquet 或 Hugging Face Dataset 格式，但训练清单要保留音频路径、token 路径、哈希、授权状态和数据版本。音频文件、token ark 文件和 metadata 不应由人工命名约定松散关联，而应由 manifest 严格绑定。只有这样，样本被重合成、重标注或下架时，团队才能定位受影响的训练版本。</p>
+<p>封装产物不只是 JSONL、Parquet 或 Hugging Face Dataset，还包括描述数据边界的数据卡。数据卡记录样本总量、子集构成、emotion 分布、gender 字段分布、参考声音 ID、语言、采样率、tokenizer 版本、授权范围和切分策略，并区分训练条件、审计元数据与公开版本中的匿名化字段。这个边界说明可以防止 <code>answer_id</code> 被误用为真实身份标签，也可以防止 <code>mood</code> 被当成无需验证的可靠事实。</p>
+<h3 id="425">42.5 质量评估与闭环修复<a class="headerlink" href="#425" title="Permanent link">&para;</a></h3>
+<p>图42-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part12/Chen-Chap42-Fig03-ZH.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图42-3：质量评估与数据飞轮闭环" src="../../../images/part12/Chen-Chap42-Fig03-ZH.svg" /></a></p>
+<p><em>图42-3：质量评估与数据飞轮闭环</em></p>
+<p>可控语音交互数据的质量评估需要同时覆盖语义、声音、情绪、音频和安全。单独听起来“像人声”的样本并不一定合格：它可能读错文字，可能声音身份不匹配，可能情绪过强，也可能在危险场景中使用了不恰当的恐惧语气。质量系统应把自动指标与人工复核组合成闭环，问题样本进入重合成、重标注、降权或剔除队列。</p>
+<p>质量门禁应分成“硬失败”和“软风险”。路径不存在、采样率错误、音频损坏、token 不可读、ASR 反查严重不一致，通常属于硬失败，应直接拦截。情绪强度略弱、自然度一般、声音条件听感处于边界，则可以进入软风险队列，根据任务重要性选择重合成、降权或人工复核。把所有问题都当成一票否决，会浪费可修复样本；把所有问题都放行，又会让控制信号被噪声稀释。</p>
+<p>表42-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 42-3：质量评估指标表</em></p>
+<table>
+<thead>
+<tr>
+<th>评估层面</th>
+<th>核心问题</th>
+<th>自动指标</th>
+<th>人工复核要点</th>
+<th>不合格处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语义一致性</td>
+<td>回答是否回应用户意图，TTS 内容是否被正确读出</td>
+<td>ASR 反转写 CER/WER、语义相似度、意图命中率</td>
+<td>是否答非所问、遗漏关键信息、产生危险建议</td>
+<td>重写文本、重合成、剔除</td>
+</tr>
+<tr>
+<td>声音条件一致性</td>
+<td>输出是否匹配目标 <code>answer_gender</code>、<code>answer_mood</code> 和参考声音条件</td>
+<td>字段一致性校验、自动/人工性别核验、参考音色听感抽检</td>
+<td>是否出现目标条件错误、跨样本串音、音色过像未授权真人</td>
+<td>重选参考音频、重合成、降权或隔离</td>
+</tr>
+<tr>
+<td>情绪控制</td>
+<td>目标 mood 是否被稳定表达</td>
+<td>情绪分类准确率、混淆矩阵、F0/能量/语速统计</td>
+<td>情绪是否过强、与语义冲突或诱导操控</td>
+<td>重标注、调低强度、剔除</td>
+</tr>
+<tr>
+<td>音频质量</td>
+<td>音频能否作为生成监督</td>
+<td>SNR、响度、静音比例、裁剪率、MOS/NISQA</td>
+<td>爆音、断句、机械音、背景噪声</td>
+<td>降噪、重采样、重合成</td>
+</tr>
+<tr>
+<td>对话自然度</td>
+<td>S2S 回答是否自然，角色是否稳定</td>
+<td>多轮连贯性评分、延迟与时长分布</td>
+<td>语气是否突兀、角色不一致、风格反复跳变</td>
+<td>重排、补充上下文、人工审核</td>
+</tr>
+<tr>
+<td>安全合规</td>
+<td>样本是否可授权、可追溯、可撤回</td>
+<td>授权记录完整率、水印命中率、审计日志覆盖率</td>
+<td>是否存在冒充、诱导、敏感身份复刻风险</td>
+<td>封禁、脱敏、下架和审计</td>
+</tr>
+</tbody>
+</table>
+<p>语义一致性可以通过反向 ASR 建立第一层自动检查。将合成音频转写回文本，计算 CER/WER，并与 <code>answer</code> 比较；对于 S2S，还要检查 answer 是否回应 query。若“你快跑，这里不安全”被合成为“你快跑，这里很安全”，音频质量再高也必须剔除。语义相似度和 LLM-as-judge 可以辅助定位问题，但在安全敏感或情绪强烈样本中仍要保留人工抽检。</p>
+<p>声音条件一致性关注的是生成结果是否符合样本中的 <code>answer_gender</code>、<code>answer_mood</code> 和参考声音条件，而不是训练或评测一个独立的身份识别模型。对于回答侧，<code>answer_id</code> 应与 <code>answer_gender</code>、<code>answer_mood</code> 一致；对于 query 侧，<code>query_id</code> 应与用户侧标签一致。如果同一个 <code>answer_id</code> 在不同样本中表现出明显不同音色，需要回查参考池、合成参数和 token 化流程。人工听辨和自动核验只是质检手段，不改变数据集的训练目标。</p>
+<p>情绪控制评测不能只看分类器置信度。happy 往往表现为更高能量和更快节奏，sad 可能表现为更慢语速和更低能量，fearful 可能伴随颤抖、急促或不稳定停顿，angry 可能表现为更强能量和更硬语气。但中文表达、说话人差异和内容语义都会改变声学表现，因此评测目标应是“可感知且与文本相容”，而不是把每一种情绪写成固定声学模板。</p>
+<p>闭环修复要保留问题类型。语义错误通常回到文本生成或 ASR 反查；声音条件错误回到参考语音选择或合成参数；emotion 错误回到风格描述、情绪标签或合成模型；音质错误回到波形处理；合规错误进入隔离、下架和审计流程。每次修复都应生成新版本，而不是覆盖源文件。这样，后续模型效果变化才能追溯到数据变更，而不是变成不可解释的训练波动。</p>
+<h3 id="426">42.6 评测协议：让控制能力可比较<a class="headerlink" href="#426" title="Permanent link">&para;</a></h3>
+<p>评测集应从训练集构造逻辑中独立出来，尤其要避免同一参考声音 ID 同时出现在训练和测试中。对于 S2SEmoControl，评测样本需要覆盖不同 query 情绪到不同 answer 情绪的组合；对于 TTSSpeakerControl，评测样本需要覆盖同一 <code>answer</code> 在不同 <code>text</code>、<code>answer_gender</code>、<code>answer_mood</code> 条件下的对比。一个有效评测协议不只问“生成声音好不好听”，还要问“同一句话在不同控制条件下是否真的不同，且不同得合理”。</p>
+<p>评测集可以拆成三类切片。第一类是常规切片，覆盖训练集中主要任务分布，用来观察整体可用性。第二类是反事实切片，固定文本或参考声音 ID，只改变 <code>answer_mood</code> 或 <code>answer_gender</code> 条件，用来检查控制字段是否生效。第三类是安全切片，包含身份冒充、高压情绪、敏感职业、金融验证码、医疗建议等场景，用来检查模型是否会把“可控生成”误用为“可控操控”。这三类切片的结论不能混成一个总分，否则高音质样本可能掩盖高风险行为。</p>
+<p>语义评测分为内容保真和对话相关性两层。内容保真检查 TTS 输出是否准确读出 <code>answer</code>，S2S 输出是否可被转写为与目标 answer 语义一致的文本。对话相关性检查 S2S 的 answer 是否回应 query，而不是只生成流畅但无关的句子。评测中可以组合 ASR 反转写、语义相似度、LLM-as-judge 和人工审核，但要保存判分 prompt、模型版本和人工指南，避免评测随时间漂移。</p>
+<p>声音条件评测也要分层。结构标签层检查 <code>answer_gender</code>、<code>answer_mood</code> 与样本目标是否一致；听感层检查生成音频是否符合对应参考声音条件和情绪表达；隔离层检查模型是否过度接近未授权个体或泄露训练集中某个真实声纹。评测目标不是构造声纹相似度排名，也不是把“越像某个真实人”当成唯一优化方向，而是确认模型能否在样本条件下生成合理、合规的带情绪语音。</p>
+<p>情绪评测需要构造反事实集合。例如固定一句中性内容，分别请求 happy、angry、fearful、sad；或固定 <code>answer_gender</code>，改变 <code>answer_mood</code>；也可以固定 <code>answer_mood</code>，改变 <code>answer_gender</code>。这种 paired evaluation 能暴露模型是否真的使用控制字段。如果所有输出只在音量上变化，而语速、停顿和韵律没有随 <code>answer_mood</code> 改变，说明模型可能只学到了浅层强度调节。</p>
+<p>音频质量评测包含客观指标与主观评分。客观指标覆盖时长分布和自动 MOS 等；主观评分关注自然度、可懂度、情绪可信度和对话舒适度等。安全性评测则应成为发布门禁的一部分：身份冒充、敏感职业、金融验证码、医疗建议、未成年人和高压情绪诱导等场景，都要检查系统是否会在不该使用强情绪或特定音色时仍然生成输出。</p>
+<p>评测结果还应回写到数据版本，而不是只保存在模型报告里。若某一版模型在 fearful 上情绪分类准确率高但人工舒适度低，说明数据可能把 fearful 构造成过强、过戏剧化的表达；若参考声音条件越做越像某个可识别真人而合规风险上升，说明参考语音或评测目标可能过度追求身份复刻。只有把这些结论回流到样本筛选、配比和合成策略，评测才会真正改变下一版数据。</p>
+<h3 id="427">42.7 隐私、授权与滥用风险治理<a class="headerlink" href="#427" title="Permanent link">&para;</a></h3>
+<p>声音身份属于高度敏感的数据资产。一个人的声音包含年龄、性别、地域、情绪、健康状态和身份识别线索；在声纹识别系统中，声音甚至可以成为认证凭据。可控语音数据一旦引入 voice cloning，就必须把授权、撤回、用途限制和审计写入数据生命周期，而不是只在模型发布时补充免责声明。</p>
+<p><em>表 42-4：隐私与滥用风险控制清单</em></p>
+<table>
+<thead>
+<tr>
+<th>风险类型</th>
+<th>触发场景</th>
+<th>控制措施</th>
+<th>审计证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>声音身份授权</td>
+<td>参考语音来自真实说话人或可识别声音</td>
+<td>采集前同意、用途限定、可撤回、授权版本号</td>
+<td>授权时间、撤回记录</td>
+</tr>
+<tr>
+<td>声音克隆防滥用</td>
+<td>合成音频被用于冒充、诈骗或绕过平台检测</td>
+<td>音频数字水印、声学指纹、生成来源签名、公开样例防伪标记</td>
+<td>水印检测日志、指纹库版本、溯源校验记录</td>
+</tr>
+<tr>
+<td>情绪操控</td>
+<td>用恐惧、愤怒或亲密语气影响用户判断</td>
+<td>高风险场景禁用强情绪、提示语审查、未成年人保护</td>
+<td>人工复核单</td>
+</tr>
+<tr>
+<td>隐私泄漏</td>
+<td>音频中含姓名、电话、地址或背景说话人</td>
+<td>ASR 脱敏、背景声过滤、数据最小化、保留期限</td>
+<td>脱敏报告、删除请求处理记录</td>
+</tr>
+<tr>
+<td>偏见与刻板印象</td>
+<td><code>gender</code> 与 <code>mood</code> 或内容长期绑定</td>
+<td>分布监控、反事实样本、禁止性别刻板模板</td>
+<td>分布报表、偏见评测结果</td>
+</tr>
+<tr>
+<td>版本失控</td>
+<td>样本被重合成或重标注后无法追溯</td>
+<td>数据版本管理、哈希、训练集冻结</td>
+<td>实验追踪编号</td>
+</tr>
+</tbody>
+</table>
+<p>表42-4将风险治理落实为数据门禁。授权缺失的 reference 不能进入合成队列；撤回授权的 reference 必须能追溯到所有派生音频和 token；高风险情绪操控样本不能只靠训练后安全策略兜底，而要在数据构建阶段就被拦截或降权。对语音生成来说，合规不是上线前最后一层过滤，而是样本生命周期的一部分。</p>
+<p>参考语音池是治理重点。每个 reference 都应有 <code>consent_id</code>、授权范围、采集方式、允许任务、过期时间和撤回状态。若授权只允许研究用途，样本不能进入商业模型训练；若说话人撤回授权，manifest 应能定位所有受影响的 <code>query_id/answer_id</code>、音频文件、token 文件和训练版本。对外发布时，应尽量使用不可反查真实身份的 reference ID，避免将声音 ID、文件名或路径设计成真实姓名。</p>
+<p>声音克隆产物还应具备可验证的防伪机制。进入训练集、评测集或公开样例的合成音频，宜写入不影响听感的数字水印，或至少生成可检索的声学指纹；manifest 中同步记录生成模型、模型版本、watermark key id、<code>consent_id</code>、样本哈希和数据版本。发布前要运行水印/指纹检测，确认音频仍可溯源；经过转码、裁剪或压缩后检测失败的高风险样本，应降级为内部样本、重新合成或直接下架。这样，声音克隆不只是“有授权即可使用”，还具备事后识别、平台协查和撤回处置的证据链。</p>
+<p>情绪控制也有滥用边界。fearful、angry 等强情绪可以提升表达力，也可能用于操控用户。客服、教育、医疗、金融等场景应限制高压情绪输出，尤其不能用恐惧语气诱导用户转账、购买、泄露验证码或作出健康决策。对于未成年人和心理脆弱人群，系统应优先使用 neutral 或温和支持性风格，并保留策略触发日志。</p>
+<p>隐私保护还包括内容脱敏。语音样本可能含有姓名、地址、电话、账户、地理位置或背景中的第三方说话声。即使 VoiceStyleControl 主要由合成文本生成，工程流程仍应保留 ASR 脱敏、敏感词扫描、背景声检测和人工抽检。若后续引入真实用户语音反馈，用户同意、数据最小化、保留期限、删除请求和用途变更通知都必须进入平台流程。</p>
+<p>偏见治理同样重要。若训练集中女性声音更多被绑定到 fearful 或 sad，男性声音更多被绑定到 angry，模型会学习并放大刻板印象。因此，gender 统计不能只停留在边际占比，必须进入 <code>query_gender</code>、<code>answer_gender</code> 与 <code>query_mood</code>、<code>answer_mood</code> 的交叉视图；评测集也要构造反事实样本，检查同一内容在不同 gender 下的情绪表达是否公平。</p>
+<h3 id="428">42.8 与前后章节的数据工程连接<a class="headerlink" href="#428" title="Permanent link">&para;</a></h3>
+<p>VoiceStyleControl 继承了音视频数据工程的底层能力。第10章讨论的音频切片、ASR、降噪、说话人分离和时间对齐，进一步转化为更细的样本契约：不仅要知道一段音频对应哪段文字，还要知道它由哪个参考声音 ID、以何种 mood、在什么采样率和 token 频率下生成。普通音频管线解决“能不能对齐”，可控语音交互进一步解决“对齐后的声音能否按条件生成”。</p>
+<p>它也连接多轮交互数据。第20章关注 Agent 记忆和多轮上下文时，角色、意图和历史状态是主要变量；当交互进入语音形态，助手人格还体现在音色与情绪稳定性上。一个多轮语音助手不能第一轮是 neutral 男声，第二轮无缘由变成 fearful 女声，第三轮又变成 angry 男声。因而 <code>answer_gender</code>、<code>answer_mood</code> 和 <code>answer_id</code> 可以成为语音 Agent 记忆的一部分，用于维持连续会话中的声音身份。</p>
+<p>在线反馈闭环会让语音风格从离线标签走向用户体验。第23章中的点击、满意度、纠错和投诉，在语音产品里会表现为“听不清”“太急”“太凶”“不像之前的声音”“情绪不合适”等反馈。这些反馈不能直接变成训练样本，而应先进入评测队列：判断是语义错误、音质错误、风格错误还是安全策略错误，再决定重合成、重标注、调整配比或修改拒绝规则。</p>
+<p>隐私合规章节为 VoiceStyleControl 提供边界。第36章的数据合规框架要求把授权、用途、留存和审计前置到数据生命周期；第37章的隐私保护技术则提醒我们，声音身份可以通过访问控制、联邦训练、加密存储和最小化采集降低风险。可控语音数据越强调声音条件和参考音色，越不能把合规视为附录。</p>
+<p>在多模态生成数据工程中，VoiceStyleControl 与第48章共享同一个核心模式：把生成目标拆为内容条件与风格条件，再用结构化 schema 绑定训练监督。T2I/T2V 中的 prompt、style、motion、camera、safety tag，在语音中对应 <code>answer</code>、<code>answer_gender</code>、<code>answer_mood</code>、参考声音 ID、sample_rate 和 audio token。第十四篇项目十“端到端 LLM 数据飞轮”也可以吸收这套设计：离线构建初版语音数据，训练可控生成模型，在线收集体验反馈，回流到质检和配平，再发布下一版数据与模型。</p>
+<h3 id="429">42.9 小结<a class="headerlink" href="#429" title="Permanent link">&para;</a></h3>
+<p>VoiceStyleControl 的价值不在于把语音样本简单堆到更大规模，而在于把语义响应、声音条件、情绪控制和语音生成监督放进同一条可审计记录。S2SEmoControl 提供 spoken query 到 spoken answer 的交互监督，TTSSpeakerControl 提供自然语言风格描述到目标语音的直接监督。二者合在一起，使模型既能理解用户语音，又能依据指定声音条件和情绪生成回答。</p>
+<p>数据工程的关键工作包括：显式区分语义通道与风格通道，保留 <code>query_gender</code>、<code>answer_gender</code>、<code>query_mood</code>、<code>answer_mood</code> 等控制字段；将 <code>sample_rate</code>、音频路径、speech token 路径和 tokenizer 版本写入数据契约；用 ASR 反查、声音条件核验、情绪识别、音频质量指标和人工评审共同构建评测协议；在参考语音池和声音克隆流程中落实授权、撤回、水印和审计。</p>
+<p>当语音交互从“能说话”走向“以可控方式说话”，数据集的边界也随之变化。每条样本都要回答四个问题：内容是否正确，声音条件是否符合目标设定，情绪是否符合控制条件，生成过程是否合规可追溯。只有这四个问题同时成立，可控语音交互数据才能成为可靠的训练资产。</p>
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>VoiceStyleControl 说明，语音与音频数据工程不能只关注语音合成质量，还必须同时组织语义、风格、控制标签、授权与风险治理。只有把这些信号写入样本 schema、构建流水线和评测协议，语音交互系统才具备可复查、可迭代和可合规迁移的工程基础。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>An K, Chen Q, Deng C, Du Z, Gao C, Gao Z, Gu Y, He T, Hu H, Hu K, others (2024) FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs. arXiv preprint arXiv:2407.04051.</p>
+<p>Chanfungjan (2026) VoiceStyleControl. GitHub repository. https://github.com/Chanfungjan/VoiceStyleControl.</p>
+<p>Du Z, Chen Q, Zhang S, Hu K, Lu H, Yang Y, Hu H, Zheng S, Gu Y, Ma Z, Gao Z, Yan Z (2024) CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens. arXiv preprint arXiv:2407.05407.</p>
+<p>Du Z, Wang Y, Chen Q, Shi X, Lv X, Zhao T, Gao Z, Yang Y, Gao C, Wang H, others (2024) CosyVoice 2: Scalable Streaming Speech Synthesis with Large Language Models. arXiv preprint arXiv:2412.10117.</p>
+<p>Mittag G, Naderi B, Chehadi A, Möller S (2021) NISQA: A Deep CNN-Self-Attention Model for Multidimensional Speech Quality Prediction with Crowdsourced Datasets. In: Interspeech 2021, pp 2127-2131. https://doi.org/10.21437/interspeech.2021-299.</p>
+<p>Song X (2026) S3Tokenizer: Reverse Engineering of Supervised Semantic Speech Tokenizer proposed in CosyVoice. GitHub repository. https://github.com/xingchensong/S3Tokenizer.</p>
+<p>Yang A, Li A, Yang B, Zhang B, Hui B, Zheng B, Yu B, Gao C, Huang C, Lv C, others (2025) Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

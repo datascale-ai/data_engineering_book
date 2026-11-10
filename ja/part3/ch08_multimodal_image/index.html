@@ -1,0 +1,1043 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part3/ch08_multimodal_image/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第8章 图文对数据工程 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#8" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第8章 图文对数据工程
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part3/ch08_multimodal_image/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part3/ch08_multimodal_image/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 多模态数据为何难于文本
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.1 多模态数据为何难于文本">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#811" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.1 视觉噪声的隐蔽性与不确定性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#812-webtox" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.2 语义缺失与跨模态“多义错位”（WebTox）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#813-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.3 图像分辨率与 GPU 显存的成本权衡
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 图文样本的范式：从配对到交错
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.2 图文样本的范式：从配对到交错">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#821-image-caption-pairs" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.1 图文对 (Image-Caption Pairs)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-interleaved-image-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.2 交错图文 (Interleaved Image-Text)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#823-grounding-document-grounded" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.3 长文档理解与截图 Grounding (Document Grounded)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 清洗、过滤与语义对齐技术 (上篇：基础清洗)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.3 清洗、过滤与语义对齐技术 (上篇：基础清洗)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#831-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.1 图像解码与 GPU 端预处理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#832-aspect-ratio-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.2 分辨率与宽高比控制（Aspect Ratio Filtering）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#833-nsfw" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.3 NSFW、面部隐私与水印靶向拦截
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 清洗、过滤与语义对齐技术 (下篇：深度语义过滤)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.4 清洗、过滤与语义对齐技术 (下篇：深度语义过滤)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#841-clip-score-siglip" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.1 CLIP Score 及其进阶者 SigLIP 的量化方法
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#842-synthetic-re-captioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.2 保留优质图像：多粒度合成重标注 (Synthetic Re-captioning)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#85" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 采样配比、表示和训练适配策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.5 采样配比、表示和训练适配策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#851-token-anyres" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.1 图像 Token 占用与 AnyRes 动态切分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#852-data-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.2 三类数据配比调参 (Data Mixing)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#86" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6 匿名化复合案例与商业落地长效指南
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.6 匿名化复合案例与商业落地长效指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#861" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.1 图库污染导致的错误学习
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#862" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.2 多模态数据资产的长期维护
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="8">第8章 图文对数据工程<a class="headerlink" href="#8" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；王柯；王聪</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章讨论图文对与交错图文数据工程的基本问题，重点回答视觉数据为什么不能沿用纯文本清洗范式。章节首先说明视觉噪声、语义错配、分辨率成本和图像表示带来的工程挑战，随后比较图文对、交错图文和文档截图三类样本范式。清洗部分从图像解码、分辨率与宽高比过滤、不适宜公开内容（not safe for work，NSFW）、水印和隐私拦截切入，进一步介绍基于对比式图文预训练（Contrastive Language-Image Pretraining，CLIP）和 Sigmoid Language-Image Pretraining（SigLIP）的图文语义匹配和多粒度重标注策略。后半章讨论 任意分辨率（any-resolution，AnyRes）动态切分、长宽比分组、图文混采和质量风险，并通过匿名化复合案例说明图库水印污染与二次清洗的必要性。读者应能够设计可追溯、可评估、成本可控的图文数据预处理流水线。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>图文对；交错图文；CLIP Score；SigLIP；AnyRes；图像清洗；重标注；多模态数据</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够解释图文数据在噪声类型、语义对齐、分辨率成本和质量评价上的特殊性。</li>
+<li>能够区分 Image-Caption、Interleaved Image-Text 和 Document Grounded 三类样本范式。</li>
+<li>能够设计图像解码、尺寸过滤、水印/隐私拦截和语义匹配的多阶段清洗流程。</li>
+<li>能够说明 CLIP/SigLIP 过滤、Re-captioning 和 AnyRes 动态切分的适用边界。</li>
+<li>能够识别图库污染、图文错配和比例混采失衡对模型训练的影响。</li>
+</ul>
+<h2 id="81">8.1 多模态数据为何难于文本<a class="headerlink" href="#81" title="Permanent link">&para;</a></h2>
+<p>当一个自然语言处理（Natural Language Processing，NLP）数据工程师首次接手视觉语言模型（Vision-Language Model，VLM）的数据清洗任务时，最直接的变化是：许多在纯文本中有效的确定性规则，在图像场景下只能覆盖一小部分问题。</p>
+<h3 id="811">8.1.1 视觉噪声的隐蔽性与不确定性<a class="headerlink" href="#811" title="Permanent link">&para;</a></h3>
+<p>在纯文本的数据工厂中，所谓的“脏数据”或“乱码”往往可以用低成本方法检测出来：写正则表达式、跑 MinHash 或计算困惑度（PPL），甚至不需要动用 GPU 即可筛除。但在图像数据中，噪声常常依赖语义、空间位置和视觉上下文判断：</p>
+<ul>
+<li><strong>概念隔离噪声</strong>：一张 4K 高清、画质完美、色彩极好的风景照，由于被人为恶意编辑，角落里带有一个仅占 15x15 像素的半透明色情水印（NSFW），这种图会对多模态合规性造成高风险。</li>
+<li><strong>空间失真噪声</strong>：一张背景凌乱的街头杂货铺抓拍，描述语写的是“摊位上的一把梳子”。但这把关键的梳子在全图中仅占 3 个像素，不仅人眼难辨，经过卷积网络下采样后也可能丢失。</li>
+<li><strong>频域（Frequency Domain）压缩噪声</strong>：一张包含详尽财务报表或医学心电图的截图，由于在其流传过程中经历了多次二次 JPEG 压缩，高频细节周围产生严重的“振铃伪影（Ringing Artifacts）”。人类仍可能猜出文字，但依赖边缘特征的深度识别网络（OCR）会明显受损。</li>
+</ul>
+<p>这些“视觉隐蔽噪声”无法通过传统的哈希指纹或文件 MD5 对比排除。在多模态数据流中，通常需要部署并长期运行数个预训练视觉判别器（如基于 ResNet-50 的二分类水印检测器、基于 LAION Aesthetics 的评估器）来进行密集推理。这意味着，图像清洗本身就会消耗可观的 GPU 计算资源。</p>
+<h3 id="812-webtox">8.1.2 语义缺失与跨模态“多义错位”（WebTox）<a class="headerlink" href="#812-webtox" title="Permanent link">&para;</a></h3>
+<p>多模态的对齐学习，建立在一个前提之上：抓取到的（Image, Text）对彼此描述同一个事物。然而，互联网上海量“图片与替代文本（Alt-text）”并不天然对应。</p>
+<p>由于十余年来网页爬虫与 SEO（搜索引擎优化）的使用方式复杂，爬虫工程师经常会遇到如下高风险图文对：</p>
+<ul>
+<li><strong>肉眼看到的图片内容</strong>：一只正在草地上开心奔跑的金毛犬。</li>
+<li><strong>HTML 里提取到的 Alt-text</strong>：“2023包邮正品优质特价全场满减买一送一宠物用品”。</li>
+</ul>
+<p>如果将这种充满商业目的的诱导数据，不做任何因果剥离直接喂给模型，模型将在反向传播（Back-propagation）中被迫建立错误关联，最终学会“金毛犬的毛发纹理等于包邮促销折扣”这类不合理绑定（即跨模态语义错位）。LAION-5B、DataComp 和 OBELICS 等数据集论文都把图文匹配、去重和安全过滤列为关键步骤 (Schuhmann et al. 2022; Gadre et al. 2023; Laurençon et al. 2023)，原因正在于：网页 alt-text 并不天然等于图像语义监督信号。正是为了系统性地缓解这一问题，学界与工业界逐步发展出了以 CLIP Score、SigLIP 和人工抽检相结合的跨模态语义过滤技术。</p>
+<h3 id="813-gpu">8.1.3 图像分辨率与 GPU 显存的成本权衡<a class="headerlink" href="#813-gpu" title="Permanent link">&para;</a></h3>
+<p>在纯语言建模时代，无论输入是一篇主题报告，还是一句短诗，送入大语言模型的代价主要与 Token 长度呈线性增长（Linear Scaling）。但在多模态领域，<strong>图像分辨率（Resolution）会显著放大计算开销（FLOPs）</strong>。</p>
+<p>我们以常见的基于 ViT（Vision Transformer）(Dosovitskiy et al. 2020) 架构的视觉编码器为例。假设我们设定的切割模块（Patch Size）尺寸恒定为 <span class="arithmatex">\(14 \times 14\)</span> 像素：</p>
+<ul>
+<li>当向网络输入一张 <span class="arithmatex">\(224 \times 224\)</span> 分辨率图片时，它会被切成 <span class="arithmatex">\((224/14) \times (224/14) = 256\)</span> 个 Patch Token。此时，自注意力机制（Self-Attention）的计算复杂度大约是 <span class="arithmatex">\(256^2 = 65,536\)</span> 级运算量。</li>
+<li>但若为了让模型能够看清楚一张扫描版发票上的数字，不得不将输入分辨率提高至 <span class="arithmatex">\(1008 \times 1008\)</span>（以保留文档图像上的微小文字），那么图像 Token 序列的长度将剧增至 <span class="arithmatex">\((1008/14) \times (1008/14) = 5184\)</span> 个。</li>
+<li>由于标准 Transformer 的 Attention 计算开销是与其产生的 Token 序列长度呈“二次方（Quadratic）复杂度”的，此时单层注意力的计算量飙升到了 <span class="arithmatex">\(5184^2 \approx 26,873,856\)</span> 级运算量！</li>
+</ul>
+<p>仅仅将图像的边长拉大 4.5 倍，<strong>Attention 层的计算量</strong>就会增加近 <strong>410 倍</strong>（注意：这里衡量的是 Self-Attention 的二次方复杂度，而非整个模型的 FLOPs；其他层如 FFN 的计算量与序列长度呈线性增长，实际总训练算力涨幅仍然显著但略小于 410 倍）。因此，图文多模态数据工程的核心任务之一，是在保留局部细节与控制训练成本之间设计动态裁切、降维与多尺度 Patching 策略（见图8-1中的全景流程）。</p>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图8-1：图文数据工程全景图" src="../../../images/part3/Yu-Chap08-Fig01.svg" /></a></p>
+<p><em>图8-1：图文数据工程全景图</em></p>
+<hr />
+<h2 id="82">8.2 图文样本的范式：从配对到交错<a class="headerlink" href="#82" title="Permanent link">&para;</a></h2>
+<p>大模型不同阶段的训练目标，决定了需要使用不同格式的数据。根据近年来的前沿结构（如 Flamingo (Alayrac et al. 2022), LLaVA (Liu et al. 2023), GPT-4V），典型的多模态文本主要包括三种范式：</p>
+<h3 id="821-image-caption-pairs">8.2.1 图文对 (Image-Caption Pairs)<a class="headerlink" href="#821-image-caption-pairs" title="Permanent link">&para;</a></h3>
+<p>这是最基础、最易规模化的范式。</p>
+<ul>
+<li><strong>形式</strong>：严格的一张图对应一段独立的强描绘文字 <code>{ "image": "dog.jpg", "text": "A golden retriever playing fetch in the park." }</code>。</li>
+<li><strong>代表开源集</strong>：LAION-5B (Schuhmann et al. 2022), COYO-700M。</li>
+<li><strong>适用场景</strong>：主要用于冷启动阶段的<strong>多模态对比学习（Contrastive Pre-training）</strong>，比如训练 CLIP 的前置模型，或者给新接入的 Vision Encoder 建立基础的视觉感知基线。</li>
+<li><strong>主要局限</strong>：难以单独教会模型推理，更多用于建立基础物体识别和跨模态检索能力。</li>
+</ul>
+<h3 id="822-interleaved-image-text">8.2.2 交错图文 (Interleaved Image-Text)<a class="headerlink" href="#822-interleaved-image-text" title="Permanent link">&para;</a></h3>
+<p>为了赋予模型在复杂上下文中的“多图关联推理”能力，数据引擎需要从网页端提取并尽量还原“原生交错版面”。</p>
+<ul>
+<li><strong>形式</strong>：类似维基百科或公众号长文中的结构：一段起因 + <code>&lt;img_1&gt;</code> + 发展过程 + <code>&lt;img_2&gt;</code> + 结局总结。图像 Token 被视为一种特殊词汇，分布在长文本序列之间。</li>
+<li><strong>代表开源集</strong>：OBELICS (Laurençon et al. 2023), MMC4 (Zhu W et al. 2023)。</li>
+<li><strong>适用场景</strong>：这是当今<strong>生成式 VLM 预训练</strong>的重要数据形态。它教会模型如何根据“前文”和“图片 1”，去推断“后文”或“图片 2”应该是什么。</li>
+<li><strong>采集挑战与 DOM 解析工程</strong>：交错图文的工程难度庞大。传统的文本爬虫遇到 <code>&lt;img&gt;</code> 标签直接跳过，而为了组装交错格式，爬虫需要解析复杂的文档对象模型（Document Object Model，DOM）树，并进行<strong>“基于渲染坐标的相对距离计算”</strong>。
+  因为在很多现代网页的复杂级联样式（CSS）中，代码文档树的顺序往往并不是用户眼里的视觉排版顺序。如果仅按照 HTML 标签顺序提取，很可能把页面底部的免责声明错误绑定到顶部配图。</li>
+</ul>
+<p>为此，工程团队通常会使用带渲染引擎的无头浏览器（Headless Browser，如 Playwright）运行 JavaScript 生成页面快照，利用类似于下面的规则提取元素。</p>
+<p>代码清单8-1展示了 DOM 交错节点提取的示意逻辑。</p>
+<p><em>代码清单8-1：DOM 交错节点提取示例</em></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 简化的 DOM 交错节点提取伪代码</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">text_nodes</span><span class="p">,</span> <span class="n">img_nodes</span> <span class="o">=</span> <span class="n">get_rendered_nodes</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">interleaved_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">all_nodes_sorted_by_y_axis</span><span class="p">():</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;TEXT&#39;</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span> <span class="c1"># 抛弃过短文本，如导航栏</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>            <span class="n">interleaved_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;IMAGE&#39;</span><span class="p">:</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">width</span> <span class="o">&gt;</span> <span class="mi">200</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>            <span class="c1"># 将合法图片转化为一个占位符 Token，并将 url 存入侧边通道</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>            <span class="n">interleaved_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;img_</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>            <span class="n">save_to_image_db</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</code></pre></div>
+  一旦 DOM 结构提取错位，模型就会学习到错误的图文对应关系。</p>
+<h3 id="823-grounding-document-grounded">8.2.3 长文档理解与截图 Grounding (Document Grounded)<a class="headerlink" href="#823-grounding-document-grounded" title="Permanent link">&para;</a></h3>
+<p>面对 B 端商业落地的真实需求（看财报、读发票），传统自然图像训练往往不足，需要引入高分辨率文档数据。</p>
+<ul>
+<li><strong>形式</strong>：输入的是渲染后的高频高清晰度截屏文档图（如 ArXiv 论文或密集型的 Excel 截图），对应输出结构化的 JSON 取值序列或者边界框（Bounding Box）坐标 <code>&lt;box&gt;</code>。</li>
+<li><strong>适用场景</strong>：依赖高分辨率分块（Patching）和 OCR 辅助。主要用于 SFT（监督微调阶段）教会模型实施精密的值提取与逻辑结构理解（如公式与图表的指代排版）。</li>
+<li><strong>坐标归一化工程</strong>：在 Grounding 任务中，模型需要输出物体的具体像素坐标。然而，训练图片的分辨率千差万别，为了让语言引擎能“读懂”坐标，通常需要将原始的绝对像素坐标 <code>(X, Y)</code> 映射到位 <code>[0, 1000]</code> 的离散 Token 桶中（即 <code>[&lt;loc_255&gt;, &lt;loc_899&gt;]</code>）。这种离散化将连续空间坐标转化为大语言模型熟悉的“词汇表”形式。</li>
+</ul>
+<p>表8-1汇总了相应的对比和工程要点。</p>
+<p><em>表8-1：图文样本类型与适用任务</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">样本类型</th>
+<th style="text-align: left;">数据特征</th>
+<th style="text-align: left;">核心获取手段</th>
+<th style="text-align: left;">最高适用阶段</th>
+<th style="text-align: left;">带来的关键能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>纯图文对 (Image-Caption)</strong></td>
+<td style="text-align: left;">T/I 一对一，高噪声</td>
+<td style="text-align: left;">网页 <code>&lt;img alt&gt;</code>，公有云 OSS 爬取</td>
+<td style="text-align: left;">对齐预训练 (Alignment)</td>
+<td style="text-align: left;">基础特征感知、跨模态检索</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>交错图文 (Interleaved)</strong></td>
+<td style="text-align: left;">T/I 多对多，长序列</td>
+<td style="text-align: left;">DOM 树渲染解析、PDF 线性化剥离</td>
+<td style="text-align: left;">主力生成式预训练</td>
+<td style="text-align: left;">多轮逻辑推理、Few-shot 上下文感知</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>长文档截图 (Doc/OCR)</strong></td>
+<td style="text-align: left;">超高分辨率，文本密集</td>
+<td style="text-align: left;">PDF 渲染、无头浏览器自动化截图</td>
+<td style="text-align: left;">深度 SFT / 强化学习</td>
+<td style="text-align: left;">排版理解、表单/论文/发票抽取分析</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>高精描绘 (Grounded Caption)</strong></td>
+<td style="text-align: left;">含边界框 <code>&lt;box&gt;</code> 的长文</td>
+<td style="text-align: left;">标注员框选，或闭源千亿模型重写</td>
+<td style="text-align: left;">高阶 SFT / RAG 对齐</td>
+<td style="text-align: left;">图像细粒度空间感知与抗幻觉能力</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="83">8.3 清洗、过滤与语义对齐技术 (上篇：基础清洗)<a class="headerlink" href="#83" title="Permanent link">&para;</a></h2>
+<p>从全网抓取来的原始数据质量差异很大，通常需要经历多轮不同级别的漏斗过滤。我们将这一阶段称为前置清洗期，它涉及大量 I/O 操作、图像解码和硬件加速分类器。</p>
+<h3 id="831-gpu">8.3.1 图像解码与 GPU 端预处理<a class="headerlink" href="#831-gpu" title="Permanent link">&para;</a></h3>
+<p>文本清洗时，<code>JSON.loads</code> 或 <code>open()</code> 几乎是零开销的操作；但面对数十 TB 甚至 PB 级的图像压缩包，<strong>解码（Decoding）</strong>本身就会演化为整个训练集群最大的吞吐瓶颈（Bottleneck）。
+在互联网上，图片可能是常见 JPEG、体积庞大的 PNG，甚至是带有破损文件头或嵌入错误 ICC 颜色配置的非标准 WebP 变体。</p>
+<p>如果使用标准 Python 生态下的 CPU <code>Pillow</code> 或 <code>OpenCV-Python</code> 库来执行 Resize 和 Normalize，在高并发多 GPU 节点上，密集的 CPU 图片缩放运算可能迅速填满物理核心。更严重的是，由于进程间通信（IPC）需要将庞大的非压缩 RGB 张量搬运到 GPU 显存中，PCIe 带宽也可能成为瓶颈，从而导致 GPU 算力无法充分利用，出现 GPU Starvation。是否达到瓶颈需要通过目标集群上的 profiler 和 DataLoader wait time 验证。</p>
+<p><strong>工程解法：基于 NVIDIA DALI 的端到端流水线</strong>
+在大型企业的图文处理阵列中，通常会强制切入基于 <strong>NVIDIA DALI（Data Loading Library）</strong> (NVIDIA 2023) 的显存级加速流水线。
+其核心思想是<strong>“尽早将比特推入 GPU，并在显存内解压缩”</strong>：
+1. <strong>CPU 仅搬运二进制</strong>：CPU 读取未经解码的 JPEG 字节流（Byte Stream），并不执行解码。
+2. <strong>NVJPEG 硬件解码</strong>：字节流通过 PCIe 高带宽通道送入 GPU 后，调用 GPU 集成的专属 JPEG 硬件解码器（NVJPEG）在显存内部完成解压。
+3. <strong>融合算子变换</strong>：随后的裁剪（Crop）、调整尺寸（Resize）与方差均值归一化（Normalize）等操作全部被编译为一个 CUDA Graph，直接在张量上执行。</p>
+<p>通过这种 GPU 端解码与融合预处理方式，图像解码、Resize 和 Normalize 可以被推入 GPU 侧流水线，减少 CPU 解码和主机到显存拷贝带来的等待。DALI 官方文档和示例强调的是端到端流水线吞吐优化，而不是给出所有硬件上通用的单张延迟数字；生产环境需在目标 GPU、图片格式、batch size、DALI 版本和对象存储读取方式下重新压测。</p>
+<h3 id="832-aspect-ratio-filtering">8.3.2 分辨率与宽高比控制（Aspect Ratio Filtering）<a class="headerlink" href="#832-aspect-ratio-filtering" title="Permanent link">&para;</a></h3>
+<p>在原始清洗期，提效最快的方法之一是制定尺寸过滤规则：</p>
+<ul>
+<li><strong>拒绝像素孤岛</strong>：对于短边极低或文件体积极小的图片直接抛弃或隔离复核。因为它们通常是 UI 小图标（如点赞按钮、小箭头），缺乏任何深层语义供大模型学习。具体阈值需按目标视觉编码器输入尺寸和数据源特点校准。</li>
+<li><strong>识别极端长宽比图片</strong>：由于互联网长图（如电商宣传页的全量拼接长图）的宽高比可能极端（例如宽 500、长 9000）。当把这样的图片强制 Resize 到固定正方形以供常规 ViT 编码器处理时，内容会被严重压缩并丢失轮廓特征。因此，通常需要设置宽高比阈值；任何落出阈值的图片应被标记并进入针对性的“动态切片”旁路（见 8.4 节）。</li>
+</ul>
+<h3 id="833-nsfw">8.3.3 NSFW、面部隐私与水印靶向拦截<a class="headerlink" href="#833-nsfw" title="Permanent link">&para;</a></h3>
+<p>图文工程相比纯文本工程受到更高伦理合规关注：多模态模型不应学习素人人脸隐私、敏感内容或版权水印模板。
+在这一阶段的流水线通常串联部署了三至四个小型的纯视觉或分类网络：
+1. <strong>NSFW 分类器</strong>：对概率打分超过阈值（如 0.4）的高风险图像执行删除或隔离复核。
+2. <strong>水印鉴别器 (Watermark Detector)</strong>：由于大量网络图片来自图库（Getty Images、Shutterstock），一旦模型吸收了带水印或模板宣传语的图文对，就可能在生成回答中复现水印字样或促销式文本，并带来版权和商用合规风险。因此，高风险水印样本应被过滤、隔离复核或降权处理。
+3. <strong>模糊度判定阈值 (Blur/Aesthetic Score)</strong>：利用类似 LAION 团队训练的 AES（Aesthetic Predictor）美学评分模型，剔除重度失焦、光照极度昏暗或充斥彩色噪点的低质量图片。</p>
+<p><strong>多模态敏感数据过滤 Checklist（工业界标准）：</strong></p>
+<ul>
+<li>[ ] 是否在文本侧集成了禁止词库（Blocklist），对 <code>&lt;alt&gt;</code> 标签中的暴恐、色情文字进行了过滤或隔离？</li>
+<li>[ ] 视觉 NSFW 分类器是否针对二次元/插画模型（Anime NSFW）进行了补充训练以防漏网之鱼？</li>
+<li>[ ] 肖像权隐私：是否调用了人脸模糊（Face Blurring）算法将高清晰度的素人人脸（非公众人物）打码？</li>
+<li>[ ] 商业水印拦截库是否处于周度更新（Weekly Update）状态，防止新增图床污染？</li>
+</ul>
+<p>完成这三类基础清洗后，抓取库的可用样本规模通常会显著缩小。具体保留率取决于来源许可、图片分辨率、NSFW/水印阈值和人工抽检标准。剩余图像在视觉层面更干净，但仍未证明与文本存在有效语义对应。接下来需要引入 CLIP Score 等跨模态匹配指标。</p>
+<hr />
+<h2 id="84">8.4 清洗、过滤与语义对齐技术 (下篇：深度语义过滤)<a class="headerlink" href="#84" title="Permanent link">&para;</a></h2>
+<p>脱离了视觉层面的低级错误后，多模态数据工程迎来了最具挑战性的阶段：定量测量一张图和一句话之间的“匹配度”。</p>
+<h3 id="841-clip-score-siglip">8.4.1 CLIP Score 及其进阶者 SigLIP 的量化方法<a class="headerlink" href="#841-clip-score-siglip" title="Permanent link">&para;</a></h3>
+<p>在 CLIP（Contrastive Language-Image Pre-training）(Radford et al. 2021) 模型出现之前，判断图文匹配主要依赖人工规则或弱监督启发式。CLIP 通过大规模对比学习，将图像片段（Image Embedding）和文本片段（Text Embedding）映射到同一个高维特征向量空间。</p>
+<p><strong>1. 基础过滤动作与 InfoNCE Loss 的遗产</strong>：
+通常使用预训练的稳定版 CLIP（例如开源版的 <code>OpenCLIP ViT-L/14</code>）分别对图和对应的 Caption 进行向量化前向推理，并计算两个向量的<strong>余弦相似度（Cosine Similarity，即 CLIP Score）</strong>。</p>
+<ul>
+<li><strong>高匹配区间</strong>：图文高度吻合，比如图片是一只猫，文字写的是"一只橘猫在晒太阳"。这类数据可进入高置信训练池，但仍需抽检防止模型分数偏差。</li>
+<li><strong>低匹配区间</strong>：严重不匹配，例如图片是猫，文字是"欢迎关注我的公众号"。这类数据通常直接丢弃或隔离复核，因为它们给模型提供的全部是反向的梯度噪声。</li>
+<li><strong>中等匹配区间</strong>：处于中间区间。此时不宜直接抛弃采集成本较高的资源，而应触发下一节提到的重标注流程（Re-captioning）。</li>
+</ul>
+<blockquote>
+<p><strong>[注意]</strong>：CLIP/SigLIP 阈值没有跨模型通用性。若改用不同视觉编码器、不同文本编码器或不同语种数据，同一批样本的得分分布会有显著差异，阈值需在目标数据上重新校准，切勿直接复用。</p>
+</blockquote>
+<p><strong>2. 从 CLIP 到 SigLIP：摒弃全局 Softmax 的新方向</strong>
+在大型企业数据管线中，传统的 CLIP 模型正逐渐被一种名叫 <strong>SigLIP（Sigmoid Loss for Language Image Pre-Training）</strong> (Zhai et al. 2023) 的新架构所取代。
+在传统 CLIP 训练时，模型计算的是整个 Batch 内图像和文本的全局 Softmax 概率。这会带来工程问题：如果分布式 Batch Size 很大，模型需要区分大量样本对的细微差异，可能对某些“难负样本（Hard Negatives）”过于敏感，进而使推理阶段的 CLIP Score 出现震荡。
+SigLIP 则将这个全局多分类问题转化为<strong>逐对（Pairwise）的二分类 Sigmoid 预测问题</strong>。这使得 SigLIP 对“部分匹配”或“复杂背景图文”拥有更高的容错空间和更稳定的 Score 分布。工程团队可以设定更一致的截断阈值，但仍需要在目标数据上校准。</p>
+<p>代码清单8-2展示了基于 SigLIP/CLIP 的图文对齐度过滤示意实现。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 基于 SigLIP/CLIP 的图文对齐度过滤伪代码（可扩展为工业级流处理）</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoProcessor</span><span class="p">,</span> <span class="n">AutoModel</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># 使用无需超大 Batch Size 的 SigLIP 权重</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;google/siglip-base-patch16-224&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;google/siglip-base-patch16-224&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_by_semantic_score</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">text_caption</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">inputs</span> <span class="o">=</span> <span class="n">processor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">text_caption</span><span class="p">],</span> <span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="c1"># 提取融合后的特征并计算点积相似度</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">image_embeds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">image_embeds</span> <span class="o">/</span> <span class="n">outputs</span><span class="o">.</span><span class="n">image_embeds</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="n">text_embeds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">text_embeds</span> <span class="o">/</span> <span class="n">outputs</span><span class="o">.</span><span class="n">text_embeds</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="c1"># 获取受模型温度系数缩放的 Logit，转化为客观置信度</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="n">logits_per_image</span> <span class="o">=</span> <span class="n">image_embeds</span> <span class="o">@</span> <span class="n">text_embeds</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">logit_scale</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">similarity</span> <span class="o">=</span> <span class="n">logits_per_image</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="k">return</span> <span class="n">similarity</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">similarity</span>
+</code></pre></div>
+<p><em>代码清单8-2：SigLIP/CLIP 图文对齐度过滤示意代码</em></p>
+<p>阈值为说明性配置，生产环境应按模型版本、数据域和人工抽检结果校准。</p>
+<h3 id="842-synthetic-re-captioning">8.4.2 保留优质图像：多粒度合成重标注 (Synthetic Re-captioning)<a class="headerlink" href="#842-synthetic-re-captioning" title="Permanent link">&para;</a></h3>
+<p>当一张图像拥有较高分辨率、良好构图和罕见实体，但其附带的原始网页文本只是“IMG_20230401.jpg”这类无信息标签时，直接抛弃它会造成数据资产浪费。在算力允许的情况下，使用专家级视觉大模型（如 LLaVA-1.5 (Liu et al. 2024)、Qwen2.5-VL (Bai et al. 2025)、InternVL3 (Zhu et al. 2025) 或 GPT-4V）重新生成描述，是提升图文训练数据质量的重要手段。需要注意的是，重标注不是无条件增益：生成 Caption 可能引入幻觉、风格偏置和安全策略拒答，因此需要记录生成模型、prompt 版本、温度参数和抽检结论。</p>
+<p>在近年来的大模型工程实践中，为了兼顾“冷启动对齐”与“后期长文本生成”的双重要求，数据团队会对这批图像实施流水线维度的“<strong>多粒度（Multi-granularity）重标注阵列</strong>”：</p>
+<ol>
+<li><strong>短描述（Short/Brief Caption）提取</strong>：</li>
+<li><strong>指令（Prompt）设为</strong>：“仅用一句话，指出画面正中央最主要的主体及其核心动作。不超过 15 个字。”</li>
+<li><strong>产出结果</strong>：“一名拉小提琴的亚裔女性。”</li>
+<li>
+<p><strong>工程价值</strong>：信息集中、没有复杂修饰词的短句，适合在预训练早期用于建立视觉 Encoder 和文本 LLM 之间的基础注意力绑定。如果一开始就喂入长篇描述，模型可能因对齐焦点分散而出现幻觉。</p>
+</li>
+<li>
+<p><strong>长描述（Detailed/Dense Caption）渲染</strong>：</p>
+</li>
+<li><strong>指令（Prompt）设为</strong>：“请客观描述图片中的构图、光影、人物特征、服饰颜色、背景元素以及可能的情绪氛围。长度在 150 字左右。”</li>
+<li><strong>产出结果</strong>：“在纽约时代广场的黄昏下，天空呈现出深邃的紫橘色晚霞。画面正中央，一名穿着破洞做旧牛仔裤和白色毛衣的亚裔女性正闭着眼拉奏一把红棕色的木质小提琴。画面的景深（Bokeh）较浅，她的背后是模糊的黄色出租车和闪烁的霓虹灯牌，整体氛围显得忧郁而专注。”</li>
+<li>
+<p><strong>工程价值</strong>：这种高密度信息有助于训练模型获得细节识别能力和更稳定的图像描述能力。使用此类数据进行 SFT，可以提升模型在观察、描述和指代任务中的表现。</p>
+</li>
+<li>
+<p><strong>结构化边界框与 OCR 注入 (Grounded Injection)</strong>：</p>
+</li>
+<li><strong>并行流合并</strong>：仅用大模型观察图像仍不够准确，尤其是画面里出现密集数字时。重标注引擎的旁路（Side-car Workflow）会同步调用 PaddleOCR。如果在长描述中发现画面背景有一块广告牌，合并脚本会将其坐标转化为特殊 Token 拼接入文本：<code>...背景是一块写着 "&lt;box_45_120_350_200&gt; Broadway 5th Ave. &lt;/box&gt;" 的广告牌。</code> 这使视觉符号能够在训练样本中转化为可定位的字符串和坐标信息。图8-2展示了图像语义对齐与过滤流程。</li>
+</ol>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图8-2：图像语义对齐与过滤流程图" src="../../../images/part3/Yu-Chap08-Fig02.svg" /></a></p>
+<p><em>图8-2：图像语义对齐与过滤流程图</em></p>
+<hr />
+<h2 id="85">8.5 采样配比、表示和训练适配策略<a class="headerlink" href="#85" title="Permanent link">&para;</a></h2>
+<p>完成数据清洗后，图文样本还需要在送入训练前完成切片打包（Packing）和比例混合（Mixing）。这一步直接影响显存占用、有效 Token 比例和能力分布。</p>
+<h3 id="851-token-anyres">8.5.1 图像 Token 占用与 AnyRes 动态切分<a class="headerlink" href="#851-token-anyres" title="Permanent link">&para;</a></h3>
+<p>在常见的纯文本打包中，1000 个文字可能只需要 300 个 Token。但在多模态训练中，图像会占用大量序列位置。以一张常规切分的 <span class="arithmatex">\(336 \times 336\)</span> 图片经过 ViT-L/14 处理为例，它会占用 576 个 Token 槽位。</p>
+<p>早期 VLM（如 CLIP 及其时代的诸多模型）通常对输入图像采取固定尺寸缩放（Resize）：许多管线会将横版风景图或纵向长文档压缩至 <span class="arithmatex">\(224 \times 224\)</span> 一类固定正方形输入，导致内容比例失真。为解决这一问题，现代数据工厂在预处理阶段常引入 <strong>AnyRes（动态高分辨率保持）</strong> 策略（见图8-3）：</p>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图8-3：AnyRes 动态多分辨率切割算法原理图" src="../../../images/part3/Yu-Chap08-Fig03.svg" /></a></p>
+<p><em>图8-3：AnyRes 动态多分辨率切割算法原理图</em></p>
+<p><strong>AnyRes 原理与核心策略详解：</strong>
+1. <strong>基础补零（Zero-padding / Letterboxing）策略</strong>：对于不想失去原始横纵比，且分辨率未溢出的图，在周围补全黑色或均值边框凑成正方块，使得模型能学到相对的无失真几何形状。
+2. <strong>多重补丁切割（Multi-Patch Splitting / Grid Cropping）</strong>：将一张 <span class="arithmatex">\(336 \times 1008\)</span> 的竖版图片，动态匹配到 <span class="arithmatex">\(1 \times 3\)</span> 的切割网格（Grid），切割成 3 张 <span class="arithmatex">\(336 \times 336\)</span> 的正方形子图（Local Sub-patches）。同时，为了不失去全图视野，还会外加一张经过大幅下采样（Down-sampled）的<strong>全局缩略图（Global Context Patch）</strong>。这意味着这 1 张原图将被输入为 4 份 576 Token 的矩阵块（合计消耗 2304 个 Token）。
+3. <strong>坐标编码注入（Positional Embedding Injection）</strong>：被切开的子图不能随便丢进模型。在 DataLoader 组装阶段，需要为每个子图块打上类似 <code>[&lt;row_1&gt;, &lt;col_1&gt;]</code> 的二维相对位置编码，让模型知道哪块图在左、哪块在右。</p>
+<p>若不对这种交错图文做严格拼接控制，GPU 显存会被大量图像 Token 占用，文本逻辑学习效率下降。为此需要使用<strong>基于长宽比分组（Aspect-Ratio Grouping）的 Sequence Packing</strong> 技术：把形状相近的图文对放入同一个 4096 的 Sequence 窗口，并在图像和图像块之间插入特殊界限标识符 <code>&lt;image&gt;</code> 与 <code>&lt;/image&gt;</code>，利用 Attention Mask 阻断跨文档计算污染，从而减少显存浪费。</p>
+<h3 id="852-data-mixing">8.5.2 三类数据配比调参 (Data Mixing)<a class="headerlink" href="#852-data-mixing" title="Permanent link">&para;</a></h3>
+<p>一个平衡的 MLLM 预训练数据混合（Data Mix）需要精确分配不同来源的比重。公开技术报告通常只披露数据类型和训练阶段，很少给出可复用的完整配方；因此下列内容只给出能力维度，不给出固定百分比：
+1. <strong>通用自然图像（Web Images）</strong>：提供基础的世界物体常识（猫狗、汽车、风景色准、人物神态）。这部分通常由严格 CLIP/SigLIP 筛选后的开源数据集（如 DataComp-1B (Gadre et al. 2023) 的核心过滤提纯集）或授权图库承担。
+2. <strong>图表与代码图纸（Charts/Plots/Math）</strong>：提供抽象数理推理能力。如果缺失此部分，大模型看折线图、股票 K 线图或复杂思维导图时，容易产生错误解释。
+3. <strong>高密度 OCR 文档截图（Documents）</strong>：大量的扫描版白皮书、PDF 单页、收据发票影印件。这对于未来模型去充当“合同审查专员”或者“财务发票小助手”至关重要，它训练了模型克服自然图像中极少出现的“超高细粒度文本焦点”（Fine-Grained Text Focus）能力。Qwen-VL 与 Qwen2.5-VL 系列技术报告均把 OCR、文档理解、定位和多分辨率处理列为核心能力来源 (Bai et al. 2023; Bai et al. 2025)。</p>
+<p>表8-2汇总了相应的对比和工程要点。</p>
+<p><em>表8-2：图像清洗策略与代价对照</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">清洗阶段策略</th>
+<th style="text-align: left;">算力代价</th>
+<th style="text-align: left;">核心作用与收益</th>
+<th style="text-align: left;">残留风险与副作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>基础分辨率切除</strong></td>
+<td style="text-align: left;">极低（I/O密集）</td>
+<td style="text-align: left;">剔除无意义色块，降低存储和后续解码开销</td>
+<td style="text-align: left;">误伤具备历史意义但只留下低像素版本的纪实图</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>DALI 硬件提速解码</strong></td>
+<td style="text-align: left;">中低（GPU密集）</td>
+<td style="text-align: left;">缓解 DataLoader 瓶颈，解码可获得数量级提速</td>
+<td style="text-align: left;">业务侵入性高，遇到损坏 JPEG 格式可能引发底层库异常</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>NSFW / 水印检测</strong></td>
+<td style="text-align: left;">中等（CNN前向）</td>
+<td style="text-align: left;">严守商业落地合规红线，防范安全风险</td>
+<td style="text-align: left;">漏杀难以杜绝对抗性微小水印，检测分类器需要持续演进</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SigLIP/CLIP 对齐</strong></td>
+<td style="text-align: left;">高（双塔特征）</td>
+<td style="text-align: left;">直接降低图文语义错乱，是认知质量基础</td>
+<td style="text-align: left;">高分段可能趋向“语义平滑化”，误伤带有隐喻或讽刺意味的配图</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>VLM 重标注合成</strong></td>
+<td style="text-align: left;">极高（LLM生成）</td>
+<td style="text-align: left;">为低信息原始描述补充细节</td>
+<td style="text-align: left;">成本较高，且易混入前序模型的幻觉或重复句式</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="86">8.6 匿名化复合案例与商业落地长效指南<a class="headerlink" href="#86" title="Permanent link">&para;</a></h2>
+<p>以下案例为匿名化复合案例，数据规模与成本只用于说明风险类型。实际项目中的 GPU 成本、样本量和质量收益需以具体硬件、数据许可和评测口径为准。</p>
+<h3 id="861">8.6.1 图库污染导致的错误学习<a class="headerlink" href="#861" title="Permanent link">&para;</a></h3>
+<p>在研发早期阶段，某团队直接下载清洗版开源图文数据集的一个子集进行对齐训练。在阶段性交互盲审中，评测人员发现一个系统性现象：多类风景照片都容易在结尾带出诸如“下载高清免水印图片请到某图库获取同款”的促销式文本。</p>
+<p><strong>教训复盘与处理</strong>：这属于“图库污染现象（Stock Photo Contamination）”。即使是经过较高 CLIP Score 阈值筛选的数据集，只要在收集初期没有使用 OCR 或特征分类器过滤带防盗水印和模板宣传语的商业图，大型图床的促销模板文本就可能渗透进模型的条件概率分布。对于商业级大模型，建议针对高风险商业图床建立负面哈希清单，并对外部数据执行二次清洗。</p>
+<h3 id="862">8.6.2 多模态数据资产的长期维护<a class="headerlink" href="#862" title="Permanent link">&para;</a></h3>
+<p>回顾整个图像文本数据工程框架，图文大模型竞争的关键不只在于 Vision Encoder 或训练脚本，也在于模型接收到第一个多模态 Tensor Token 之前的数据准备质量。</p>
+<p>只有经过 DOM 结构解析、图像下载校验、硬件解码、宽高比裁剪、安全风控扫描、SigLIP 量化评测和高分辨率重标注（Re-captioning），原始网图与弱文本才可能被转化为包含双语描述、位置锚点和质量元数据的多模态配对样本。</p>
+<p>这种数据资产不只是存储在磁盘中的 JSON 文件，而是由来源记录、过滤规则、重标注模型、抽检记录和评测反馈共同构成的长期工程能力。</p>
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本章作为第三篇的起点，系统说明了多模态数据区别于纯文本的四类挑战，并逐级介绍了图文工程的三大结构范式。为了缓解图片压缩包对流水线吞吐的影响，本章讨论了基于 DALI 的 GPU 端解码与预处理模式。</p>
+<p>针对复杂的语义对齐问题，本章以图解形式说明了“CLIP Score 过滤”与“VLM 重标注”的组合流程（见图8-2）。最后，本章通过配比调参和匿名化复合案例，说明了企业级视觉语言模型训练中需要持续维护的质量边界。</p>
+<p>虽然图文交错是当前多模态训练的重要形态，但在复杂的 B 端工业应用场景（财报解析、复杂发票查验、手写医疗单识别）中，仅依靠自然景物图仍难以应对高密度字符和版面结构挑战。下一章将进入<strong>第9章 重标注与文档理解</strong>，讨论 OCR、版面解析和长文档理解数据工程。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Alayrac J, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Millican K, Reynolds M, Ring R, Rutherford E, Cabi S, Han T, Gong Z, Samangooei S, Monteiro M, Menick J, Borgeaud S, Brock A, Nematzadeh A, Sharifzadeh S, Binkowski M, Barreira R, Vinyals O, Zisserman A, Simonyan K (2022) Flamingo: A Visual Language Model for Few-Shot Learning. Advances in Neural Information Processing Systems 35:23716-23736.</p>
+<p>Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model's Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966.</p>
+<p>Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, Zhong H, Zhu Y, Yang M, Li Z, Wan J, Wang P, Ding W, Fu Z, Xu Y, Ye J, Zhang X, Xie T, Cheng Z, Zhang H, Yang Z, Xu H, Lin J (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.</p>
+<p>Dosovitskiy A, Beyer L, Kolesnikov A, Weissenborn D, Zhai X, Unterthiner T, Dehghani M, Minderer M, Heigold G, Gelly S, Uszkoreit J, Houlsby N (2020) An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT). In: International Conference on Learning Representations 2021.</p>
+<p>Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh D, Zhang J, Orgad E, Entezari R, Daras G, Pratt S, Ramanujan V, Bitton Y, Marathe K, Mussmann S, Vencu R, Cherti M, Krishna R, Koh P W, Saukh O, Ratner A, Song S, Hajishirzi H, Farhadi A, Beaumont R, Oh S, Dimakis A, Jitsev J, Carmon Y, Shankar V, Schmidt L (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36.</p>
+<p>Laurençon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36. arXiv:2306.16527.</p>
+<p>Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning (LLaVA). Advances in Neural Information Processing Systems 36:34892-34916.</p>
+<p>Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tuning (LLaVA-1.5). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 26296-26306. https://doi.org/10.1109/cvpr52733.2024.02484.</p>
+<p>NVIDIA (2023) NVIDIA Data Loading Library (DALI). GitHub repository. <a href="https://github.com/NVIDIA/DALI">https://github.com/NVIDIA/DALI</a>.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, Schramowski P, Kundurthy S, Crowson K, Schmidt L, Kaczmarczyk R, Jitsev J (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.</p>
+<p>Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. Advances in Neural Information Processing Systems 36. arXiv:2304.06939.</p>
+<p>Zhai X, Mustafa B, Kolesnikov A, Beyer L (2023) Sigmoid Loss for Language Image Pre-Training (SigLIP). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 11975-11986. https://doi.org/10.1109/iccv51070.2023.01100.</p>
+<p>Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, Gao Z, Cui E, Cao Y, Liu Y, Xu W, Li H, Wang J, Lv H, Chen D, Li S, He Y, Jiang T, Luo J, Wang Y, He C, Shi B, Zhang X, Shao W, He J, Xiong Y, Qu W, Sun P, Jiao P, Wu L, Zhang K, Deng H, Ge J, Chen K, Wang L, Dou M, Lu L, Zhu X, Lu T, Lin D, Qiao Y, Dai J, Wang W (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. arXiv preprint arXiv:2304.10592.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

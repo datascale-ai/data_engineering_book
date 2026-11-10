@@ -1,0 +1,4135 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part1/ch02_quality_framework/">
+      
+      
+        <link rel="prev" href="../ch01_data_change/">
+      
+      
+        <link rel="next" href="../ch03_data_stack/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 2: LLM Data Lifecycle and Quality Assessment Framework - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-2-llm-data-lifecycle-and-quality-assessment-framework" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part1/ch02_quality_framework/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part1/ch02_quality_framework/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-why-a-unified-quality-language-is-necessary" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 Why a Unified Quality Language Is Necessary
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 Why a Unified Quality Language Is Necessary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211-the-root-causes-of-misunderstanding-high-quality-data-across-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.1 The Root Causes of Misunderstanding "High-Quality Data" Across Teams
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212-why-quality-objectives-shift-dynamically-across-the-data-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.2 Why Quality Objectives Shift Dynamically Across the Data Lifecycle
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213-governance-failures-when-a-unified-framework-is-absent" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.3 Governance Failures When a Unified Framework Is Absent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-layered-quality-objectives-from-a-data-lifecycle-perspective" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 Layered Quality Objectives from a Data Lifecycle Perspective
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Layered Quality Objectives from a Data Lifecycle Perspective">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-quality-objective-differences-across-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 Quality Objective Differences Across Stages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-the-triangular-mapping-offline-online-and-business-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2 The Triangular Mapping: Offline, Online, and Business Quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-cross-section-layering-from-sample-level-to-system-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 Cross-Section Layering: From Sample Level to System Level
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-defect-classification-and-metrics-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 Defect Classification and Metrics Matrix
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 Defect Classification and Metrics Matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-six-core-defect-classes-six-core-defect-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.1 Six Core Defect Classes (Six Core Defect Classes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-establishing-the-core-metrics-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.2 Establishing the Core Metrics Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-trade-offs-and-conflicts-between-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.3 Trade-offs and Conflicts Between Metrics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-from-scorecard-to-governance-actions-closing-the-automated-filtering-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4 From Scorecard to Governance Actions: Closing the Automated Filtering Loop
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 From Scorecard to Governance Actions: Closing the Automated Filtering Loop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-scorecard-design-and-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.1 Scorecard Design and Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242-quality-thresholds-blocking-gate-design-and-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.2 Quality Thresholds, Blocking Gate Design, and Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#243-converting-alerts-into-remediation-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.3 Converting Alerts into Remediation Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-cross-stage-propagation-amplification-case-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5 Cross-Stage Propagation Amplification Case Studies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 Cross-Stage Propagation Amplification Case Studies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251-case-review-1-silent-grammar-drift-in-a-pre-training-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.1 Case Review 1: "Silent Grammar Drift" in a Pre-training Corpus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252-case-review-2-high-offline-score-online-failure-in-a-rag-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.2 Case Review 2: "High Offline Score, Online Failure" in a RAG Scenario
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26-how-this-chapter-serves-as-the-public-contract-for-subsequent-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.6 How This Chapter Serves as the "Public Contract" for Subsequent Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-why-a-unified-quality-language-is-necessary" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 Why a Unified Quality Language Is Necessary
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 Why a Unified Quality Language Is Necessary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211-the-root-causes-of-misunderstanding-high-quality-data-across-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.1 The Root Causes of Misunderstanding "High-Quality Data" Across Teams
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212-why-quality-objectives-shift-dynamically-across-the-data-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.2 Why Quality Objectives Shift Dynamically Across the Data Lifecycle
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213-governance-failures-when-a-unified-framework-is-absent" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.3 Governance Failures When a Unified Framework Is Absent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-layered-quality-objectives-from-a-data-lifecycle-perspective" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 Layered Quality Objectives from a Data Lifecycle Perspective
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 Layered Quality Objectives from a Data Lifecycle Perspective">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-quality-objective-differences-across-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 Quality Objective Differences Across Stages
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-the-triangular-mapping-offline-online-and-business-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2 The Triangular Mapping: Offline, Online, and Business Quality
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-cross-section-layering-from-sample-level-to-system-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 Cross-Section Layering: From Sample Level to System Level
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-defect-classification-and-metrics-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 Defect Classification and Metrics Matrix
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 Defect Classification and Metrics Matrix">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-six-core-defect-classes-six-core-defect-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.1 Six Core Defect Classes (Six Core Defect Classes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-establishing-the-core-metrics-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.2 Establishing the Core Metrics Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-trade-offs-and-conflicts-between-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.3 Trade-offs and Conflicts Between Metrics
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-from-scorecard-to-governance-actions-closing-the-automated-filtering-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4 From Scorecard to Governance Actions: Closing the Automated Filtering Loop
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 From Scorecard to Governance Actions: Closing the Automated Filtering Loop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241-scorecard-design-and-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.1 Scorecard Design and Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242-quality-thresholds-blocking-gate-design-and-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.2 Quality Thresholds, Blocking Gate Design, and Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#243-converting-alerts-into-remediation-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.3 Converting Alerts into Remediation Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25-cross-stage-propagation-amplification-case-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5 Cross-Stage Propagation Amplification Case Studies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 Cross-Stage Propagation Amplification Case Studies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251-case-review-1-silent-grammar-drift-in-a-pre-training-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.1 Case Review 1: "Silent Grammar Drift" in a Pre-training Corpus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252-case-review-2-high-offline-score-online-failure-in-a-rag-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.2 Case Review 2: "High Offline Score, Online Failure" in a RAG Scenario
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26-how-this-chapter-serves-as-the-public-contract-for-subsequent-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.6 How This Chapter Serves as the "Public Contract" for Subsequent Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-2-llm-data-lifecycle-and-quality-assessment-framework">Chapter 2: LLM Data Lifecycle and Quality Assessment Framework<a class="headerlink" href="#chapter-2-llm-data-lifecycle-and-quality-assessment-framework" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Changwen Chen; Ke Wang</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter establishes the data quality assessment framework that underpins the entire book. "High-quality data" in large language model projects is not a single metric, but a multi-dimensional set of constraints that shift dynamically with the training stage, task objective, and business context. The chapter begins by explaining why algorithm, data, annotation, and product teams inevitably disagree on the definition of quality, and proposes a data quality terminology contract to unify communication. It then breaks down quality objectives, detection metrics, and typical risks for each of four stages: pre-training, instruction fine-tuning, preference alignment, and retrieval-augmented generation (RAG) deployment. A layered evaluation perspective is then constructed across the sample, batch, dataset, and system-platform levels. Finally, the chapter presents six core defect classes, a data release scorecard, CI/CD quality gates, and anonymized composite case studies to illustrate how quality assessment can be converted into executable governance actions, alerting strategies, and rollback mechanisms.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data quality assessment; data lifecycle; data scorecard; benchmark contamination; data governance; RAG evaluation; DataOps</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Establish a cross-team consistent vocabulary and metric language for data quality.</li>
+<li>Distinguish data quality objectives and evaluation methods across different training stages.</li>
+<li>Map common data defects to engineering metrics that are detectable, blockable, and auditable.</li>
+<li>Design data release scorecards, quality gates, and rollback workflows.</li>
+</ul>
+<h2 id="21-why-a-unified-quality-language-is-necessary">2.1 Why a Unified Quality Language Is Necessary<a class="headerlink" href="#21-why-a-unified-quality-language-is-necessary" title="Permanent link">&para;</a></h2>
+<p>During large language model development, teams from different professional backgrounds often hold significantly divergent views on what constitutes "good data." This absence of a shared "quality language" is one of the principal causes of delays, rework, and unstable model performance in many LLM projects.</p>
+<h3 id="211-the-root-causes-of-misunderstanding-high-quality-data-across-teams">2.1.1 The Root Causes of Misunderstanding "High-Quality Data" Across Teams<a class="headerlink" href="#211-the-root-causes-of-misunderstanding-high-quality-data-across-teams" title="Permanent link">&para;</a></h3>
+<p>In a typical large model R&amp;D team, "high-quality data" means entirely different things to different roles. The following three anonymized composite scenarios synthesize disagreements commonly observed in joint review meetings on real-world projects, illustrating the risks of this cognitive gap.</p>
+<p><strong>Scenario 1: Algorithm Researcher vs. Data Engineer</strong></p>
+<blockquote>
+<p><strong>Algorithm Researcher</strong> (examining the loss curve): "There's something wrong with your new data batch. You can clearly see the loss stopped improving after training step 8,000, and code generation capability has declined."
+<strong>Data Engineer</strong> (pointing to the quality report): "That's not right! The cleanliness score for this batch is 0.91, five points higher than the previous version. We specifically added stricter length filtering—this is the best version yet."</p>
+</blockquote>
+<p>Root cause: The two parties are simply not talking about the same dimension of "quality." The strict length filter removed all long code snippets containing edge cases—improving quality on the "noise" dimension while degrading quality on the "coverage" dimension.</p>
+<p><strong>Scenario 2: Annotation Expert vs. Data Engineer</strong></p>
+<blockquote>
+<p><strong>Annotation Expert</strong>: "The raw SFT data you gave me is terrible. Half the answers are factually wrong; some describe 2023 events as if they happened in 2021."
+<strong>Data Engineer</strong>: "I specifically ran perplexity filtering with KenLM on this batch, and the PPL distribution looks great—linguistic fluency is very high."</p>
+</blockquote>
+<p>Root cause: Perplexity (PPL) measures "linguistic distribution plausibility"—a paragraph that is fluent but entirely factually wrong can have a very low PPL (appearing "good"). KenLM and other n-gram language models commonly used in pre-training corpus filtering use exactly this type of PPL score as a selection criterion (Heafield 2011). The "factual accuracy" that the annotation expert requires is a dimension that PPL filtering cannot cover at all.</p>
+<p><strong>Scenario 3: Product Manager vs. Algorithm Researcher</strong></p>
+<blockquote>
+<p><strong>Product Manager</strong>: "The model is frequently hallucinating on users' financial questions online. Yesterday a user asked about a stock's dividend for this year, and the model confidently produced incorrect data from last year."
+<strong>Algorithm Researcher</strong>: "On our internal benchmark evaluation set, this model performs better than the previous version on financial knowledge question answering (QA)."</p>
+</blockquote>
+<p>Root cause: The internal evaluation set's financial knowledge has a cutoff date from the previous year, while users online are asking about real-time information. The quality dimension of <strong>timeliness (Staleness)</strong> was simply not designed into the internal evaluation.</p>
+<p>The common thread across all three scenarios: each party understands "quality" according to their own area of responsibility, but these local definitions do not form a shared metric framework, ultimately leading to systematic model performance deviations.</p>
+<p><strong>Implementation: A Workshop to Establish a Unified Quality Language</strong></p>
+<p>In most front-line large model teams, the effective solution is to mandate a <strong>Data Quality Definition Alignment Workshop</strong> at project kickoff (for systematic surveys of data selection methodology, see Albalak et al. 2024; Longpre et al. 2023; Nait Saada et al. 2025), producing an internal team document titled <em>Data Quality Terminology and Metrics Contract</em>. The first task of this document is to define a complete list of quality dimensions for the project—accuracy, diversity, duplication rate, timeliness, safety—and assign quantifiable calculation methods to each dimension, rather than stopping at qualitative descriptions.</p>
+<p>Second, the document must define separate pass/fail thresholds for each training stage: the pass criteria for pre-training data and those for SFT data differ fundamentally in both magnitude and dimensionality, and should never be conflated. More importantly, the document must establish a precise mapping from terminology to code. For example, when any party says "duplication rate is too high," every member of the team must share the exact same understanding of those words: in engineering terms they mean "the proportion of sample pairs whose Jaccard similarity under a specific MinHash configuration exceeds the project threshold," not each person's intuitive sense that "this batch seems to have some repetition."</p>
+<p>This contract document is not a static file but a versioned document that evolves continuously throughout the project. At every major milestone (for example, after a new model version is released), a retrospective must be held to examine whether existing metric definitions still apply at the new stage and whether they need to be extended or revised as the business context changes.</p>
+<h3 id="212-why-quality-objectives-shift-dynamically-across-the-data-lifecycle">2.1.2 Why Quality Objectives Shift Dynamically Across the Data Lifecycle<a class="headerlink" href="#212-why-quality-objectives-shift-dynamically-across-the-data-lifecycle" title="Permanent link">&para;</a></h3>
+<p>Quality is by no means a static standard; it presents entirely different core requirements at different stages as the data lifecycle progresses. Applying a fixed standard to measure data across the entire lifecycle will inevitably produce serious misjudgments. As shown in Table 2-1, the core quality requirements and detection metrics differ significantly across the four stages of pre-training, instruction fine-tuning, preference alignment, and RAG deployment.</p>
+<p><em>Table 2-1: Four-stage quality objective evolution matrix</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Training Stage</th>
+<th style="text-align: left;">Typical Data Scale</th>
+<th style="text-align: left;">Core Quality Requirements</th>
+<th style="text-align: left;">Primary Detection Metrics</th>
+<th style="text-align: left;">Typical Defects and Risks</th>
+<th style="text-align: left;">Primary Processing Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Pre-training</strong></td>
+<td style="text-align: left;">Hundreds of billions to tens of trillions of tokens</td>
+<td style="text-align: left;">High diversity, low duplication rate, broad knowledge coverage</td>
+<td style="text-align: left;">N-gram duplication rate, PPL distribution, domain proportion, language distribution</td>
+<td style="text-align: left;">Insufficient deduplication ("parrot" effect); benchmark data leaking in (inflated evaluation scores); excessive low-quality SEO content</td>
+<td style="text-align: left;">MinHash / SimHash; fastText language identification; KenLM; Quality Classifier</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Instruction Fine-tuning (SFT)</strong></td>
+<td style="text-align: left;">Tens of thousands to millions of instruction pairs</td>
+<td style="text-align: left;">Instruction diversity, format compliance, complete reasoning chains</td>
+<td style="text-align: left;">Instruction difficulty distribution, format compliance rate, factual accuracy rate</td>
+<td style="text-align: left;">Near-duplicate instruction semantics ("approximate clones"); inconsistent answer formatting; factually incorrect answers</td>
+<td style="text-align: left;">Rouge-L deduplication; GPT-4 fact auditing; format regex validation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Preference Alignment (RLHF/DPO)</strong></td>
+<td style="text-align: left;">Tens of thousands to hundreds of thousands of preference pairs</td>
+<td style="text-align: left;">Distinctiveness of preference signal, value alignment, harmlessness</td>
+<td style="text-align: left;">Annotator agreement Cohen's κ (Cohen 1960); quality gap between chosen/rejected; toxicity score</td>
+<td style="text-align: left;">Inconsistent annotator preferences (κ &lt; 0.6); insufficient gap between chosen and rejected (weak signal); presence of cultural bias</td>
+<td style="text-align: left;">Multi-round calibration; Reward Model pre-filtering; Perspective API (Lees et al. 2022)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>RAG Deployment</strong></td>
+<td style="text-align: left;">Thousands to tens of thousands of documents</td>
+<td style="text-align: left;">Timeliness, business coverage, retrieval recall precision</td>
+<td style="text-align: left;">Knowledge cutoff date distribution; scenario coverage recall; Faithfulness score</td>
+<td style="text-align: left;">Stale knowledge base (not updated in 6 months); chunk granularity too coarse causing high retrieval noise; garbled PDF parsing</td>
+<td style="text-align: left;">LlamaIndex / LangChain; RAGAs evaluation framework; Embedding quality evaluation</td>
+</tr>
+</tbody>
+</table>
+<p>From the table it is clear that even within "quality evaluation," the primary metrics shift entirely—from "deduplication rate and PPL distribution" in the pre-training stage to "annotation consistency and preference gap" in the RLHF stage. A dataset that is acceptable at the pre-training stage may fail at the SFT stage due to insufficient factual precision, format compliance, or task coverage. This stage-by-stage migration of quality objectives requires data engineering teams to establish <strong>Phase-Specific Quality Contracts</strong> rather than applying a single universal standard to all stages.</p>
+<h3 id="213-governance-failures-when-a-unified-framework-is-absent">2.1.3 Governance Failures When a Unified Framework Is Absent<a class="headerlink" href="#213-governance-failures-when-a-unified-framework-is-absent" title="Permanent link">&para;</a></h3>
+<p>When a unified data quality assessment framework is lacking, the project will inevitably experience "governance failures." Typical symptoms include:</p>
+<ol>
+<li>
+<p><strong>Metric Silos</strong>: The pre-training team uses perplexity (PPL) as the core script metric; the fine-tuning team uses ROUGE-L to measure response quality; the safety team uses Perspective API toxicity scores as compliance indicators. No shared language exists across the three systems. When a batch of data simultaneously triggers alerts from multiple teams, it is difficult to determine who should lead the remediation, or which metric carries veto power over release.</p>
+</li>
+<li>
+<p><strong>Noise Propagation Amplification</strong>: Without a unified framework, small amounts of upstream data pipeline noise often cannot be intercepted early and propagate down the pipeline, producing order-of-magnitude harm downstream:</p>
+</li>
+</ol>
+<p>Listing 2-1 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>[Crawl/Storage Layer]   A small number of base64-encoded images are mixed into the text stream
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>      ↓  Not intercepted in time (no unified defect standard)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>[Cleaning/Training Layer]  These garbled characters cause specific token frequencies to rise abnormally
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>      ↓  Noise is repeatedly reinforced through gradient accumulation
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>[Inference/Alignment Layer]  The model is more likely to produce garbled or format-abnormal output for certain content types
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      ↓  Manifests as degraded online experience, triggering user feedback and version review
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>[Final Cost]     Model version forced to roll back, losing training compute and the market window
+</code></pre></div>
+<p><em>Listing 2-1: Process flow example</em></p>
+<p>This amplification effect—"a small upstream error → a midstream distribution anomaly → downstream experience loss"—can be understood as cross-stage error propagation in the data pipeline. The governance solution is the unified quality gate system that this chapter will establish.</p>
+<ol>
+<li><strong>Experience Loss</strong>: Because there is no unified defect classification standard, post-mortem conclusions after model failures typically stop at "the data was bad; we need to be more careful next time." Was it because of high duplication rates, imbalanced domain ratios, or benchmark contamination? Without clear classification, these lessons cannot be translated into concrete rule modifications for the next version of the cleaning pipeline. After introducing a unified quality framework, every data issue can be attributed to a specific defect type (see Section 2.3) with corresponding remediation operators and quantified improvement targets. Post-mortem documents should evolve from "the data was bad" to "root cause of this incident: duplication rate exceeded the project threshold; remediation plan: recalibrate deduplication thresholds by domain and remeasure the deduplication rate in the next incremental validation."</li>
+</ol>
+<hr />
+<h2 id="22-layered-quality-objectives-from-a-data-lifecycle-perspective">2.2 Layered Quality Objectives from a Data Lifecycle Perspective<a class="headerlink" href="#22-layered-quality-objectives-from-a-data-lifecycle-perspective" title="Permanent link">&para;</a></h2>
+<p>To resolve the problem of an inconsistent quality language, we must establish clear "quality objective tiers" at each stage of the lifecycle. This multi-dimensional quality layering architecture is illustrated in Figure 2-1.</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective, showing how metric weights shift across stages from scale and diversity toward truthfulness and helpfulness" src="../../../images/part1/Yu-Chap02-Fig01.svg" /></a></p>
+<p><em>Figure 2-1: Multi-dimensional quality layering architecture</em></p>
+<h3 id="221-quality-objective-differences-across-stages">2.2.1 Quality Objective Differences Across Stages<a class="headerlink" href="#221-quality-objective-differences-across-stages" title="Permanent link">&para;</a></h3>
+<p>Each stage in the large language model training pipeline has different quality objectives. Pre-training focuses on corpus scale, diversity, and low duplication rate; SFT focuses on instruction coverage, format compliance, and factual accuracy; preference alignment focuses on contrastive signal strength and annotation consistency; RAG deployment focuses on knowledge freshness, retrieval recall, and evidence traceability.</p>
+<p><strong>Pre-training</strong> is the first stage, with the goal of establishing broad representations of language, code, and knowledge. The requirement at this stage is not that every sentence be absolutely correct, but that the corpus be large in scale, high in diversity, and low in duplication. In an unsupervised fashion, the model encounters different domains, linguistic styles, and knowledge boundaries, building fundamental representational capability. At this stage, a slightly outdated popular science article is generally not the primary risk; however, the same SEO advertisement appearing thousands of times in the corpus will significantly increase the risk of generation degeneration and memorization-based overfitting.</p>
+<p><strong>Instruction Fine-tuning (SFT)</strong> is the second stage, where the quality objective narrows from "breadth" to "precision": instruction diversity, response format compliance, and complete reasoning chains are all indispensable. SFT is generally more sensitive to contamination than pre-training, because at this stage the model is learning task formats and interaction behavior; even a small number of format-inconsistent or logically erroneous samples can cause observable degradation on the corresponding tasks.</p>
+<p><strong>Preference Alignment (RLHF/DPO)</strong> is the third stage, where the core quality objective is the effectiveness of contrastive data and value alignment: the chosen answer must have a sufficiently distinguishable quality gap from the rejected answer (Ouyang et al. 2022; Rafailov et al. 2023; Bai et al. 2022); otherwise the reward signal is too weak and the model cannot learn a stable direction of human preference.</p>
+<p><strong>RAG Deployment</strong> is the fourth stage and the one closest to end users. Quality metrics here shift toward timeliness and retrieval precision: the proportion of documents in the knowledge base that have not been updated for more than six months, whether the retrieved chunks accurately cover the user's query intent, and whether PDF and table parsing introduces field misalignment. These issues do not always surface visibly in the first three stages, but in RAG scenarios they directly impact the quality of the final response.</p>
+<h3 id="222-the-triangular-mapping-offline-online-and-business-quality">2.2.2 The Triangular Mapping: Offline, Online, and Business Quality<a class="headerlink" href="#222-the-triangular-mapping-offline-online-and-business-quality" title="Permanent link">&para;</a></h3>
+<p>Defining quality objectives separately for each stage is not sufficient—a mature data engineering framework must further bridge the complete "metric chain" from data to model to real business outcomes, rather than allowing "good data quality" and "good online performance" to remain two disconnected evaluation systems.</p>
+<p>In industry practice, this metric chain is described as a <strong>triangular mapping structure</strong>. The first vertex is <strong>offline data quality metrics</strong>: static scores computable at the data storage and processing stage, including deduplication rate, mean PPL distribution, benchmark contamination rate, and so on. These metrics can be computed efficiently without running a model and are suitable for automatic triggering in CI/CD pipelines. The second vertex is <strong>proxy model evaluation quality</strong>: the processed data is injected into a small-scale proxy model (typically ~1B parameters) for fast training and testing, measuring the actual training value of the data through benchmark scores. This step is an indispensable "bridge validation" between offline data metrics and final model performance. The third vertex is <strong>real business online system quality</strong>: the actual user retention rate, satisfaction scores, and conversion metrics after model deployment.</p>
+<p>In the ideal case, the three vertices should exhibit a stable positive correlation. Whenever one edge of this triangle breaks—for example, if offline data scores are high but proxy model scores do not improve, or proxy model scores are high but online user feedback is poor—this is a strong signal that the current evaluation framework has a systemic design flaw at some point, requiring immediate analysis of which metric has become decoupled from which, and tracing the root cause back to the data layer.</p>
+<h3 id="223-cross-section-layering-from-sample-level-to-system-level">2.2.3 Cross-Section Layering: From Sample Level to System Level<a class="headerlink" href="#223-cross-section-layering-from-sample-level-to-system-level" title="Permanent link">&para;</a></h3>
+<p>Quality assessment also requires cross-section layering on the dimension of "granularity." Quality issues at different granularities differ in detection timing, remediation cost, and remediation approach. Conflating them easily leads to a mismatch between the remediation method and the problem tier.</p>
+<p>The finest granularity is <strong>sample-level</strong>. This is the earliest detectable tier in the data pipeline: does this long text contain residual HTML tags? Is this image semantically aligned with its accompanying textual description? Is the answer in this QA pair severely misaligned with the direction of the question? Sample-level issues are large in volume but low in per-sample remediation cost, making them suitable for automated rule-based batch processing.</p>
+<p>The next level up is <strong>batch-level</strong>. At this granularity, the focus is on the aggregate statistical distribution characteristics of a data batch: has this batch's domain sampling ratio deviated noticeably from the preset baseline? Has the ratio of code corpus to natural language text shifted abruptly because a particular crawler quota failed? Batch-level issues do not manifest in individual samples; they can only be detected in the statistical profile of the batch as a whole, and therefore require dedicated rolling distribution monitoring.</p>
+<p>Above that is <strong>dataset-level</strong>, concerned with the macroscopic health of the entire training set: is the temporal distribution of knowledge in the entire corpus severely concentrated in a few years? What proportion of content has been flagged as high-risk in benchmark contamination detection? Do the proportions of different languages meet the multilingual training requirements? Issues at this tier are strategic in nature, typically completed by data engineering leads through manual review and report auditing before version releases, rather than relying on automated pipelines.</p>
+<p>Finally, there is <strong>system-platform level</strong>: the operational health of the data pipeline as an engineering entity—has a Kafka consumer queue developed backlog? Did a particular version of the MinHash deduplication job silently exit early due to OOM, leaving large quantities of unprocessed duplicate data? Issues at this tier are not in the data content itself, but in the engineering quality monitoring of the data pipeline, which is a core concern of DataOps observability (covered in depth in Part VIII).</p>
+<hr />
+<h2 id="23-defect-classification-and-metrics-matrix">2.3 Defect Classification and Metrics Matrix<a class="headerlink" href="#23-defect-classification-and-metrics-matrix" title="Permanent link">&para;</a></h2>
+<p>To establish shared governance actions, the vague notion of "bad data" must be translated into a specific, measurable defect metrics matrix. Figure 2-2 presents the cross-mapping relationship between six core defect classes and five core quality metrics.</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 2-2: Cross-mapping diagram of large language model data defects and quality metrics, showing the relationships between six defect classes and accuracy, consistency, diversity, coverage, and traceability" src="../../../images/part1/Yu-Chap02-Fig02.svg" /></a></p>
+<p><em>Figure 2-2: Cross-mapping matrix of data defects and quality metrics</em></p>
+<h3 id="231-six-core-defect-classes-six-core-defect-classes">2.3.1 Six Core Defect Classes (Six Core Defect Classes)<a class="headerlink" href="#231-six-core-defect-classes-six-core-defect-classes" title="Permanent link">&para;</a></h3>
+<p>For large language model training, we establish the following six core defect dimensions, each accompanied by an automated detection approach:</p>
+<p><strong>1. Noise</strong></p>
+<p>Definition: Content containing residual HTML tags, garbled characters, meaningless symbol sequences, base64 encoding fragments, and similar artifacts. These produce abnormal inputs to the tokenizer and can cause gradient NaN values in severe cases.</p>
+<p>Listing 2-2 shows a minimal detector for text noise ratio.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">noise_score</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns noise ratio; thresholds must be calibrated by language, source, and spot-check sample.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="c1"># Detect residual HTML tags</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">html_tags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;[^&gt;]+&gt;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># Detect high proportion of non-printable characters</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">non_printable</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">isprintable</span><span class="p">())</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="c1"># Detect consecutive repeated symbols (e.g., !!!!!!!)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">repeat_symbols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]{5,}&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">text</span> <span class="k">else</span> <span class="mi">1</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">html_tags</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">non_printable</span> <span class="o">+</span> <span class="n">repeat_symbols</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Example: when noise_score exceeds the project-calibrated threshold, send it to quarantine or manual review.</span>
+</code></pre></div>
+<p><em>Listing 2-2: Example of text noise ratio detection</em></p>
+<p>In production, add language, encoding, HTML parser version, and exception sample inspection logs.</p>
+<p><strong>2. Repetition</strong></p>
+<p>Definition: The same content (exact or approximate) appearing a large number of times in the training set, forcing the model to "memorize" these segments, causing memorization-based overfitting, and producing a "parrot" effect at inference time. Industry practice generally uses MinHash LSH for approximate deduplication.</p>
+<p>Listing 2-3 shows an approximate duplicate detector based on MinHash LSH.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasketch</span><span class="w"> </span><span class="kn">import</span> <span class="n">MinHash</span><span class="p">,</span> <span class="n">MinHashLSH</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_minhash</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_perm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinHash</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">m</span> <span class="o">=</span> <span class="n">MinHash</span><span class="p">(</span><span class="n">num_perm</span><span class="o">=</span><span class="n">num_perm</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">tokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u4e00-\u9fff]|[A-Za-z0-9_]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="k">return</span> <span class="n">m</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Example threshold is for demonstration only; production thresholds must be calibrated</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># by language, task, and false-rejection cost.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">calibrated_threshold</span> <span class="o">=</span> <span class="mf">0.8</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">lsh</span> <span class="o">=</span> <span class="n">MinHashLSH</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">calibrated_threshold</span><span class="p">,</span> <span class="n">num_perm</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 2-3: Example of approximate duplicate detection using MinHash LSH</em></p>
+<p>In production, record the threshold, partitioning strategy, and sampling review results.</p>
+<p><strong>3. Benchmark Contamination</strong></p>
+<p>Definition: Web crawlers indiscriminately ingesting the original questions and answers from publicly available AI evaluation benchmarks (GSM8K (Cobbe et al. 2021), HumanEval (Chen et al. 2021), MMLU (Hendrycks et al. 2021), etc.) into the pre-training corpus, causing inflated benchmark scores (rote memorization rather than reasoning). Systematic surveys of automated detection methods for this problem are available in Shi et al. (2023) and Golchin and Surdeanu (2023).</p>
+<p>Listing 2-4 shows an N-gram overlap detector for benchmark contamination risk.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Benchmark contamination detection: compute N-gram overlap rate</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">ngram_overlap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">benchmark_ngrams</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the 13-gram overlap ratio with the benchmark corpus&quot;&quot;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">words</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u4e00-\u9fff]|[A-Za-z0-9_]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">text_ngrams</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_ngrams</span> <span class="o">&amp;</span> <span class="n">benchmark_ngrams</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">return</span> <span class="n">overlap</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text_ngrams</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="c1"># Example: when the overlap rate exceeds the project contamination-risk threshold,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="c1"># flag it as suspected contamination and review manually.</span>
+</code></pre></div>
+<p><em>Listing 2-4: Example of N-gram overlap detection for benchmark contamination</em></p>
+<p>In production, maintain an independent evaluation set fingerprint database and a manual review workflow.</p>
+<p><strong>4. Systematic Bias</strong></p>
+<p>Definition: Due to geographic, linguistic, or topical skew in the crawled data sources, the data exhibits systematic knowledge bias related to nationality, gender, race, ideology, and similar dimensions, causing the model to perform unevenly on tasks involving specific groups.</p>
+<p>Detection approach: Use StereoSet (Nadeem et al. 2021) or WinoBias (Zhao et al. 2018) evaluation sets to assess the model's degree of bias; also compute the frequency distribution of terms related to sensitive groups (gender/ethnicity/religion) in the training set, checking for severe term-frequency imbalances (one group appearing more than 10 times as frequently as another).</p>
+<p><strong>5. Structural Incompleteness</strong></p>
+<p>Definition: Long texts that have been truncated (only the first half of an article), QA pairs containing only the answer without the question, multimodal data in which images lack accompanying textual descriptions, etc.</p>
+<p>Listing 2-5 shows a simple structural completeness check for SFT samples.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_completeness</span><span class="p">(</span><span class="n">sample</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Check the structural completeness of an SFT sample&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">issues</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">if</span> <span class="s1">&#39;instruction&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sample</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;instruction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;missing_instruction&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">if</span> <span class="s1">&#39;response&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sample</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;response_too_short&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="c1"># Check for truncation: text ends mid-sentence (no terminal punctuation)</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">resp</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;response&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">if</span> <span class="n">resp</span> <span class="ow">and</span> <span class="n">resp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s1">&#39;.!?。！？…&quot;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;possibly_truncated&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="k">return</span> <span class="n">issues</span>
+</code></pre></div>
+<p><em>Listing 2-5: Example of SFT sample structural completeness checking</em></p>
+<p>In production, add schema validation, field-length distribution checks, and sampling review rules by task type.</p>
+<p><strong>6. Staleness</strong></p>
+<p>Definition: The knowledge base or pre-training corpus is frozen at a certain cutoff date and cannot reflect factual changes occurring after that date. This is particularly high-risk in RAG deployment scenarios.</p>
+<p>Detection approach: Record a <code>crawl_timestamp</code> metadata field for every document in the corpus, and periodically compute the proportion of documents that have not been updated for more than N months. Dataset documentation standards such as Datasheets for Datasets provide detailed guidance for metadata fields (Gebru et al. 2021). Trigger a staleness alert when the proportion of outdated documents exceeds the project threshold.</p>
+<p>Listing 2-6 shows how to compute a staleness ratio from document timestamps.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">staleness_ratio</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">threshold_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">180</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the proportion of stale documents&quot;&quot;&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">stale</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="mi">1</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;crawl_timestamp&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;</span> <span class="n">threshold_days</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">return</span> <span class="n">stale</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="k">if</span> <span class="n">docs</span> <span class="k">else</span> <span class="mf">0.0</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># Example: when staleness_ratio exceeds the business-defined waterline,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="c1"># trigger a knowledge base update task.</span>
+</code></pre></div>
+<p><em>Listing 2-6: Example of knowledge base staleness detection. In production, set different thresholds by domain, data source, and business priority</em></p>
+<h3 id="232-establishing-the-core-metrics-matrix">2.3.2 Establishing the Core Metrics Matrix<a class="headerlink" href="#232-establishing-the-core-metrics-matrix" title="Permanent link">&para;</a></h3>
+<p>To quantify defects, this book uniformly adopts five core evaluation metrics:</p>
+<ol>
+<li><strong>Accuracy</strong>: The proportion of data containing correct knowledge; the highest-priority metric for fine-tuning data.</li>
+<li><strong>Consistency</strong>: Whether there are contradictions between upstream and downstream data or across modality combinations (logical consistency).</li>
+<li><strong>Diversity / Entropy</strong>: The distribution of discrete spread across different topics.</li>
+<li><strong>Coverage</strong>: The hit rate and recall of business scenarios in the data stream.</li>
+<li><strong>Traceability</strong>: When an error occurs, whether low-quality data can be traced back through lineage to a specific web page or raw storage bucket (critically affects debugging efficiency).</li>
+</ol>
+<h3 id="233-trade-offs-and-conflicts-between-metrics">2.3.3 Trade-offs and Conflicts Between Metrics<a class="headerlink" href="#233-trade-offs-and-conflicts-between-metrics" title="Permanent link">&para;</a></h3>
+<p>There is no perfect combination of metrics. Forcibly improving one metric often comes at the cost of another. For example:</p>
+<ul>
+<li><strong>Deduplication (improving precision/avoiding overfitting) vs. Diversity</strong>: An overly strict MinHash deduplication threshold (e.g., discarding samples with similarity above 0.7) will eliminate many high-quality feature examples that differ only at fine-grained boundaries (such as template code), leading to degraded code capability.</li>
+<li><strong>Accuracy vs. Timeliness</strong>: Requiring extremely rigorous expert-level human validation greatly extends the production cycle; by the time high-quality corpus is produced, the corresponding facts may have already changed.</li>
+</ul>
+<hr />
+<h2 id="24-from-scorecard-to-governance-actions-closing-the-automated-filtering-loop">2.4 From Scorecard to Governance Actions: Closing the Automated Filtering Loop<a class="headerlink" href="#24-from-scorecard-to-governance-actions-closing-the-automated-filtering-loop" title="Permanent link">&para;</a></h2>
+<p>A quality assessment framework must ultimately materialize as concrete, engineered automated gates. We establish a closed loop by implementing a <strong>Data Release Scorecard</strong>. As shown in Figure 2-3, hard gates, soft gates, manual review, and rollback actions together form the automated blocking and governance flow driven by the data scorecard.</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 2-3: Automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions" src="../../../images/part1/Yu-Chap02-Fig03.svg" /></a></p>
+<p><em>Figure 2-3: Automated blocking and governance flow driven by the data scorecard</em></p>
+<h3 id="241-scorecard-design-and-implementation">2.4.1 Scorecard Design and Implementation<a class="headerlink" href="#241-scorecard-design-and-implementation" title="Permanent link">&para;</a></h3>
+<p>The scorecard is a "data health report" derived from a combination of rule scripts and validation models. Its core design principles are: <strong>objectively reproducible computation, configurable threshold baselines, and action-oriented blocking</strong>. Before officially releasing any version of a training dataset, the scorecard script must be mandatorily triggered, and the evaluation results must be serialized into a standard JSON format and archived. Listing 2-7 gives an example release scorecard schema.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;dataset_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sft_zhcn_legal_v2.3&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;evaluation_timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-11-15T10:23:45Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;evaluator_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scorecard-v1.4.2&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;sample_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">84721</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">&quot;dedup_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.023</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MinHash LSH (threshold=0.7, num_perm=128)&quot;</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="nt">&quot;noise_score_p95&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.067</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.10</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTML tag density + non-printable char ratio&quot;</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span><span class="nt">&quot;benchmark_contamination&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0031</span><span class="p">,</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.005</span><span class="p">,</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;13-gram overlap against GSM8K/MMLU/HumanEval&quot;</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="nt">&quot;format_compliance_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9712</span><span class="p">,</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.95</span><span class="p">,</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Regex schema validator (instruction+response fields)&quot;</span>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a><span class="w">    </span><span class="nt">&quot;staleness_ratio&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.12</span><span class="p">,</span>
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.30</span><span class="p">,</span>
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;crawl_timestamp &gt; 180 days&quot;</span>
+<a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a><span class="w">    </span><span class="nt">&quot;toxicity_p99&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.041</span><span class="p">,</span>
+<a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Perspective API (TOXICITY attribute)&quot;</span>
+<a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-6-43" name="__codelineno-6-43" href="#__codelineno-6-43"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a><span class="w">  </span><span class="nt">&quot;overall_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-45" name="__codelineno-6-45" href="#__codelineno-6-45"></a><span class="w">  </span><span class="nt">&quot;gate_decision&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;APPROVED_FOR_TRAINING&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-46" name="__codelineno-6-46" href="#__codelineno-6-46"></a><span class="w">  </span><span class="nt">&quot;reviewer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ci-bot@dataops.internal&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-47" name="__codelineno-6-47" href="#__codelineno-6-47"></a><span class="w">  </span><span class="nt">&quot;comments&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;All hard gates passed. Soft gate: staleness_ratio=0.12 within safe range.&quot;</span>
+<a id="__codelineno-6-48" name="__codelineno-6-48" href="#__codelineno-6-48"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 2-7: SFT dataset release scorecard JSON example</em></p>
+<p>The schema is illustrative; production environments should calibrate fields, thresholds, and gate decisions by dataset type and risk level.</p>
+<p>Listing 2-8 shows a GitHub Actions workflow for triggering the scorecard in CI/CD.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># .github/workflows/data_quality_gate.yml</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data Quality Gate</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nt">on</span><span class="p">:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;datasets/sft/**&#39;</span><span class="w">   </span><span class="c1"># Triggered on every SFT dataset update</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nt">jobs</span><span class="p">:</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">quality_check</span><span class="p">:</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v3</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run Data Scorecard</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">          </span><span class="no">python scripts/run_scorecard.py \</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">            </span><span class="no">--dataset datasets/sft/latest/ \</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">            </span><span class="no">--config configs/scorecard_sft.yaml \</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">            </span><span class="no">--output reports/scorecard_$(date +%Y%m%d).json</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check Gate Decision</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">          </span><span class="no">DECISION=$(python -c &quot;</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">          </span><span class="no">import json</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">          </span><span class="no">with open(&#39;reports/scorecard_$(date +%Y%m%d).json&#39;) as f:</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">              </span><span class="no">d = json.load(f)</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">          </span><span class="no">print(d[&#39;gate_decision&#39;])</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">          </span><span class="no">&quot;)</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">          </span><span class="no">if [ &quot;$DECISION&quot; != &quot;APPROVED_FOR_TRAINING&quot; ]; then</span>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">            </span><span class="no">echo &quot;Data quality gate FAILED: $DECISION&quot;</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">            </span><span class="no">exit 1</span>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">          </span><span class="no">fi</span>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">          </span><span class="no">echo &quot;Data quality gate PASSED&quot;</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Upload Scorecard Report</span>
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/upload-artifact@v3</span>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scorecard-report</span>
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reports/scorecard_*.json</span>
+</code></pre></div>
+<p><em>Listing 2-8: GitHub Actions example for CI/CD pipeline integration</em></p>
+<p>This snippet demonstrates how quality gates are triggered; production environments should add credential management, log retention, and failed-run rollback strategies.</p>
+<p>With this integration, every time a data engineer merges a new data batch, the CI pipeline automatically runs the scorecard check. If any hard gate metric exceeds its threshold, the PR merge is automatically blocked until the issue is resolved and the job is resubmitted.</p>
+<h3 id="242-quality-thresholds-blocking-gate-design-and-rollback">2.4.2 Quality Thresholds, Blocking Gate Design, and Rollback<a class="headerlink" href="#242-quality-thresholds-blocking-gate-design-and-rollback" title="Permanent link">&para;</a></h3>
+<p>When a newly crawled 100 GB incremental data batch arrives in the pipeline:</p>
+<ul>
+<li><strong>Hard Gates</strong>: If a significant rise in benchmark contamination rate is detected, or if a safety blocklist match is triggered, the pipeline is immediately blocked at this stage and an alert is automatically triggered (e.g., via PagerDuty).</li>
+<li><strong>Soft Gates</strong>: If text complexity, length distribution, or domain proportion deviates noticeably from the previous version, the batch is temporarily quarantined pending manual confirmation—a state referred to as a "gray freeze."</li>
+</ul>
+<p>If post-hoc monitoring reveals severe online model degradation caused by data issues, the DataOps platform must support <strong>rapid rollback to the previous "clean" data pointer combination</strong>.</p>
+<h3 id="243-converting-alerts-into-remediation-actions">2.4.3 Converting Alerts into Remediation Actions<a class="headerlink" href="#243-converting-alerts-into-remediation-actions" title="Permanent link">&para;</a></h3>
+<p>Once a score anomaly is detected, alerts must be mapped to standardized remediation actions. For a contamination rate alert, an N-gram reverse filtering and removal job is launched. For a format validation failure (e.g., a data batch missing required fields), the import is blocked and the issue is traced to the specific raw crawler parsing script node for ETL field re-extraction. Only by having alerts directly drive the corresponding cleaning operators can governance form a closed-loop system.</p>
+<hr />
+<h2 id="25-cross-stage-propagation-amplification-case-studies">2.5 Cross-Stage Propagation Amplification Case Studies<a class="headerlink" href="#25-cross-stage-propagation-amplification-case-studies" title="Permanent link">&para;</a></h2>
+<p>To deepen understanding of this "butterfly effect" data quality propagation mechanism, this section reviews two anonymized composite case studies. The timelines and metrics in the cases are used to illustrate the debugging logic and do not represent the complete event record of any public project.</p>
+<h3 id="251-case-review-1-silent-grammar-drift-in-a-pre-training-corpus">2.5.1 Case Review 1: "Silent Grammar Drift" in a Pre-training Corpus<a class="headerlink" href="#251-case-review-1-silent-grammar-drift-in-a-pre-training-corpus" title="Permanent link">&para;</a></h3>
+<p>After a certain open-source model was released in 2023, it was discovered that code generation capability not only failed to improve as training steps increased, but actually began to degrade, introducing rare and unusual whitespace characters.</p>
+<p><strong>Root Cause Analysis</strong>: The team traced the most recently ingested data batch and found that during the language identification cleaning step, the package version of a certain HTML format filter had been upgraded. The new version caused a parsing failure for <code>&lt;pre&gt;</code> code tags that had previously been correctly skipped, resulting in a sudden 4x increase in the proportion of web source code containing special whitespace indentation in the final 1T of data. (This was a loss caused by the absence of a baseline check on the "consistency" quality metric.) The model had undergone a silent "distribution shift" over the course of long-term training.</p>
+<p><strong>Lessons and Post-Mortem</strong>: At the batch-level, there was a lack of long-window rolling stationarity monitoring of static distributions, which later forced the team to build a rolling N-gram distribution radar.</p>
+<h3 id="252-case-review-2-high-offline-score-online-failure-in-a-rag-scenario">2.5.2 Case Review 2: "High Offline Score, Online Failure" in a RAG Scenario<a class="headerlink" href="#252-case-review-2-high-offline-score-online-failure-in-a-rag-scenario" title="Permanent link">&para;</a></h3>
+<p>After a financial knowledge QA model was SFT-trained on a batch of private research reports, its Rouge/BLEU scores on the offline evaluation set far exceeded the baseline model. However, after the business unit went online, they reported that the model frequently fabricated data (severe hallucinations) when encountering long-tail company research reports.</p>
+<p><strong>Root Cause Analysis</strong>: The research report QA pairs used for SFT training were generated by a weak model and were well-formatted, but upon inspection it was found that due to errors in table splitting and parsing, many financial figures were misaligned. The offline evaluation set was also generated by the same process, so the evaluation data shared the same type of parsing errors as the training data, causing Rouge/BLEU scores to significantly overestimate the true capability.</p>
+<p><strong>Lessons and Post-Mortem</strong>: This case demonstrates that self-referential evaluation and decoupling of offline and online metrics significantly amplify risk. After this version, the team introduced an <strong>Independent Gold Standard Evaluation Set</strong>, written independently by human experts, not participating in any model synthesis or generation pipeline, and used as a veto-capable pre-release evaluation set.</p>
+<p><strong>Complete Debugging Timeline (Case 1)</strong></p>
+<p>The following timeline is an anonymized composite case used to explain how batch drift can be localized. The version numbers, proportions, and evaluation values are instructional examples and should not be cited as results from a public project.</p>
+<ul>
+<li><strong>T+0 day</strong>: Internal users report that Python code generation produces strange indentation, causing immediate <code>IndentationError</code> on execution</li>
+<li><strong>T+1 day</strong>: Algorithm team suspects a temperature parameter issue; adjustment has no effect</li>
+<li><strong>T+2 days</strong>: Data team is brought in and retrieves data batch diffs for the most recent three checkpoints</li>
+<li><strong>T+3 days</strong>: The team discovers that when batch 6 (approximately 1.2T tokens) was ingested, the HTML filter dependency was upgraded from v2.3.1 to v2.4.0; the new version changed the handling logic for <code>&lt;pre&gt;</code> tags, incorrectly converting code indentation that should have been preserved into non-standard spaces</li>
+<li><strong>T+3 days</strong>: Quantitative validation shows that the proportions of <code>\t</code>, consecutive spaces, and invisible Unicode whitespace in the new batch deviate significantly from the historical baseline, triggering a batch-drift alert</li>
+<li><strong>T+5 days</strong>: Lock the dependency version, reprocess batch 6, and restart training from the checkpoint before contamination (losing approximately four days of compute)</li>
+<li><strong>T+12 days</strong>: After the fix, the frozen code evaluation set recovers to the pre-contamination baseline range</li>
+</ul>
+<p>Root cause: absence of rolling distribution stationarity monitoring at the batch level. If key character-frequency Z-score changes had been compared automatically at every batch ingestion and abnormal fluctuations above the project waterline had triggered alerts, this incident could have been intercepted at T+0. Listing 2-9 shows a batch-level indentation drift detector.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_tab_drift</span><span class="p">(</span><span class="n">prev_texts</span><span class="p">,</span> <span class="n">curr_texts</span><span class="p">,</span> <span class="n">z_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">batch_stats</span><span class="p">(</span><span class="n">texts</span><span class="p">):</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="n">ratios</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>            <span class="n">tabs</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>            <span class="n">spaces</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>            <span class="n">unicode_spaces</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u00a0\u2000-\u200b\u3000]&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span class="n">whitespace</span> <span class="o">=</span> <span class="n">tabs</span> <span class="o">+</span> <span class="n">spaces</span> <span class="o">+</span> <span class="n">unicode_spaces</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span class="n">ratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tabs</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">whitespace</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">mean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="n">var</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">r</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ratios</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">var</span> <span class="o">**</span> <span class="mf">0.5</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>    <span class="n">prev_mean</span><span class="p">,</span> <span class="n">prev_std</span> <span class="o">=</span> <span class="n">batch_stats</span><span class="p">(</span><span class="n">prev_texts</span><span class="p">)</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="n">curr_mean</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">batch_stats</span><span class="p">(</span><span class="n">curr_texts</span><span class="p">)</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="n">z_score</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">curr_mean</span> <span class="o">-</span> <span class="n">prev_mean</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">prev_std</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="s2">&quot;prev_tab_ratio&quot;</span><span class="p">:</span> <span class="n">prev_mean</span><span class="p">,</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="s2">&quot;curr_tab_ratio&quot;</span><span class="p">:</span> <span class="n">curr_mean</span><span class="p">,</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="s2">&quot;z_score&quot;</span><span class="p">:</span> <span class="n">z_score</span><span class="p">,</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>        <span class="s2">&quot;alert&quot;</span><span class="p">:</span> <span class="n">z_score</span> <span class="o">&gt;</span> <span class="n">z_threshold</span><span class="p">,</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 2-9: Example of batch-level indentation character drift detection</em></p>
+<p>In production, replace the alert threshold with a statistical threshold based on historical distribution.</p>
+<p><strong>Complete Debugging Timeline (Case 2)</strong></p>
+<p>The following timeline is also an anonymized composite case. Financial table misalignment, self-referential evaluation sets, and human gold-standard isolation are real engineering risk types; the specific proportions and sample counts do not correspond to any public project.</p>
+<ul>
+<li><strong>T+0 day</strong>: After launch, multiple users report that financial report data does not match official disclosures</li>
+<li><strong>T+1 day</strong>: The operations team reviews problematic samples and finds that most involve tabular data such as revenue and EPS</li>
+<li><strong>T+2 days</strong>: The data team spot-checks samples containing financial tables and finds row/column misalignment in multi-column PDF tables. The root cause is that when the weak model parsed tables, numbers from different columns were incorrectly aligned to the wrong rows.</li>
+<li><strong>T+3 days</strong>: Further investigation shows that the offline evaluation set was also generated by the same weak model, so automated metrics overestimated the system's true capability</li>
+<li><strong>T+5 days</strong>: Emergency response: halt automatic weak-model generation of financial QA pairs, switch to manual annotation, and add manual review flags to RAG chunks containing financial figures</li>
+<li><strong>T+14 days</strong>: Introduce an independent gold standard evaluation set physically isolated from the training pipeline. After the fix, automated metrics are no longer used as the sole launch basis, and human factuality evaluation for numerical QA becomes a veto-capable metric.</li>
+</ul>
+<p><strong>Core Lesson</strong>: <strong>Self-referential evaluation</strong> is a high-risk issue in RAG and synthetic data scenarios. An independent gold standard evaluation set must satisfy three requirements: (1) written independently by human experts; (2) physically isolated from the training data pipeline; (3) results on the gold standard set must be included in the scorecard after every dataset iteration release, serving as a veto-capable pre-release metric.</p>
+<hr />
+<h2 id="26-how-this-chapter-serves-as-the-public-contract-for-subsequent-engineering">2.6 How This Chapter Serves as the "Public Contract" for Subsequent Engineering<a class="headerlink" href="#26-how-this-chapter-serves-as-the-public-contract-for-subsequent-engineering" title="Permanent link">&para;</a></h2>
+<p>Starting from this chapter, the book formally establishes a "public contract" applicable to all engineering approaches covered across hundreds of pages.</p>
+<ul>
+<li><strong>For Part II (Text Pre-training) and Part III (Multimodal)</strong>: The thresholds and filtering baselines used in cleaning, deduplication, parsing, and alignment derive from the "signal-to-noise ratio and consistency" foundational principles established in this chapter.</li>
+<li><strong>For Part IV (Instruction Fine-tuning and Preference Data) and Part V (Synthetic Data)</strong>: The metrics matrix defined here will be translated into Reward Model scoring, rule-based validation, and manual review criteria in SFT data design, preference data construction, and synthetic data auditing.</li>
+<li><strong>To support Part VIII (DataOps Platform)</strong>: The alert dashboards and quality monitoring panels on the platform display exactly the metrics library, gate status, and rollback-capable data versions discussed in this chapter.</li>
+</ul>
+<p>This is therefore a "universal checklist" for the entire book. Before proceeding to the execution details of any specific stage, first ensure that the entire team has achieved "cognitive alignment" on these terms. Armed with this systematic measurement framework, we are now ready to move to the next chapter and explore the foundational engineering that enables and supports these measurement actions—<strong>AI-native modern data infrastructure</strong>.</p>
+<hr />
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter organized the core problems, processing flows, and acceptance criteria of the "LLM data lifecycle and quality assessment framework" in large model data engineering. Its contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, enabling readers to determine which links must be explicitly recorded and which results must be verified through sampling, evaluation, or auditing.</p>
+<p>The applicability of the methods in this chapter should be judged jointly against data sources, business objectives, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decision-making, or public release, teams should retain manual review, version freezing, permission control, and anomaly rollback mechanisms, avoiding direct extrapolation from example workflows into production commitments.</p>
+<p>Within the structure of the whole book, this chapter sits at the foundational-framework layer, connecting the preceding basic concepts to subsequent text and multimodal data processing. Readers can use this chapter's framework together with its figures, tables, references, and appendix checklist to further translate the methods into reproducible, inspectable, and deliverable engineering workflows.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Cohen J (1960) A Coefficient of Agreement for Nominal Scales. Educational and Psychological Measurement 20(1):37-46. https://doi.org/10.1177/001316446002000104.</p>
+<p>Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207. https://doi.org/10.1145/3534678.3539147.</p>
+<p>Nadeem M, Bethke A, Reddy S (2021) StereoSet: Measuring Stereotypical Bias in Pretrained Language Models. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 5356-5371. https://doi.org/10.18653/v1/2021.acl-long.416.</p>
+<p>Zhao J, Wang T, Yatskar M, Ordonez V, Chang K W (2018) Gender Bias in Coreference Resolution: Evaluation and Debiasing Methods (WinoBias). In: Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics, pp 15-20.</p>
+<p>Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744. arXiv:2203.02155.</p>
+<p>Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741. arXiv:2305.18290.</p>
+<p>Bai Y, Jones A, Ndousse K, Askell A, Chen A, DasSarma N, Drain D, Fort S, Ganguli D, Henighan T, Joseph N, Kadavath S, Kernion J, Conerly T, El-Showk S, Elhage N, Hatfield-Dodds Z, Hernandez D, Hume T, Johnston S, Kravec S, Lovitt L, Nanda N, Olsson C, Amodei D, Brown T, Clark J, McCandlish S, Olah C, Mann B, Kaplan J (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.</p>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29. https://doi.org/10.1109/sequen.1997.666900.</p>
+<p>Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.</p>
+<p>Albalak A, Elazar Y, Xie S M, Longpre S, Lambert N, Wang X, Muennighoff N, Hou B, Pan L, Jeong H, Raffel C, Chang S, Hashimoto T, Wang W Y (2024) A Survey on Data Selection for Language Models. arXiv preprint arXiv:2402.16827.</p>
+<p>Longpre S, Yauney G, Reif E, Lee K, Roberts A, Zoph B, Zhou D, Wei J, Robinson K, Mimno D M, Ippolito D (2023) A Pretrainer's Guide to Training Data: Measuring the Effects of Data Age, Domain Coverage, Quality, and Toxicity. arXiv preprint arXiv:2305.13169.</p>
+<p>Shi W, Ajith A, Xia M, Huang Y, Liu D, Blevins T, Chen D, Zettlemoyer L (2023) Detecting Pretraining Data from Large Language Models. arXiv preprint arXiv:2310.16789.</p>
+<p>Golchin S, Surdeanu M (2023) Time Travel in LLMs: Tracing Data Contamination in Large Language Models. arXiv preprint arXiv:2308.14802.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch01_data_change/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 1: Data Revolution for Large Language Models">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 1: Data Revolution for Large Language Models
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch03_data_stack/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 3: AI-Native Data Stack and Cost Governance">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 3: AI-Native Data Stack and Cost Governance
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

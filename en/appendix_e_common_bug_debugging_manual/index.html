@@ -1,0 +1,4740 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/appendix_e_common_bug_debugging_manual/">
+      
+      
+        <link rel="prev" href="../appendix_d_paper_to_implementation_guide/">
+      
+      
+        <link rel="next" href="../appendix_f_terminology_and_chinese_english_mapping/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Appendix E: Common Data-Engineering Bug Debugging Manual - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#appendix-e-common-data-engineering-bug-debugging-manual" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Appendix E: Common Data-Engineering Bug Debugging Manual
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_e_common_bug_debugging_manual/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ja/appendix_e_common_bug_debugging_manual/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#e1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e2-general-debugging-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.2 General Debugging Principles
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e3-common-bug-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.3 Common Bug Categories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e4-collection-and-parsing-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4 Collection and Parsing Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.4 Collection and Parsing Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e41-missing-content-after-web-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4.1 Missing Content After Web Collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e42-pdf-or-document-parsing-misalignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4.2 PDF or Document Parsing Misalignment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e5-cleaning-and-splitting-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5 Cleaning and Splitting Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.5 Cleaning and Splitting Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e51-sample-count-drops-sharply-after-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5.1 Sample Count Drops Sharply After Deduplication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e52-training-performance-suddenly-gets-worse" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5.2 Training Performance Suddenly Gets Worse
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e6-annotation-and-evaluation-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6 Annotation and Evaluation Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.6 Annotation and Evaluation Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e61-annotation-consistency-declines" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.1 Annotation Consistency Declines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e62-evaluation-score-fluctuates-abnormally" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.2 Evaluation Score Fluctuates Abnormally
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e63-evaluation-result-conflicts-with-human-perception" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.3 Evaluation Result Conflicts with Human Perception
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e7-agent-and-dataops-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7 Agent and DataOps Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.7 Agent and DataOps Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e71-agent-calls-the-wrong-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7.1 Agent Calls the Wrong Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e72-problem-recurs-after-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7.2 Problem Recurs After Rollback
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e8-debug-record-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.8 Debug Record Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e9-three-common-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9 Three Common Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.9 Three Common Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e91-table-fields-shift" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.1 Table Fields Shift
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e92-split-leakage-inflates-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.2 Split Leakage Inflates Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e93-agent-write-back-overwrites-old-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.3 Agent Write-back Overwrites Old Results
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e10-regression-test-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.10 Regression-Test Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e11-summary-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.11 Summary of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e12-a-more-complete-troubleshooting-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.12 A More Complete Troubleshooting Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e13-observation-points-and-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.13 Observation Points and Instrumentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.13 Observation Points and Instrumentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e131-more-logs-are-not-always-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.13.1 More Logs Are Not Always Better
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e14-version-cache-and-permission" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14 Version, Cache, and Permission
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.14 Version, Cache, and Permission">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e141-version-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.1 Version Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e142-cache-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.2 Cache Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e143-permission-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.3 Permission Issues
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e15-postmortem-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.15 Postmortem Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e16-common-troubleshooting-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16 Common Troubleshooting Mistakes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.16 Common Troubleshooting Mistakes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e161-looking-only-at-the-final-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.1 Looking Only at the Final Score
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e162-changing-only-one-place" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.2 Changing Only One Place
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e163-no-fixed-regression-sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.3 No Fixed Regression Sample
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e164-treating-has-not-reappeared-as-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.4 Treating "Has Not Reappeared" as "Resolved"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e17-suggested-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.17 Suggested Extensions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e18-quick-mapping-from-symptom-to-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.18 Quick Mapping from Symptom to Layer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e19-a-more-complete-incident-postmortem-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.19 A More Complete Incident Postmortem Framework
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e20-turning-troubleshooting-into-standard-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20 Turning Troubleshooting into Standard Action
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.20 Turning Troubleshooting into Standard Action">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e201-standard-troubleshooting-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20.1 Standard Troubleshooting Actions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e202-benefits-of-standardization" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20.2 Benefits of Standardization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e21-three-recurrence-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21 Three Recurrence Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.21 Three Recurrence Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e211-rule-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.1 Rule Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e212-data-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.2 Data Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e213-process-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.3 Process Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e22-closing-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.22 Closing Note
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e23-checklist-of-20-common-problem-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.23 Checklist of 20 Common Problem Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e24-one-line-from-collection-to-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.24 One Line from Collection to Compliance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e25-daily-maintenance-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.25 Daily Maintenance Recommendations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#e1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e2-general-debugging-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.2 General Debugging Principles
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e3-common-bug-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.3 Common Bug Categories
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e4-collection-and-parsing-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4 Collection and Parsing Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.4 Collection and Parsing Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e41-missing-content-after-web-collection" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4.1 Missing Content After Web Collection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e42-pdf-or-document-parsing-misalignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.4.2 PDF or Document Parsing Misalignment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e5-cleaning-and-splitting-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5 Cleaning and Splitting Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.5 Cleaning and Splitting Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e51-sample-count-drops-sharply-after-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5.1 Sample Count Drops Sharply After Deduplication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e52-training-performance-suddenly-gets-worse" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.5.2 Training Performance Suddenly Gets Worse
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e6-annotation-and-evaluation-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6 Annotation and Evaluation Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.6 Annotation and Evaluation Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e61-annotation-consistency-declines" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.1 Annotation Consistency Declines
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e62-evaluation-score-fluctuates-abnormally" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.2 Evaluation Score Fluctuates Abnormally
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e63-evaluation-result-conflicts-with-human-perception" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.6.3 Evaluation Result Conflicts with Human Perception
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e7-agent-and-dataops-bugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7 Agent and DataOps Bugs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.7 Agent and DataOps Bugs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e71-agent-calls-the-wrong-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7.1 Agent Calls the Wrong Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e72-problem-recurs-after-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.7.2 Problem Recurs After Rollback
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e8-debug-record-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.8 Debug Record Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e9-three-common-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9 Three Common Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.9 Three Common Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e91-table-fields-shift" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.1 Table Fields Shift
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e92-split-leakage-inflates-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.2 Split Leakage Inflates Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e93-agent-write-back-overwrites-old-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.9.3 Agent Write-back Overwrites Old Results
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e10-regression-test-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.10 Regression-Test Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e11-summary-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.11 Summary of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e12-a-more-complete-troubleshooting-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.12 A More Complete Troubleshooting Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e13-observation-points-and-instrumentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.13 Observation Points and Instrumentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.13 Observation Points and Instrumentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e131-more-logs-are-not-always-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.13.1 More Logs Are Not Always Better
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e14-version-cache-and-permission" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14 Version, Cache, and Permission
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.14 Version, Cache, and Permission">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e141-version-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.1 Version Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e142-cache-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.2 Cache Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e143-permission-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.14.3 Permission Issues
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e15-postmortem-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.15 Postmortem Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e16-common-troubleshooting-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16 Common Troubleshooting Mistakes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.16 Common Troubleshooting Mistakes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e161-looking-only-at-the-final-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.1 Looking Only at the Final Score
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e162-changing-only-one-place" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.2 Changing Only One Place
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e163-no-fixed-regression-sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.3 No Fixed Regression Sample
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e164-treating-has-not-reappeared-as-resolved" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.16.4 Treating "Has Not Reappeared" as "Resolved"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e17-suggested-extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.17 Suggested Extensions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e18-quick-mapping-from-symptom-to-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.18 Quick Mapping from Symptom to Layer
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e19-a-more-complete-incident-postmortem-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.19 A More Complete Incident Postmortem Framework
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e20-turning-troubleshooting-into-standard-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20 Turning Troubleshooting into Standard Action
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.20 Turning Troubleshooting into Standard Action">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e201-standard-troubleshooting-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20.1 Standard Troubleshooting Actions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e202-benefits-of-standardization" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.20.2 Benefits of Standardization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e21-three-recurrence-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21 Three Recurrence Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="E.21 Three Recurrence Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#e211-rule-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.1 Rule Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e212-data-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.2 Data Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e213-process-recurrence" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.21.3 Process Recurrence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e22-closing-note" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.22 Closing Note
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e23-checklist-of-20-common-problem-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.23 Checklist of 20 Common Problem Types
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e24-one-line-from-collection-to-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.24 One Line from Collection to Compliance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#e25-daily-maintenance-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      E.25 Daily Maintenance Recommendations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="appendix-e-common-data-engineering-bug-debugging-manual">Appendix E: Common Data-Engineering Bug Debugging Manual<a class="headerlink" href="#appendix-e-common-data-engineering-bug-debugging-manual" title="Permanent link">&para;</a></h1>
+<h2 id="e1-purpose-of-this-appendix">E.1 Purpose of This Appendix<a class="headerlink" href="#e1-purpose-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>This appendix addresses one of the most common and time-consuming problem types in data engineering: the pipeline "looks right," but the result is wrong. It is not a generic incident catalog. It is a debugging manual written for the context of this book, helping readers turn common problems from experience-driven troubleshooting into objects that can be located, classified, and regression-tested.</p>
+<p>In large-model data engineering, bugs rarely live only in code. They can appear in data sources, splitting, deduplication, masking, parsing, annotation, evaluation, caching, permissions, write-back, or version references. More difficult, they often compound one another: "the metric did not change but the sample is wrong," "the sample is right but the version is wrong," or "the version is right but the release is wrong." Recent research on data-processing systems and data leakage shows that small errors in the data chain can be amplified by training, evaluation, and release processes; troubleshooting must therefore examine data, code, configuration, and evaluation protocol together (Chen et al. 2024; Kapoor and Narayanan 2023).</p>
+<p>This appendix therefore emphasizes <strong>debugging order</strong> rather than isolated repair tricks. Locate the layer first, classify the symptom second, and discuss fixes last.</p>
+<h2 id="e2-general-debugging-principles">E.2 General Debugging Principles<a class="headerlink" href="#e2-general-debugging-principles" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Confirm whether the problem is reproducible.</li>
+<li>Locate the failing layer before judging whether the issue propagated across layers.</li>
+<li>Check the data version before the code version.</li>
+<li>Find the smallest suspicious input before expanding the scope.</li>
+<li>Preserve evidence before repairing.</li>
+<li>Fix logic before tuning thresholds; fix structure before symptoms.</li>
+<li>Verify that a regression test catches the problem before declaring it resolved.</li>
+</ol>
+<p>Many teams jump directly into "change the code." This creates two side effects: original evidence disappears, and similar issues recur later. A safer method treats a bug as a complete loop: discovery, reproduction, localization, fix, verification, regression, and record.</p>
+<h2 id="e3-common-bug-categories">E.3 Common Bug Categories<a class="headerlink" href="#e3-common-bug-categories" title="Permanent link">&para;</a></h2>
+<p>Table E-1 gives a classification aligned with this book.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">Common symptom</th>
+<th style="text-align: left;">First checkpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Source issue</td>
+<td style="text-align: left;">Original sample missing, authorization unclear, version drift</td>
+<td style="text-align: left;">Source record, snapshot, license</td>
+</tr>
+<tr>
+<td style="text-align: left;">Parsing issue</td>
+<td style="text-align: left;">Missing field, table shift, OCR garbling</td>
+<td style="text-align: left;">Parser, encoding, layout rule</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cleaning issue</td>
+<td style="text-align: left;">False deletion, over-deduplication, over-masking</td>
+<td style="text-align: left;">Rule version, threshold, sampled records</td>
+</tr>
+<tr>
+<td style="text-align: left;">Split issue</td>
+<td style="text-align: left;">Train/test leakage, evaluation contamination</td>
+<td style="text-align: left;">Split file, random seed, index</td>
+</tr>
+<tr>
+<td style="text-align: left;">Annotation issue</td>
+<td style="text-align: left;">Inconsistent labels, guideline drift, rising disputes</td>
+<td style="text-align: left;">Annotation guideline, arbitration record, sample distribution</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation issue</td>
+<td style="text-align: left;">Abnormal score, distorted slice, unstable comparison</td>
+<td style="text-align: left;">Metric script, baseline, evaluation-set version</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent issue</td>
+<td style="text-align: left;">Wrong tool call, lost trajectory, permission overreach</td>
+<td style="text-align: left;">Event log, tool call, authorization boundary</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compliance issue</td>
+<td style="text-align: left;">Unclear export, purpose drift, log leakage</td>
+<td style="text-align: left;">Jurisdiction, approval, audit trail, release strategy</td>
+</tr>
+</tbody>
+</table>
+<p>The purpose is not to label bugs for its own sake. It helps the team decide where to look first. A sudden evaluation drop is not necessarily model degradation; it may come from evaluation contamination or upstream false deletion. Earlier classification shortens debugging.</p>
+<h2 id="e4-collection-and-parsing-bugs">E.4 Collection and Parsing Bugs<a class="headerlink" href="#e4-collection-and-parsing-bugs" title="Permanent link">&para;</a></h2>
+<h3 id="e41-missing-content-after-web-collection">E.4.1 Missing Content After Web Collection<a class="headerlink" href="#e41-missing-content-after-web-collection" title="Permanent link">&para;</a></h3>
+<p>Common causes:</p>
+<ul>
+<li>Selector is too narrow.</li>
+<li>Page structure changed.</li>
+<li>Anti-crawling response returned an alternative page.</li>
+<li>Encoding or rendering method changed.</li>
+</ul>
+<p>First actions:</p>
+<ul>
+<li>Preserve the raw HTML.</li>
+<li>Compare the DOM before and after collection.</li>
+<li>Check whether the request was redirected to a CAPTCHA or warning page.</li>
+<li>Freeze a structural regression sample.</li>
+</ul>
+<p>For long documents, announcements, papers, or knowledge-base pages, also check pagination and lazy loading. Many "missing text" problems are not collection failures; the page renders content only after scrolling. Save both screenshot and DOM so that evidence is not limited to one view.</p>
+<h3 id="e42-pdf-or-document-parsing-misalignment">E.4.2 PDF or Document Parsing Misalignment<a class="headerlink" href="#e42-pdf-or-document-parsing-misalignment" title="Permanent link">&para;</a></h3>
+<p>Common causes:</p>
+<ul>
+<li>Header and footer interference.</li>
+<li>Missing table lines.</li>
+<li>Wrong order between OCR and layout analysis.</li>
+<li>Confusion between page numbers and content pages.</li>
+</ul>
+<p>First actions:</p>
+<ul>
+<li>Compare a single page manually.</li>
+<li>Run an A/B comparison with another parser.</li>
+<li>Preserve page screenshots and intermediate artifacts.</li>
+</ul>
+<p>If parsing output contains many broken titles, merged tables, or reordered lists, do not rush into post-processing. First check whether the layout layer already corrupted reading order. Post-processing often beautifies a wrong ordering rather than fixing it.</p>
+<h2 id="e5-cleaning-and-splitting-bugs">E.5 Cleaning and Splitting Bugs<a class="headerlink" href="#e5-cleaning-and-splitting-bugs" title="Permanent link">&para;</a></h2>
+<h3 id="e51-sample-count-drops-sharply-after-deduplication">E.5.1 Sample Count Drops Sharply After Deduplication<a class="headerlink" href="#e51-sample-count-drops-sharply-after-deduplication" title="Permanent link">&para;</a></h3>
+<p>Ask three questions first:</p>
+<ul>
+<li>Is the deduplication granularity too coarse?</li>
+<li>Were template samples mistaken for dirty samples?</li>
+<li>Were similar samples from different sources treated as duplicates?</li>
+</ul>
+<p>Also distinguish literal duplication from semantic duplication. Literal duplicates fit rule-based deduplication. Semantic duplicates depend on task goals. Moderate repetition may be acceptable for training data; repetition in evaluation data often indicates contamination. They cannot use the same ruler.</p>
+<h3 id="e52-training-performance-suddenly-gets-worse">E.5.2 Training Performance Suddenly Gets Worse<a class="headerlink" href="#e52-training-performance-suddenly-gets-worse" title="Permanent link">&para;</a></h3>
+<p>Check first:</p>
+<ul>
+<li>Whether the new data version contains old bad samples.</li>
+<li>Whether the split leaked.</li>
+<li>Whether the evaluation set was contaminated.</li>
+<li>Whether a cleaning rule changed without a version bump.</li>
+</ul>
+<p>Teams often suspect model architecture first, but data is frequently the real source of fluctuation. In incremental updates, even a small rule change can alter long-tail sample distribution. Record rule version and data version together.</p>
+<h2 id="e6-annotation-and-evaluation-bugs">E.6 Annotation and Evaluation Bugs<a class="headerlink" href="#e6-annotation-and-evaluation-bugs" title="Permanent link">&para;</a></h2>
+<h3 id="e61-annotation-consistency-declines">E.6.1 Annotation Consistency Declines<a class="headerlink" href="#e61-annotation-consistency-declines" title="Permanent link">&para;</a></h3>
+<p>The usual cause is not that annotators suddenly became worse. More often:</p>
+<ul>
+<li>The guideline is unclear.</li>
+<li>Boundary samples increased.</li>
+<li>A new category was introduced without synchronizing criteria.</li>
+</ul>
+<p>Recommended actions:</p>
+<ul>
+<li>Extract disputed samples for focused review.</li>
+<li>Add positive and negative examples for boundary cases.</li>
+<li>Add decision priorities for new categories.</li>
+<li>Define traceable fields for arbitration records.</li>
+</ul>
+<h3 id="e62-evaluation-score-fluctuates-abnormally">E.6.2 Evaluation Score Fluctuates Abnormally<a class="headerlink" href="#e62-evaluation-score-fluctuates-abnormally" title="Permanent link">&para;</a></h3>
+<p>Check first:</p>
+<ul>
+<li>Metric script version.</li>
+<li>Evaluation-set version.</li>
+<li>Prompt or template version.</li>
+<li>Whether new post-processing is enabled.</li>
+</ul>
+<p>If the change appears only in a few slices, do not reject the model globally. First check whether the slice definition changed or sample distribution drifted. Many "overall regressions" are local defects amplified by aggregation.</p>
+<h3 id="e63-evaluation-result-conflicts-with-human-perception">E.6.3 Evaluation Result Conflicts with Human Perception<a class="headerlink" href="#e63-evaluation-result-conflicts-with-human-perception" title="Permanent link">&para;</a></h3>
+<p>This is common and easy to overlook. A model score may look higher while human experience is worse. Common reasons:</p>
+<ul>
+<li>The metric does not cover the behavior that matters.</li>
+<li>The evaluation set is too narrow.</li>
+<li>Post-processing makes wrong answers look more correct.</li>
+<li>Human review observes scenario-level experience while the metric sees local fields.</li>
+</ul>
+<p>The fix is not "tune the model again." Reconfirm what is being optimized. If the goal is retrieval accuracy, metrics should focus on recall and ranking. If the goal is usability, add readability, completeness, and explainable failure.</p>
+<h2 id="e7-agent-and-dataops-bugs">E.7 Agent and DataOps Bugs<a class="headerlink" href="#e7-agent-and-dataops-bugs" title="Permanent link">&para;</a></h2>
+<h3 id="e71-agent-calls-the-wrong-tool">E.7.1 Agent Calls the Wrong Tool<a class="headerlink" href="#e71-agent-calls-the-wrong-tool" title="Permanent link">&para;</a></h3>
+<p>Check first:</p>
+<ul>
+<li>Is the tool description specific enough?</li>
+<li>Was task context lost?</li>
+<li>Are permissions too broad?</li>
+<li>Did failure retry change state?</li>
+</ul>
+<p>For agent systems, many bugs are not "cannot do it" but "did the wrong thing and continued." Record tool calls as structured events and distinguish plan, execution, retry, and rollback states. Otherwise debugging sees only final output, not the intermediate process.</p>
+<h3 id="e72-problem-recurs-after-rollback">E.7.2 Problem Recurs After Rollback<a class="headerlink" href="#e72-problem-recurs-after-rollback" title="Permanent link">&para;</a></h3>
+<p>Check first:</p>
+<ul>
+<li>Was only data rolled back, but not rules?</li>
+<li>Was only a table rolled back, but not cache?</li>
+<li>Was only a result rolled back, but not the reference chain?</li>
+</ul>
+<p>This often creates the illusion of surface recovery while the root cause remains. Every rollback action should carry version, timestamp, owner, and impact scope, followed by a minimal validation set.</p>
+<h2 id="e8-debug-record-template">E.8 Debug Record Template<a class="headerlink" href="#e8-debug-record-template" title="Permanent link">&para;</a></h2>
+<p>Record these fields for every bug:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Problem description</td>
+<td style="text-align: left;">What happened</td>
+</tr>
+<tr>
+<td style="text-align: left;">First discovery time</td>
+<td style="text-align: left;">When it was found</td>
+</tr>
+<tr>
+<td style="text-align: left;">Impact scope</td>
+<td style="text-align: left;">Which data, tasks, or chapters are affected</td>
+</tr>
+<tr>
+<td style="text-align: left;">Reproduction steps</td>
+<td style="text-align: left;">How to reproduce stably</td>
+</tr>
+<tr>
+<td style="text-align: left;">Suspicious versions</td>
+<td style="text-align: left;">Related code, data, and configuration versions</td>
+</tr>
+<tr>
+<td style="text-align: left;">Root-cause judgment</td>
+<td style="text-align: left;">Current most likely cause</td>
+</tr>
+<tr>
+<td style="text-align: left;">Fix action</td>
+<td style="text-align: left;">What was changed</td>
+</tr>
+<tr>
+<td style="text-align: left;">Regression result</td>
+<td style="text-align: left;">Whether the fix has been verified</td>
+</tr>
+</tbody>
+</table>
+<p>If a problem returns after being fixed twice, the issue is often not a technical detail but incomplete recording. Debug records are valuable not only as archives, but as path dependency for future similar problems. For production or course-reproduction projects, frameworks such as the ML Test Score remind us that tests, monitoring, and rollback ability are part of system maturity (Breck et al. 2017).</p>
+<h2 id="e9-three-common-cases">E.9 Three Common Cases<a class="headerlink" href="#e9-three-common-cases" title="Permanent link">&para;</a></h2>
+<h3 id="e91-table-fields-shift">E.9.1 Table Fields Shift<a class="headerlink" href="#e91-table-fields-shift" title="Permanent link">&para;</a></h3>
+<p>A batch of documents loses one column in every parsed table. The first reaction is "the parser is broken." Manual comparison shows that some source cells are merged and the new template moved the header. The real issue is inconsistency between template version and parsing rules. The fix is to include template version as an input condition and define separate rules for critical layouts.</p>
+<h3 id="e92-split-leakage-inflates-evaluation">E.9.2 Split Leakage Inflates Evaluation<a class="headerlink" href="#e92-split-leakage-inflates-evaluation" title="Permanent link">&para;</a></h3>
+<p>Train and test sets share near-duplicate samples, causing scores to rise. After repair, scores drop, but manual review confirms the result is more truthful. High scores do not always mean a better system; when data chains are long, contamination is often more common than real improvement.</p>
+<h3 id="e93-agent-write-back-overwrites-old-results">E.9.3 Agent Write-back Overwrites Old Results<a class="headerlink" href="#e93-agent-write-back-overwrites-old-results" title="Permanent link">&para;</a></h3>
+<p>An agent writes back automatically without checking versions, and new results overwrite old results. The system appears normal, but history has been rewritten. The fix is a version gate: every write-back must carry target version, source trajectory, and traceable evidence.</p>
+<h2 id="e10-regression-test-checklist">E.10 Regression-Test Checklist<a class="headerlink" href="#e10-regression-test-checklist" title="Permanent link">&para;</a></h2>
+<p>After fixing a bug, check at least:</p>
+<ol>
+<li>Whether the minimal reproduction sample is normal.</li>
+<li>Whether neighboring samples were harmed.</li>
+<li>Whether upstream data can still trigger the same problem.</li>
+<li>Whether downstream evaluation remains stable.</li>
+<li>Whether logs, caches, and version records were updated together.</li>
+<li>Whether rollback remains available.</li>
+<li>Whether monitoring can detect a similar problem again.</li>
+</ol>
+<p>If this checklist has not been executed, the bug is not truly fixed. Many "fixed" states mean only "nothing happened this time."</p>
+<h2 id="e11-summary-of-this-appendix">E.11 Summary of This Appendix<a class="headerlink" href="#e11-summary-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>The key to debugging is not speed, but stability. Preserve evidence first, narrow the scope second; identify the layer first, symptoms second; fix root cause first, then add regression. This turns a bug from a one-time repair into a lesson absorbed by the engineering process.</p>
+<h2 id="e12-a-more-complete-troubleshooting-path">E.12 A More Complete Troubleshooting Path<a class="headerlink" href="#e12-a-more-complete-troubleshooting-path" title="Permanent link">&para;</a></h2>
+<p>If a bug is viewed as a chain from discovery to recovery, the recommended order is:</p>
+<ol>
+<li>Identify the anomaly: single point, batch issue, or long-term drift.</li>
+<li>Freeze the scene: save input, output, logs, versions, and screenshots.</li>
+<li>Build the minimal sample: reduce the issue to the smallest reproducible set.</li>
+<li>Assign the layer: source, parsing, cleaning, split, annotation, evaluation, agent, or release.</li>
+<li>Inspect recent changes: check what changed recently before guessing model degradation.</li>
+<li>Verify hypotheses: disable suspicious factors one by one, not all at once.</li>
+<li>Confirm root cause: it must explain the symptom, reproduce, and support regression.</li>
+<li>Design regression: turn the issue into a future automated check.</li>
+</ol>
+<p>This reduces patch-style troubleshooting. Surface fixes often hide deeper failures.</p>
+<h2 id="e13-observation-points-and-instrumentation">E.13 Observation Points and Instrumentation<a class="headerlink" href="#e13-observation-points-and-instrumentation" title="Permanent link">&para;</a></h2>
+<p>Debugging is hard not only because systems are complex, but because they lack observation points. For the data-engineering chains in this book, keep at least the following instrumentation points; these observation points also correspond to modern data-processing systems and autonomous-operations evaluation requirements around intermediate artifacts, telemetry signals, and regression samples (Chen et al. 2024; Chen, Shetty et al. 2025):</p>
+<ul>
+<li>Raw input snapshots.</li>
+<li>Intermediate structured results.</li>
+<li>Key thresholds and rule versions.</li>
+<li>Sampling and filtering logs.</li>
+<li>Tool calls and action logs.</li>
+<li>Version numbers before and after write-back.</li>
+<li>Exception context on failure.</li>
+</ul>
+<p>Without these, bugs are guessed. Guessing once or twice is tolerable; guessing ten times trains the team into empiricism without evidence.</p>
+<h3 id="e131-more-logs-are-not-always-better">E.13.1 More Logs Are Not Always Better<a class="headerlink" href="#e131-more-logs-are-not-always-better" title="Permanent link">&para;</a></h3>
+<p>Too few logs are bad, but too many logs are also bad. Logs must be readable, filterable, and correlatable. Split key logs into three types:</p>
+<ol>
+<li>Audit logs: who did what and when.</li>
+<li>Runtime logs: where the program ran under what conditions.</li>
+<li>Diagnostic logs: state, input, and intermediate values when exceptions occur.</li>
+</ol>
+<p>Do not mix these into one large text block. Otherwise the team ends up with many logs and none that localizes the issue.</p>
+<h2 id="e14-version-cache-and-permission">E.14 Version, Cache, and Permission<a class="headerlink" href="#e14-version-cache-and-permission" title="Permanent link">&para;</a></h2>
+<p>Many bugs that look like code issues are actually version, cache, or permission issues.</p>
+<h3 id="e141-version-issues">E.14.1 Version Issues<a class="headerlink" href="#e141-version-issues" title="Permanent link">&para;</a></h3>
+<p>The most common symptom is "it worked yesterday and fails today." Causes include:</p>
+<ul>
+<li>Data snapshot changed.</li>
+<li>Configuration file changed.</li>
+<li>Dependency package changed.</li>
+<li>Template or prompt changed.</li>
+<li>Evaluation script changed.</li>
+</ul>
+<p>Do not inspect only code commits. Inspect data versions and external dependencies. For long engineering chains, the version number itself is evidence.</p>
+<h3 id="e142-cache-issues">E.14.2 Cache Issues<a class="headerlink" href="#e142-cache-issues" title="Permanent link">&para;</a></h3>
+<p>Cache issues often look like "I changed it, but the result did not change." Usually:</p>
+<ul>
+<li>Old results remain in cache.</li>
+<li>Index was not rebuilt.</li>
+<li>Intermediate artifacts were not cleaned.</li>
+<li>Calls were routed to an old service.</li>
+</ul>
+<p>The most effective fix is often not changing logic, but explicitly clearing cache, rebuilding indexes, forcing refresh, and rerunning the minimal sample.</p>
+<h3 id="e143-permission-issues">E.14.3 Permission Issues<a class="headerlink" href="#e143-permission-issues" title="Permanent link">&para;</a></h3>
+<p>Permission problems often disguise themselves as data absence or system failure:</p>
+<ul>
+<li>Data cannot be read because permission is insufficient.</li>
+<li>Write-back fails because the target table is not writable.</li>
+<li>Tool calls fail because the agent lacks execution permission.</li>
+</ul>
+<p>During troubleshooting, confirm whether the permission boundary is working before assuming the service or interface is broken.</p>
+<h2 id="e15-postmortem-template">E.15 Postmortem Template<a class="headerlink" href="#e15-postmortem-template" title="Permanent link">&para;</a></h2>
+<p>After a bug is resolved, write a lightweight postmortem:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Origin</td>
+<td style="text-align: left;">How the problem arose</td>
+</tr>
+<tr>
+<td style="text-align: left;">Trigger</td>
+<td style="text-align: left;">Which change exposed it</td>
+</tr>
+<tr>
+<td style="text-align: left;">Detection method</td>
+<td style="text-align: left;">System, human, or monitoring</td>
+</tr>
+<tr>
+<td style="text-align: left;">Temporary handling</td>
+<td style="text-align: left;">How damage was contained first</td>
+</tr>
+<tr>
+<td style="text-align: left;">Root cause</td>
+<td style="text-align: left;">The final confirmed root cause</td>
+</tr>
+<tr>
+<td style="text-align: left;">Long-term fix</td>
+<td style="text-align: left;">What process or code changes follow</td>
+</tr>
+<tr>
+<td style="text-align: left;">Preventive measure</td>
+<td style="text-align: left;">How to detect earlier next time</td>
+</tr>
+</tbody>
+</table>
+<p>A postmortem is not a blame document. It converts experience into process. A problem is truly over only when later workflow can automatically block it.</p>
+<h2 id="e16-common-troubleshooting-mistakes">E.16 Common Troubleshooting Mistakes<a class="headerlink" href="#e16-common-troubleshooting-mistakes" title="Permanent link">&para;</a></h2>
+<h3 id="e161-looking-only-at-the-final-score">E.16.1 Looking Only at the Final Score<a class="headerlink" href="#e161-looking-only-at-the-final-score" title="Permanent link">&para;</a></h3>
+<p>An abnormal final score may originate at the input side. Focusing only on the score misses splitting, contamination, and sample loss.</p>
+<h3 id="e162-changing-only-one-place">E.16.2 Changing Only One Place<a class="headerlink" href="#e162-changing-only-one-place" title="Permanent link">&para;</a></h3>
+<p>Some problems look like a single point but actually involve several links. Fixing one point and stopping often creates a system that works occasionally and fails often.</p>
+<h3 id="e163-no-fixed-regression-sample">E.16.3 No Fixed Regression Sample<a class="headerlink" href="#e163-no-fixed-regression-sample" title="Permanent link">&para;</a></h3>
+<p>Without fixed regression samples, there is no stable comparison baseline. Each fix runs on a different terrain, so it is hard to know whether the issue is fixed or merely not triggered.</p>
+<h3 id="e164-treating-has-not-reappeared-as-resolved">E.16.4 Treating "Has Not Reappeared" as "Resolved"<a class="headerlink" href="#e164-treating-has-not-reappeared-as-resolved" title="Permanent link">&para;</a></h3>
+<p>This is risky. Many issues are temporarily untriggered. A fix is reliable only after minimal samples, neighboring samples, upstream samples, and regression samples pass verification.</p>
+<h2 id="e17-suggested-extensions">E.17 Suggested Extensions<a class="headerlink" href="#e17-suggested-extensions" title="Permanent link">&para;</a></h2>
+<p>For team practice, extend this appendix with:</p>
+<ul>
+<li>Typical incident tickets collected by category.</li>
+<li>Standard troubleshooting scripts that automate common checks.</li>
+<li>A postmortem knowledge base that preserves root causes and fixes.</li>
+</ul>
+<p>Then bugs are no longer "whoever hits it fixes it"; they become shared engineering knowledge.</p>
+<h2 id="e18-quick-mapping-from-symptom-to-layer">E.18 Quick Mapping from Symptom to Layer<a class="headerlink" href="#e18-quick-mapping-from-symptom-to-layer" title="Permanent link">&para;</a></h2>
+<p>When a bug appears, do not fix immediately. First judge which layer it resembles.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Symptom</th>
+<th style="text-align: left;">More likely layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Data suddenly shrinks sharply</td>
+<td style="text-align: left;">Source, parsing, or cleaning</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation score suddenly jitters</td>
+<td style="text-align: left;">Split, evaluation set, or script</td>
+</tr>
+<tr>
+<td style="text-align: left;">Output looks correct but humans disagree</td>
+<td style="text-align: left;">Annotation, evaluation definition, or post-processing</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent often calls the wrong tool</td>
+<td style="text-align: left;">Tool description, permission, or context</td>
+</tr>
+<tr>
+<td style="text-align: left;">History is overwritten after write-back</td>
+<td style="text-align: left;">Version, write-back policy, or lock mechanism</td>
+</tr>
+</tbody>
+</table>
+<p>This table does not replace investigation. It reduces first-round guessing cost.</p>
+<h2 id="e19-a-more-complete-incident-postmortem-framework">E.19 A More Complete Incident Postmortem Framework<a class="headerlink" href="#e19-a-more-complete-incident-postmortem-framework" title="Permanent link">&para;</a></h2>
+<p>Answer at least five questions:</p>
+<ol>
+<li>What was the direct trigger?</li>
+<li>Why was it not detected earlier?</li>
+<li>Which control point failed?</li>
+<li>Which link could have blocked it earlier?</li>
+<li>What mechanism should be added to prevent recurrence?</li>
+</ol>
+<p>Writing only "the cause was a wrong rule" has limited value. A useful postmortem reveals whether the gap was in definition, process, monitoring, or permission.</p>
+<h2 id="e20-turning-troubleshooting-into-standard-action">E.20 Turning Troubleshooting into Standard Action<a class="headerlink" href="#e20-turning-troubleshooting-into-standard-action" title="Permanent link">&para;</a></h2>
+<p>Mature teams do not treat every incident as improvisation. They turn troubleshooting into standard actions.</p>
+<h3 id="e201-standard-troubleshooting-actions">E.20.1 Standard Troubleshooting Actions<a class="headerlink" href="#e201-standard-troubleshooting-actions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Fix the input.</li>
+<li>Reproduce the output.</li>
+<li>Check versions.</li>
+<li>Check logs.</li>
+<li>Locate the layer.</li>
+<li>Verify hypotheses.</li>
+<li>Create regression.</li>
+</ul>
+<h3 id="e202-benefits-of-standardization">E.20.2 Benefits of Standardization<a class="headerlink" href="#e202-benefits-of-standardization" title="Permanent link">&para;</a></h3>
+<p>Standardization is not formality. It lowers cognitive load. If everyone checks in the same order, team members can share judgment and hand over problems more easily. Site reliability engineering practice similarly emphasizes that incident response, monitoring, postmortems, and automated operations must become standard actions to reduce the long-term cost of repeated incidents (Google SRE 2016).</p>
+<h2 id="e21-three-recurrence-patterns">E.21 Three Recurrence Patterns<a class="headerlink" href="#e21-three-recurrence-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="e211-rule-recurrence">E.21.1 Rule Recurrence<a class="headerlink" href="#e211-rule-recurrence" title="Permanent link">&para;</a></h3>
+<p>One rule is fixed, but old logic remains elsewhere. The issue looks fixed while it has merely moved.</p>
+<h3 id="e212-data-recurrence">E.21.2 Data Recurrence<a class="headerlink" href="#e212-data-recurrence" title="Permanent link">&para;</a></h3>
+<p>Old or dirty samples flow into a new version again, causing periodic recurrence. This is common in incremental updates and multi-source aggregation.</p>
+<h3 id="e213-process-recurrence">E.21.3 Process Recurrence<a class="headerlink" href="#e213-process-recurrence" title="Permanent link">&para;</a></h3>
+<p>A control point never enters the formal process. Every time the owner, environment, or version changes, the issue returns. Process recurrence is harder to fix than technical recurrence because it requires institutions, not only code.</p>
+<h2 id="e22-closing-note">E.22 Closing Note<a class="headerlink" href="#e22-closing-note" title="Permanent link">&para;</a></h2>
+<p>The real value of a debugging manual is not telling you how to fix one bug. It helps the team form a stable way of judging problems. Debugging then no longer depends on one unusually skilled person; it becomes a reproducible engineering capability.</p>
+<h2 id="e23-checklist-of-20-common-problem-types">E.23 Checklist of 20 Common Problem Types<a class="headerlink" href="#e23-checklist-of-20-common-problem-types" title="Permanent link">&para;</a></h2>
+<p>The following 20 classes are not mutually exclusive, but they help locate issues quickly.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Class</th>
+<th style="text-align: left;">Check first</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Collection missing</td>
+<td style="text-align: left;">Entry page, redirect, anti-crawling, encoding</td>
+</tr>
+<tr>
+<td style="text-align: left;">Parsing misalignment</td>
+<td style="text-align: left;">Layout, OCR, table lines, page numbers</td>
+</tr>
+<tr>
+<td style="text-align: left;">False deletion during cleaning</td>
+<td style="text-align: left;">Rule version, threshold, sampled records</td>
+</tr>
+<tr>
+<td style="text-align: left;">Over-deduplication</td>
+<td style="text-align: left;">Granularity, fingerprint, semantic similarity</td>
+</tr>
+<tr>
+<td style="text-align: left;">Split leakage</td>
+<td style="text-align: left;">Split, random seed, index</td>
+</tr>
+<tr>
+<td style="text-align: left;">Annotation drift</td>
+<td style="text-align: left;">Guideline, disputed samples, arbitration record</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation distortion</td>
+<td style="text-align: left;">Script, baseline, evaluation-set version</td>
+</tr>
+<tr>
+<td style="text-align: left;">Metric jitter</td>
+<td style="text-align: left;">Version change, post-processing, cache</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent overreach</td>
+<td style="text-align: left;">Tool permission, context, approval</td>
+</tr>
+<tr>
+<td style="text-align: left;">Write-back overwrite</td>
+<td style="text-align: left;">Version number, lock mechanism, target table</td>
+</tr>
+<tr>
+<td style="text-align: left;">Stale index</td>
+<td style="text-align: left;">Rebuild process, refresh strategy, cache</td>
+</tr>
+<tr>
+<td style="text-align: left;">Alignment error</td>
+<td style="text-align: left;">Label criteria, field mapping, sorting</td>
+</tr>
+<tr>
+<td style="text-align: left;">Feedback contamination</td>
+<td style="text-align: left;">Feedback rules, training boundary, audit</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compliance omission</td>
+<td style="text-align: left;">Jurisdiction, purpose, audit trail, approval</td>
+</tr>
+<tr>
+<td style="text-align: left;">Resource exhaustion</td>
+<td style="text-align: left;">Compute, disk, concurrency, queue</td>
+</tr>
+<tr>
+<td style="text-align: left;">Version drift</td>
+<td style="text-align: left;">Code, data, configuration, template</td>
+</tr>
+<tr>
+<td style="text-align: left;">Interface change</td>
+<td style="text-align: left;">Parameters, fields, dependencies, return value</td>
+</tr>
+<tr>
+<td style="text-align: left;">Missing logs</td>
+<td style="text-align: left;">Key instrumentation, exception context, trace ID</td>
+</tr>
+<tr>
+<td style="text-align: left;">Permission failure</td>
+<td style="text-align: left;">Read/write, tool, directory, secret</td>
+</tr>
+<tr>
+<td style="text-align: left;">Rollback failure</td>
+<td style="text-align: left;">Snapshot, dependency, lock, recovery path</td>
+</tr>
+</tbody>
+</table>
+<p>The point is not to memorize every class. It helps the team lock the first search area quickly.</p>
+<h2 id="e24-one-line-from-collection-to-compliance">E.24 One Line from Collection to Compliance<a class="headerlink" href="#e24-one-line-from-collection-to-compliance" title="Permanent link">&para;</a></h2>
+<p>In projects related to this book, bugs often propagate along a chain: collection breaks, parsing becomes unstable; parsing instability causes cleaning errors; cleaning errors bias splitting and evaluation; finally the issue appears during agent write-back or compliance approval.</p>
+<p>Troubleshoot backward along this line:</p>
+<ol>
+<li>Check whether the output is wrong.</li>
+<li>Check whether the middle layer propagated the issue.</li>
+<li>Return to the entry point and source.</li>
+<li>Confirm whether an institutional control is missing.</li>
+</ol>
+<p>The goal is to avoid circling around the surface symptom. The hard part is often not one function, but a missing constraint in the chain.</p>
+<h2 id="e25-daily-maintenance-recommendations">E.25 Daily Maintenance Recommendations<a class="headerlink" href="#e25-daily-maintenance-recommendations" title="Permanent link">&para;</a></h2>
+<p>To reduce recurrence, make three actions routine:</p>
+<ul>
+<li>Save a regression sample after each release.</li>
+<li>Record a version diff after each rule change.</li>
+<li>Add a postmortem note after each anomaly.</li>
+</ul>
+<p>If these three actions continue, this manual becomes part of daily engineering rhythm rather than a document opened only after incidents.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.</p>
+<p>Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: IEEE International Conference on Big Data, pp 1123-1132.</p>
+<p>Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.</p>
+<p>Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Companion of the 2024 International Conference on Management of Data, pp 120-134. https://doi.org/10.1145/3626246.3653385.</p>
+<p>Chen Y, Shetty M, Somashekar G, Ma M, Simmhan Y, Mace J, Bansal C, Wang R, Rajmohan S (2025) AIOpsLab: A Holistic Framework to Evaluate AI Agents for Enabling Autonomous Clouds. arXiv preprint arXiv:2501.06706.</p>
+<p>Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804. https://doi.org/10.1016/j.patter.2023.100804.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../appendix_d_paper_to_implementation_guide/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Appendix D: From Paper to Implementation Guide">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Appendix D: From Paper to Implementation Guide
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../appendix_f_terminology_and_chinese_english_mapping/" class="md-footer__link md-footer__link--next" aria-label="Next: Appendix F: Terminology and Chinese-English Mapping">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Appendix F: Terminology and Chinese-English Mapping
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

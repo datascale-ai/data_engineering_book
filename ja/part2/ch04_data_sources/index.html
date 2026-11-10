@@ -1,0 +1,1125 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part2/ch04_data_sources/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第4章 数据源、采集与版权 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第4章 数据源、采集与版权
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part2/ch04_data_sources/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part2/ch04_data_sources/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      开篇场景：一个"数据够多了"的团队，为什么还是失败了
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 预训练语料为何先输在源头
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 预训练语料为何先输在源头">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.1 数据源选择决定模型能力上限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.2 三类经典错误选择
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.3 "数据越多越好"的误区
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 数据源地图与配比策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 数据源地图与配比策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.1 八类核心数据源全景
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.2 数据源类型、许可与风险矩阵
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.3 配比策略：从业务目标反推数据配比方案
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 采集流水线、解析与存证
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 采集流水线、解析与存证">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#431-robotstxt" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.1 分布式异步采集与 robots.txt 合规
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#432" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.2 异构数据源的解析策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#433" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.3 元数据存证：每条数据的"出生证明"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#434" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.4 断点续传与任务可靠性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 版权、许可与可追溯治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 版权、许可与可追溯治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#441" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.1 三类许可的判定框架
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#442" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.2 版权风险防控：白/灰/黑名单机制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#443" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.3 许可证类型自动分类
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#45" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 案例复盘与实践建议
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.5 案例复盘与实践建议">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-crawl" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例一：Common Crawl 中文语料接入的全流程教训（匿名化复合案例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例二：金融企业内部知识库采集的合规风险（匿名化复合案例）
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="4">第4章 数据源、采集与版权<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；王柯；陈长汶</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章讨论文本预训练数据工程的源头治理问题，重点回答哪些数据可以采集、如何采集以及如何证明其来源和许可边界。章节首先说明数据源选择对模型能力、版权风险和后续清洗上限的影响，随后建立开放网页、论坛问答、百科知识、代码、学术论文、书籍、企业内部数据和用户反馈数据的分类框架。接着，章节从分布式采集、异构格式解析、元数据存证和任务可靠性四个角度说明生产级采集流水线的基本要求，并进一步给出白名单、灰名单、黑名单和许可证分类机制。两个匿名化复合案例用于说明 Common Crawl 解析路线和企业内部文档版权审查中的典型风险。通过本章，读者应能够在大规模抓取或内部数据接入之前建立可审计的数据来源清单、许可判断框架和元数据记录规范，从而为后续清洗、分词和训练评估提供可靠边界。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>数据源；数据采集；版权许可；Common Crawl；元数据存证；robots.txt；许可证分类；来源治理</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够区分主要预训练数据源的质量价值、规模潜力和许可风险。</li>
+<li>能够设计包含 robots.txt 检查、解析质量抽检和断点续传的采集流水线。</li>
+<li>能够为每批数据建立来源、许可、解析器版本和处理配置等元数据记录。</li>
+<li>能够使用白名单、灰名单、黑名单和许可证分类机制降低版权风险。</li>
+<li>能够解释为什么源头治理决定后续清洗和训练数据质量的上限。</li>
+</ul>
+<h2 id="_4">开篇场景：一个"数据够多了"的团队，为什么还是失败了<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以下为匿名化复合案例，数字用于说明工程量级和风险口径。某 AI 研究院的算法团队花费数月时间，从公开的网络资源里爬取并积累了一批中文文本数据。团队原本认为数据体量足以启动一轮基座模型预训练。在信心满满地投入训练之后，首次评测结果却令人沮丧：模型在中文阅读理解和数学推理上的表现不如同规模的开源基线，更严重的是，模型频繁输出"SEO 风格"的凑字数段落，以及疑似来自某些论坛的仿网络小说片段。</p>
+<p>问题在哪里？数据量看似够，训练过程也没有异常。复盘后，团队才发现问题的根源：候选数据中相当一部分来自 SEO 站群（内容通过自动采集和改写生成的低质量网站）和版权高度存疑的网络小说正文，真正具有实质知识密度的内容——百科、技术文档、学术摘要等——占比不足。换言之，团队采集的不是"数据"，而是"网络噪声"。模型忠实地学习了训练集的分布，表现出了符合训练数据特征的行为：输出流畅却空洞的文字。</p>
+<p>这个案例揭示了预训练数据工程中的基本原则：<strong>源头质量决定后续清洗能够达到的上限。</strong> 当数据源本质上是低质量的，无论后续清洗管线多么精细，都只能降低噪声，而不能凭空补足缺失的知识密度和许可边界。</p>
+<hr />
+<h2 id="41">4.1 预训练语料为何先输在源头<a class="headerlink" href="#41" title="Permanent link">&para;</a></h2>
+<h3 id="411">4.1.1 数据源选择决定模型能力上限<a class="headerlink" href="#411" title="Permanent link">&para;</a></h3>
+<p>预训练（Pre-training）阶段的本质，是让语言模型通过"阅读"大量文本，形成对世界的基础认知图谱——对语言规律的掌握、对事实知识的积累、对推理逻辑的隐性建模。在这个阶段，模型不是在学习一套明确的规则，而是在统计意义上捕捉训练语料的分布模式。这意味着，训练语料是什么样的，模型就倾向于产出什么样的文本。</p>
+<p>这条因果关系有一个重要的延伸含义：<strong>预训练数据的质量上限，就是模型能力的天花板</strong>。一个在高质量多样化语料上预训练的模型，即使后续 SFT 数据量较少，往往也能通过指令微调达到不错的效果；而一个在劣质偏斜语料上预训练的模型，无论后续投入多少 SFT 资源，都很难突破底层认知能力的缺陷——因为 SFT 改变的是模型的"行为风格"，而不能凭空注入预训练阶段没有学到的知识结构。</p>
+<h3 id="412">4.1.2 三类经典错误选择<a class="headerlink" href="#412" title="Permanent link">&para;</a></h3>
+<p>在大量失败的预训练项目复盘中，可以归纳出三类最常见的数据源选择性错误：</p>
+<p><strong>偏差源头（Biased Source）</strong>：数据主要来自特定平台、特定人群或特定风格的内容。例如，某团队将某头部内容平台作为主要语料来源——这个平台的内容固然质量较高，但其整体写作风格、话题分布和读者人群极为一致，结果导致模型在这类写作风格上表现异常流畅，但在学术写作、法律文本、技术文档等风格上能力明显偏弱，呈现出强烈的"平台腔"。</p>
+<p><strong>低密度来源（Low-Density Source）</strong>：数据量虽大，但知识密度极低。上文匿名化场景中提到的 SEO 站群是典型案例。另一个常见情形是直接使用爬虫抓取的微博/微信转发类内容——这类内容的句子本身通常语言流畅，但信息量极低，充斥着情感表达和无实质信息的碎片化短文，而这恰恰是大模型记忆和知识提取最难发力的内容类型。</p>
+<p><strong>版权高风险来源（High Copyright Risk Source）</strong>：数据量和质量都不错，但版权归属存在重大法律风险。2023 至 2024 年间，OpenAI、Google、Stability AI 等公司先后面临来自媒体机构、出版商和作者的版权诉讼，核心争议点都集中在训练数据的版权归属问题上。国内监管环境同样日趋收紧——《生成式人工智能服务管理暂行办法》明确要求训练数据合规，且数据提供者对数据版权合法性承担相应责任。对这一风险的忽视，可能在产品上线后给企业带来难以估量的法律和商业损失。</p>
+<h3 id="413">4.1.3 "数据越多越好"的误区<a class="headerlink" href="#413" title="Permanent link">&para;</a></h3>
+<p>"数据越多越好"是预训练数据工程中流传最广的误区之一。这个观念在宏观层面是有一定道理的——在数据质量一定的情况下，规模确实带来能力提升（Scaling Law 的核心结论）。但它在微观执行层面极易被滥用，演变为用体积代替质量的决策依据。</p>
+<p>FineWeb 的论文（Penedo et al. 2024）提供了一个重要观察：在相同的 Token 数量约束下，从 Common Crawl 中筛选出的高质量网页语料可以训练出更强的模型，数据清洗、去重和来源配方会显著影响最终效果。DCLM/DataComp-LM 进一步把这一问题组织成可比较的数据配方竞赛：在固定训练预算下，不同数据过滤和混合策略会导致明显不同的下游表现 (Li et al. 2024)。换言之，"少而精"在预训练数据领域可以优于"多而杂"，但必须把结论绑定到实验设置、模型规模和评测集上。</p>
+<p>这一结论为整章的数据源选择策略奠定了基础：<strong>数据配方（Data Recipe）的制定，应优先关注每个来源的知识密度和信息多样性，而非原始体积。</strong></p>
+<hr />
+<h2 id="42">4.2 数据源地图与配比策略<a class="headerlink" href="#42" title="Permanent link">&para;</a></h2>
+<p>如果说第4章是一份大模型数据工程的"购物清单审计"，那么数据源地图就是这份审计的核心视图——它帮助工程师在动手采集任何数据之前，先回答一个关键问题：<strong>我们的语料从哪里来，各占多少，质量和法律风险如何？</strong></p>
+<p>图4-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part2/Yu-Chap04-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图4-1：预训练数据源分层地图" src="../../../images/part2/Yu-Chap04-Fig01.svg" /></a></p>
+<p><em>图4-1：预训练数据源分层地图</em></p>
+<h3 id="421">4.2.1 八类核心数据源全景<a class="headerlink" href="#421" title="Permanent link">&para;</a></h3>
+<p><strong>开放网页（Open Web）</strong> 是体量最大、也最难驾驭的一类来源，以 Common Crawl 为代表。Common Crawl 从 2008 年起持续抓取互联网，每月发布数十亿网页的快照，累计数据量超过 PB 级，是目前许多大规模预训练数据集的上游来源。然而，开放网页的原始数据质量差异很大——据 FineWeb 项目的统计 (Penedo et al. 2024)，Common Crawl 原始内容中，真正具备知识密度的正文内容占比有限，大量内容为广告、导航栏、SEO 垃圾、JavaScript 代码等噪声。这意味着网页数据必须经过严格清洗才能使用（见第5章）。</p>
+<p><strong>论坛与问答（Forums &amp; Q&amp;A）</strong> 以 Reddit、StackOverflow、知乎、Quora 等平台为代表。这类数据的独特价值在于：它是真实用户针对真实问题产生的自然语言交互，包含了大量的问题追问、答案修正和社区讨论，这对提升大模型的对话能力和"追问理解能力"有很高价值。StackOverflow 在技术领域的采用极为普遍，是 LLM 代码理解能力的重要来源之一。需要注意的是，这类数据在 2023-2024 年纷纷修改 API 条款（Reddit、Twitter/X 均关闭或收费化 API），获取难度大幅上升。</p>
+<p><strong>百科与结构化知识（Encyclopedia &amp; Structured Knowledge）</strong> 以 Wikipedia、Wikidata、Fandom Wiki 为代表。Wikipedia 是许多预训练数据集的重要来源——其多语言、高密度、事实准确率较高的特征，使其即使在体积占比不大的情况下，也能为模型提供稳定的事实知识基础。</p>
+<p><strong>代码（Code）</strong> 以 GitHub、GitLab 的开源仓库以及 BigCode 团队的 The Stack 项目为代表。代码数据的独特价值已被广泛验证：在预训练中引入大量代码，不仅提升模型的代码生成能力，还可能对自然语言推理能力产生正向迁移，原因在于代码的结构化逻辑为模型提供了更严密的符号组织信号。The Stack 项目对数百种编程语言进行了系统整理，并提供许可证过滤后的版本（仅保留 MIT、Apache 2.0 等宽松许可证），可作为代码语料工程的优先参考来源。</p>
+<p><strong>学术论文（Academic Papers）</strong> 以 ArXiv、PubMed Central、Semantic Scholar 为代表。学术论文的知识密度极高，是提升模型在专业领域（尤其是科学、医学、数学）能力的重要来源。ArXiv 开放访问，可以通过官方 API 批量下载 PDF 并解析正文。需要注意的是，ArXiv 的许可策略正在收紧，在进行商业用途训练时需仔细核查每篇论文的具体许可声明。</p>
+<p><strong>书籍（Books）</strong> 是知识密度和语言质量最高的来源之一，对提升模型的长文理解能力、叙事连贯性和专业知识深度都有显著贡献。书籍也是版权风险最高的来源——The Pile 中的 Books3 子集（包含大量版权书籍）已引发多起诉讼，包括 Meta 的 LLaMA 被作者起诉事件。安全的做法是仅使用 Project Gutenberg 等收录版权已过期经典作品的来源，或通过正式授权渠道采购出版社的授权语料。</p>
+<p><strong>企业内部数据（Enterprise Proprietary Data）</strong> 是垂直领域大模型（行业模型）最核心的差异化来源，包括公司内部的技术文档、知识库、历史工单、合规手册、标准操作规程（SOP）等。这类数据的质量往往极高（因为是真实业务需要产出的结构化文本），且对行业模型能力有极为精准的贡献。但这类数据通常涉及商业机密和内部隐私，必须经过严格的权限审批和 PII 脱敏才能用于训练（详见 §4.4）。</p>
+<p><strong>用户反馈与在线对话（User Feedback &amp; Online Interaction）</strong> 是大模型"数据飞轮"的核心组成部分。当模型上线运行后，用户的真实交互数据——包括有价值的追问、对不满意回答的纠错、偏好标注——会持续回流到数据管线，进入 SFT 或 RLHF 阶段的训练集。这类数据稀缺且珍贵，但也是隐私风险最高的一类，需要在收集和使用全流程中严格执行用户知情同意和数据脱敏。</p>
+<h3 id="422">4.2.2 数据源类型、许可与风险矩阵<a class="headerlink" href="#422" title="Permanent link">&para;</a></h3>
+<p>在实际工程决策中，数据源的选择不能仅凭质量考量，还必须将许可风险和获取可行性一并纳入框架。表4-1汇总了主要数据源的风险画像矩阵。</p>
+<p>许可风险应以具体数据源条款、robots.txt、服务协议和法务审核结论为准。</p>
+<p><em>表4-1：数据源类型、许可与风险矩阵</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">数据源类型</th>
+<th style="text-align: left;">代表来源</th>
+<th style="text-align: left;">许可类型</th>
+<th style="text-align: left;">商用风险</th>
+<th style="text-align: left;">知识密度</th>
+<th style="text-align: left;">规模潜力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">开放网页</td>
+<td style="text-align: left;">Common Crawl, RefinedWeb</td>
+<td style="text-align: left;">CC-BY / 来源不一</td>
+<td style="text-align: left;">中等（具体页面版权不一）</td>
+<td style="text-align: left;">低-中（2/5）</td>
+<td style="text-align: left;">PB级（5/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">论坛与问答</td>
+<td style="text-align: left;">Reddit, StackOverflow, 知乎</td>
+<td style="text-align: left;">平台服务条款许可</td>
+<td style="text-align: left;">中等（API限制已收紧）</td>
+<td style="text-align: left;">中（3/5）</td>
+<td style="text-align: left;">TB级（3/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">百科全书</td>
+<td style="text-align: left;">Wikipedia, Wikidata</td>
+<td style="text-align: left;">CC-BY-SA 4.0（自由）</td>
+<td style="text-align: left;">低</td>
+<td style="text-align: left;">高（4/5）</td>
+<td style="text-align: left;">数百GB（2/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">开源代码</td>
+<td style="text-align: left;">GitHub / The Stack</td>
+<td style="text-align: left;">MIT / Apache-2.0等（需过滤）</td>
+<td style="text-align: left;">低（需License过滤）</td>
+<td style="text-align: left;">高（4/5）</td>
+<td style="text-align: left;">数TB（4/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">学术论文</td>
+<td style="text-align: left;">ArXiv, PubMed</td>
+<td style="text-align: left;">CC-BY / Open Access（部分限制）</td>
+<td style="text-align: left;">中等（需逐篇核查）</td>
+<td style="text-align: left;">极高（5/5）</td>
+<td style="text-align: left;">数百GB（3/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">版权书籍</td>
+<td style="text-align: left;">Books3, Z-Library</td>
+<td style="text-align: left;">版权保护（默认不可用）</td>
+<td style="text-align: left;">高（已发生多起诉讼）</td>
+<td style="text-align: left;">极高（5/5）</td>
+<td style="text-align: left;">数百GB（3/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">公版书籍</td>
+<td style="text-align: left;">Project Gutenberg, Archive.org</td>
+<td style="text-align: left;">公共版权域（无限制）</td>
+<td style="text-align: left;">极低</td>
+<td style="text-align: left;">高（4/5）</td>
+<td style="text-align: left;">数GB（2/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">企业内部数据</td>
+<td style="text-align: left;">知识库 / 文档系统 / 工单</td>
+<td style="text-align: left;">私有（需内部授权）</td>
+<td style="text-align: left;">极低（内部授权后）</td>
+<td style="text-align: left;">极高（5/5）</td>
+<td style="text-align: left;">项目相关（1/5）</td>
+</tr>
+<tr>
+<td style="text-align: left;">用户在线对话</td>
+<td style="text-align: left;">产品用户反馈 / 对话日志</td>
+<td style="text-align: left;">隐私协议授权</td>
+<td style="text-align: left;">中（PII脱敏要求高）</td>
+<td style="text-align: left;">高（4/5）</td>
+<td style="text-align: left;">项目相关（3/5）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="423">4.2.3 配比策略：从业务目标反推数据配比方案<a class="headerlink" href="#423" title="Permanent link">&para;</a></h3>
+<p>数据配比（Data Mix Ratio）是预训练数据工程中最具策略性的决策之一。没有一个放之四海而皆准的固定配比，因为不同的业务目标需要不同的数据组合。以下是面向四类典型业务目标的配比策略参考：</p>
+<p><em>表4-2：数据配比策略与业务目标</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">业务目标</th>
+<th style="text-align: left;">网页通用语料</th>
+<th style="text-align: left;">代码</th>
+<th style="text-align: left;">学术论文</th>
+<th style="text-align: left;">书籍/百科</th>
+<th style="text-align: left;">垂直领域数据</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>通用中文基座模型</strong></td>
+<td style="text-align: left;">高</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">低-中</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">低</td>
+<td style="text-align: left;">追求广泛知识覆盖，代码比例不可过低（影响推理能力）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>代码/技术专项模型</strong></td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">高</td>
+<td style="text-align: left;">低-中</td>
+<td style="text-align: left;">低-中</td>
+<td style="text-align: left;">低</td>
+<td style="text-align: left;">代码比例大幅提升，但需保留足够通用语言理解能力</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>垂直行业模型（如金融/医疗）</strong></td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">低</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">高</td>
+<td style="text-align: left;">领域数据占比显著提升，通用语料保底维持通用能力</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>多语言base模型</strong></td>
+<td style="text-align: left;">高</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">低-中</td>
+<td style="text-align: left;">低-中</td>
+<td style="text-align: left;">按语言目标分配</td>
+<td style="text-align: left;">网页数据中需控制各语言分布与目标语言能力需求一致</td>
+</tr>
+</tbody>
+</table>
+<p>表4-2使用"高/中/低"而非固定百分比，是为了避免把某个项目的实验配方误读为通用规律。配比策略还需要考量<strong>动态调整机制</strong>：不同阶段的训练（预训练初期 vs Cooldown 阶段）应当采用不同的配比权重。越接近训练后期，越应当提高高质量精选数据（书籍、学术论文、企业数据）的权重，同时降低低质量海量数据（原始网页）的权重。LLaMA 3 技术报告披露了 15T 级训练数据和多阶段后训练流程 (Grattafiori et al. 2024)，但没有给出可直接复用的完整数据配方；生产项目仍需通过小模型消融和冻结评测集校准。</p>
+<hr />
+<h2 id="43">4.3 采集流水线、解析与存证<a class="headerlink" href="#43" title="Permanent link">&para;</a></h2>
+<p>数据源策略确定之后，工程团队面临的下一个核心问题是：如何将这些分散在互联网上的数据，以高效、可靠、合规的方式纳入数据管线，并建立起每一条数据的完整权属证明链？</p>
+<h3 id="431-robotstxt">4.3.1 分布式异步采集与 robots.txt 合规<a class="headerlink" href="#431-robotstxt" title="Permanent link">&para;</a></h3>
+<p>在面对千万级 URL 的增量数据源（如特定垂直领域网站群）时，单线程同步爬虫的效率无法满足工程需求。Craw4LLM 的实验报告显示，在其特定预训练与评测设置下，以预训练影响力分数替代图连通度作为爬取优先级，可以用更少 URL 达到近似训练效果；其中“21% URL 量”的结果不应脱离实验配置直接外推到所有站点和模型 (Yu et al. 2025)。工业级实践通常采用基于 <code>aiohttp</code> 或 <code>Scrapy</code> 的分布式异步采集架构。同时，为了避免引发法律纠纷和保障站点的可用性，<strong>必须在核心调度器中强制集成 robots.txt 检查机制</strong>。</p>
+<p>代码清单4-1给出了一个基于 <code>aiohttp</code> 的轻量级异步并发采集框架示意。它利用 <code>urllib.robotparser</code> 在发送请求前自动校验合规性；生产环境中还应加入速率限制、审计日志、异常重试和法务维护的来源策略。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span><span class="o">,</span><span class="w"> </span><span class="nn">aiohttp</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.robotparser</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotFileParser</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">AsyncEthicalCrawler</span><span class="p">:</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_agent</span><span class="o">=</span><span class="s2">&quot;LLMDataBot/1.0&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span> <span class="o">=</span> <span class="n">user_agent</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># 缓存不同域名的 robot parser</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_robots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;异步获取并解析 robots.txt&quot;&quot;&quot;</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="n">robots_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">/robots.txt&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="n">rp</span> <span class="o">=</span> <span class="n">RobotFileParser</span><span class="p">()</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">robots_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                    <span class="n">text</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                    <span class="n">rp</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>            <span class="k">pass</span>  <span class="c1"># 获取失败则默认允许爬取，但生产中需谨慎</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span> <span class="o">=</span> <span class="n">rp</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        <span class="n">domain</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="k">if</span> <span class="n">domain</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">:</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_robots</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        <span class="c1"># 强制合规检查</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span><span class="o">.</span><span class="n">can_fetch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> (disallowed by robots.txt)&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>                    <span class="k">return</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">crawl_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;基于信号量的并发控制，避免压垮源站&quot;&quot;&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        <span class="n">sem</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">concurrency</span><span class="p">)</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span><span class="p">})</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">bounded_fetch</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>                <span class="k">async</span> <span class="k">with</span> <span class="n">sem</span><span class="p">:</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>                    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_url</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>            <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">bounded_fetch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">]</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>            <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单4-1：异步并发采集与 robots.txt 校验示意代码</em></p>
+<p>生产环境应补充速率限制、失败重试、审计日志和来源策略白名单。</p>
+<p>这种架构通常可以将单机爬取吞吐量提升至数百 QPS，同时在入口层阻断对 <code>Disallow</code> 路径的违规访问。</p>
+<h3 id="432">4.3.2 异构数据源的解析策略<a class="headerlink" href="#432" title="Permanent link">&para;</a></h3>
+<p>不同类型的数据源需要截然不同的解析技术路线，使用错误的解析工具会导致严重的内容损失或噪声引入：</p>
+<p><strong>网页（HTML/WARC）</strong> 是最常见、也最需要专业工具处理的格式。其中，WARC 是 Web ARChive 的缩写，用于保存原始网页响应。Common Crawl 提供了三种数据格式——WARC（原始 HTTP 响应+完整 HTML）、WAT（元数据）和 WET（预提取纯文本）。许多团队在早期会直接使用 WET 文件，因为它看起来最省事——已经是纯文本了，直接用就好。这是一个风险较高的陷阱：Common Crawl 的 WET 提取使用的是通用算法，解析质量相当低劣，会保留大量导航栏、页脚、广告文字和 JavaScript 代码片段。正确的做法是从 WARC 文件出发，用高质量的正文提取库（如 Trafilatura (Barbaresi 2021)）重新解析，尽管这耗时更长，但通常能带来更稳定的正文抽取质量。不同语种、站点和解析器配置会导致有效内容保留率显著不同，因此应以抽样审阅和批次统计为准。</p>
+<p>代码清单4-2展示了从 WARC 文件解析正文并保留来源元数据的示意流程。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">warcio.archiveiterator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArchiveIterator</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">gzip</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_warc_to_clean_text</span><span class="p">(</span><span class="n">warc_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">    从 WARC 文件解析高质量文本，附带完整元数据。</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">    推荐用于 Common Crawl WARC 文件的批量处理。</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">opener</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span> <span class="k">if</span> <span class="n">warc_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">open</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">with</span> <span class="n">opener</span><span class="p">(</span><span class="n">warc_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">ArchiveIterator</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_type</span> <span class="o">!=</span> <span class="s1">&#39;response&#39;</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="n">url</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_headers</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="s1">&#39;WARC-Target-URI&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                <span class="n">html</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">content_stream</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>            <span class="c1"># 使用 Trafilatura 提取正文（质量远优于 WET 默认提取）</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>            <span class="n">text</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                <span class="n">html</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>                <span class="n">include_comments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>                <span class="n">favor_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>                <span class="n">output_format</span><span class="o">=</span><span class="s1">&#39;txt&#39;</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>            <span class="p">)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>            <span class="k">if</span> <span class="n">text</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>  <span class="c1"># 过滤过短内容</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>                <span class="n">metadata</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract_metadata</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>                    <span class="s1">&#39;url&#39;</span><span class="p">:</span>        <span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>                    <span class="s1">&#39;text&#39;</span><span class="p">:</span>       <span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>                    <span class="s1">&#39;title&#39;</span><span class="p">:</span>      <span class="n">metadata</span><span class="o">.</span><span class="n">title</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>                    <span class="s1">&#39;date&#39;</span><span class="p">:</span>       <span class="n">metadata</span><span class="o">.</span><span class="n">date</span>  <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>                    <span class="s1">&#39;char_count&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>                    <span class="c1"># 版权存证字段</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>                    <span class="s1">&#39;source&#39;</span><span class="p">:</span>     <span class="s1">&#39;common_crawl&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>                    <span class="s1">&#39;warc_file&#39;</span><span class="p">:</span>  <span class="n">warc_path</span><span class="p">,</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>                <span class="p">})</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="k">return</span> <span class="n">records</span>
+</code></pre></div>
+<p><em>代码清单4-2：WARC 正文解析与来源元数据保留示意代码</em></p>
+<p>该片段展示解析路径，生产环境应补充编码识别、异常样本隔离和解析质量抽检。</p>
+<p><strong>PDF（学术论文/书籍/企业文档）</strong> 的解析是另一个技术难点。PDF 格式并非为文本提取设计——它本质上是一套页面排版描述语言，字符、行和段落的位置由坐标决定，而非语义结构。简单的 <code>pdfplumber</code> 或 <code>PyMuPDF</code> 在处理双栏学术论文时，常常把两栏文字混排在一起，严重降低内容可用性。对于学术论文，推荐使用专门针对科学文献优化的工具（如 GROBID (Lopez 2009)、Nougat (Blecher et al. 2023)、或 Mathpix）；对于企业 PDF 文档，建议在解析后进行人工抽检，确认段落结构的提取质量。</p>
+<p><strong>代码仓库（Git Repos）</strong> 应通过克隆仓库而非 API 拉取的方式获取，确保完整性。解析时需要根据文件扩展名识别编程语言，并基于文件大小（过长的文件可能是自动生成的）、语法合法性（对 Python 可用 AST 解析验证）和许可证文件内容（MIT、Apache 2.0 等宽松许可证白名单）进行质量筛选。</p>
+<h3 id="433">4.3.3 元数据存证：每条数据的"出生证明"<a class="headerlink" href="#433" title="Permanent link">&para;</a></h3>
+<p>在数据采集的同时建立可追溯的元数据档案，是整个数据治理体系的奠基石。一条数据如果没有完整的元数据，在日后的合规审计中就无法证明其来源合法——这与财务账目一样，"我记得是合法的"不能替代"我有凭证证明是合法的"。</p>
+<p>每一批采集的数据，应当在落盘（写入对象存储）的同时，向元数据数据库写入以下标准字段。代码清单4-3给出的是示例字段，实际系统应根据数据源、授权方式和审计要求扩展。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;ingestion_id&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;cc-2024-10-zh-batch-0042&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;source_name&quot;</span><span class="p">:</span><span class="w">     </span><span class="s2">&quot;common_crawl_2024_10&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;source_url&quot;</span><span class="p">:</span><span class="w">      </span><span class="s2">&quot;s3://commoncrawl/crawl-data/CC-MAIN-2024-10/...&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;ingestion_time&quot;</span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;2024-10-15T08:23:41+08:00&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;license_type&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;cc-crawl-mixed&quot;</span><span class="p">,</span><span class="w">           </span><span class="c1">// 采集时判定的许可类型</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;license_risk&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;medium&quot;</span><span class="p">,</span><span class="w">                   </span><span class="c1">// low / medium / high</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w">        </span><span class="s2">&quot;zh&quot;</span><span class="p">,</span><span class="w">                       </span><span class="c1">// fastText 识别结果</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;raw_doc_count&quot;</span><span class="p">:</span><span class="w">   </span><span class="mi">4280350</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">&quot;raw_size_bytes&quot;</span><span class="p">:</span><span class="w">  </span><span class="mi">18432000000</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">&quot;parser_version&quot;</span><span class="p">:</span><span class="w">  </span><span class="s2">&quot;trafilatura==1.6.3&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;filter_config&quot;</span><span class="p">:</span><span class="w">   </span><span class="s2">&quot;min_len=200,favor_precision=true&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="nt">&quot;s3_prefix&quot;</span><span class="p">:</span><span class="w">       </span><span class="s2">&quot;s3://my-bucket/raw/cc-2024-10-zh/&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">  </span><span class="nt">&quot;team_contact&quot;</span><span class="p">:</span><span class="w">    </span><span class="s2">&quot;data-team@company.com&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单4-3：采集批次元数据存证字段示例</em></p>
+<p>字段值为说明性样例，生产环境应按授权方式、审计要求和数据源类型扩展。</p>
+<p>图4-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part2/Yu-Chap04-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图4-2：数据采集与权属存证流程图" src="../../../images/part2/Yu-Chap04-Fig02.svg" /></a></p>
+<p><em>图4-2：数据采集与权属存证流程图</em></p>
+<h3 id="434">4.3.4 断点续传与任务可靠性<a class="headerlink" href="#434" title="Permanent link">&para;</a></h3>
+<p>大规模数据采集任务的运行周期往往长达数天，在此期间发生节点故障、网络中断或云存储访问令牌过期是大概率事件。没有断点续传机制的采集任务，一旦中断就必须从头重跑，既浪费时间又浪费算力预算。</p>
+<p>推荐的容错设计是将采集任务拆分为粒度适中的"检查点文件列表"（通常以 WARC 文件为单位），每处理完一个文件就在状态数据库中标记完成，任务重启后自动跳过已完成文件。这一机制结合 Ray Data 或 Spark 的 Fault Tolerance 设计，可以将大规模采集任务的人工干预需求降低到接近零的水平。</p>
+<hr />
+<h2 id="44">4.4 版权、许可与可追溯治理<a class="headerlink" href="#44" title="Permanent link">&para;</a></h2>
+<p>版权问题是 LLM 数据工程中容易被低估、却在商业化和监管环境下风险最高的议题之一。部分团队会出于行业惯性跳过版权评估环节，但在监管政策日趋收紧、行业诉讼案例快速积累的背景下，这种做法已经难以支撑正式产品交付。</p>
+<h3 id="441">4.4.1 三类许可的判定框架<a class="headerlink" href="#441" title="Permanent link">&para;</a></h3>
+<p>针对大模型训练数据，可以将许可性质分为三大类：</p>
+<p><strong>开放许可（Open License）</strong> 是相对安全的数据来源，包括 Creative Commons 系列协议中的 CC0（放弃版权）、CC-BY（注明来源可使用）和 CC-BY-SA（相同方式分享）。Wikipedia 采用 CC-BY-SA 4.0，Project Gutenberg 的内容为公共版权域（Public Domain）。使用这类来源时，通常需要在模型文档或技术报告中注明数据来源（Attribution），但商业使用限制较少。需要注意的是，CC-BY-NC（非商业）协议明确禁止用于商业产品，不属于"可用"范畴。</p>
+<p><strong>商业许可（Commercial License）</strong> 是通过正式授权协议采购的数据，通常来自出版社、媒体机构、数据服务商等。这类数据在合规性上最有保障，但成本较高，且协议条款千变万化（例如"仅用于某一特定模型版本"或"不得用于生成其他训练数据"等限制条款），需要法务团队逐一审查。在选择商业数据供应商时，建议优先要求供应商提供数据来源证明和版权清单，避免采购到来源不清的二次加工版权风险数据。</p>
+<p><strong>灰区数据（Gray Zone Data）</strong> 是版权状态不明确或存在争议的数据，这也是实践中最棘手的类别。典型灰区包括：爬虫抓取的网页正文（网页版权默认属于作者，但"合理使用"原则的适用性存在司法争议）、通过第三方数据集间接获取的内容（如 The Pile 的 Books3）、以及 robots.txt 中标注了禁止爬取但依然被抓取的网站内容。对于灰区数据，建议引入"风险分级"机制，由法务和数据团队联合评估，根据公司的风险承受能力决定是否纳入训练集。</p>
+<h3 id="442">4.4.2 版权风险防控：白/灰/黑名单机制<a class="headerlink" href="#442" title="Permanent link">&para;</a></h3>
+<p>最有效的版权风险工程化手段是建立数据来源的<strong>三级名单管理体系</strong>：</p>
+<p><strong>白名单（Whitelist）</strong>：经过法务确认、许可清晰、直接可用的数据来源列表。每个来源应注明许可协议版本号、使用限制说明和上次法务审核时间。例如：Wikipedia（CC-BY-SA 4.0，可商用，需署名）、The Stack v2（MIT/Apache-2.0 过滤后，可商用）、Project Gutenberg（Public Domain，无限制）。</p>
+<p><strong>灰名单（Graylist）</strong>：许可存在争议或条款限制较多的来源，使用前需要逐案提交法务审核，并记录审核结论。常见的灰名单来源包括：其他 arXiv 论文（需逐篇核查）、平台 API 数据（受平台服务条款约束）。</p>
+<p><strong>黑名单（Blacklist）</strong>：明确不可用的来源——包括已发生诉讼的来源（如 Books3）、robots.txt 明确禁止的网站、以及任何包含明确"禁止用于 AI 训练"声明的数据。技术上，可以通过 URL 域名前缀匹配的方式，在采集管线的入口阶段自动拦截黑名单来源。代码清单4-4展示了简化实现：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 版权黑名单：在采集入口拦截禁止来源</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">COPYRIGHT_BLACKLIST_DOMAINS</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="s2">&quot;nytimes.com&quot;</span><span class="p">,</span>       <span class="c1"># 已明确禁止AI训练使用</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">&quot;wsj.com&quot;</span><span class="p">,</span>           <span class="c1"># 明确要求付费授权</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">&quot;theguardian.com&quot;</span><span class="p">,</span>   <span class="c1"># 修改服务条款禁止AI训练</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="c1"># ... 持续更新，由法务团队维护</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_url_allowed</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">domain</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;www.&#39;</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">return</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">domain</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">bl</span><span class="p">)</span> <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="n">COPYRIGHT_BLACKLIST_DOMAINS</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单4-4：版权黑名单入口拦截示意代码</em></p>
+<p>生产环境应由法务和数据治理团队维护名单，并记录命中原因与审核时间。</p>
+<h3 id="443">4.4.3 许可证类型自动分类<a class="headerlink" href="#443" title="Permanent link">&para;</a></h3>
+<p>对于代码数据，许可证信息通常以 LICENSE 或 LICENSE.md 文件的形式存放在仓库根目录，可以通过规则或分类器自动识别。代码清单4-5展示了简化实现，生产系统应使用更严格的许可证解析库和法务审核流程：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># 常见许可证关键字识别（简易版，生产中建议使用 license-expression 库）</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">LICENSE_PATTERNS</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="s2">&quot;MIT&quot;</span><span class="p">:</span>        <span class="sa">r</span><span class="s2">&quot;(?i)mit\s+license&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="s2">&quot;Apache-2.0&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)apache\s+license.*2\.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="s2">&quot;GPL-3.0&quot;</span><span class="p">:</span>    <span class="sa">r</span><span class="s2">&quot;(?i)gnu\s+general\s+public\s+license.*version\s+3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="s2">&quot;CC-BY-4.0&quot;</span><span class="p">:</span>  <span class="sa">r</span><span class="s2">&quot;(?i)creative\s+commons.*attribution.*4\.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="s2">&quot;CC-BY-NC&quot;</span><span class="p">:</span>   <span class="sa">r</span><span class="s2">&quot;(?i)creative\s+commons.*non.?commercial&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="s2">&quot;Proprietary&quot;</span><span class="p">:</span><span class="sa">r</span><span class="s2">&quot;(?i)(all rights reserved|proprietary|confidential)&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="p">}</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">COMMERCIAL_SAFE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MIT&quot;</span><span class="p">,</span> <span class="s2">&quot;Apache-2.0&quot;</span><span class="p">,</span> <span class="s2">&quot;CC0&quot;</span><span class="p">,</span> <span class="s2">&quot;Public Domain&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="k">def</span><span class="w"> </span><span class="nf">classify_license</span><span class="p">(</span><span class="n">license_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">LICENSE_PATTERNS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">license_text</span><span class="p">):</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>            <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>                <span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>                <span class="s2">&quot;commercial_safe&quot;</span><span class="p">:</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">COMMERCIAL_SAFE</span><span class="p">,</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>                <span class="s2">&quot;risk_level&quot;</span><span class="p">:</span> <span class="s2">&quot;low&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">COMMERCIAL_SAFE</span> <span class="k">else</span> <span class="s2">&quot;high&quot;</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>            <span class="p">}</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span> <span class="s2">&quot;commercial_safe&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;risk_level&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单4-5：许可证类型自动分类示意代码</em></p>
+<p>该片段仅用于说明规则识别思路，生产环境应使用成熟许可证解析库并保留人工复核链路。</p>
+<hr />
+<h2 id="45">4.5 案例复盘与实践建议<a class="headerlink" href="#45" title="Permanent link">&para;</a></h2>
+<h3 id="common-crawl">案例一：Common Crawl 中文语料接入的全流程教训（匿名化复合案例）<a class="headerlink" href="#common-crawl" title="Permanent link">&para;</a></h3>
+<p><strong>项目背景</strong>：某团队计划从 Common Crawl 某批次中提取一批高质量中文文本，作为通用中文基座模型预训练的语料主体。以下规模、耗时和比例为教学性工程估算，用于说明 WET 与 WARC 解析路线的风险差异；实际结果取决于抓取批次、语言过滤策略、解析器版本和人工抽检口径。</p>
+<p><strong>T+0（决策日）</strong>：团队初步评估了该批次 WET 文件，认为直接使用 WET 最简单——毕竟 WET 里已经是纯文本，省去了解析步骤。他们下载了一个 WET 子集并做了快速评估。</p>
+<p><strong>T+3（发现问题）</strong>：数据工程师随机抽取中文文档进行人工审阅，发现质量严重低于预期：不少文档包含大量导航栏和菜单文字（如"首页 | 关于我们 | 联系我们 | 版权声明"），也存在广告、商品描述堆砌和正文截断问题；真正完整的文章正文占比不足以支撑生产级训练。</p>
+<p><strong>T+4（方案切换）</strong>：团队决定放弃 WET 路线，改为从 WARC 文件出发，用 Trafilatura <code>favor_precision=True</code> 模式重新解析。这会增加处理时间和 CPU 成本，但可以保留更完整的 HTML 上下文供正文抽取器判断。</p>
+<p><strong>T+8（重新评估）</strong>：Trafilatura 路线的结果显著好转：人工抽检显示完整正文占比和平均文档长度均优于 WET 路线。团队据此保留 WARC 解析作为生产链路，并把抽检结果写入该数据源的解析质量基准。</p>
+<p><strong>核心教训</strong>：WET 文件是"便宜的陷阱"，只适合粗略实验，不适合生产级训练数据准备。是否切换到 WARC + 高质量解析器，应该由抽检质量收益与额外时间、CPU 成本共同决定，而不是仅凭文件获取成本判断。</p>
+<p>基于此案例，可以给出三条可直接落地的工程建议。第一，<strong>建立"解析质量基准"</strong>：在任何新的数据源接入早期，可先按启动阶段经验值对随机抽样的 500-1000 条文档进行人工标注，并根据数据源异质性和错误类型扩大样本量，统计完整正文占比和平均文档长度，形成该来源的"解析质量基准"，作为后续管线迭代的评估参照。第二，<strong>区分评估样本和生产样本</strong>：不要用同一批快速实验的数据评估最终训练效果，实验阶段的数据处理精度往往低于生产级别；第三，<strong>在 pipeline 中埋入质量快照</strong>：每个处理节点（解析→过滤→去重）应当在处理完成后自动输出一份"质量快照报告"，记录当前批次的平均文档长度、短文档比例、字符集分布等统计信息，工程师无需额外手工取样即可判断节点的输出质量是否达标。这套"自动质量快照"机制，是大规模数据工程中避免"黑盒管线"的核心手段之一。</p>
+<hr />
+<h3 id="_5">案例二：金融企业内部知识库采集的合规风险（匿名化复合案例）<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p><strong>项目背景</strong>：某金融集团决定基于内部的研报、合规手册、产品说明书等文档，训练一个内部专属的金融问答模型。数据规模约 500GB（PDF + Word 格式），覆盖近 10 年的内部文档积累。以下比例和规模用于说明风险类型，不代表特定企业公开事件。</p>
+<p><strong>T+0（数据摸底）</strong>：数据工程师拿到了集团 IT 部门提供的文档目录清单，开始批量解析 PDF 文件。工程推进顺利，短时间内完成了文档解析和初步清洗，生成一批候选训练数据。</p>
+<p><strong>T+15（合规部介入）</strong>：集团合规部在例行风险排查时，发现数据集中包含大量来自第三方机构（如监管机构官网、评级机构、外部律所）的文件副本——这些文件被历史沉积在内部 OA 系统中，但其版权并不属于集团本身。部分文件甚至包含"未经许可不得复制或传播"的声明。</p>
+<p><strong>T+16（紧急暂停）</strong>：法务团队紧急叫停了训练任务，要求对数据集进行来源审查。审查发现，部分文档存在版权归属不明或明确属于第三方的问题，必须从训练集中剔除。</p>
+<p><strong>T+25（修复完成）</strong>：数据团队对每一类文档进行了来源分类标注，建立了内部版权清单，剔除了所有版权存疑的第三方文档，并对保留的文档补充了授权证明（内部文档引用监管法规的部分，经合规确认属于"合理引用"范围）。</p>
+<p><strong>核心教训</strong>：企业内部文档并不等于版权自有的数据。在启动采集之前，应当对所有数据来源进行版权归属的系统性排查，而不是在工程完成后才请合规部介入——后者的返工成本远高于前者。推荐在采集管线的第一步就引入"来源归属检查"节点，要求每个文件标注：版权方 / 内部创作 / 第三方引用 / 来源不明，并由文档所有人（业务部门 Owner）进行确认签字。</p>
+<hr />
+<h2 id="_6">本章小结<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本章从源头质量如何约束模型能力出发，建立了预训练数据源体系的认知框架。章节构建了涵盖八类核心数据源的分层地图，并通过风险矩阵（表4-1）和配比策略矩阵（表4-2）为工程决策提供可操作的量化工具。在采集流水线部分，本章说明了直接使用 WET 的风险，给出了基于 Trafilatura 的高质量 WARC 解析实现，并建立了“每条数据都有出生证明”的元数据存证标准。版权治理部分引入白名单、灰名单、黑名单的三级管理机制，配合许可证自动分类代码，为商业化 LLM 团队提供可落地的合规工程方案。两个案例分别从技术和法律两个维度说明，源头治理是预训练数据工程的第一道质量门禁。</p>
+<p>进入下一章，我们将在本章采集到的原始数据基础上，讨论<strong>第5章 清洗、去重与去污染</strong>。源头治理决定可以送入清洗管线的语料上限，而清洗管线决定哪些样本能够最终进入训练集。两章共同构成文本预训练数据工程的质量守门体系。</p>
+<h2 id="_7">参考文献<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the ACL-IJCNLP 2021 System Demonstrations, pp 122-131.</p>
+<p>Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.</p>
+<p>Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.</p>
+<p>Li J, Fang A, Smyrnis G, Ivgi M, Jordan M, Gadre S, Bansal H, Guha E, Keh S, Arora K, Garg S, Xin R, Muennighoff N, Heckel R, Mercat J, Chen M, Gururangan S, Wortsman M, Albalak A, Bitton Y, Nezhurina M, Abbas A, Hsieh C, Ghosh D, Gardner J, Kilian M, Zhang H, Shao R, Pratt S, Sanyal S, Ilharco G, Daras G, Marathe K, Gokaslan A, Zhang J, Chandu K, Nguyen T, Vasiljevic I, Kakade S, Song S, Sanghavi S, Faghri F, Oh S, Zettlemoyer L, Lo K, El-Nouby A, Pouransari H, Toshev A, Wang S, Groeneveld D, Soldaini L, Koh P W, Jitsev J, Kollar T, Dimakis A G, Carmon Y, Dave A, Schmidt L, Shankar V (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.</p>
+<p>Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.</p>
+<p>Yu S, Liu Z, Xiong C (2025) Craw4LLM: Efficient Web Crawling for LLM Pretraining. arXiv preprint arXiv:2502.13347.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,4205 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part3/ch10_video_audio/">
+      
+      
+        <link rel="prev" href="../ch09_recaptioning_ocr/">
+      
+      
+        <link rel="next" href="../ch11_cross_modal_alignment/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 10: Video and Audio Data Engineering - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-10-video-and-audio-data-engineering" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 10: Video and Audio Data Engineering
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part3/ch10_video_audio/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part3/ch10_video_audio/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-why-audio-and-video-data-looks-abundant-but-yields-few-usable-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1011-the-dimensionality-problem-from-2d-space-to-4d-spacetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.1 The Dimensionality Problem: From 2D Space to 4D Spacetime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1012-surface-richness-useless-oversampling-and-high-modal-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.2 Surface Richness: Useless Oversampling and High Modal Noise
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1013-underestimated-decoding-compute-and-storage-bottlenecks" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.3 Underestimated Decoding Compute and Storage Bottlenecks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-a-three-track-pipeline-for-slicing-transcription-and-temporal-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 A Three-Track Pipeline for Slicing, Transcription, and Temporal Alignment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2 A Three-Track Pipeline for Slicing, Transcription, and Temporal Alignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1021-visual-extraction-shot-boundary-detection-and-scene-slicing" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.1 Visual Extraction: Shot-Boundary Detection and Scene Slicing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1022-acoustic-separation-asr-denoising-and-speaker-diarization" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-core-semantic-extraction-large-scale-whisperx-asr" class="md-nav__link">
+    <span class="md-ellipsis">
+      A. Core semantic extraction: large-scale WhisperX ASR
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-denoiser-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      B. Denoiser layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-speaker-diarization-who-is-speaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      C. Speaker diarization: who is speaking?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-llm-driven-subtitle-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D. LLM-driven subtitle correction
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1023-multi-track-temporal-alignment-binding-subtitles-speech-and-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.3 Multi-Track Temporal Alignment: Binding Subtitles, Speech, and Frames
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103-event-labeling-and-evaluation-funnels" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 Event Labeling and Evaluation Funnels
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.3 Event Labeling and Evaluation Funnels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1031-event-detection-and-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3.1 Event Detection and Grounding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1032-audio-video-mismatch-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3.2 Audio-Video Mismatch Detection
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104-cost-model-quantitative-design-and-throughput-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 Cost Model, Quantitative Design, and Throughput Optimization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.4 Cost Model, Quantitative Design, and Throughput Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1041-decoder-compute-and-io-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.1 Decoder Compute and I/O Bandwidth
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1042-audio-video-quality-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.2 Audio-Video Quality Assessment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1043-industrial-processing-cost-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.3 Industrial Processing Cost Breakdown
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5 Anonymized Composite Case
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.5 Anonymized Composite Case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1051-postmortem-of-a-large-scale-video-data-pipeline-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5.1 Postmortem of a Large-Scale Video Data Pipeline Failure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1052-chapter-summary-and-bridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5.2 Chapter Summary and Bridge
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#106-appendix-frequent-audio-video-pipeline-error-logs-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6 Appendix: Frequent Audio-Video Pipeline Error Logs and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.6 Appendix: Frequent Audio-Video Pipeline Error Logs and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1061-io-avalanche-s3-concurrent-streaming-limit-causes-dataloader-deadlock-tmp_err_code_1001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.1 I/O Avalanche: S3 Concurrent Streaming Limit Causes DataLoader Deadlock [TMP_ERR_CODE_1001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1062-nvdec-oom-gpu-hardware-decoder-out-of-memory-tmp_err_code_2001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.2 NVDEC OOM: GPU Hardware Decoder Out of Memory [TMP_ERR_CODE_2001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1063-asr-temporal-drift-whisperx-timestamp-offset-in-long-videos-tmp_err_code_3001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.3 ASR Temporal Drift: WhisperX Timestamp Offset in Long Videos [TMP_ERR_CODE_3001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1064-diarization-crash-memory-leak-causes-oom-tmp_err_code_4001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.4 Diarization Crash: Memory Leak Causes OOM [TMP_ERR_CODE_4001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1065-webdataset-write-collision-concurrent-writes-corrupt-a-shard-tmp_err_code_5001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.5 WebDataset Write Collision: Concurrent Writes Corrupt a Shard [TMP_ERR_CODE_5001]
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1066-frequent-error-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.6 Frequent Error Quick Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-why-audio-and-video-data-looks-abundant-but-yields-few-usable-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1011-the-dimensionality-problem-from-2d-space-to-4d-spacetime" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.1 The Dimensionality Problem: From 2D Space to 4D Spacetime
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1012-surface-richness-useless-oversampling-and-high-modal-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.2 Surface Richness: Useless Oversampling and High Modal Noise
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1013-underestimated-decoding-compute-and-storage-bottlenecks" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.3 Underestimated Decoding Compute and Storage Bottlenecks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-a-three-track-pipeline-for-slicing-transcription-and-temporal-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 A Three-Track Pipeline for Slicing, Transcription, and Temporal Alignment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2 A Three-Track Pipeline for Slicing, Transcription, and Temporal Alignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1021-visual-extraction-shot-boundary-detection-and-scene-slicing" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.1 Visual Extraction: Shot-Boundary Detection and Scene Slicing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1022-acoustic-separation-asr-denoising-and-speaker-diarization" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-core-semantic-extraction-large-scale-whisperx-asr" class="md-nav__link">
+    <span class="md-ellipsis">
+      A. Core semantic extraction: large-scale WhisperX ASR
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-denoiser-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      B. Denoiser layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-speaker-diarization-who-is-speaking" class="md-nav__link">
+    <span class="md-ellipsis">
+      C. Speaker diarization: who is speaking?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-llm-driven-subtitle-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D. LLM-driven subtitle correction
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1023-multi-track-temporal-alignment-binding-subtitles-speech-and-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.3 Multi-Track Temporal Alignment: Binding Subtitles, Speech, and Frames
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103-event-labeling-and-evaluation-funnels" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 Event Labeling and Evaluation Funnels
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.3 Event Labeling and Evaluation Funnels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1031-event-detection-and-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3.1 Event Detection and Grounding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1032-audio-video-mismatch-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3.2 Audio-Video Mismatch Detection
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104-cost-model-quantitative-design-and-throughput-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 Cost Model, Quantitative Design, and Throughput Optimization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.4 Cost Model, Quantitative Design, and Throughput Optimization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1041-decoder-compute-and-io-bandwidth" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.1 Decoder Compute and I/O Bandwidth
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1042-audio-video-quality-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.2 Audio-Video Quality Assessment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1043-industrial-processing-cost-breakdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4.3 Industrial Processing Cost Breakdown
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5 Anonymized Composite Case
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.5 Anonymized Composite Case">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1051-postmortem-of-a-large-scale-video-data-pipeline-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5.1 Postmortem of a Large-Scale Video Data Pipeline Failure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1052-chapter-summary-and-bridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5.2 Chapter Summary and Bridge
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#106-appendix-frequent-audio-video-pipeline-error-logs-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6 Appendix: Frequent Audio-Video Pipeline Error Logs and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.6 Appendix: Frequent Audio-Video Pipeline Error Logs and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1061-io-avalanche-s3-concurrent-streaming-limit-causes-dataloader-deadlock-tmp_err_code_1001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.1 I/O Avalanche: S3 Concurrent Streaming Limit Causes DataLoader Deadlock [TMP_ERR_CODE_1001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1062-nvdec-oom-gpu-hardware-decoder-out-of-memory-tmp_err_code_2001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.2 NVDEC OOM: GPU Hardware Decoder Out of Memory [TMP_ERR_CODE_2001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1063-asr-temporal-drift-whisperx-timestamp-offset-in-long-videos-tmp_err_code_3001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.3 ASR Temporal Drift: WhisperX Timestamp Offset in Long Videos [TMP_ERR_CODE_3001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1064-diarization-crash-memory-leak-causes-oom-tmp_err_code_4001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.4 Diarization Crash: Memory Leak Causes OOM [TMP_ERR_CODE_4001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1065-webdataset-write-collision-concurrent-writes-corrupt-a-shard-tmp_err_code_5001" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.5 WebDataset Write Collision: Concurrent Writes Corrupt a Shard [TMP_ERR_CODE_5001]
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1066-frequent-error-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.6.6 Frequent Error Quick Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-10-video-and-audio-data-engineering">Chapter 10: Video and Audio Data Engineering<a class="headerlink" href="#chapter-10-video-and-audio-data-engineering" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Ke Wang; Cong Wang; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter discusses the core problems of video and audio data engineering, emphasizing why long-temporal multimodal data is much harder than static image-text data in usable-sample ratio, decoding cost, temporal alignment, and quality evaluation. It first analyzes why video data "looks abundant but yields few usable samples," including dimensional growth, static redundancy, background noise, audio-video separation, and decoding input/output (I/O) bottlenecks. It then builds a three-track parallel pipeline across visual, acoustic, and text streams: shot-boundary detection, key-frame extraction, automatic speech recognition (ASR) transcription, denoising, speaker diarization, subtitle correction, and timestamp alignment. The second half discusses event labels, audio-video mismatch detection, cost models, and hardware decoding strategies such as NVIDIA Video Decoder (NVDEC) and the NVIDIA Data Loading Library (DALI). An anonymized composite case shows how temporal offset can destroy audio-video learning signals. Readers should be able to design auditable video and audio preprocessing pipelines that can slice, transcribe, align, and evaluate long-temporal samples.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Video data; audio data; ASR; WhisperX; shot-boundary detection; temporal alignment; NVDEC; multimodal quality evaluation</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Explain the special challenges of video and audio data in dimensionality, redundancy, noise, and decoding cost.</li>
+<li>Design a three-track pipeline for shot segmentation, key-frame extraction, ASR, denoising, and speaker diarization.</li>
+<li>Explain why timestamps, audio-video synchronization, and cross-modal semantic consistency determine sample quality.</li>
+<li>Build video/audio quality evaluation, severity classification, and isolation strategies.</li>
+<li>Estimate the main cost sources in decoding, frame extraction, ASR, and packaging.</li>
+</ul>
+<p>After the processing chain from natural-language text in Parts I and II to static image-text parsing in Chapters 8 and 9, this chapter enters <strong>temporal video and audio data engineering</strong>.</p>
+<p>In training based on image-text pairs or frame snapshots, a model can learn object categories, scenes, and static relationships. It still struggles to understand the motion trajectory, sound-image synchronization, and temporal causality contained in an apple "falling from a table, rolling under a bed, and making an impact sound." To train models such as Sora (Brooks et al. 2024) or Gemini 1.5 Pro (Gemini Team 2024), which can process long temporal input, one must build samples that express time, action, and sound association.</p>
+<p>That means the data-engineering problem expands from two-dimensional image-text data to time and audio dimensions. Cost, quality, and alignment difficulty all rise sharply.</p>
+<h2 id="101-why-audio-and-video-data-looks-abundant-but-yields-few-usable-samples">10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples<a class="headerlink" href="#101-why-audio-and-video-data-looks-abundant-but-yields-few-usable-samples" title="Permanent link">&para;</a></h2>
+<p>Architects new to multimodal projects often assume that the web's daily supply of public video naturally forms a trainable data pool. In real pretraining preprocessing, however, teams often find that only a portion of the raw video library can enter the training framework. The usable ratio depends on source licensing, content type, resolution, audio-video synchronization, quality thresholds, and sampling standards, and cannot be estimated directly from raw storage volume.</p>
+<p>The gap comes mainly from three sources.</p>
+<h3 id="1011-the-dimensionality-problem-from-2d-space-to-4d-spacetime">10.1.1 The Dimensionality Problem: From 2D Space to 4D Spacetime<a class="headerlink" href="#1011-the-dimensionality-problem-from-2d-space-to-4d-spacetime" title="Permanent link">&para;</a></h3>
+<p>For a pure image, even a high-resolution 4K AnyRes input is mainly a two-dimensional tensor: <span class="arithmatex">\((W \times H \times C)\)</span>. Video adds a time dimension: <span class="arithmatex">\((T \times W \times H \times C)\)</span>, where <span class="arithmatex">\(T\)</span> is the number of timesteps. A one-minute short video at 30 FPS produces 1,800 consecutive images. If CLIP Score or visual-token compression is computed on every frame, GPU memory and compute quickly exceed budget. Video data engineering must therefore design a strict <strong>key-frame sampling</strong> system that keeps only a small number of key frames and discards a large amount of redundant frames. Systematic experiments (Zohar et al. 2025, CVPR) show that FPS-style rate sampling significantly outperforms fixed-frame-count sampling on long-video understanding tasks, and that this conclusion is consistent across model scales.</p>
+<h3 id="1012-surface-richness-useless-oversampling-and-high-modal-noise">10.1.2 Surface Richness: Useless Oversampling and High Modal Noise<a class="headerlink" href="#1012-surface-richness-useless-oversampling-and-high-modal-noise" title="Permanent link">&para;</a></h3>
+<p>The disk may indeed contain a large amount of video, but a substantial portion may be:</p>
+<ol>
+<li><strong>Static redundancy</strong>: in a two-hour online lecture, one hour of video may show almost the same static slide background with a small face in the corner. Encoding thousands of nearly identical frames dilutes the training signal. This data adds little cognitive value and may reduce the effective sample ratio.</li>
+<li><strong>Background noise and audio-video separation</strong>: many lifestyle vlogs contain wind noise, mechanical hum, or scenes where the video shows someone playing golf while the background audio is pop music. For a model that must learn physical causality, such as matching breaking-glass video to breaking-glass sound, this wild audio-video data provides false supervision.</li>
+</ol>
+<h3 id="1013-underestimated-decoding-compute-and-storage-bottlenecks">10.1.3 Underestimated Decoding Compute and Storage Bottlenecks<a class="headerlink" href="#1013-underestimated-decoding-compute-and-storage-bottlenecks" title="Permanent link">&para;</a></h3>
+<p>As discussed in Section 6.4, storing text requires only byte reads, while storing and dynamically loading long videos during training stresses the file system much more heavily.</p>
+<p>Videos are usually stored in compressed formats such as H.264, H.265, or VP9. To extract pixel-frame sequences and audio samples usable by a model, the first loading step must decode the stream. When 100 H100 GPUs wait for batches, the CPU DataLoader and cluster I/O bandwidth can become bottlenecks because of concurrent MP4 decompression. This hardware scale is illustrative; production teams should re-benchmark on their own cluster.</p>
+<hr />
+<h2 id="102-a-three-track-pipeline-for-slicing-transcription-and-temporal-alignment">10.2 A Three-Track Pipeline for Slicing, Transcription, and Temporal Alignment<a class="headerlink" href="#102-a-three-track-pipeline-for-slicing-transcription-and-temporal-alignment" title="Permanent link">&para;</a></h2>
+<p>For long-temporal data, the cleaning factory cannot reuse the old image-text-pair pattern of "one image, one sentence." We need an automated audio-video sample-building platform that separates and processes visual, acoustic, and text tracks.</p>
+<p>Figure 10-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap10-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 10-1: Distributed audio-video alignment pipeline" src="../../../images/part3/Wang-Chap10-Fig01.svg" /></a></p>
+<p><em>Figure 10-1: Distributed audio-video alignment pipeline</em></p>
+<h3 id="1021-visual-extraction-shot-boundary-detection-and-scene-slicing">10.2.1 Visual Extraction: Shot-Boundary Detection and Scene Slicing<a class="headerlink" href="#1021-visual-extraction-shot-boundary-detection-and-scene-slicing" title="Permanent link">&para;</a></h3>
+<p>Before training, very long videos, such as two-hour films, must be cut into clips of 10 to 30 seconds that are logically and visually continuous. Simple fixed-time splitting, such as cutting every 10 seconds, is undesirable because it may cut an action or sentence in half and create semantic incompleteness.</p>
+<ol>
+<li><strong>Shot-boundary detection</strong></li>
+</ol>
+<p>The visual pipeline needs a fast detection node, such as dual-threshold color-histogram comparison, with a high threshold for hard cuts and a low threshold for fades or dissolves, or lightweight optical-flow difference between adjacent frames. The goal is to capture hard and soft transitions caused by camera movement or editing. Only continuous frames within the same shot are suitable as one complete knowledge concept, or event grounding unit, for pretraining a visual model.</p>
+<p>Figure 10-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap10-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention" src="../../../images/part3/Wang-Chap10-Fig02.svg" /></a></p>
+<p><em>Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention</em></p>
+<ol>
+<li><strong>Adaptive subsampling</strong></li>
+</ol>
+<p>After slicing, a 20-second shot may be logically continuous but visually almost static. The factory deploys small models to continuously measure the displacement between the current frame and the last retained frame in dense visual features, such as DINOv2 (Oquab et al. 2023) embeddings. Only frames whose Euclidean distance exceeds a preset threshold are retained. A slice that originally contains many adjacent frames is ultimately compressed into a smaller number of key frames. The compression ratio depends on frame rate, motion density, and threshold settings, and should be verified through sampled playback to ensure that key actions were not cut off.</p>
+<h3 id="1022-acoustic-separation-asr-denoising-and-speaker-diarization">10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization<a class="headerlink" href="#1022-acoustic-separation-asr-denoising-and-speaker-diarization" title="Permanent link">&para;</a></h3>
+<p>The lower track running in parallel with visual frame extraction extracts acoustic semantics. It first performs <strong>audio stripping</strong>, then passes the stream through three filters.</p>
+<h4 id="a-core-semantic-extraction-large-scale-whisperx-asr">A. Core semantic extraction: large-scale WhisperX ASR<a class="headerlink" href="#a-core-semantic-extraction-large-scale-whisperx-asr" title="Permanent link">&para;</a></h4>
+<p>For speech tracks, a common approach is to use open-source Whisper (Radford et al. 2023), WhisperX (Bain et al. 2023), or similar frameworks to transcribe accented, noisy, and pause-filled audio into structured text with timestamps.</p>
+<p>Figure 10-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap10-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 10-3: Large-scale ASR extraction and temporal calibration" src="../../../images/part3/Wang-Chap10-Fig03.svg" /></a></p>
+<p><em>Figure 10-3: Large-scale ASR extraction and temporal calibration</em></p>
+<h4 id="b-denoiser-layer">B. Denoiser layer<a class="headerlink" href="#b-denoiser-layer" title="Permanent link">&para;</a></h4>
+<p>Not every video has studio-grade isolation. Large amounts of field data contain strong wind noise or mechanical resonance. Demucs (Défossez et al. 2019) and deep-learning source-separation algorithms can separate background music, environmental noise, and vocals from reverberant spectra.</p>
+<h4 id="c-speaker-diarization-who-is-speaking">C. Speaker diarization: who is speaking?<a class="headerlink" href="#c-speaker-diarization-who-is-speaking" title="Permanent link">&para;</a></h4>
+<p>For podcasts or multi-person meeting videos, compressing all speech into a single string prevents the model from distinguishing who asks and who answers. Diarization splits a long audio stream into speaker segments such as <code>[Speaker A]: 01:23-01:30</code> and <code>[Speaker B]: 01:31-01:40</code>.</p>
+<h4 id="d-llm-driven-subtitle-correction">D. LLM-driven subtitle correction<a class="headerlink" href="#d-llm-driven-subtitle-correction" title="Permanent link">&para;</a></h4>
+<p>Raw ASR often misrecognizes specialized vocabulary in code, medicine, finance, and other domains. Industrial pipelines commonly add an LLM correction step after WhisperX output. A strong LLM receives timestamped raw ASR and a prompt such as "repair typos and punctuation according to context, but never change the original timestamps." This can reduce final word error rate. Concrete gains depend on language, noise, domain vocabulary, and ASR model version, and must be evaluated on a small sample with human-transcribed gold labels.</p>
+<h3 id="1023-multi-track-temporal-alignment-binding-subtitles-speech-and-frames">10.2.3 Multi-Track Temporal Alignment: Binding Subtitles, Speech, and Frames<a class="headerlink" href="#1023-multi-track-temporal-alignment-binding-subtitles-speech-and-frames" title="Permanent link">&para;</a></h3>
+<p>After the visual key-frame array, ASR subtitles, and audio waveform are collected, the hard part is binding these signals to the same timeline: <strong>cross-modal geometric and temporal lock</strong>.</p>
+<p>An ASR subtitle may say "Hello World!", but for a 10-second temporal segment, which milliseconds, frames, and lip shapes correspond to that sound must be specified with temporal anchors. Without this binding, a model cannot learn audiovisual synchronization or lip-motion prediction.</p>
+<p>Figure 10-4 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap10-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 10-4: Cross-modal temporal calibration and geometric alignment" src="../../../images/part3/Wang-Chap10-Fig04.svg" /></a></p>
+<p><em>Figure 10-4: Cross-modal temporal calibration and geometric alignment</em></p>
+<p>Large teams usually deploy a <strong>multi-modal temporal alignment engine</strong> based on timestamp matrices. Once a front-end recognizer emits coordinate bounds such as <code>&lt;start:2.1s&gt;&lt;end:4.5s&gt;</code>, code must use floating-point logic to slice the corresponding video frames. The final alignment information is not handed to the model only as video; it is transformed into a structured JSONL sequence with metadata tags and HTML-like multi-track mixed tokens, then passed to the training DataLoader.</p>
+<hr />
+<h2 id="103-event-labeling-and-evaluation-funnels">10.3 Event Labeling and Evaluation Funnels<a class="headerlink" href="#103-event-labeling-and-evaluation-funnels" title="Permanent link">&para;</a></h2>
+<p>Although Section 10.2 binds visual and audio tracks in time, these raw structured samples still need higher-level event-grounding signals and mismatch detection before entering the pretraining engine.</p>
+<h3 id="1031-event-detection-and-grounding">10.3.1 Event Detection and Grounding<a class="headerlink" href="#1031-event-detection-and-grounding" title="Permanent link">&para;</a></h3>
+<p>A wild video should not contain only frames and ASR text. It also needs a description of physical-world action flow. Inside large pipelines, behavior-understanding video models such as LLaVA-Video (Zhang et al. 2024), Video-LLaMA (Zhang H et al. 2023), and similar side models are called asynchronously on aligned short clips.</p>
+<p>These models should provide not only a one-sentence summary such as "a young man tries a backflip at a skate park and falls," but also <strong>dynamic event tags</strong> and <strong>detailed temporal captions</strong>:</p>
+<ol>
+<li><strong>Coarse event tags</strong>: structured labels such as <code>[Sports]</code>, <code>[Skateboarding]</code>, <code>[Accident]</code>, and <code>[Impact_Sound]</code>, which help data mixing.</li>
+<li><strong>Fine-grained dense video captions</strong>:</li>
+<li><code>&lt;time: 01.2s-03.5s&gt;</code>: the boy runs up and uses momentum to enter the U-shaped ramp...</li>
+<li><code>&lt;time: 03.5s-05.1s&gt;</code>: he tries to complete a 360-degree spin in the air, but his back loses balance...</li>
+<li><code>&lt;time: 05.1s-06.8s&gt;</code>: his back hits the concrete ramp heavily, producing a dull low-frequency impact sound.</li>
+</ol>
+<p>These reinforced labels and category tags, which include cause, process, and result, are injected into the aligned JSONL built in the previous section, giving video samples explicit spatiotemporal semantics.</p>
+<h3 id="1032-audio-video-mismatch-detection">10.3.2 Audio-Video Mismatch Detection<a class="headerlink" href="#1032-audio-video-mismatch-detection" title="Permanent link">&para;</a></h3>
+<p>One of the most serious alignment failures in long-temporal data is unrelated audio and video. For example, the video may show a quiet giraffe eating grass while the editor has mixed in electronic music or unrelated game commentary. If such samples enter foundation-model training, the model may incorrectly associate giraffes with unrelated music or commentary and form cross-modal hallucinations.</p>
+<p>Strict mismatch detection and review are therefore required.</p>
+<p>Table 10-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 10-1: Temporal audio-video defects and remediation strategies</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Defect type and manifestation</th>
+<th style="text-align: left;">Root cause</th>
+<th style="text-align: left;">Detection and remediation</th>
+<th style="text-align: left;">Severity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Severe audio-video mismatch</strong>: a silent forest view while the speech track explains an FPS game.</td>
+<td style="text-align: left;">Incorrect secondary editing or audio track bleeding during automated encoding.</td>
+<td style="text-align: left;"><strong>Compute feature cosine scores with pretrained discriminators</strong>: extract CLIP visual vectors from middle frames and semantic vectors from speech/audio. If cross-modal similarity is below the warning threshold, isolate the segment and discard that time-window label.</td>
+<td style="text-align: left;">P0: must not enter the data lake</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Flicker, black screen, or extreme mosaic</strong></td>
+<td style="text-align: left;">Original bitrate is too low, or transmission loss is severe.</td>
+<td style="text-align: left;">Calculate brightness-histogram range and sharpness score, such as Laplacian variance, over the segment. If long-term black screen or blur overflow is detected, block it, log the anomaly, and trace frame extraction and decoding operators.</td>
+<td style="text-align: left;">P1: isolate for review</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Background noise overwhelms speech</strong></td>
+<td style="text-align: left;">Broken microphone or high-frequency mechanical noise that cannot be separated.</td>
+<td style="text-align: left;">Use a small model on the full-band spectrogram for SNR estimation. Speech tracks below the floor threshold should be downweighted or removed; dialogue projects usually discard them.</td>
+<td style="text-align: left;">P2: depends on use case</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="104-cost-model-quantitative-design-and-throughput-optimization">10.4 Cost Model, Quantitative Design, and Throughput Optimization<a class="headerlink" href="#104-cost-model-quantitative-design-and-throughput-optimization" title="Permanent link">&para;</a></h2>
+<p>Compared with pure-text processing, long-temporal multimodal pipelines sharply increase costs for cloud GPUs, object storage, network bandwidth, and decoding.</p>
+<p>In text processing, Markdown or web-body parsing is usually far lighter than video decoding. In video cleaning, even at an illustrative scale such as 10,000 hours of HD MP4 files, reading and decoding video into tensors for feature extraction quickly consumes CPU, memory, PCIe, and storage bandwidth. This scale is illustrative; actual throughput depends on video codec, resolution, concurrency, and hardware.</p>
+<h3 id="1041-decoder-compute-and-io-bandwidth">10.4.1 Decoder Compute and I/O Bandwidth<a class="headerlink" href="#1041-decoder-compute-and-io-bandwidth" title="Permanent link">&para;</a></h3>
+<p>The key question is what hardware should decode video frames.</p>
+<ol>
+<li><strong>Limits of pure CPU software decoding</strong>: early designs may use high-end CPUs, multithreaded ffmpeg, or Python OpenCV. Under high concurrency, memory movement and PCIe/RAM bandwidth quickly become bottlenecks.</li>
+<li><strong>Hardware video decoders such as NVDEC</strong>: a more scalable solution is to offload decoding to dedicated hardware. Calling the GPU's video decoding module, such as the NVDEC API, reduces CPU decoding pressure and improves throughput. Although GPU instances cost more, they are often the core cost-reduction method at large cleaning scale.</li>
+</ol>
+<h3 id="1042-audio-video-quality-assessment">10.4.2 Audio-Video Quality Assessment<a class="headerlink" href="#1042-audio-video-quality-assessment" title="Permanent link">&para;</a></h3>
+<p>To decide whether a decompressed video is worth sending to the next stage, we need an automated quality-metric set:</p>
+<ul>
+<li><strong>Aesthetic and sharpness score</strong>: score extracted key frames with models such as LAION-Aesthetic and filter heavy blur or mosaic.</li>
+<li><strong>Motion blur and optical-flow overload</strong>: a violently shaking camera has high optical-flow displacement variance, lowering visual encoding quality; such clips should be removed or downweighted.</li>
+<li><strong>SNR and clipping ratio</strong>: detect whether environmental noise masks speech and remove harsh distorted clips.</li>
+</ul>
+<h3 id="1043-industrial-processing-cost-breakdown">10.4.3 Industrial Processing Cost Breakdown<a class="headerlink" href="#1043-industrial-processing-cost-breakdown" title="Permanent link">&para;</a></h3>
+<p>Data engineers need a clear view of unit cost at each layer. Table 10-2 summarizes cost drivers and cost-reduction strategies for long-temporal audio-video processing.</p>
+<p><em>Table 10-2: Long-temporal audio-video cost drivers and reduction strategies</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Processing stage</th>
+<th style="text-align: left;">Resource profile</th>
+<th style="text-align: left;">Cost drivers</th>
+<th style="text-align: left;">Cost-reduction strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>1. Raw long-stream crawling and block download</strong></td>
+<td style="text-align: left;">High-bandwidth network and massive object-storage block I/O.</td>
+<td style="text-align: left;">Cross-region traffic, object-storage request count, cache hit rate</td>
+<td style="text-align: left;">Add edge caching gateways and preload fragments to fast NVMe near the GPU to avoid direct reads from slow storage.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>2. Hardware decoding and intelligent frame extraction</strong></td>
+<td style="text-align: left;">NVDEC hardware decoding module, GPU memory, and PCIe bandwidth pressure.</td>
+<td style="text-align: left;">Resolution, codec, sampled frame rate, concurrent decoding lanes</td>
+<td style="text-align: left;">Use DALI or hardware decoding instead of Python OpenCV; combine shot-boundary detection and key-frame filtering to avoid decoding useless frames.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>3. ASR and dense recaptioning with WhisperX/LLaVA</strong></td>
+<td style="text-align: left;">High memory consumption and GPU-intensive inference.</td>
+<td style="text-align: left;">Audio duration, model size, batching efficiency, domain-correction strategy</td>
+<td style="text-align: left;">Use quantized models and dynamic batching to reduce padding waste.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>4. Sequence merge and package writing</strong></td>
+<td style="text-align: left;">Backend NAS/S3 small-file concurrent write pressure.</td>
+<td style="text-align: left;">Shard size, small-file count, checksums, and indexing strategy</td>
+<td style="text-align: left;">Use WebDataset TAR format and aggregate into GB-scale contiguous shards to reduce small-file overhead.</td>
+</tr>
+</tbody>
+</table>
+<p>Note: Table 10-2 does not provide universal cost shares, because actual bills depend on cloud pricing, GPU model, video resolution, sampled frame rate, ASR model, cache hit rate, and object-storage billing. A more robust engineering approach is to identify cost drivers first, then run small-batch stress tests in the target environment.</p>
+<hr />
+<h2 id="105-anonymized-composite-case">10.5 Anonymized Composite Case<a class="headerlink" href="#105-anonymized-composite-case" title="Permanent link">&para;</a></h2>
+<h3 id="1051-postmortem-of-a-large-scale-video-data-pipeline-failure">10.5.1 Postmortem of a Large-Scale Video Data Pipeline Failure<a class="headerlink" href="#1051-postmortem-of-a-large-scale-video-data-pipeline-failure" title="Permanent link">&para;</a></h3>
+<p>The following is an anonymized composite case used to illustrate the risk profile of missing temporal calibration. In one internal video project, a team accumulated a large amount of HD mixed video material, but the dataset construction work ultimately fell short of expectations.</p>
+<p>The root cause was that the architecture skipped several critical temporal-calibration steps. The audio-feature separation interface had a reading offset bug. After multiple slicing and merging operations, this offset accumulated so that in later-stage slices, the actor's audio track systematically led or lagged lip motion and physical action.</p>
+<p>When this temporally misaligned data was used for model training, audio-video association ability noticeably degraded: in benchmark tests, whenever the model saw a specific human action, it produced an acoustic prediction unrelated to the image.</p>
+<p>This case reinforces the core conclusion of Chapter 1: <strong>without strict data preprocessing, algorithmic investment cannot compensate for fundamental data defects</strong>.</p>
+<h3 id="1052-chapter-summary-and-bridge">10.5.2 Chapter Summary and Bridge<a class="headerlink" href="#1052-chapter-summary-and-bridge" title="Permanent link">&para;</a></h3>
+<p>From text cleaning in Parts I and II, to image-pixel alignment in Chapters 8 and 9, and now long-temporal video and audio data, we have systematically covered preprocessing methods for heterogeneous data: video frame extraction, ASR transcription, audio-video alignment, event labeling, and quality filtering.</p>
+<p>Video and audio pipelines solve slicing, transcription, and temporal synchronization for long-temporal samples. Multimodal training still needs to answer another question: how do image, text, audio, and video signals form stable correspondences in the same semantic space? The next chapter, <strong>Chapter 11: Cross-Modal Alignment and Fusion</strong>, discusses object-level, segment-level, and document-level aligned sample construction.</p>
+<hr />
+<h2 id="106-appendix-frequent-audio-video-pipeline-error-logs-and-troubleshooting">10.6 Appendix: Frequent Audio-Video Pipeline Error Logs and Troubleshooting<a class="headerlink" href="#106-appendix-frequent-audio-video-pipeline-error-logs-and-troubleshooting" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>The following anonymized error logs cover five core links in large-scale audio-video preprocessing: I/O, decoding, ASR alignment, diarization, and storage writing. Host names, paths, batch IDs, and metrics are illustrative and do not correspond to public incidents. Each category includes root-cause analysis and remediation, followed by a quick-reference table.</p>
+</blockquote>
+<h3 id="1061-io-avalanche-s3-concurrent-streaming-limit-causes-dataloader-deadlock-tmp_err_code_1001">10.6.1 I/O Avalanche: S3 Concurrent Streaming Limit Causes DataLoader Deadlock [TMP_ERR_CODE_1001]<a class="headerlink" href="#1061-io-avalanche-s3-concurrent-streaming-limit-causes-dataloader-deadlock-tmp_err_code_1001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: when a large GPU cluster starts, hundreds of DataLoader workers simultaneously request large MP4 chunks from S3 object storage, exhausting backbone bandwidth and node file descriptors. Training processes enter a wait state.</p>
+<p>Listing 10-1 shows an example error log for S3 concurrent streaming overload.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>[FATAL] node-001.gpu-cluster.internal:
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Connection reset by peer. Timeout extracting frame chunk from blob: /bucket-v/dataset/vid_slice_0001.mp4
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>File descriptor limits exceeded (Too many open files).
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>RuntimeError: Multiprocessing synchronization lock stuck at DataLoader worker 1.
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>AVSync_Module: Subtitle timestamp [1.21s] completely drifts out of matched acoustic window bounds.
+</code></pre></div>
+<p><em>Listing 10-1: S3 concurrent streaming overload error log example</em></p>
+<p>The log content is anonymized; metrics and paths do not correspond to a public incident.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: no randomized exponential backoff; all workers request large chunks in the same millisecond.</li>
+<li><strong>Fix</strong>: add <code>jitter_sleep(0-500ms)</code> retry logic in the PyTorch DataLoader; raise file descriptor limits with <code>ulimit -n 1048576</code>; reduce S3 block size from 128 MB to 2 MB and prewarm data to local NVMe through an edge caching layer.</li>
+</ul>
+<h3 id="1062-nvdec-oom-gpu-hardware-decoder-out-of-memory-tmp_err_code_2001">10.6.2 NVDEC OOM: GPU Hardware Decoder Out of Memory [TMP_ERR_CODE_2001]<a class="headerlink" href="#1062-nvdec-oom-gpu-hardware-decoder-out-of-memory-tmp_err_code_2001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: when NVIDIA NVDEC decodes high-resolution 4K videos concurrently, GPU memory is exhausted, decoding stops, and training nodes are affected.</p>
+<p>Listing 10-2 shows an example error log for NVDEC concurrent decoding OOM.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[FATAL] node-007.gpu-cluster.internal:
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>NVDecCreateDecoder failed: CUDA_ERROR_OUT_OF_MEMORY (error 2)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Video resolution 3840x2160 exceeds NVDEC hardware capability on A100-40GB.
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>cudaMemcpy failed during frame copy: cudaErrorIllegalAddress
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Decoder context invalidated. All queued frames dropped (estimated loss: 2.3TB).
+</code></pre></div>
+<p><em>Listing 10-2: NVDEC concurrent decoding OOM log example</em></p>
+<p>The log content is anonymized; hardware limits must be based on actual device specifications and stress-test results.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: 4K resolution exceeds the per-instance NVDEC capacity; concurrent decoding has no memory quota isolation.</li>
+<li><strong>Fix</strong>: force downsampling to 1080p before decoding, such as <code>-vf scale=1920:1080</code>; limit maximum concurrent decode streams per GPU, with H100 often using &lt;= 24 1080p streams as an illustrative guideline; use DALI <code>VideoReader</code> instead of OpenCV to gain built-in memory quota management.</li>
+</ul>
+<h3 id="1063-asr-temporal-drift-whisperx-timestamp-offset-in-long-videos-tmp_err_code_3001">10.6.3 ASR Temporal Drift: WhisperX Timestamp Offset in Long Videos [TMP_ERR_CODE_3001]<a class="headerlink" href="#1063-asr-temporal-drift-whisperx-timestamp-offset-in-long-videos-tmp_err_code_3001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: when ASR is run on videos longer than 30 minutes, WhisperX timestamps drift in the second half, sometimes by 8-12 seconds, making audio-video alignment fail.</p>
+<p>Listing 10-3 shows an example error log for WhisperX timestamp drift.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>[WARN] whisperx_worker_3: Timestamp drift detected at segment 847.
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Expected anchor: [1823.4s], Model output: [1831.8s]. Delta: +8.4s.
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>[ERROR] TemporalAligner: Cross-modal lock failed - audio anchor outside visual frame window.
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>Alignment quality score: 0.23 (threshold: 0.75). Segment rejected and quarantined.
+</code></pre></div>
+<p><em>Listing 10-3: WhisperX timestamp drift error log example</em></p>
+<p>The log content is anonymized; drift thresholds should be calibrated through sampled playback and downstream evaluation.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: WhisperX uses VAD to slice speech; silence may be skipped incorrectly, causing cumulative timestamp drift. BGM mixing in long videos interferes with VAD decisions.</li>
+<li><strong>Fix</strong>: force videos longer than 15 minutes into 10-minute subsegments before transcription; run Demucs vocal separation before VAD; use a 30-second sliding window to validate timestamp anchors and trigger realignment when drift exceeds 0.5 seconds.</li>
+</ul>
+<h3 id="1064-diarization-crash-memory-leak-causes-oom-tmp_err_code_4001">10.6.4 Diarization Crash: Memory Leak Causes OOM [TMP_ERR_CODE_4001]<a class="headerlink" href="#1064-diarization-crash-memory-leak-causes-oom-tmp_err_code_4001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: when pyannote-audio (Bredin et al. 2020) diarization runs in bulk for a long time, process memory increases linearly by batch. After roughly four hours, the system OOM killer terminates the process and all processed results are lost.</p>
+<p>Listing 10-4 shows an example error log for diarization memory leakage.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[ERROR] diarization_worker_12: Killed by OOM Killer (signal 9).
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Process memory at kill time: 187.3 GB / 192 GB RAM.
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>pyannote.audio: SpeakerDiarization pipeline not released between batches.
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>torch.nn.Module references retained in embedding cache (est. leak: 2.1 GB/batch).
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Unprocessed queue depth at crash: 3,421 audio segments (est. 68h audio).
+</code></pre></div>
+<p><em>Listing 10-4: Diarization memory-leak error log example</em></p>
+<p>The log content is anonymized; memory watermarks and batch sizes should be stress-tested according to node configuration.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: the pyannote pipeline object is not explicitly destroyed between batches, embedding cache accumulates, and PyTorch graphs are not released.</li>
+<li><strong>Fix</strong>: after each batch, call <code>del pipeline; torch.cuda.empty_cache(); gc.collect()</code>; run each diarization batch in an independent subprocess with <code>multiprocessing.spawn</code> so the process exit releases memory; cap audio duration per batch, for example at two hours.</li>
+</ul>
+<h3 id="1065-webdataset-write-collision-concurrent-writes-corrupt-a-shard-tmp_err_code_5001">10.6.5 WebDataset Write Collision: Concurrent Writes Corrupt a Shard [TMP_ERR_CODE_5001]<a class="headerlink" href="#1065-webdataset-write-collision-concurrent-writes-corrupt-a-shard-tmp_err_code_5001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: in final packaging, multiple worker processes concurrently write to the same <code>.tar</code> shard, corrupting its structure. Training-time DataLoader then fails to parse it.</p>
+<p>Listing 10-5 shows an example error log for WebDataset shard corruption.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>[ERROR] training_node_44: WebDataset TarReader failed on shard: /data/processed/shard_0023.tar
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>tarfile.ReadError: invalid header magic bytes at offset 2147483392.
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Estimated corrupted samples in shard: ~4,200 (approx 12.3GB of aligned multimodal data).
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
+</code></pre></div>
+<p><em>Listing 10-5: WebDataset shard corruption error log example</em></p>
+<p>The log content is anonymized; production environments should combine shard write locks, checksums, and retry strategies.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: no write lock or per-shard assignment; multiple processes write to one file, interleaving byte streams.</li>
+<li><strong>Fix</strong>: allocate an independent shard file per worker, named by <code>worker_id</code>; merge in the main process after writing or upload directly to S3; use <code>wids</code> (WebDataset Indexed Shards) instead of <code>.tar</code> when safe random writes and indexing are needed.</li>
+</ul>
+<h2 id="1066-frequent-error-quick-reference">10.6.6 Frequent Error Quick Reference<a class="headerlink" href="#1066-frequent-error-quick-reference" title="Permanent link">&para;</a></h2>
+<p>Table 10-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p>The error codes and remediation strategies summarize anonymized engineering patterns.</p>
+<p><em>Table 10-3: Audio-video pipeline error types and remediation strategies</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Error code</th>
+<th style="text-align: left;">Error type</th>
+<th style="text-align: left;">Trigger</th>
+<th style="text-align: left;">One-line fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_1XXX</td>
+<td style="text-align: left;">S3/I/O timeout</td>
+<td style="text-align: left;">Large-scale concurrent streaming without jittered backoff</td>
+<td style="text-align: left;">Add jitter sleep and edge-cache prewarming</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_2XXX</td>
+<td style="text-align: left;">NVDEC OOM</td>
+<td style="text-align: left;">Unlimited concurrent 4K decoding</td>
+<td style="text-align: left;">Downsample to 1080p and cap stream concurrency</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_3XXX</td>
+<td style="text-align: left;">ASR temporal drift</td>
+<td style="text-align: left;">Long-video VAD incorrectly skips silence</td>
+<td style="text-align: left;">Segment transcription and sliding-window timestamp validation</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_4XXX</td>
+<td style="text-align: left;">Diarization OOM</td>
+<td style="text-align: left;">Pipeline object not released between batches</td>
+<td style="text-align: left;">Subprocess isolation and explicit <code>gc.collect</code> per batch</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_5XXX</td>
+<td style="text-align: left;">Shard corruption</td>
+<td style="text-align: left;">Multiple processes write one <code>.tar</code></td>
+<td style="text-align: left;">One shard per worker, then main-process merge</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_6XXX</td>
+<td style="text-align: left;">Audio-video mismatch hallucination</td>
+<td style="text-align: left;">BGM mixed into training corpus</td>
+<td style="text-align: left;">Set CLIP/SigLIP cross-modal cosine filtering watermarks according to the project baseline</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_7XXX</td>
+<td style="text-align: left;">Decoded frames out of order</td>
+<td style="text-align: left;">ffmpeg seek precision issue</td>
+<td style="text-align: left;">Put <code>-ss</code> before the input argument</td>
+</tr>
+<tr>
+<td style="text-align: left;">TMP_ERR_CODE_8XXX</td>
+<td style="text-align: left;">Low-SNR audio track</td>
+<td style="text-align: left;">Field noise exceeds the project noise watermark</td>
+<td style="text-align: left;">Demucs separation and task-specific SNR discard thresholds</td>
+</tr>
+</tbody>
+</table>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter extended data engineering from static image-text data to long-temporal data with time and audio dimensions. The core conclusion is that video and audio "look abundant but yield few usable samples": dimensionality grows from <span class="arithmatex">\((W{\times}H{\times}C)\)</span> to <span class="arithmatex">\((T{\times}W{\times}H{\times}C)\)</span>, and static redundancy, audio-video separation, and decoding I/O bottlenecks make the truly usable share of raw material quite low. To address this, the chapter built a three-track parallel pipeline across visual, acoustic, and text streams: on the visual side, shot-boundary detection slices semantically continuous segments and DINOv2 feature displacement drives adaptive frame sampling; on the acoustic side, WhisperX transcription, Demucs denoising, speaker diarization, and LLM subtitle correction extract and clean speech; finally, temporal anchors lock subtitles, waveforms, and key frames onto the same timeline and package them as multi-track mixed JSONL samples.</p>
+<p>On this basis, the chapter added dense event labeling, audio-video mismatch detection, and engineering governance around decoding hardware (NVDEC/DALI), visual/acoustic quality scoring, and staged cost drivers. The anonymized postmortem of a 30 ms reading-offset accumulation showed how missing temporal alignment can damage training signals. The three-track samples in this chapter solve slicing and synchronization for long-temporal signals, but how images, text, audio, and video form stable correspondences in one semantic space still requires dedicated alignment and fusion design. That is the topic of the next chapter.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Bain M, Huh J, Han T, Zisserman A (2023) WhisperX: Time-Accurate Speech Transcription of Long-Form Audio. arXiv preprint arXiv:2303.00747.</p>
+<p>Bredin H, Yin R, Coria J M, Gelly G, Korshunov P, Lavechin M, Fustes D, Titeux H, Bouaziz W, Gill M P (2020) pyannote.audio: Neural Building Blocks for Speaker Diarization. In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 7124-7128. https://doi.org/10.1109/icassp40776.2020.9052974.</p>
+<p>Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, others (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.</p>
+<p>Défossez A, Usunier N, Bottou L, Bach F (2019) Music Source Separation in the Waveform Domain (Demucs). arXiv preprint arXiv:1911.13254.</p>
+<p>Oquab M, Darcet T, Moutakanni T, Vo H, Szafraniec M, Khalidov V, Fernandez P, Haziza D, Massa F, El-Nouby A, others (2023) DINOv2: Learning Robust Visual Features without Supervision. Transactions on Machine Learning Research.</p>
+<p>Radford A, Kim J W, Xu T, Brockman G, McLeavey C, Sutskever I (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper). In: Proceedings of the 40th International Conference on Machine Learning, pp 28492-28518.</p>
+<p>Gemini Team (2024) Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint arXiv:2403.05530.</p>
+<p>Zhang Y, Li Z, Liu C, Chen K, Ma L, Sun Y, Dou Q, Ouyang W, Yang M H, others (2024) Video Instruction Tuning with Synthetic Data (LLaVA-Video). arXiv preprint arXiv:2410.02713.</p>
+<p>Zhang H, Li X, Bing L (2023) Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understanding. arXiv preprint arXiv:2306.02858.</p>
+<p>Zohar O, Wang X, Dubois Y, Mehta N, Xiao T, Hansen-Estruch P, Yu L, Wang X F, Juefei-Xu F, Zhang N, Yeung-Levy S, Xia X (2025) Apollo: An Exploration of Video Understanding in Large Multimodal Models. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. arXiv preprint arXiv:2412.10360.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch09_recaptioning_ocr/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 9: Recaptioning and Document Understanding">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 9: Recaptioning and Document Understanding
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch11_cross_modal_alignment/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 11: Cross-Modal Alignment and Fusion">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 11: Cross-Modal Alignment and Fusion
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

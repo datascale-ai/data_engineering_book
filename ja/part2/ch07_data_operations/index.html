@@ -1,0 +1,1182 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part2/ch07_data_operations/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第7章 数据评估、质量闭环与运营迭代 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#7" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第7章 数据评估、质量闭环与运营迭代
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part2/ch07_data_operations/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part2/ch07_data_operations/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      开篇：一次令人意外的"效果倒退"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 为什么数据也需要持续运营
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.1 为什么数据也需要持续运营">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#711" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1.1 打破“一次性交付”的工程幻觉
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#712" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1.2 训练完成后再评估，为何已经太晚？
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#713" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1.3 数据运营与模型运营的边界协同
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 离线评估与在线代理指标设计
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 离线评估与在线代理指标设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#721" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.1 统计分层与代表性评估
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#722" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.2 核心离线代理指标解析（附计算逻辑）
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2.2 核心离线代理指标解析（附计算逻辑）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-perplexity-ppl" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 语言学属性与困惑度（Perplexity, PPL）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-type-token-ratio-ttr" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 多样性稀疏度（Type-Token Ratio, TTR &amp; 词汇覆盖率）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-toxicity-pii-density" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 有毒性与负向泄露率（Toxicity &amp; PII Density）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-subpopulation-overlap" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 领域分类与掺杂重叠（Subpopulation Overlap）
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#723" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.3 代理指标与真实效果的对齐偏差
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#724" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.4 评估指标与治理动作映射
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 版本迭代、抽检与根因复盘
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.3 版本迭代、抽检与根因复盘">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#731-dvc-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.1 DVC视角下的数据集版本化与 A/B 对比
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#732" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.2 建立“问题样本库”与追溯回环
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#733-5-whys" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.3 从失败实验中沉淀 5 Whys 根因复盘框架
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#734" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.4 案例复盘：一次训练损失异常峰值的根因定位
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4 数据运营仪表盘与组织协同
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.4 数据运营仪表盘与组织协同">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#741" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4.1 数据质量看板的核心模块
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#742-automated-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4.2 自动化质量预警系统架构 (Automated Alerts)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#743" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4.3 梯队化的责任边界体系
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#75" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5 周度运营节奏设计：一套典型的实操模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.5 周度运营节奏设计：一套典型的实操模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#751-metrics-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5.1 周一：大盘核阅与指标审查会议 (Metrics Review)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#752-root-cause-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5.2 周二与周三：异常追溯与小规模验证 (Root Cause Analysis)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#753-data-mixing" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5.3 周四：实验决策与数据配方调整 (Data Mixing)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#754-production-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5.4 周五：全量产线构建与封版交付 (Production Release)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#76" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6 从评估结论到采集/清洗策略的回写
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.6 从评估结论到采集/清洗策略的回写">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#761" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6.1 向“数据采集期”回写策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#762" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6.2 向“数据清洗期”回写规则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#763-sft-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6.3 沉淀为 SFT（指令微调）与 RAG 的可复用资产
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="7">第7章 数据评估、质量闭环与运营迭代<a class="headerlink" href="#7" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王柯；于璠；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章讨论预训练数据在清洗完成后的持续评估、版本治理和运营迭代问题。章节首先通过匿名化复合案例说明“更干净”的数据并不必然带来更好的模型效果，随后建立数据运营（Data Operations，DataOps）的基本框架：离线代理指标、代表性抽样、质量看板、问题样本库、版本对比和上游策略回写。指标部分重点解释困惑度、类型/令牌比率、有毒性与个人身份信息（personally identifiable information，PII）密度、基准污染和领域覆盖等指标的适用边界。这些指标只是代理信号，需要与小规模验证器模型和人工抽检结合。后半章给出 5 Whys 根因复盘、周度运营节奏、仪表盘告警，以及数据资产向监督微调（supervised fine-tuning，SFT）和检索增强生成（retrieval-augmented generation，RAG）复用的路径。读者应能够将数据处理从一次性交付扩展为可追踪、可回滚、可审计的持续运营体系。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>数据运营；代理评估；质量闭环；DVC；问题样本库；A/B 测试；数据漂移；仪表盘</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够解释为什么预训练数据需要持续评估和版本化运营。</li>
+<li>能够设计 PPL、TTR、PII 密度、基准污染和领域覆盖等离线代理指标。</li>
+<li>能够使用问题样本库、DVC 版本和 A/B 测试定位数据变更的模型影响。</li>
+<li>能够建立数据质量看板、自动告警和周度运营节奏。</li>
+<li>能够将评估结论回写到采集、清洗、SFT 和 RAG 数据资产中。</li>
+</ul>
+<h2 id="_4">开篇：一次令人意外的"效果倒退"<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以下为匿名化复合案例，指标、时间和数据规模用于说明复盘方法。截至 2026-06，类似项目中的评测波动会受到模型规模、语料配比、训练步数和基准选择影响。某个 7B 语言模型研发项目中，数据团队经过两个月的努力，将预训练语料库清洗到非常严格的程度。他们使用启发式规则排除了大量短文本，用困惑度评分去除了“非标准语言”，并用较低的 MinHash 阈值进行查重。团队认为这是一版更干净、更可控的数据。</p>
+<p>然而，基于新版数据训练出的模型（代号 v2.0）在多项基准评测上的表现，全面落后于一个月前用粗糙数据（v1.0）训练的版本。深入排查后，团队发现了几个重要事实：
+1. 因为剔除了一切带有“大量换行和符号”的文本，模型几乎完全丧失了生成代码和渲染 Markdown 的能力。
+2. 因为剔除了“非标准口语化表达”，模型失去了在对话任务中的共情回应能力，变得像一台冰冷的百科全书。
+3. 严格的去重使得某些极高频事实（如常识地理、基础历史）在训练集中的出现频率过低，导致模型发生了严重的“知识遗忘”。</p>
+<p>这次复盘给团队带来一个关键结论：<strong>高质量并不是一个静态标准，脱离模型效果的“单方面洁净”并不充分。</strong></p>
+<p>本章将视角从具体的数据处理代码拉回系统工程层面，探讨大模型项目中的<strong>数据评估与运营迭代</strong>。我们将打破“交出数据就算完工”的传统偏见，建立以离线评估和代理指标驱动的数据治理循环，让数据成为一个随着模型能力增长而演进的持续资产。</p>
+<hr />
+<h2 id="71">7.1 为什么数据也需要持续运营<a class="headerlink" href="#71" title="Permanent link">&para;</a></h2>
+<h3 id="711">7.1.1 打破“一次性交付”的工程幻觉<a class="headerlink" href="#711" title="Permanent link">&para;</a></h3>
+<p>在传统的深度学习（如图像分类或序列标注）时代，数据集往往被视为静态资产：收集、标注、发布，然后长年冻结。基于这种范式，工程师习惯了“一次性交付”思维。</p>
+<p>然而在大语言模型（LLM）的预训练中，数据（Data）与模型（Model）的边界变得模糊。模型的不同成长阶段需要截然不同的数据配方。比如：在冷启动初期（0-100B Token），模型需要大规模广度信息来学习通用语法和基础世界知识；而在收敛后期或退火阶段（Cooldown），模型则需要高度稠密的高质量知识材料（数理化推理、代码结构）来提高能力上限。<strong>一套从头用到尾的静态数据，很难支撑高水平模型训练。</strong></p>
+<p>这使得数据工程师的角色从一次性数据交付者，转变为持续调整数据配方和质量边界的运营者；相应地，团队需要建立一套完整的数据运营（Data Operations，简称 DataOps）体系。</p>
+<h3 id="712">7.1.2 训练完成后再评估，为何已经太晚？<a class="headerlink" href="#712" title="Permanent link">&para;</a></h3>
+<p>传统链路常常是流水线式的：数据团队花一个月洗数据 → 训练团队花一个月跑完预训练跑道 → 评测团队进行基准测试验证效果。如果最终结果不如预期，溯源问题将变得困难：是数据本身不佳？还是采样配比失调？亦或是学习率或优化器的超参崩溃？</p>
+<p>由于 LLM 单次长周期训练的成本极为高昂，容错空间有限。如果不将评估体系前置，也就是在正式训练前先用代理指标和小规模验证器模型评估数据价值，项目团队往往只能在高成本训练结束后才发现数据问题。这就必须引入<strong>离线代理指标</strong>（Proxy Evaluation）与<strong>即时反馈运营</strong>。</p>
+<h3 id="713">7.1.3 数据运营与模型运营的边界协同<a class="headerlink" href="#713" title="Permanent link">&para;</a></h3>
+<p>在现代化的大模型研发组中，典型的协作边界与组织交叉点如下：</p>
+<ul>
+<li><strong>模型工程师</strong>：负责监控算力集群健康度、处理梯度异常（如 Gradient Norm Spike）、设计架构调优与退火策略。</li>
+<li><strong>数据工程师</strong>：关注数据的产线吞吐、Token 成本以及流水线错误处理。</li>
+<li><strong>数据运营负责人/评估负责人</strong>：这一岗位的职责是连接上述两侧——他们从模型的瞬时行为（如训练损失异常峰值、模型特定能力的急剧下滑）中定位具体问题批次，并指导上游及时切断或更新清洗规则。</li>
+</ul>
+<p>这种跨职能协同正是通过“运营飞轮”来实现的（见图7-1）。</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap07-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图7-1：数据运营飞轮图" src="../../../images/part2/Wang-Chap07-Fig01.svg" /></a></p>
+<p><em>图7-1：数据运营飞轮图</em></p>
+<hr />
+<h2 id="72">7.2 离线评估与在线代理指标设计<a class="headerlink" href="#72" title="Permanent link">&para;</a></h2>
+<p>解决评测滞后的关键手段，是设计能够脱离耗时主训练的代理指标（Proxy Metrics）。这涉及一套系统的检测动作，确保每一个版本的抽样数据在交给 GPU 之前，都经过可量化的质量检查。</p>
+<h3 id="721">7.2.1 统计分层与代表性评估<a class="headerlink" href="#721" title="Permanent link">&para;</a></h3>
+<p>首先要解决“评估什么”的问题。在万亿级 Token 的规模下进行全面的全量统计不仅耗费昂贵算力，而且通常没有必要。最核心的方法是<strong>分层抽样</strong>。</p>
+<p>具体实践中，根据文档所属的类别（新闻、维基、特定域名论坛、代码库），在数据序列化（Serialization）前按分层抽样策略抓取固定规模的数据沙箱。抽样率与 Token 规模不应写死，而应由批次规模、预算、置信区间和历史波动范围共同决定，并记录在当次数据版本说明中。所有离线分析都在这个子集上进行；如果该子集的分布呈现明显异常，就说明整个批次也存在较高风险。</p>
+<p>评估一个语料库通常包含以下四大核心维度（代理指标）：</p>
+<h3 id="722">7.2.2 核心离线代理指标解析（附计算逻辑）<a class="headerlink" href="#722" title="Permanent link">&para;</a></h3>
+<p>在预训练的漫长工程生命周期中，脱离具体业务聊“质量”是抽象的。工程师需要将感性的“好与坏”映射为代码可以运算、阈值可以卡控的客观数字。以下四大核心代理指标构成了质量体检报告的骨架：</p>
+<h4 id="1-perplexity-ppl">1. 语言学属性与困惑度（Perplexity, PPL）<a class="headerlink" href="#1-perplexity-ppl" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>检测目标</strong>：语料的基本流畅性、知识密度和语言正交性。</li>
+<li><strong>验证手段</strong>：使用一个成熟但体积较小的参照模型（Reference Model，例如使用 LLaMA-7B 基础版本，或在早期通过干净数据训练的 1B 验证版）对抽取出来的批次做无梯度的前向计算。</li>
+<li><strong>数学本质</strong>：困惑度本质上是交叉熵损失的指数形式（<span class="arithmatex">\(PPL = e^{Loss}\)</span>）。如果模型觉得这句话“常见、理所应当”，PPL 就会很低；如果觉得“令人困惑或像乱码”，PPL 就会飙升。</li>
+<li><strong>解读逻辑</strong>：这并不是一个“越低越好”的单向指标。</li>
+<li><strong>低分位异常</strong>：如果某一来源的 PPL 长期集中在极低区间，通常意味着样板代码（Boilerplate）、被无限复制的免责声明或过度去重遗留的 SEO 内容。模型在这些数据上学到的新信息有限。</li>
+<li><strong>高分位异常</strong>：如果某一来源的 PPL 长期处于异常高位，通常意味着格式乱码、未对齐的机器翻译文本或无序字符串。</li>
+<li><strong>优选区间</strong>：PPL 阈值必须绑定参照模型、分词器和语料类型。以神经网络参照模型和 n-gram 语言模型（如第5章 5.2.1节中的 KenLM）计算出的数值区间不可混用；生产系统应先在人工确认的干净样本上建立基线，再把偏离基线的分位数区间作为告警条件。</li>
+</ul>
+<p>代码清单7-1展示了离线困惑度抽样计算的示意实现。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 一个典型的离线困惑度抽样计算伪代码（基于 PyTorch 和 HuggingFace API）</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_perplexity_batch</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">cache_model_path</span><span class="o">=</span><span class="s2">&quot;llama-1b-ref&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">cache_model_path</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">cache_model_path</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">ppl_results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>            <span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>            <span class="c1"># 过滤过短文本，避免 PPL 计算震荡</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>            <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">input_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                <span class="k">continue</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>            <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">input_ids</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>            <span class="n">loss</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">loss</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>            <span class="n">ppl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>            <span class="n">ppl_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ppl</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="k">return</span> <span class="n">ppl_results</span>  <span class="c1"># 返回数组供下游生成直方图</span>
+</code></pre></div>
+<p><em>代码清单7-1：离线困惑度抽样计算示意代码</em></p>
+<p>生产环境应固定语言模型版本、分词方式和抽样口径，并记录批次级分布。</p>
+<h4 id="2-type-token-ratio-ttr">2. 多样性稀疏度（Type-Token Ratio, TTR &amp; 词汇覆盖率）<a class="headerlink" href="#2-type-token-ratio-ttr" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>检测目标</strong>：确认清洗管线是否由于阈值设定过度（或者是去重（MinHash）过于严酷），而导致小众知识或特定长尾词汇的永久流失。</li>
+<li><strong>验证手段</strong>：统计前述文档集内不同独特词汇（Type，如词表内单独的词根）和总文本序列长度（Token）的比值，即词型-词次比（Type-Token Ratio，TTR）。大跨度段落的 TTR 通常较低，故须用移动平均词型-词次比（Moving-Average Type-Token Ratio，MATTR）(Covington and McFall 2010) 作窗口平均化。</li>
+<li><strong>解读逻辑</strong>：如果目标文档沙箱的未重复词数、MATTR 或领域词覆盖率显著低于同类来源的历史基线，说明这批数据集可能存在严重的词汇多样性不足（可能源于大量的电商填充文本或者机翻循环）。长此以往，模型容易形成机械式、低信息量的回答风格。</li>
+</ul>
+<p>代码清单7-2展示了 Type-Token Ratio 的离线计算示意。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 典型的离线 TTR (Type-Token Ratio) 计算伪代码</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">calculate_ttr</span><span class="p">(</span><span class="n">texts</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="k">if</span> <span class="n">tokenizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="c1"># 退化为基于空格的简易分词</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">texts</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="c1"># 使用真实的 LLM 分词器</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">total_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">unique_types</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">if</span> <span class="n">total_tokens</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">return</span> <span class="mf">0.0</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="n">unique_types</span> <span class="o">/</span> <span class="n">total_tokens</span>
+</code></pre></div>
+<p><em>代码清单7-2：Type-Token Ratio 离线计算示意代码</em></p>
+<p>该片段用于展示多样性代理指标，生产环境应结合语种、领域和样本长度分层解释。</p>
+<ul>
+<li><strong>进阶验证 - 词汇覆盖（Coverage）</strong>：团队需要专门编纂一套领域词表（例如各类罕见病种、最新的冷门代码框架、或特定文学的人名全集）。如果在沙箱中，这类靶向词汇覆盖率显著低于历史基线或人工设定的最低覆盖要求，应给对应域名上游抓取添加白名单权重，并在下一轮抽检中验证是否引入噪声。</li>
+</ul>
+<h4 id="3-toxicity-pii-density">3. 有毒性与负向泄露率（Toxicity &amp; PII Density）<a class="headerlink" href="#3-toxicity-pii-density" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>检测目标</strong>：直接关系到商业落地的风控合规底线。检查有害内容（仇恨、恐怖、辱骂、软色情）以及 PII（个人身份、电话、密码信标）的清洗残留比率的稳定性。</li>
+<li><strong>验证手段</strong>：这是整个指标链中计算最密集的部分。通常需要调用一个专门为安全微调（Safety Tuning）的轻量化判别器（如 Perspective API (Lees et al. 2022) 的离线开源化变体，或者是用 RoBERTa 专门训练的 5 分类判别器），对抽样文章进行打分。</li>
+<li><strong>解读逻辑</strong>：</li>
+<li>毒性分数不应只看均值，还要关注 <strong>P99 或 P99.9 分位数</strong>。</li>
+<li>如果抽样中发现 P99 分位数得分越界，必须立刻触发隔离与复核；具体阈值应由安全判别器校准集和业务风险等级共同决定。</li>
+<li>此外，还需要对包含类似于 <code>sk-****</code> (API Token)、<code>13[0-9]*</code> (手机号码特征) 的文本触发率进行正则监控，确认 PII 屏蔽层没有在更新时意外抛错。</li>
+</ul>
+<h4 id="4-subpopulation-overlap">4. 领域分类与掺杂重叠（Subpopulation Overlap）<a class="headerlink" href="#4-subpopulation-overlap" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>检测目标</strong>：这是数据领域近年来最“高危”的一项指标，又名防止基准污染（Benchmark Contamination Prevention）。我们必须确认日常抓取的随机数据中，没有混入那些用于年终大考的高分基准试题（如 GSM8K (Cobbe et al. 2021) 的标准答案、MMLU (Hendrycks et al. 2021) 的英文原本）。一旦混入，将引发严重的科研诚信危机。</li>
+<li><strong>验证手段</strong>：将所有主流 Benchmark 的测试集数据进行 N-gram（通常是 13-gram 或 15-gram）全量散列哈希；随后对待入库的抽样数据做一次交集测算。</li>
+<li><strong>解读逻辑</strong>：重叠率（Overlap Ratio）必须无限趋近于零。若某批次语料相对评测集出现明显高于背景噪声的 N-gram 撞车，通常说明某个开源库、镜像站或个人 GitHub 仓库已经把评测内容重新发布进了本次流水线，必须执行定点摘除。</li>
+</ul>
+<h3 id="723">7.2.3 代理指标与真实效果的对齐偏差<a class="headerlink" href="#723" title="Permanent link">&para;</a></h3>
+<p>需要警惕的是：所有离线指标都只是“代理（Proxy）”，不能等同于最终生成语言质量。例如，大量灌注机器翻译语料虽然在 PPL 和 TTR 上都很漂亮，但由于长期遭受翻译腔（Translationese）污染，会使得训练出的模型在特定文化常识上频频发生幻觉。因此，对于不同质地的数据，最终还是要依靠持续构建小规模“验证器模型”。</p>
+<h3 id="724">7.2.4 评估指标与治理动作映射<a class="headerlink" href="#724" title="Permanent link">&para;</a></h3>
+<p>评估绝不能停留在“看看指标”的阶段。合格的评估报告，其终点必须是确凿的系统治理动作。参考下表：</p>
+<p>表7-1汇总了相应的对比和工程要点。</p>
+<p><em>表7-1：评估指标与治理动作映射</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">指标现象（离线/在线）</th>
+<th style="text-align: left;">常见诱因与表征</th>
+<th style="text-align: left;">候选治理动作（Action）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>抽样 TTR (多样性) 整体降低</strong></td>
+<td style="text-align: left;">MinHash 去重可能过于激进，杀伤了通用领域合理重叠</td>
+<td style="text-align: left;"><strong>提高判重阈值或转向更严格的重复定义，并引入领域专精词典保护</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>PPL 出现高分段长尾肥大</strong></td>
+<td style="text-align: left;">HTML标签清洗不彻底；新引入的数据含有大量乱码符</td>
+<td style="text-align: left;"><strong>回溯高 PPL 样本，补充 HTML 元素正则过滤项或加强语言识别置信度</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>代码能力评测直线下滑</strong></td>
+<td style="text-align: left;">缩进与换行在标准化过程中被机械抹除</td>
+<td style="text-align: left;"><strong>切断全局换行合并规则，对代码域名走独立解析旁路设计</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>模型在预训练中频发复读</strong></td>
+<td style="text-align: left;">特定站点的同一页面在不同时间快照被重复打包</td>
+<td style="text-align: left;"><strong>执行全量序列级 SHA256 排查，阻断源头或配置严格惩罚权重</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Loss 函数局部大幅度振荡</strong></td>
+<td style="text-align: left;">混入了格式严重恶劣、标点严重破碎的无意义数据堆砌</td>
+<td style="text-align: left;"><strong>依据 Batch ID 调出当前读取 shard，执行异常数据降权至黑名单或过滤</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Toxicity（毒性）急剧攀升</strong></td>
+<td style="text-align: left;">论坛抓取源（如 Reddit 等）爬取了黑产或敏感板块</td>
+<td style="text-align: left;"><strong>更新安全过滤模型，扩大停用词或不适宜公开场景内容（Not Safe For Work，NSFW）鉴别特征库，并执行历史清退</strong></td>
+</tr>
+</tbody>
+</table>
+<p>这种治理映射关系，使团队能将单纯的数据指标转化为下一轮工程优化的候选路线图；最终动作仍需结合样本复核和小规模验证实验确认。</p>
+<hr />
+<h2 id="73">7.3 版本迭代、抽检与根因复盘<a class="headerlink" href="#73" title="Permanent link">&para;</a></h2>
+<p>要让上述的评估发挥效用，组织层面必须建立以“版本对比（A/B Testing）”为基础的迭代机制与归因追踪。大模型的数据研发本质是一个不断校准参数配置与实际效果的工程过程，过程中出现局部回退是常见现象，关键在于从问题中提炼可复用规则。</p>
+<h3 id="731-dvc-ab">7.3.1 DVC视角下的数据集版本化与 A/B 对比<a class="headerlink" href="#731-dvc-ab" title="Permanent link">&para;</a></h3>
+<p>与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (DVC 2024)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。</p>
+<p><strong>A/B 测试原则</strong>：每次调整新管线（例如：新加入一批由 Reddit 高质量节点解析的数据，并增强针对该网站特定评论树的过滤逻辑），在全面上线前，应抽取等价算力启动小规模平行对照训练。对照实验规模要由模型大小、训练预算和目标评测灵敏度决定。只有在两组实验模型完成核心评测集后，证实目标能力达到预设上线门槛且通用世界常识指标未出现显著回退时，此套策略方可进入生产版本（例如 v2.1 升级至 v2.2）。</p>
+<h3 id="732">7.3.2 建立“问题样本库”与追溯回环<a class="headerlink" href="#732" title="Permanent link">&para;</a></h3>
+<p>复盘过程中，最有价值的财产就是“问题样本库（Issue Sample Pool）”。这些错误标签涵盖从源头 URL 解析错位、分类器漏杀、清洗误删到基准测试集泄漏（Contamination）等各环节。团队应该鼓励将训练过程中或者人工标注中发现的问题数据提取出来。</p>
+<p><strong>回溯链设置</strong>：单条错误样本的价值体现在它能反向暴露整个流水线的断口。</p>
+<ul>
+<li>这条携带攻击词的语料来自哪个爬虫源？（来源追踪）</li>
+<li>为什么没被过滤？（正则失效还是模型漏判）</li>
+<li>它是在哪一次修改后混入库中的？（责任溯源）</li>
+</ul>
+<h3 id="733-5-whys">7.3.3 从失败实验中沉淀 5 Whys 根因复盘框架<a class="headerlink" href="#733-5-whys" title="Permanent link">&para;</a></h3>
+<p>不要将精力损耗在彼此指责，而应运用系统的复盘模型来沉淀教训。工业界标准的“5个为什么（5 Whys）数据归因法”，通过逐层追问，把工程事故转化为可复用的治理规则：</p>
+<p><strong>5 Whys 异常排查与具体执行动作示例：</strong></p>
+<ul>
+<li>
+<p><strong>Why 1（表现层）</strong>：为什么这版模型生成代码时总是大量输出无意义的空白字符？
+  <em>执行动作：立刻调出线上报错日志，拦截并反推最新入库的导致该现象的 100 篇代码语料。</em></p>
+</li>
+<li>
+<p><strong>Why 2（机制层）</strong>：为什么这 100 篇代码语料的缩进全部变成了混乱的空白块？
+  <em>执行动作：检查数据解析流水线，发现在 <code>Markdown_to_Text</code> 转换时，<code>\n</code> 换行和 <code>\t</code> 被强制合并删除了。</em></p>
+</li>
+<li>
+<p><strong>Why 3（策略层）</strong>：为什么要在转换阶段强制合并换行？
+  <em>执行动作：翻阅 Git 提交记录（Blame），发现上周为了“降低小说语料的 PPL”，提交了一个全局去回车的清洗规则。</em></p>
+</li>
+<li>
+<p><strong>Why 4（架构层）</strong>：为什么一个针对小说的全局清洗规则，会污染到代码域名的语料库？
+  <em>执行动作：确认数据队列架构设计存在缺陷，不同领域（Domain）的数据在清洗管线中没有实施逻辑物理隔离。</em></p>
+</li>
+<li>
+<p><strong>Why 5（根因层/组织层）</strong>：为什么这个全局性高危规则合并主干前没有被拦截？
+  <em>治理动作：由于缺乏独立的自动化灰度审查拦截。必须立刻强制部署 CI/CD 管线中的“多领域回归沙箱试运行（Regression Sandbox Test）”，确保任何单领域策略改动不引起跨域污染。</em></p>
+</li>
+</ul>
+<h3 id="734">7.3.4 案例复盘：一次训练损失异常峰值的根因定位<a class="headerlink" href="#734" title="Permanent link">&para;</a></h3>
+<p>以下为匿名化复合案例，Token 数、Loss 数值、数据规模和成本为示例性参数。某大规模训练任务在第 870 亿个 Token 附近触发监控警报：原本平滑下降至 1.8 左右的训练 Loss，在 15 个 Step 内上升至 14.5，且该节点的 Gradient Norm 变为 NaN。模型工程师暂停训练并回滚到 100 步前的 Checkpoint，随后排查任务转交给数据资产运营团队。</p>
+<p>这是一次典型的由异常数据引发的训练不稳定现象。数据复盘团队接手后，启动了标准根因定位流程：</p>
+<p><strong>动作一：捕获异常批次（Batch Trapping）</strong>
+由于训练集被打散（Shuffle）过，直接在原文件中定位问题样本效率很低。团队从日志系统调出了出事前最晚加载到 GPU 的 Token IDs 序列，即第 86,995 个 Batch。</p>
+<p><strong>动作二：从 Token IDs 逆向逆分词（Detokenization）</strong>
+工程师将这串引发系统崩溃的 Token 数组，使用 TikToken 词库进行解码操作。结果显示：长达 4096 个 Token 的句子里几乎没有标点符号和常见字词，充斥着诸如 <code>\uA4\uB6\uFF\uC2</code> 的截断性乱码以及无意义的 Unicode 替代符（Placeholder）。这串高熵信息超出了模型注意力的稳定处理范围，引发了前向计算数值溢出（Overflow）。</p>
+<p><strong>动作三：批次寻根（Batch-to-Source Tracing）</strong>
+利用全局唯一标识符（Globally Unique Identifier，GUID），数据团队检索了该文档的血缘（Lineage）。结果指向三周前一次针对某公开学位论文 PDF 库的大规模拉取。</p>
+<p><strong>动作四：定位清洗器缺陷</strong>
+追查当时的清洗日志发现：这些 PDF 因为经过早期第三方软件加密，其底层文字层实际是经过混淆处理的字节流。这些乱码在经过传统的语言识别模型（FastText Language ID）时，被误判为某种低资源语言（置信度 0.92），从而逃过了“非标准文字比例过高”的过滤漏斗；随后，因为这串内容非常罕见，在去重阶段被保留为“独特内容”，最终进入高权重数据队列。</p>
+<p><strong>复盘与治理动作（Root Cause Action）</strong>
+查明真相后，团队立刻采取了三步走操作：
+1. <strong>隔离问题来源</strong>：将属于该来源的所有 PDF 解析数据从数据湖中隔离复核，共计 1.4 TB（约 3.5 亿 Token，示例口径）。
+2. <strong>规则补丁</strong>：给 FastText 语言模型前置一道“有效 UTF-8/目标语言字符占比检测器”，并设置主流自然语言中的标点符号密度下限。
+3. <strong>安全再审核</strong>：针对同批次入库的异构文本，额外增加一重利用小型 LLaMA 判别其能否符合基本语法结构的过滤门禁。</p>
+<p>这次成本较高的训练中断说明，数据运营团队必须能够从异常 Batch 追溯到源头文档、解析器版本和清洗规则，并把复盘结论固化为自动化检查。</p>
+<p>在正规的业务迭代体系中，每一个投产至主训练集群的数据批次，都必须附带如同软件发版般严谨的迭代纪要。下表为某生产线的标杆记录模板。</p>
+<p>表7-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表7-2：版本迭代记录模板</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">评估维度</th>
+<th style="text-align: left;">版本记录字段范例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>基础信息</strong></td>
+<td style="text-align: left;">版本号：v2.1 → v2.2；操作人：张三（DataOps）；提交日期：2026-X-X</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>主要变更（Changelog）</strong></td>
+<td style="text-align: left;">1. 扩充了 StackOverflow 中高质量问答（通过新爬虫接入，具体规模见版本报告）。<br>2. 调整 MinHash 的 Jaccard 阈值（示例：从宽松档切换到严格档）针对 Wikipedia 中文库的同源去重。<br>3. 修复了针对 <code>&lt;p&gt;</code> 标签误伤前序段落的正则表达式漏洞。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>规模变化</strong></td>
+<td style="text-align: left;">记录预期新增规模、清理去重后净增规模和累计 Token 数；具体数值需由数据版本报告自动生成。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>A/B 评测结果核心点</strong></td>
+<td style="text-align: left;">小规模对照实验中，目标能力评测达到预设上线门槛，通用基准未出现显著回退；具体数值需附实验报告。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>存在及预知风险（Known Issue）</strong></td>
+<td style="text-align: left;">在增加 StackOverflow 后，部分十分陈旧的回答掺入了模型。目前暂未剔除年份久远的贴文，计划在 v2.3 使用启发式时间戳过滤修复。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>最终审核结论</strong></td>
+<td style="text-align: left;">验证通过，允许挂载进 v2.2 生产主路队列提供预训练消费。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="74">7.4 数据运营仪表盘与组织协同<a class="headerlink" href="#74" title="Permanent link">&para;</a></h2>
+<p>面对动态复杂的实验管线，仅仅有 Excel 表格记录是不够的。一套统一可视化视角的“数据运营仪表盘（Data Operations Dashboard）”成为了链接训练与工程的调度核心。</p>
+<h3 id="741">7.4.1 数据质量看板的核心模块<a class="headerlink" href="#741" title="Permanent link">&para;</a></h3>
+<p>优秀的质量仪表盘应当由高到低俯视各项指标。主要包含：
+1. <strong>大盘状态统览</strong>：各域名源数据入库量、当前库存余量及已消费的进度百分比。
+2. <strong>清洗漏斗转化率（Yield Rate）</strong>：分阶段留存指标，如语言识别拦截占比、启发式过滤抛弃比率、模糊去重剔除率。任何步骤如骤降或飙升须直接标红告警。
+3. <strong>安全风险底线观测</strong>：记录每一周期 PII 或高敏有害文档查获数及屏蔽日志。
+4. <strong>抽检审计红绿灯</strong>：呈现每周随机抽出的一千条语料样本盲审得分趋势，以 1 至 5 分展示数据通顺度和正确性均线走势（自动化数据验证框架参见 Breck et al. 2019）。</p>
+<p>图7-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap07-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图7-2：数据评估闭环图" src="../../../images/part2/Wang-Chap07-Fig02.svg" /></a></p>
+<p><em>图7-2：数据评估闭环图</em></p>
+<h3 id="742-automated-alerts">7.4.2 自动化质量预警系统架构 (Automated Alerts)<a class="headerlink" href="#742-automated-alerts" title="Permanent link">&para;</a></h3>
+<p>仪表盘若只是静态报表，依赖人工每日巡查，必然存在遗漏风险。成熟的大模型数据工厂不仅拥有静态看板，也需要一套主动阻断与预警机制。这套预警架构往往建立在分布式的流式计算框架（如 Apache Flink 或 Spark Streaming）之上，实现低延迟的异常数据拦截。</p>
+<p><strong>第一级：基线漂移预警（Data Drift Alerts）</strong>
+每天，新的网络抓取语料、清洗后语料、甚至合成语料会持续进入数据湖。系统每天提取样本集计算分布熵（Entropy）。如果某类特定词频在当天批次中相对历史基线发生异常跃迁（可能是某域名爬虫陷入循环，不断下载冗余导航栏标签），Slack 或飞书频道会触发 <code>[P1-DataDrift]</code> 告警。数据流会被自动挂起（Suspended），直到工程师人工登录仪表板解除封控。漂移阈值应结合历史分布、业务容忍度和误报成本校准。</p>
+<p><strong>第二级：成本与时延红线预警</strong>
+数据预处理也是大量消耗 CPU 资源的。如果在看板上发现 <code>FastText</code> 或 <code>正则表达式过滤阶段</code> 的节点 CPU 核心打满，且数据吞吐量相对历史基线突然大幅下降。这类警报一旦触发，常见原因之一是某段包含“灾难性回溯”（Catastrophic Backtracking）的正则表达式在处理超长文档时发生了严重的时间复杂度爆炸（也就是正则表达式拒绝服务，Regular Expression Denial of Service，ReDoS）。此时调度系统可直接终止超时进程，保障主流水线不受阻。</p>
+<p><strong>第三级：多模态异常预警（面向下一代系统）</strong>
+随着图文多模态数据的引入（见第8章），看板上还需要增加图像坏链率（Broken Links）、文本-图片对比式图文预训练（Contrastive Language-Image Pre-training，CLIP）相似度极值监控。一旦一批语料中图文无关比例超过阈值，也应立即触发复核。</p>
+<h3 id="743">7.4.3 梯队化的责任边界体系<a class="headerlink" href="#743" title="Permanent link">&para;</a></h3>
+<p>在自动化监控与复核机制下，大型 AI 研发组织的权责边界可以被更清晰地量化，减少故障定位中的职责不清。</p>
+<ul>
+<li><strong>预训练数据架构（Data Infrastructure）组</strong>的北极星指标是稳定吞吐与单位 Token 成本（Cost_per_Token）。他们需要为下游提供高速、低存储 I/O 开销的分布式存储架构；如果 GPU 因为 <code>DataLoader</code> 瓶颈长期空转，这一团队需要负责定位和修复。</li>
+<li><strong>爬虫与数据采集引擎（Data Ingestion）组</strong>关注获取广度、覆盖度与合规（Legal/Copyright）安全。如果有 PII 或高风险有害样本逃逸进入训练场，他们需要承担源头排查责任。</li>
+<li><strong>预训练模型研究员（Pre-train Researchers）</strong>的核心视线则在于：使用怎样的架构（MoE还是Dense，MHA还是GQA）以及配置合理的超参数去充分利用硬件集群，能否通过当前的数据配比使得 Loss 严格按照 Scaling Law 下降。</li>
+<li><strong>数据质量评估（Data Ops / Evaluator）团队</strong>：维护质量看板与预警流，决定数据配比（如网页、代码、论文等来源的相对权重），并利用看板判断采集数据是否达到入库标准。他们还需要结合模型评测结果判断数据配方是否有效；如果某阶段评测效果明显下降，应推动训练暂停、样本回溯和规则更新。</li>
+</ul>
+<hr />
+<h2 id="75">7.5 周度运营节奏设计：一套典型的实操模板<a class="headerlink" href="#75" title="Permanent link">&para;</a></h2>
+<p>大模型的数据体系演进如果仅仅依靠事后复盘往往显得滞后，必须将评估、反馈与动作分解到极为高频的“周度迭代（Weekly Sprint）”中去。下面提供一套在万亿级别模型冲刺期，数据运营团队标准的周度敏捷模板。</p>
+<h3 id="751-metrics-review">7.5.1 周一：大盘核阅与指标审查会议 (Metrics Review)<a class="headerlink" href="#751-metrics-review" title="Permanent link">&para;</a></h3>
+<p><strong>核心参与者</strong>：数据工程师、数据产品经理、测试评价负责人。
+<strong>主要动线</strong>：
+1. <strong>周末预训练巡检</strong>：查看刚刚过去的周末内，主预训练分支持续输入的总 Token 数。核对 <code>nvidia-smi</code> 监控面板是否因 DataLoader 卡顿或存储 I/O 阻塞出现 GPU 空转现象（MFU 低于警戒线）。如果存在，需要立刻在当天的第一顺位记录 I/O 缺陷日志。
+2. <strong>离线检测报告开箱</strong>：针对周日晚间最新完成清洗的 T-1 批次数据，提取抽样测试沙箱的 KenLM (Heafield 2011) 困惑度（PPL）、类型/令牌比率（TTR）、文本长度分布直方图。
+3. <strong>指标异常警报排查</strong>：如果 PPL 均线相对历史基线突然上升，通常意味着最新接入的数据源包含未被解析干净的 HTML 杂质。如果安全阻截率（Toxicity Alert）相对基线异常抬升，可能与近期增加社群讨论源有关。在会议上不急于下结论，只确定需要深度钻取的异常点。</p>
+<h3 id="752-root-cause-analysis">7.5.2 周二与周三：异常追溯与小规模验证 (Root Cause Analysis)<a class="headerlink" href="#752-root-cause-analysis" title="Permanent link">&para;</a></h3>
+<p><strong>核心参与者</strong>：数据运营官、预训练数据工程师。
+<strong>主要动线</strong>：
+1. <strong>针对性盲审与打标</strong>：对周一会议发现的质量坍塌点，提取出 200 条左右的原生语料。运营评估团队人工进行抽样通读，判断规则是“误杀”（假阳性，将好文章删掉了）还是“漏杀”（假阴性，垃圾词汇绕过了正则防线）。
+2. <strong>清洗策略修正</strong>：如果发现问题是“某些代码域名下的特殊缩进导致行过滤逻辑出错”，工程师将在周二下午修正 <code>FastText</code> 或正则脚本逻辑，对问题语料的对应模块重新跑一边 Pipeline。
+3. <strong>微型实验排期</strong>：将新洗出的沙箱数据推送到小模型或短周期训练任务上，启动等价对照实验。具体模型规模和运行时长应由训练预算、目标指标灵敏度和排期决定。这正是 DVC（数据版本控制）发挥作用的阶段：严控变量，仅对比如 <code>v1.2_Base</code> 与 <code>v1.2_CodePatch</code> 的两组跑分。</p>
+<h3 id="753-data-mixing">7.5.3 周四：实验决策与数据配方调整 (Data Mixing)<a class="headerlink" href="#753-data-mixing" title="Permanent link">&para;</a></h3>
+<p><strong>核心参与者</strong>：预训练模型工程师、数据工程师、核心构架师。
+<strong>主要动线</strong>：
+1. <strong>A/B 效果对照</strong>：周四早晨，微型实验跑出结果。模型工程师将公布两组数据版本的验证集 Loss 曲线是否发生交叉，以及其在特定的下游测试基准（例如 MMLU (Hendrycks et al. 2021) Code 分项或 GSM8K (Cobbe et al. 2021)）上的通过率偏差。
+2. <strong>定性分析</strong>：如果新数据（<code>v1.2_CodePatch</code>）让目标代码能力达到预设门槛，且没有削弱通用的指令遵从度，那么这个清洗补丁（Patch）可以进入候选合并状态。
+3. <strong>数据重配子集比重</strong>：在本步骤，团队决定下一周正式推入大型集群的数据混合（Data Mix）。例如，若近期评测表明基础推理能力偏弱，可以提高 arXiv 论文、高质量书籍或数学题解的采样权重，并相对降低低价值开放网页样本的权重。具体比例需要通过消融实验校准。</p>
+<h3 id="754-production-release">7.5.4 周五：全量产线构建与封版交付 (Production Release)<a class="headerlink" href="#754-production-release" title="Permanent link">&para;</a></h3>
+<p><strong>核心参与者</strong>：全体基础架构团队。
+<strong>主要动线</strong>：
+1. <strong>周度版本封版（Freeze）</strong>：结合本周通过检验的修复脚本，从原始数据湖中递进式地提炼最新一版的增量 Token。所有元数据（Metadata）记录并更新，存入云托管环境，将指向该语料版本的指针更新至 DataLoader 的配置文件中。
+2. <strong>发布预演（Smoke Test）</strong>：在一组闲置节点上运行短周期拟真环境，确保这个混入了新权重的序列，在分词（Tokenization）装载、二进制压缩读取和 Tensor 拼装后，能被顺利推送进显卡且不报错。节点数和运行时长应由生产集群规模与历史故障模式决定。
+3. <strong>主训数据切换</strong>：确认无误后，周五晚间对“7B 主模型训练集群”执行平滑切换，模型将在下一个 Checkpoint 读取到最新的 <code>v1.3</code> 数据版本。整个工作流在此完成闭环。</p>
+<hr />
+<h2 id="76">7.6 从评估结论到采集/清洗策略的回写<a class="headerlink" href="#76" title="Permanent link">&para;</a></h2>
+<p>评估报告本身的价值，必须依赖能够对上游（采集与清洗）产生反向控制。如果不把发现转化为持久的治理规则策略资产，所谓的监控也仅仅只是一个报警器。</p>
+<h3 id="761">7.6.1 向“数据采集期”回写策略<a class="headerlink" href="#761" title="Permanent link">&para;</a></h3>
+<p>在预训练后期，运营评估往往会发现某些非常具体、狭窄的能力缺失（例如：模型在处理德语等少数语言表现突出，但在处理南亚某国特小语种时频繁陷入死循环；或者在量子物理领域经常出现幻觉）。</p>
+<p><strong>反向采集指令</strong>：此时需要向上游下达“靶向抓取”任务。比如，指定定向爬取特定领域的开源 PDF 书籍（例如 arXiv Physics 类别），或者采购特定机构财务报表数据库。这种根据能力短板决定数据挖掘方向的做法，是数据资本化的重要形式。盲目扩大通用爬虫规模，往往只会带来更重的低价值数据冗余。</p>
+<h3 id="762">7.6.2 向“数据清洗期”回写规则<a class="headerlink" href="#762" title="Permanent link">&para;</a></h3>
+<p>大部分在基准评测上的挫败，都可以归因为数据清洗体系的两类极端倾向：过度保留和过度过滤。</p>
+<ul>
+<li><strong>对抗过度去重</strong>：当模型生成明显缺少特定事件维度，发现该维度的一批新闻因为引用了相似的前情摘要，被 MinHash 近似去重规则全面过滤。我们需要回写规则：建立领域白名单（White-listing），或者通过提高特定主题下的重复判定阈值、改用更严格的重复定义来捞回被错杀的文档。</li>
+<li><strong>对抗知识污染</strong>：如果安全检测组在灰度发布时发现某些回答引向已关闭或高风险链接。通过源头域名 ID 反查，定位到某一类老旧网址库被篡改。必须立即在清洗侧将这些关联 Domain 加入高优先级拦截名单，并重新清洗该段语料。</li>
+</ul>
+<h3 id="763-sft-rag">7.6.3 沉淀为 SFT（指令微调）与 RAG 的可复用资产<a class="headerlink" href="#763-sft-rag" title="Permanent link">&para;</a></h3>
+<p>在大模型工程中，预训练语料清洗管线的最后也是最大的战略价值，就是“资产的向下流转”。</p>
+<p>那些在预训练期间经过一层层严酷的评估、人工的反复打磨，并最终导致模型跑分上涨的被称为“Golden Dataset（金标准数据集）”。这部分含金量最高的内容（例如格式完美的万字说明长文，或者自带极高清晰度图文排版的结构化数据），并不需要只用一遍就扔掉。</p>
+<p>在后期做 SFT（监督微调阶段）时，可以从这段极高质量的数据中反向抽取高质量的无监督问题，使用强大的教师模型（Teacher Model，例如 GPT-4）进行指令生成；在做 RAG（检索增强生成）系统时，预训练阶段留存下的干净、语义对齐且被切割成精巧 Token 长度的高质量文本块，直接就能无缝转化为外挂知识库中的向量索引源。</p>
+<p>这也是数据飞轮（Flywheel）之所以能持续转动的根本：一开始高昂的人工抽验测试和离线评估，换来的是整个工程团队不断加深的对“何为好数据”的手感和经验共识。最终留下的流水线配置和领域专有名词库，将成为超越一代训练模型的企业长期知识资本。</p>
+<hr />
+<h2 id="_5">本章小结<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本章阐述了以“数据评估、质量闭环与运营迭代”为核心的数据资产治理逻辑。我们从大模型训练阶段不可忽视的“一次性交付工程幻觉”说起，指出了如果将数据测试动作置于训练末端，返工代价会显著增加。</p>
+<p>为此，本章系统说明了建立“离线代理指标（PPL/TTR 等）”的必要性，并由此引出 DVC 版本比对、问题样本库留存、A/B Testing 实验，最终沉淀为包含四大运营动作周期的敏捷工作流。这使得大语言模型的数据研发不再是孤立的黑盒流程，而是一条能够通过效果缺失反推上游采集和清洗策略的质量闭环。</p>
+<p>从原始网页到质量把控、清洗去重、混合配比，再到高效流入 GPU，第二篇完成了文本预训练数据工程的主体链路。下一章将进入第三篇，讨论结构更复杂、成本更高、对齐要求更严格的多模态数据工程：<strong>第8章 图文对数据工程</strong>。</p>
+<h2 id="_6">参考文献<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, Ray A, Puri R, Krueger G, Petrov M, Khlaaf H, Sastry G, Mishkin P, Chan B, Gray S, Ryder N, Pavlov M, Power A, Kaiser L, Bavarian M, Winter C, Tillet P, Such F P, Cummings D, Plappert M, Chantzis F, Barnes E, Herbert-Voss A, Guss W H, Nichol A, Paino A, Tezak N, Tang J, Babuschkin I, Balaji S, Jain S, Saunders W, Hesse C, Carr A N, Leike J, Achiam J, Misra V, Morikawa E, Radford A, Knight M, Brundage M, Murati M, Mayer K, Welinder P, McGrew B, Amodei D, Sutskever I, Zaremba W (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Covington M A, McFall J D (2010) Cutting the Gordian Knot: The Moving-Average Type–Token Ratio (MATTR). Journal of Quantitative Linguistics 17(2):94-100. https://doi.org/10.1080/09296171003643098.</p>
+<p>Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.</p>
+<p>Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.</p>
+<p>Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207.</p>
+<p>DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data &amp; Models. Documentation: <a href="https://dvc.org/doc">https://dvc.org/doc</a>. Source repository: <a href="https://github.com/iterative/dvc">https://github.com/iterative/dvc</a>.</p>
+<p>Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28. https://doi.org/10.1145/3299887.3299891.</p>
+<p>Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the ACM CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.</p>
+<p>Whang S E, Roh Y, Song H, Lee J G (2023) Data Collection and Quality Challenges in Deep Learning: A Data-Centric AI Perspective. The VLDB Journal 32(4):791-813.</p>
+<p>Liang W, Tadesse G A, Ho D, Fei-Fei L, Zaharia M, Zhang C, Zou J (2022) Advances, Challenges and Opportunities in Creating Data for Trustworthy AI. Nature Machine Intelligence 4(8):669-677.</p>
+<p>Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of the 2nd SysML Conference.</p>
+<p>Chen D, Huang Y, Pan X, Jiang N, Wang H, Zhang Y, Ge C, Chen Y, Zhang W, Ma Z, Huang J, Lin W, Li Y, Ding B, Zhou J (2025) Data-Juicer 2.0: Cloud-Scale Adaptive Data Processing for and with Foundation Models. arXiv preprint arXiv:2501.14755.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

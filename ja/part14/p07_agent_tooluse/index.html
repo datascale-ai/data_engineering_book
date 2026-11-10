@@ -1,0 +1,2578 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p07_agent_tooluse/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目七：Agent Tool-Use 数据工厂 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#agent-tool-use" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目七：Agent Tool-Use 数据工厂
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p07_agent_tooluse/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p07_agent_tooluse/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-agent-tool-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：Agent Tool-Use 数据工厂的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）工具范围边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）执行环境边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）样本规模边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）安全能力边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p07" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P07 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-schema-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从工具 schema 到训练资产的 Agent 数据流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从工具 schema 到训练资产的 Agent 数据流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：工具规范层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：轨迹构造层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：执行评估层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 工程前置：Agent 数据工厂的关键面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 工程前置：Agent 数据工厂的关键面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 能力与边界定义面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 数据与接口组织面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 环境与执行控制面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 评测与安全校验面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 关键面的前置性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 工具规范层：schema 作为训练起点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 工具规范层：schema 作为训练起点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 工具 schema 作为第一步
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 工具规范的结构化实现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 为什么 schema 不只是字段列表
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 schema 在工程里的价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 任务规格与轨迹模板：任务日志之外的监督结构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 任务规格与轨迹模板：任务日志之外的监督结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 任务规格解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 模板与任务规格的组织方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 模板为什么重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4 当前项目的模板规模
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-successrecoveryblock" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 轨迹类型设计：success、recovery、block 并行建设
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 轨迹类型设计：success、recovery、block 并行建设">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-success" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 success 轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 recovery 轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 block 轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-recovery-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 代码里 recovery 和 block 是怎么被显式构造的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 为什么三类轨迹要同时存在
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 模拟执行环境：环境层作为约束面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 模拟执行环境：环境层作为约束面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 环境层解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 代码里环境层是怎么实现的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 Python 执行工具为什么值得单独写
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 模拟环境与真实环境的关系
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-p07" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 流程拆解：P07 是如何从定义到评估逐步落盘的
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 流程拆解：P07 是如何从定义到评估逐步落盘的">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 先定义，不先生成
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 先造轨迹，再进环境
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 先执行日志，再封装训练集
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 先评估，再检查一致性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-failure-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 恢复机制：failure 到 recovery 的监督价值
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 恢复机制：failure 到 recovery 的监督价值">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 失败为什么有价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 recovery 训练的本质
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-recovery-success" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 为什么 recovery 比 success 更接近真实世界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Memory 轨迹：记忆行为建模
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Memory 轨迹：记忆行为建模">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-memory-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 memory 在 Agent 中解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 为什么要单独建模 memory 行为
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 当前项目的 memory 信号
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 为什么 memory 数据特别适合早期显式构造
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 安全阻断：block 样本的边界作用
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 安全阻断：block 样本的边界作用">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-unsafe-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 unsafe block 在项目中解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 为什么 block 不等于“简单拒答”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.3 当前项目的安全信号
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.4 为什么 block 数据应该早期进入训练集
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 数据重组与训练封装：日志到训练接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 数据重组与训练封装：日志到训练接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 为什么原始日志不适合直接训练
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 轨迹重组的实现方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 训练接口层产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 指标体系：工具成功率之外的信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 指标体系：工具成功率之外的信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 当前项目的关键指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 为什么工具成功率不等于任务成功率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 为什么这组指标有工程意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 指标解读：恢复能力的权重
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 指标解读：恢复能力的权重">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 可用的 Agent 应该具备什么能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-recovery-success" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 recovery 为什么比“纯净 success 数据”更珍贵
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 为什么这层解读必须保留
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 评估与检查：表现评估与一致性检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 评估与检查：表现评估与一致性检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 评估回答什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 指标计算的结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 检查回答什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#174" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.4 检查机制的落地方式
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 当前项目的局限与风险：方法样板的边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 当前项目的局限与风险：方法样板的边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 工具范围仍然较小
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 调用层本身仍不够稳定
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 安全边界还不够丰富
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.4 为什么局限要提前写出来
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 扩展方向：走向更真实的企业 Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 扩展方向：走向更真实的企业 Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 扩展工具类型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 扩展跨工具链路
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 扩展跨会话状态
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#194" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.4 扩展安全治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#195" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.5 扩展评估维度
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-p07" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. P07 的关键位置：连接“会说”与“会做”的能力层
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 与普通函数调用数据的区别：Agent 行为数据的特征
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 与普通函数调用数据的区别：Agent 行为数据的特征">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 普通函数调用数据更强调单次映射
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212-agent-tool-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 Agent Tool-Use 更强调行为过程
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3 为什么这个区分必须在章节里写清楚
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-agent-p07" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 向其他 Agent 场景迁移：P07 的方法样板价值
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. 向其他 Agent 场景迁移：P07 的方法样板价值">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 哪些设计可以直接迁移
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 哪些部分不能直接照搬
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 最具迁移性的核心方法
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. 主要交付物清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. 主要交付物清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 工具与处理中间产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 训练接口产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 报告与验证产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. 结语：Agent 数据工厂要训练的，不只是调用动作，而是行为能力
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：场景库建设与上线前门禁
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：场景库建设与上线前门禁">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、场景库不能只覆盖成功路径
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、门禁应覆盖工具正确性、恢复能力和安全边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、场景库需要随着失败案例持续更新
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：Agent 行为数据的运营与复盘机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：Agent 行为数据的运营与复盘机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、复盘粒度应落在“行为链”上
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、运营机制要让多角色看同一条轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、Agent 数据工厂最终要服务持续迭代
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="agent-tool-use">项目七：Agent Tool-Use 数据工厂<a class="headerlink" href="#agent-tool-use" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；徐鑫；汪志立</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>P07 聚焦把 Agent 的工具使用行为组织成可训练、可评估、可扩展的数据资产。章节重点不在单个函数调用，而在工具规范、执行轨迹、恢复行为、安全边界和训练封装之间的完整数据链。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>工具规范与任务设计：明确 schema、调用条件和任务结构。</li>
+<li>执行轨迹与恢复建模：保留 success、failure、recovery 等不同类型行为链。</li>
+<li>安全边界与记忆机制：把 unsafe block、权限限制和记忆读写纳入监督对象。</li>
+<li>数据封装与评估验收：形成可训练样本、验证指标和检查机制。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>工具 schema -&gt; 任务设计 -&gt; 轨迹生成 -&gt; 模拟执行 -&gt; 恢复建模 -&gt; 安全阻断 -&gt; 数据封装 -&gt; 评估验收</strong></p>
+<p>这一结构对应的核心目标，是构建一条能够覆盖执行、恢复和安全控制的 Agent Tool-Use 数据流水线。</p>
+<hr />
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>Agent Tool-Use；工具调用；执行轨迹；恢复建模；安全阻断</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“Agent Tool-Use 数据工厂”为核心案例，目标是把工具 schema、任务环境和交互轨迹组织成 Agent 工具使用训练数据。轨迹组织参考 ReAct 的推理-行动协同范式 (Yao et al. 2023)，工具调用样本构造参考 Toolformer 中让语言模型学习使用工具的思路 (Schick et al. 2023)。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以模拟环境和可控工具集为主，不代表开放互联网或真实企业权限环境。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“工具规范、任务模板、模拟执行、轨迹采样、失败恢复和格式验收”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P07-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>工具 schema -&gt; 任务规格 -&gt; 模拟环境 -&gt; success/recovery/block 轨迹 -&gt; 质量检查 -&gt; Agent 数据集
+</code></pre></div></p>
+<p><em>代码清单P07-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括工具调用合法率、参数完整性、轨迹成功率、恢复路径覆盖、block 场景比例和格式合格率。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P07-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P07-1：Agent Tool-Use 出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工具契约</td>
+<td>schema 字段完整率、参数合法率和环境执行记录</td>
+<td>每类工具调用都应具备输入、输出、错误和权限边界</td>
+</tr>
+<tr>
+<td>行为轨迹</td>
+<td>success、recovery、block 轨迹比例与任务成功率</td>
+<td>不只展示成功路径，需保留失败恢复和安全阻断样本</td>
+</tr>
+<tr>
+<td>安全边界</td>
+<td>unsafe block 覆盖、权限拒绝记录和人工抽检结论</td>
+<td>公开样例不得诱导真实高风险工具执行</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自轨迹生成、执行模拟和人工抽查；风险集中在工具权限误设、不可执行轨迹和训练后误用。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。风险识别可参考 NIST AI RMF (NIST 2023) 与 OWASP LLM 应用风险清单 (OWASP Foundation 2025)，运行轨迹与调用日志的可观测性可参考 OpenTelemetry 的记录方式 (OpenTelemetry Authors 2026)。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="1-agent-tool-use">1. 项目背景：Agent Tool-Use 数据工厂的必要性<a class="headerlink" href="#1-agent-tool-use" title="Permanent link">&para;</a></h2>
+<p>通用大模型在开放域问答、摘要和写作等任务中已经展现出很强的语言能力，但一旦进入 Agent 场景，仅靠语言能力就明显不够了。</p>
+<p>最常见的问题有三类。</p>
+<p>第一类是<strong>动作失真</strong>。模型知道应该“去查一下”，但不知道该调用哪一个工具，或者明明应该查数据库却跑去搜索，明明应该先读记忆却直接回答。</p>
+<p>第二类是<strong>执行失真</strong>。模型虽然选对了工具，却填错了参数，或者没看懂工具 schema，或者拿到返回结果后不会继续往下推理。这说明会说“我要调用工具”，并不等于真的会执行工具链。</p>
+<p>第三类是<strong>边界失真</strong>。当用户请求涉及危险操作、越权访问或不该持久化的记忆时，模型可能仍然机械地执行。一个没有安全阻断与边界建模的 Agent，在真实场景里是风险较高的。</p>
+<p>因此，P07 的目标不是简单收集一些函数调用示例，而是搭建一个<strong>Agent Tool-Use 数据工厂</strong>，把工具定义、任务轨迹、恢复行为、记忆读写和安全阻断组织成一条可复用的数据生产线。</p>
+<p>这条生产线服务的不是一次性实验，而是一种方法论：</p>
+<blockquote>
+<p>当团队未来需要从简单单工具问答迁移到复杂多工具 Agent、企业 Copilot、工作流助手和具身任务代理时，可以复用的不是某个函数调用 prompt，而是这套“从工具规范到监督轨迹”的工程方法。</p>
+</blockquote>
+<p>图P07-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-1：Agent Tool-Use 数据工厂总览" src="../../../images/part14/p07/Yu-Project07-Fig01.svg" /></a>
+<em>图 P07-1：Agent Tool-Use 数据工厂总览</em></p>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立从工具规范到监督轨迹的转化链路。</strong>
+即把工具 schema、任务模板和执行环境，转成适合训练的结构化 Agent 数据。</p>
+<p><strong>目标二：建立覆盖 success、recovery、block 的轨迹体系。</strong>
+本项目不把所有样本都统一做成“成功调用案例”，而是明确保留成功轨迹、失败恢复轨迹和安全阻断轨迹，让模型学到更完整的行为分布。</p>
+<p><strong>目标三：建立 memory 与安全边界的辅助监督层。</strong>
+Agent 不只是工具调用器，它还涉及多轮上下文和持久状态管理。因此项目把 memory 读写与 unsafe block 作为独立而重要的训练信号建设。</p>
+<p><strong>目标四：形成训练侧可直接消费的数据资产。</strong>
+最终输出不仅包括中间执行日志，还包括 <code>agent_tooluse_dataset.jsonl</code>、<code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code>、<code>training_manifest.json</code> 等训练接口层产物。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了保持项目可复现性，本项目显式设置了若干边界。</p>
+<h4 id="1">1）工具范围边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>当前工具范围包括搜索、数据库、日历、Python 执行和 memory 等能力，但仍属于一个较小规模、可控范围内的工具集合，而不是完整企业级工具生态。</p>
+<h4 id="2_1">2）执行环境边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>本项目采用的是<strong>模拟执行环境</strong>，目标是低成本地复现 Agent 工具调用中的关键行为，而不是直接接入真实生产权限。这样做更适合教学、验证和方法展示。</p>
+<h4 id="3">3）样本规模边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>当前项目样本总量不算大，但轨迹类型较全，更适合作为方法演示与工厂雏形，而不是宣称已经覆盖真实世界全部 Agent 行为。</p>
+<h4 id="4">4）安全能力边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>项目已经纳入 unsafe block 和未授权调用约束，但相关边界仍然较为基础，距离真实上线场景中的复杂权限体系与攻防压力还有明显差距。</p>
+<h3 id="23">2.3 边界说明的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>边界写清楚需要重点关注。因为一个工程案例通常只有两种写法：</p>
+<ul>
+<li>一种是把项目写得“什么都能做”；</li>
+<li>另一种是把项目写成“在什么前提下能稳定做好什么”。</li>
+</ul>
+<p>后者明显更可信，也更适合被团队复用。</p>
+<hr />
+<h2 id="3-p07">3. 项目定位：P07 的能力链位置<a class="headerlink" href="#3-p07" title="Permanent link">&para;</a></h2>
+<p>如果把全书视作一条大模型数据工程能力链，那么 P07 位于“从对话模型走向可执行 Agent”的关键位置。</p>
+<p>前面的章节可能已经讨论过通用 SFT、偏好数据、RAG、垂直领域监督构造等方法论。本章的价值在于把这些方法进一步推向一个更接近系统行为的场景：<strong>工具使用</strong>。</p>
+<p>也就是说，本章不是重新讲一遍函数调用基础，而是展示：</p>
+<ul>
+<li>在一个需要真实动作闭环的场景里，监督数据该如何设计；</li>
+<li>为什么 success 轨迹并不足以支撑 Agent 行为学习；</li>
+<li>为什么 recovery 和 block 要和普通工具调用并行建设；</li>
+<li>为什么 memory 行为不能被当作普通文本上下文的附属物；</li>
+<li>如何在项目早期就把评估、检查、一致性和上线边界考虑进去。</li>
+</ul>
+<p>从这个意义上说，本章最重要的不是“工具清单”，而是回答一个更大的问题：</p>
+<blockquote>
+<p>Agent 数据工厂，究竟应该如何被设计成一套持续生产能力，而不是一堆零散的调用日志？</p>
+</blockquote>
+<hr />
+<h2 id="4-schema-agent">4. 整体架构：从工具 schema 到训练资产的 Agent 数据流水线<a class="headerlink" href="#4-schema-agent" title="Permanent link">&para;</a></h2>
+<p>从工程视角看，本项目可以拆成三层。</p>
+<h3 id="41">4.1 第一层：工具规范层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“Agent 面前究竟有哪些可调用能力，以及这些能力如何被机器理解”。主要包括：</p>
+<ul>
+<li>工具 schema 定义</li>
+<li>参数字段规范</li>
+<li>调用约束描述</li>
+<li>工具类别标注</li>
+<li>授权与风险边界说明</li>
+</ul>
+<p>这一步的目标不是生成样本，而是先把工具世界定义清楚。</p>
+<h3 id="42">4.2 第二层：轨迹构造层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何让模型看到有代表性的 Agent 行为”。主要包括：</p>
+<ul>
+<li>任务规格设计</li>
+<li>单步与多步轨迹模板</li>
+<li>success 轨迹生成</li>
+<li>recovery 轨迹生成</li>
+<li>memory 轨迹构造</li>
+<li>unsafe block 轨迹构造</li>
+</ul>
+<p>这一步是整个项目最核心的部分，因为它决定模型学到的是“一个会输出函数名的模型”，还是“一个会在环境中推进任务的 Agent”。</p>
+<h3 id="43">4.3 第三层：执行评估层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些轨迹是否真的可用于训练和验证”。主要包括：</p>
+<ul>
+<li>模拟环境执行</li>
+<li>工具日志记录</li>
+<li>事件级样本重组</li>
+<li>数据集封装</li>
+<li>指标评估</li>
+<li>项目检查脚本</li>
+</ul>
+<p>到这一步，项目才从“调用示例收集”变成“工程闭环”。</p>
+<p>图P07-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-2：Agent Tool-Use 三层架构图" src="../../../images/part14/p07/Yu-Project07-Fig02.svg" /></a>
+<em>图 P07-2：Agent Tool-Use 三层架构图</em></p>
+<hr />
+<h2 id="5-agent">5. 工程前置：Agent 数据工厂的关键面<a class="headerlink" href="#5-agent" title="Permanent link">&para;</a></h2>
+<p>Agent Tool-Use 数据工厂的难点，并不只是“把工具调用样本做出来”，而是先把哪些工程面需要被显式约束写清楚。随着行为复杂度上升，如果这些关键面混在一起，后面的轨迹生成、执行验证和训练封装就会迅速失控。</p>
+<p>当前项目至少涉及下面四个关键面。</p>
+<h3 id="51">5.1 能力与边界定义面<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>这一层负责定义工具边界、任务类型、恢复规则和安全约束。这里要先回答的是：什么叫“合理的 Agent 行为”，而不是只关心某条轨迹能不能验证。</p>
+<h3 id="52">5.2 数据与接口组织面<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>这一层负责 schema、JSONL 落盘、中间产物管理、切分、版本控制和检查脚本。它关注的是数据资产是否能稳定生产和复用。</p>
+<h3 id="53">5.3 环境与执行控制面<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>这一层负责实现模拟工具环境、构造返回结果、注入失败条件和记录执行日志。没有这一层，很多轨迹只能停留在纸面上。</p>
+<h3 id="54">5.4 评测与安全校验面<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>这一层负责定义 success、recovery、block 的判定标准，检查 memory 行为是否正确，评估安全边界是否被遵守，并保证报告与产物一致。</p>
+<h3 id="55">5.5 关键面的前置性<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>因为很多团队第一次做 Agent 数据时，卡住的不是“不会写函数调用”，而是没有把这些关键面前置写清，导致：</p>
+<ul>
+<li>工具 schema 没人维护；</li>
+<li>失败恢复逻辑没人定义；</li>
+<li>执行日志无法复盘；</li>
+<li>报告与训练集互相对不上；</li>
+<li>安全边界全靠上线前补丁。</li>
+</ul>
+<p>因此，需要被显式写清的不是岗位分工，而是工程约束本身。<strong>Agent Tool-Use 更像系统行为数据工程，而不是提示词技巧展示。</strong></p>
+<p>图P07-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-3：Agent 数据工厂关键工程面示意图" src="../../../images/part14/p07/Yu-Project07-Fig03.svg" /></a>
+<em>图 P07-3：Agent 数据工厂关键工程面示意图</em></p>
+<hr />
+<h2 id="6-schema">6. 工具规范层：schema 作为训练起点<a class="headerlink" href="#6-schema" title="Permanent link">&para;</a></h2>
+<p>和 10-2 相比，P07 这一章如果只写“为什么需要 schema”，会显得偏抽象。因为这个项目的价值，本来就不只在方法论，而在于<strong>代码里已经把 schema、模板、任务规格、执行日志和评估接口完整串起来了</strong>。从 notebook 展开的源码顺序也能看出，整个项目是按 <code>build_tooling -&gt; generate_trajectories -&gt; simulate_tool_env -&gt; prepare_agent_dataset -&gt; evaluate_tooluse -&gt; run_p7_checks</code> 这条主线组织的，而不是零散脚本堆叠。</p>
+<h3 id="61-schema">6.1 工具 schema 作为第一步<a class="headerlink" href="#61-schema" title="Permanent link">&para;</a></h3>
+<p>工具 schema 决定了模型至少要知道下面几件事：</p>
+<ul>
+<li>工具叫什么；</li>
+<li>它做什么；</li>
+<li>需要哪些参数；</li>
+<li>参数是什么类型；</li>
+<li>哪些调用是合法的；</li>
+<li>哪些场景不该调用。</li>
+</ul>
+<p>如果这一层定义不清楚，模型即便“想用工具”，也只能靠模糊猜测去调用。</p>
+<h3 id="62">6.2 工具规范的结构化实现<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>在 <code>src/build_tooling.py</code> 中，项目把工具规范、轨迹模板和任务规格都放在同一阶段生成，而不是先手写一堆 JSON 再由后续脚本被动读取。这里最关键的三个函数分别是：</p>
+<ul>
+<li><code>build_tool_schemas()</code>：生成工具定义；</li>
+<li><code>build_templates()</code>：生成轨迹模板；</li>
+<li><code>build_task_specs()</code>：生成任务规格。</li>
+</ul>
+<p>这三个函数的组合，实际上就是 P07 的“行为世界定义层”。它不是简单把工具名写出来，而是把后续轨迹生成和执行所依赖的约束一起固定下来。例如 <code>build_tool_schemas()</code> 里除了 <code>name</code> 和 <code>description</code>，还给出了 <code>risk_level</code>、<code>safety_boundary</code>、<code>parameters</code>、<code>returns</code> 和 <code>errors</code>，这使得 schema 同时承担了<strong>能力说明、边界说明和错误接口说明</strong>三种作用。</p>
+<p>一个高度概括的代码形态如下：</p>
+<p>代码清单P07-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># src/build_tooling.py</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_tool_schemas</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;search_docs&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Search an internal document corpus ...&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>            <span class="s2">&quot;risk_level&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>            <span class="s2">&quot;safety_boundary&quot;</span><span class="p">:</span> <span class="s2">&quot;Read-only search...&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>                <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;string, required&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;enum(...), required&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>                <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="s2">&quot;integer, optional, default=3&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="p">},</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>            <span class="s2">&quot;returns&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">...</span><span class="p">],</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="p">},</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="o">...</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P07-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段结构说明，项目并没有把工具看成“给模型的一段自然语言说明”，而是看成一组<strong>可以驱动后续数据构造的结构化对象</strong>。这也解释了为什么当前项目虽然只有 <code>6</code> 个工具 schema，但已经能够覆盖 search、db、calendar、code、memory、unsafe 等多类行为边界。</p>
+<h3 id="63-schema">6.3 为什么 schema 不只是字段列表<a class="headerlink" href="#63-schema" title="Permanent link">&para;</a></h3>
+<p>很多人把 schema 理解成“工具名 + 参数表”，但在 Agent 项目里，这还不够。更重要的是让 schema 成为后续所有模块的共同语言。只有这样，项目后面才能：</p>
+<ul>
+<li>基于 schema 自动生成任务模板；</li>
+<li>在执行时验证参数是否合规；</li>
+<li>在 recovery 轨迹中判断错误来自哪里；</li>
+<li>在训练中把调用行为统一封装为可学习格式。</li>
+</ul>
+<h3 id="64-schema">6.4 schema 在工程里的价值<a class="headerlink" href="#64-schema" title="Permanent link">&para;</a></h3>
+<p>schema 不是为了好看，而是为了让“工具定义—轨迹生成—环境执行—训练封装—评估检查”这几层之间能对齐。没有这层对齐，Agent 项目容易变成一堆互相孤立的脚本。</p>
+<p>图P07-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-4：工具 schema 结构示意图" src="../../../images/part14/p07/Yu-Project07-Fig04.svg" /></a>
+<em>图 P07-4：工具 schema 结构示意图</em></p>
+<hr />
+<h2 id="7">7. 任务规格与轨迹模板：任务日志之外的监督结构<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>很多团队一开始会想：既然目标是训练 Agent 工具使用，那就去收集一些历史调用日志不就够了吗？但真实情况是，日志并不天然等于监督数据。</p>
+<p>因为原始日志通常存在几个问题：</p>
+<ul>
+<li>行为分布由历史流量决定，不一定覆盖关键能力；</li>
+<li>失败样本杂乱无章，不一定能被直接学习；</li>
+<li>缺乏“为什么调用”“何时放弃”“如何恢复”的决策上下文；</li>
+<li>安全阻断和 memory 行为往往没有被单独建模。</li>
+</ul>
+<p>因此，本项目并不是直接拿日志训练，而是先设计<strong>任务规格与轨迹模板</strong>。</p>
+<h3 id="71">7.1 任务规格解决什么问题<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>任务规格的作用，是把“用户想做的事”和“Agent 应如何行为”连接起来。它定义的不只是请求文本，还包括：</p>
+<ul>
+<li>任务类别；</li>
+<li>可能涉及的工具；</li>
+<li>预期轨迹变体；</li>
+<li>是否允许恢复；</li>
+<li>是否涉及记忆；</li>
+<li>是否可能触发安全阻断。</li>
+</ul>
+<h3 id="72">7.2 模板与任务规格的组织方式<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p><code>src/build_tooling.py</code> 并没有把模板写成抽象配置，而是直接把模板形状显式编码成 <code>shape</code>。例如：</p>
+<p>代码清单P07-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># src/build_tooling.py</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_templates</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="p">{</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;single_tool_success&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;One user turn, one tool call, one final answer.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_plan&quot;</span><span class="p">,</span> <span class="s2">&quot;tool_call&quot;</span><span class="p">,</span> <span class="s2">&quot;observation&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_final&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="p">},</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="p">{</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            <span class="s2">&quot;template_id&quot;</span><span class="p">:</span> <span class="s2">&quot;multi_tool_chain&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;One user turn, multiple tool calls, aggregated final answer.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>                <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_plan&quot;</span><span class="p">,</span> <span class="s2">&quot;tool_call&quot;</span><span class="p">,</span> <span class="s2">&quot;observation&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                <span class="s2">&quot;tool_call&quot;</span><span class="p">,</span> <span class="s2">&quot;observation&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_final&quot;</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="p">],</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="p">},</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="o">...</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P07-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这样的写法把“轨迹模板”从抽象概念变成了<strong>可直接落盘、可直接检查、可直接被下游读取的结构</strong>。后面 <code>run_p7_checks.py</code> 之所以能检查 <code>templates_cover_single_multi_and_safety</code>，就是因为模板层已经被显式结构化了。</p>
+<p>同样，<code>build_task_specs()</code> 里并不只保存用户问题，还保存 <code>category</code>、<code>session_id</code>、<code>objective</code>、<code>query</code>、<code>domain</code>、<code>answer_text</code>、<code>recovery_mode</code> 等字段。也就是说，这一层定义的不是普通 prompt，而是“带执行意图的任务对象”。</p>
+<h3 id="73">7.3 模板为什么重要<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<p>模板并不是为了机械复制，而是为了让不同轨迹类型有统一骨架。这样做的好处是：</p>
+<ul>
+<li>success、recovery、block 能保持格式一致；</li>
+<li>不同任务之间更容易比较；</li>
+<li>后续训练与评估更容易做字段对齐；</li>
+<li>QA 可以更快定位问题。</li>
+</ul>
+<h3 id="74">7.4 当前项目的模板规模<a class="headerlink" href="#74" title="Permanent link">&para;</a></h3>
+<p>当前项目包含 <code>5</code> 个轨迹模板，并围绕这些模板生成 <code>22</code> 条原始轨迹。这说明项目并不是靠海量数据取胜，而是靠轨迹类型的代表性来搭建方法样板。</p>
+<p>图P07-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-5：任务规格与轨迹模板关系图" src="../../../images/part14/p07/Yu-Project07-Fig05.svg" /></a>
+<em>图 P07-5：任务规格与轨迹模板关系图</em></p>
+<hr />
+<h2 id="8-successrecoveryblock">8. 轨迹类型设计：success、recovery、block 并行建设<a class="headerlink" href="#8-successrecoveryblock" title="Permanent link">&para;</a></h2>
+<p>如果让一个团队凭直觉去做 Tool-Use 数据，最容易得到的数据集往往是这样的：</p>
+<blockquote>
+<p>用户提出请求 -&gt; 模型选工具 -&gt; 调用成功 -&gt; 返回答案</p>
+</blockquote>
+<p>这种样本当然有价值，但如果整个数据集都长这样，模型最终学到的只是“理想路径上的工具调用”。而真实 Agent 最难的部分，恰恰不在理想路径上。</p>
+<h3 id="81-success">8.1 success 轨迹<a class="headerlink" href="#81-success" title="Permanent link">&para;</a></h3>
+<p>success 轨迹解决的是最基础的问题：模型何时应该调用工具、如何构造参数、如何读取结果、如何完成任务。这是 Agent 的入门能力层。</p>
+<h3 id="82-recovery">8.2 recovery 轨迹<a class="headerlink" href="#82-recovery" title="Permanent link">&para;</a></h3>
+<p>recovery 轨迹解决的是更关键的问题：当第一次调用失败后，模型能否识别错误、修正参数、重新选择工具或重试执行。这一类样本直接决定模型是不是一个“遇错即停”的脆弱系统。</p>
+<h3 id="83-block">8.3 block 轨迹<a class="headerlink" href="#83-block" title="Permanent link">&para;</a></h3>
+<p>block 轨迹解决的是边界问题：当请求本身不该执行，或者工具调用越权、危险、不合规时，模型是否能够停下来，而不是继续把系统推向风险区域。</p>
+<h3 id="84-recovery-block">8.4 代码里 recovery 和 block 是怎么被显式构造的<a class="headerlink" href="#84-recovery-block" title="Permanent link">&para;</a></h3>
+<p>P07 最值得写进书稿的一点，是它并没有把 recovery 当成运行时偶发现象，而是<strong>在 <code>src/generate_trajectories.py</code> 中把 recovery 直接写成专门的轨迹构造函数</strong>。例如：</p>
+<ul>
+<li><code>build_search_recovery(task)</code></li>
+<li><code>build_db_recovery(task)</code></li>
+<li><code>build_search_db_recovery(task)</code></li>
+<li><code>build_memory_calendar_recovery(task)</code></li>
+<li><code>build_memory_db_recovery(task)</code></li>
+<li><code>build_blocked(task, reason)</code></li>
+</ul>
+<p>这意味着 recovery 不是“出错后顺便记一笔”，而是一个被有意识设计和生产的监督对象。</p>
+<p>例如 <code>build_search_recovery()</code> 的结构，先故意构造一个坏参数，再显式加入修复计划和第二次调用：</p>
+<p>代码清单P07-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># src/generate_trajectories.py</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_search_recovery</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">bad_args</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">],</span> <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;calendar&quot;</span><span class="p">,</span> <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">user_event</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="n">plan_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;I will try the search tool...&quot;</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">call_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;search_docs&quot;</span><span class="p">,</span> <span class="n">bad_args</span><span class="p">),</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">plan_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;The tool call failed, so I should fix the query arguments and retry.&quot;</span><span class="p">),</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">call_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="s2">&quot;search_docs&quot;</span><span class="p">,</span> <span class="n">corrected_args</span><span class="p">),</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">final_event</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P07-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段实现把“失败—分析—重试”的中间决策显式写了出来。对训练来说，这比只保留两次工具调用结果更有价值。</p>
+<p>而 <code>build_blocked(task, reason)</code> 更进一步，它直接生成不触发工具调用的阻断轨迹：</p>
+<p>代码清单P07-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># src/generate_trajectories.py</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_blocked</span><span class="p">(</span><span class="n">task</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">user_event</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">plan_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">reason</span><span class="p">),</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">final_event</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;blocked&quot;</span><span class="p">,</span> <span class="n">blocked</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P07-5：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这说明 block 并不是“工具调用失败”的副产物，而是一个独立的正当行为分支。</p>
+<h3 id="85">8.5 为什么三类轨迹要同时存在<a class="headerlink" href="#85" title="Permanent link">&para;</a></h3>
+<p>因为一个可用的 Agent，不只是会做事，还必须：</p>
+<ul>
+<li>在能做的时候做对；</li>
+<li>在做错的时候修回来；</li>
+<li>在不该做的时候停下来。</li>
+</ul>
+<p>这三类能力缺一不可。</p>
+<p>当前项目的变体分布为：<code>success = 10</code>、<code>recovery = 9</code>、<code>block = 3</code>。这组比例很有代表性，因为它说明项目并没有把 recovery 当成边角料，而是把它放到了几乎与 success 并重的位置。</p>
+<p>图P07-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-6：success / recovery / block 轨迹分层图" src="../../../images/part14/p07/Yu-Project07-Fig06.svg" /></a>
+<em>图 P07-6：success / recovery / block 轨迹分层图</em></p>
+<hr />
+<h2 id="9">9. 模拟执行环境：环境层作为约束面<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p>如果没有环境层，所谓轨迹往往只是静态文本：模型说“我要调用工具”，然后研究者手工把下一步写出来。这种做法适合演示，不适合工程。</p>
+<h3 id="91">9.1 环境层解决什么问题<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>环境层的作用，是把“纸面上的调用”变成“可执行的行为”。只有进入环境，项目才能真实记录：</p>
+<ul>
+<li>参数是否合法；</li>
+<li>工具是否返回成功；</li>
+<li>返回结果是什么；</li>
+<li>下一步是否应该重试；</li>
+<li>memory 是否被正确读写；</li>
+<li>安全规则是否被触发。</li>
+</ul>
+<h3 id="92">9.2 代码里环境层是怎么实现的<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<p><code>src/simulate_tool_env.py</code> 是这一章最适合结合代码讲的地方。它并没有接真实外部服务，而是先实现一组可控的模拟工具函数：</p>
+<ul>
+<li><code>search_docs(arguments, task_map)</code></li>
+<li><code>sql_customer_db(arguments, task_map)</code></li>
+<li><code>calendar_lookup(arguments, task_map)</code></li>
+<li><code>python_exec(arguments, task_map)</code></li>
+<li><code>memory_write(arguments, session_memory)</code></li>
+<li><code>memory_read(arguments, session_memory)</code></li>
+</ul>
+<p>这种拆法较为清楚：每一个工具都是一个可独立测试的函数，输入是 arguments 和任务上下文，输出统一为 <code>(success, payload)</code> 这样的二元结果。于是后面的执行器 <code>execute_trajectory()</code> 可以用统一接口逐步推进整条轨迹。</p>
+<p>一个高度概括的执行框架如下：</p>
+<p>代码清单P07-6 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># src/simulate_tool_env.py</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">execute_trajectory</span><span class="p">(</span><span class="n">trajectory</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">task_specs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">session_memory</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">executed_events</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">tool_logs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">total_calls</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">successful_calls</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="o">...</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">trajectory</span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">]:</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="n">executed_events</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;tool_call&quot;</span><span class="p">:</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>            <span class="n">total_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>            <span class="n">success</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">dispatch_tool</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>            <span class="n">tool_logs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>            <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>                <span class="n">successful_calls</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>                <span class="o">...</span>
+</code></pre></div></p>
+<p><em>代码清单P07-6：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段逻辑的关键价值在于：项目把轨迹、环境、工具日志和最终指标连在了一起。这样一来，“恢复成功率”和“unsafe block rate”这些指标才不是纸面统计，而是执行后的真实结果。</p>
+<h3 id="93-python">9.3 Python 执行工具为什么值得单独写<a class="headerlink" href="#93-python" title="Permanent link">&para;</a></h3>
+<p><code>python_exec()</code> 里有一个很好的安全示例：代码并不是直接无条件执行，而是先检查 <code>UNSAFE_CODE_TOKENS</code>，如果命中危险模式就返回 <code>unsafe_code</code>。这说明即使在模拟环境里，项目也已经把“可执行工具”视为风险更高的一类对象，而不是普通函数。这样的代码细节适合在最终稿里写成“工程上如何把安全边界前移”的例子。</p>
+<h3 id="94">9.4 模拟环境与真实环境的关系<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>模拟环境不是终点，但它是很好的起点。它让团队先把“轨迹是否合理、字段是否对齐、恢复逻辑是否成立、指标是否可评估”这些基础问题解决，再决定如何迁移到真实环境。项目整体报告也明确说明当前环境以模拟执行为主，而不是直接连接真实生产工具。</p>
+<p>图P07-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-7：模拟工具环境执行闭环图" src="../../../images/part14/p07/Yu-Project07-Fig07.svg" /></a>
+<em>图 P07-7：模拟工具环境执行闭环图</em></p>
+<hr />
+<h2 id="10-p07">10. 流程拆解：P07 是如何从定义到评估逐步落盘的<a class="headerlink" href="#10-p07" title="Permanent link">&para;</a></h2>
+<p>当前项目的核心流程可以概括为六步。</p>
+<ol>
+<li><code>src/build_tooling.py</code>：构建工具规范</li>
+<li><code>src/generate_trajectories.py</code>：生成轨迹样本</li>
+<li><code>src/simulate_tool_env.py</code>：模拟工具环境执行</li>
+<li><code>src/prepare_agent_dataset.py</code>：封装 Agent 数据集</li>
+<li><code>src/evaluate_tooluse.py</code>：评估工具使用数据</li>
+<li><code>src/run_p7_checks.py</code>：项目检查</li>
+</ol>
+<p>这六步并不复杂，但它们刚好对应了一个完整数据工厂所需的最小闭环。</p>
+<h3 id="101">10.1 先定义，不先生成<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>项目第一步不是“先找点数据”，而是先定义工具规范。这个顺序很关键，因为工具空间一旦没有被显式定义，后面生成的所有轨迹都可能建立在不稳固的基础上。</p>
+<h3 id="102">10.2 先造轨迹，再进环境<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>项目第二步先生成原始轨迹，而不是一开始就进入执行。这说明系统先关注“行为设计”，再进入“环境验证”，有助于把任务层和执行层拆开。</p>
+<h3 id="103">10.3 先执行日志，再封装训练集<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>项目并没有直接把执行过程写成训练样本，而是先留下事件级记录，再在后处理中重组为数据集。这种设计需要重点关注，因为它保留了分析、回放和返工的空间。</p>
+<h3 id="104">10.4 先评估，再检查一致性<a class="headerlink" href="#104" title="Permanent link">&para;</a></h3>
+<p>评估并不等于检查。评估回答的是“表现如何”，检查回答的是“代码、数据和报告是否一致”。把两者分开，是工程成熟度的一个明显信号。</p>
+<p>图P07-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-8：P07 六步流水线图" src="../../../images/part14/p07/Yu-Project07-Fig08.svg" /></a>
+<em>图 P07-8：P07 六步流水线图</em></p>
+<hr />
+<h2 id="11-failure-recovery">11. 恢复机制：failure 到 recovery 的监督价值<a class="headerlink" href="#11-failure-recovery" title="Permanent link">&para;</a></h2>
+<p>P07 最值得强调的一点，是它没有把失败样本简单丢掉，而是显式保留了 recovery 轨迹。</p>
+<h3 id="111">11.1 失败为什么有价值<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>对普通问答模型来说，错误输出当然是不希望出现的；但对 Agent 来说，“第一次失败”并不等于“整个任务失败”。很多真实任务的关键恰恰在于：模型能否在失败后继续推进。</p>
+<p>例如：</p>
+<ul>
+<li>参数格式错了，能否改正后重试；</li>
+<li>查不到结果，能否换一种查询方式；</li>
+<li>读到的记忆不充分，能否先补信息再继续；</li>
+<li>某个工具不适用，能否切换到替代工具。</li>
+</ul>
+<h3 id="112-recovery">11.2 recovery 训练的本质<a class="headerlink" href="#112-recovery" title="Permanent link">&para;</a></h3>
+<p>recovery 训练的本质，不是教模型“犯错”，而是教模型“如何从错误中恢复”。这和只训练成功路径相比，学习目标完全不同。</p>
+<h3 id="113-recovery-success">11.3 为什么 recovery 比 success 更接近真实世界<a class="headerlink" href="#113-recovery-success" title="Permanent link">&para;</a></h3>
+<p>真实用户环境里，工具会失败、参数会错、依赖会抖动、权限会变、查询会为空。如果模型只在训练中见过顺滑路径，它上线后就会较为脆弱。</p>
+<p>当前项目中，<code>recovery = 9</code>，几乎与 <code>success = 10</code> 同量级。这说明数据工厂把恢复行为当成主体能力，而不是“补几条失败案例意思一下”。</p>
+<p>图P07-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-9：参数修复与重试流程图" src="../../../images/part14/p07/Yu-Project07-Fig09.svg" /></a>
+<em>图 P07-9：参数修复与重试流程图</em></p>
+<hr />
+<h2 id="12-memory">12. Memory 轨迹：记忆行为建模<a class="headerlink" href="#12-memory" title="Permanent link">&para;</a></h2>
+<p>很多人第一次做 Agent 时，会把记忆简单理解为“把前文多拼一点”。但工程上 memory 行为远不止如此。</p>
+<h3 id="121-memory-agent">12.1 memory 在 Agent 中解决什么问题<a class="headerlink" href="#121-memory-agent" title="Permanent link">&para;</a></h3>
+<p>memory 解决的是状态问题。它让系统能够：</p>
+<ul>
+<li>记住用户偏好；</li>
+<li>记住之前执行过的动作；</li>
+<li>记住环境中已有的中间结果；</li>
+<li>在多轮任务里基于过去信息继续推进。</li>
+</ul>
+<h3 id="122-memory">12.2 为什么要单独建模 memory 行为<a class="headerlink" href="#122-memory" title="Permanent link">&para;</a></h3>
+<p>因为 memory 并不是普通自然语言上下文的线性延长，它包含了更明确的操作性：</p>
+<ul>
+<li>什么时候读；</li>
+<li>什么时候写；</li>
+<li>写什么；</li>
+<li>什么不该写；</li>
+<li>读出来之后如何影响后续决策。</li>
+</ul>
+<p>如果这些不被单独建模，模型就容易在两头出错：要么该记的不记，要么不该持久化的信息也写进去。</p>
+<h3 id="123-memory">12.3 当前项目的 memory 信号<a class="headerlink" href="#123-memory" title="Permanent link">&para;</a></h3>
+<p>当前训练集共有 <code>103</code> 条记录，其中 memory 记录 <code>34</code> 条，且 memory success rate 为 <code>100%</code>。这说明 memory 并不是项目中的附属项，而是一个被明确保留和单独统计的核心能力维度。</p>
+<h3 id="124-memory">12.4 为什么 memory 数据特别适合早期显式构造<a class="headerlink" href="#124-memory" title="Permanent link">&para;</a></h3>
+<p>因为 memory 的正确行为通常非常依赖规范。如果把它完全交给线上自然生成，很难得到高质量、可解释的训练信号。相反，早期通过受控模板显式构造，反而更容易建立稳定基础。</p>
+<p>图P07-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-10：Memory 读写轨迹示意图" src="../../../images/part14/p07/Yu-Project07-Fig10.svg" /></a>
+<em>图 P07-10：Memory 读写轨迹示意图</em></p>
+<hr />
+<h2 id="13-block">13. 安全阻断：block 样本的边界作用<a class="headerlink" href="#13-block" title="Permanent link">&para;</a></h2>
+<p>Agent 与普通生成模型相比，一个更危险的地方在于它真的会“动手”。一旦模型具备工具调用能力，安全问题就不再只是“说错话”，而可能变成“做错事”。</p>
+<h3 id="131-unsafe-block">13.1 unsafe block 在项目中解决什么问题<a class="headerlink" href="#131-unsafe-block" title="Permanent link">&para;</a></h3>
+<p>unsafe block 解决的是：</p>
+<ul>
+<li>请求是否越权；</li>
+<li>是否涉及危险操作；</li>
+<li>是否应拒绝执行；</li>
+<li>是否应只做信息性回应而不调用工具。</li>
+</ul>
+<h3 id="132-block">13.2 为什么 block 不等于“简单拒答”<a class="headerlink" href="#132-block" title="Permanent link">&para;</a></h3>
+<p>block 样本的价值，不只是让模型学会说“不行”，而是让它学会在工具使用场景下做<strong>结构化阻断</strong>：</p>
+<ul>
+<li>识别风险来源；</li>
+<li>不触发危险调用；</li>
+<li>在可行时提供更安全的替代说明；</li>
+<li>不让系统状态进入不受控区域。</li>
+</ul>
+<h3 id="133">13.3 当前项目的安全信号<a class="headerlink" href="#133" title="Permanent link">&para;</a></h3>
+<p>当前 unsafe block rate 为 <code>100%</code>，未授权工具调用率为 <code>0%</code>，训练集中的 safety 记录为 <code>9</code> 条。这说明尽管样本规模不大，但项目已经明确把安全边界纳入核心评估。</p>
+<h3 id="134-block">13.4 为什么 block 数据应该早期进入训练集<a class="headerlink" href="#134-block" title="Permanent link">&para;</a></h3>
+<p>因为安全边界如果只在推理侧用规则补，容易出现“模型想做，规则在拦”的对抗状态。更好的方式是让模型在训练时就学会哪些事情不该做。</p>
+<p>图P07-11展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig11.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-11：Unsafe block 决策分流图" src="../../../images/part14/p07/Yu-Project07-Fig11.svg" /></a>
+<em>图 P07-11：Unsafe block 决策分流图</em></p>
+<hr />
+<h2 id="14">14. 数据重组与训练封装：日志到训练接口<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>环境跑完之后，项目并没有直接把执行日志原样扔给训练框架，而是做了一步很关键的后处理：<strong>把事件级记录重组为训练资产</strong>。</p>
+<h3 id="141">14.1 为什么原始日志不适合直接训练<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>因为日志更适合机器记录，不一定适合模型学习。原始日志通常：</p>
+<ul>
+<li>粒度不统一；</li>
+<li>格式偏执行而非监督；</li>
+<li>缺少明确的 instruction / output 对齐；</li>
+<li>不利于做 train / val / smoke 切分；</li>
+<li>不便于后续版本管理。</li>
+</ul>
+<h3 id="142">14.2 轨迹重组的实现方式<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p><code>src/prepare_agent_dataset.py</code> 的关键，不是简单做文件拷贝，而是把整条轨迹拆成事件级训练记录。这里最核心的两个函数是：</p>
+<ul>
+<li><code>render_context(events)</code>：把用户、计划、工具调用、观察结果渲染成统一上下文；</li>
+<li><code>build_records(trajectory)</code>：基于执行后的轨迹，逐步生成训练记录。</li>
+</ul>
+<p>例如 <code>render_context()</code> 会把不同事件统一改写成可读的文本形式：</p>
+<p>代码清单P07-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># src/prepare_agent_dataset.py</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">render_context</span><span class="p">(</span><span class="n">events</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">rendered</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event_type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_plan&quot;</span><span class="p">,</span> <span class="s2">&quot;assistant_final&quot;</span><span class="p">}:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>            <span class="n">rendered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="k">elif</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;event_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;tool_call&quot;</span><span class="p">:</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>            <span class="n">rendered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;tool_call: </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;tool_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;arguments&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>            <span class="n">rendered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;observation: </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;tool_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">event</span><span class="p">[</span><span class="s1">&#39;content&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="k">return</span> <span class="n">rendered</span>
+</code></pre></div></p>
+<p><em>代码清单P07-7：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这一步很像把“系统日志”翻译成“训练可消费语境”。</p>
+<p>而 <code>build_records()</code> 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 <code>record_id</code>、<code>trajectory_id</code>、<code>task_id</code>、<code>category</code>、<code>variant</code> 等字段的监督记录。在本章示例中，<code>22</code> 条原始轨迹可扩展为 <code>103</code> 条训练记录；正式复现实验应同步保留轨迹清单和构建日志。</p>
+<h3 id="143">14.3 训练接口层产物<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<p>项目最终输出了：</p>
+<ul>
+<li><code>data/training/agent_tooluse_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<p>这说明项目的输出已经不是“几份运行结果”，而是一组可直接被训练侧消费的资产。</p>
+<p>图P07-12展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig12.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-12：事件日志到训练样本重组图" src="../../../images/part14/p07/Yu-Project07-Fig12.svg" /></a>
+<em>图 P07-12：事件日志到训练样本重组图</em></p>
+<hr />
+<h2 id="15">15. 指标体系：工具成功率之外的信号<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>做 Agent 项目时，很多团队最容易盯住一个数字：工具调用成功率。这个指标当然重要，但如果只看它，容易误判整个项目。</p>
+<h3 id="151">15.1 当前项目的关键指标<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>当前项目的核心指标包括：</p>
+<ul>
+<li>工具 schema：<code>6</code></li>
+<li>模板数量：<code>5</code></li>
+<li>原始轨迹：<code>22</code></li>
+<li>变体分布：<code>success = 10</code>、<code>recovery = 9</code>、<code>block = 3</code></li>
+<li>工具调用成功率：<code>78.57%</code></li>
+<li>轨迹成功率：<code>100.00%</code></li>
+<li>恢复成功率：<code>100.00%</code></li>
+<li>unsafe block rate：<code>100%</code></li>
+<li>memory success rate：<code>100%</code></li>
+<li>未授权工具调用率：<code>0%</code></li>
+<li>训练记录数：<code>103</code></li>
+</ul>
+<h3 id="152">15.2 为什么工具成功率不等于任务成功率<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>工具调用成功率衡量的是“单次调用是否顺利”，但轨迹成功率衡量的是“整个任务是否被完成”。如果项目显式建模了 recovery，那么某次单工具调用失败后被修复，并最终完成任务，这在 Agent 视角里仍然是成功。</p>
+<h3 id="153">15.3 为什么这组指标有工程意义<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>这组指标最有意思的地方就在于：工具调用成功率只有 <code>78.57%</code>，但轨迹成功率和恢复成功率都达到 <code>100%</code>。这恰恰说明 recovery 机制已经在数据层发挥了作用。</p>
+<p>这里的低工具成功率并不自动等于系统无效，反而可能意味着：项目确实把失败与修复纳入了训练信号，而不是只保留理想路径。</p>
+<hr />
+<h2 id="16">16. 指标解读：恢复能力的权重<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>一个常见的误区是：觉得好的 Agent 应该尽量“不出错”。在理想世界里当然如此，但从数据工程视角看，这个目标并不现实。</p>
+<h3 id="161-agent">16.1 可用的 Agent 应该具备什么能力<a class="headerlink" href="#161-agent" title="Permanent link">&para;</a></h3>
+<p>可用的 Agent，至少需要三层能力：</p>
+<ul>
+<li>第一层：正常情况下能完成任务；</li>
+<li>第二层：异常情况下能恢复任务；</li>
+<li>第三层：危险情况下能阻断任务。</li>
+</ul>
+<p>如果只训练第一层，那么模型在演示里看起来很漂亮，但在真实世界里会较为脆弱。</p>
+<h3 id="162-recovery-success">16.2 recovery 为什么比“纯净 success 数据”更珍贵<a class="headerlink" href="#162-recovery-success" title="Permanent link">&para;</a></h3>
+<p>因为 recovery 样本让模型学到的是一种更接近系统智能的行为：</p>
+<ul>
+<li>识别问题；</li>
+<li>理解失败原因；</li>
+<li>生成修复动作；</li>
+<li>再次尝试；</li>
+<li>在必要时切换策略。</li>
+</ul>
+<p>这些能力远比“第一次就成功”更难，也更有现实价值。</p>
+<h3 id="163">16.3 为什么这层解读必须保留<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>如果只报数字，78.57% 容易被误读为“偏低”的结果。但一旦放回 Agent 场景中，它反而说明项目没有美化数据，而是在如实保留并利用失败恢复行为。</p>
+<hr />
+<h2 id="17">17. 评估与检查：表现评估与一致性检查<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>很多项目做到能跑出指标就结束了，但在数据工厂语境里，这还不够。因为即使指标看起来合理，代码、数据、报告三者之间也可能并不一致。</p>
+<h3 id="171">17.1 评估回答什么问题<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>评估回答的是：</p>
+<ul>
+<li>工具调用整体是否有效；</li>
+<li>recovery 是否成功；</li>
+<li>memory 是否正确；</li>
+<li>block 是否生效；</li>
+<li>训练数据分布是否符合预期。</li>
+</ul>
+<h3 id="172">17.2 指标计算的结构<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p><code>src/evaluate_tooluse.py</code> 并不是简单统计条数，而是把工具层、轨迹层、恢复层、安全层和 memory 层指标放在同一份 <code>metrics</code> 字典中统一输出。这一点很适合在章节里点明，因为它体现了 P07 的评估对象不是单一 success，而是完整行为分布。</p>
+<p>从源码结构看，指标至少包括：</p>
+<ul>
+<li><code>tool_schema_count</code></li>
+<li><code>template_count</code></li>
+<li><code>trajectory_count</code></li>
+<li><code>category_distribution</code></li>
+<li><code>variant_distribution</code></li>
+<li><code>tool_call_success_rate</code></li>
+<li><code>trajectory_success_rate</code></li>
+<li><code>recovery_success_rate</code></li>
+<li><code>unsafe_block_rate</code></li>
+<li><code>unauthorized_tool_call_rate</code></li>
+<li><code>memory_success_rate</code></li>
+</ul>
+<p>也正因为评估脚本是基于执行后产物和 manifest 统一计算的，当前报告中才会同时出现“工具调用成功率 78.57%”与“轨迹成功率、恢复成功率均为 100%”这样的组合，而不是只报一个孤立数字。</p>
+<h3 id="173">17.3 检查回答什么问题<a class="headerlink" href="#173" title="Permanent link">&para;</a></h3>
+<p>检查回答的是：</p>
+<ul>
+<li>必要文件是否齐全；</li>
+<li>工具 schema 字段是否完整；</li>
+<li>模板是否覆盖单步、多步和安全场景；</li>
+<li>轨迹变体是否完整；</li>
+<li>观察与决策链是否存在；</li>
+<li>memory 相关 case 是否成功；</li>
+<li>代码和报告是否对得上。</li>
+</ul>
+<h3 id="174">17.4 检查机制的落地方式<a class="headerlink" href="#174" title="Permanent link">&para;</a></h3>
+<p><code>src/run_p7_checks.py</code> 先做命令级检查，再做数据/产物级检查。命令级检查里直接运行 <code>py_compile</code> 和 <code>evaluate_tooluse.py</code>；数据级检查里则逐条验证 <code>required_files_exist</code>、<code>tool_schema_fields_complete</code>、<code>templates_cover_single_multi_and_safety</code>、<code>variant_coverage</code>、<code>observations_and_decision_chain_present</code>、<code>memory_cases_succeed</code> 等规则。当前项目总检查项 <code>12</code> 个，全部通过，总体状态为 <code>PASS</code>。</p>
+<p>这一步需要重点关注，因为它让本章不只是“有一份 notebook 讲故事”，而是“有一条代码可验证、产物可核查、报告可回溯的工程闭环”。</p>
+<p>图P07-13展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig13.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-13：评估与检查双闭环图" src="../../../images/part14/p07/Yu-Project07-Fig13.svg" /></a>
+<em>图 P07-13：评估与检查双闭环图</em></p>
+<hr />
+<h2 id="18">18. 当前项目的局限与风险：方法样板的边界<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>写局限并不是削弱项目，而是在提高项目可信度。P07 目前至少有三个明确局限。</p>
+<h3 id="181">18.1 工具范围仍然较小<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<p>当前工具种类只有 <code>6</code> 类，能够展示方法，但还不足以逼近真实企业 Agent 中那些复杂、多权限、多系统耦合的工具空间。</p>
+<h3 id="182">18.2 调用层本身仍不够稳定<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<p>工具调用成功率 <code>78.57%</code> 说明原始调用层依然存在脆弱性。虽然 recovery 层把任务成功率拉回来了，但这并不意味着底层调用问题已经解决。</p>
+<h3 id="183">18.3 安全边界还不够丰富<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<p>现有 unsafe block 和未授权调用样本已经覆盖了最基本的边界，但距离真实世界中的越权链路、提示注入、敏感数据外传和复杂权限协商还有很大空间。</p>
+<h3 id="184">18.4 为什么局限要提前写出来<a class="headerlink" href="#184" title="Permanent link">&para;</a></h3>
+<p>因为一个方法样板价值，不在于假装自己已经解决了一切，而在于让后来者知道：下一步最值得投入的地方在哪里。</p>
+<hr />
+<h2 id="19-agent">19. 扩展方向：走向更真实的企业 Agent<a class="headerlink" href="#19-agent" title="Permanent link">&para;</a></h2>
+<p>如果把 P07 视作一个最小可复现的 Agent 数据工厂，那么下一步的扩展方向至少包括以下几类。</p>
+<h3 id="191">19.1 扩展工具类型<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<p>从当前的 search、db、calendar、code、memory 等基础工具，进一步扩展到邮件、文档、工单、审批、知识库、表格、工作流等更接近企业真实场景的能力。</p>
+<h3 id="192">19.2 扩展跨工具链路<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<p>很多真实任务不是单工具完成的，而是需要检索、查询、计算、写入、通知等多步骤协作。后续可以重点补强这类跨工具链路样本。</p>
+<h3 id="193">19.3 扩展跨会话状态<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>目前项目已经覆盖 memory，但更复杂的长期状态管理、会话切换、任务恢复和历史依赖仍值得继续建设。</p>
+<h3 id="194">19.4 扩展安全治理<a class="headerlink" href="#194" title="Permanent link">&para;</a></h3>
+<p>未来可以引入更丰富的越权调用、提示注入、敏感信息泄露、数据污染和策略绕过场景，让安全边界接近上线前要求。</p>
+<h3 id="195">19.5 扩展评估维度<a class="headerlink" href="#195" title="Permanent link">&para;</a></h3>
+<p>除了当前指标外，还可以增加更细粒度的工具选择准确率、参数正确率、重试效率、最终回答质量和多轮一致性指标。</p>
+<p>图P07-14展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p07/Yu-Project07-Fig14.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P07-14：P07 后续演进路线图" src="../../../images/part14/p07/Yu-Project07-Fig14.svg" /></a>
+<em>图 P07-14：P07 后续演进路线图</em></p>
+<hr />
+<h2 id="20-p07">20. P07 的关键位置：连接“会说”与“会做”的能力层<a class="headerlink" href="#20-p07" title="Permanent link">&para;</a></h2>
+<p>在许多入门材料中，大模型工程仍停留在“让模型回答更像样”这一步。但 Agent 场景提出了一个更高的要求：模型不仅要会说，还要会做；不仅要会做，还要能在做错时修回来；不仅要能修回来，还要知道什么时候根本不该做。</p>
+<p>P07 的意义就在这里。它不是要证明自己已经是一个成熟企业 Agent，而是要说明：</p>
+<ul>
+<li>工具使用行为可以被结构化；</li>
+<li>恢复轨迹可以被训练化；</li>
+<li>记忆行为可以被显式建模；</li>
+<li>安全阻断可以进入监督层；</li>
+<li>执行、评估和检查可以形成闭环。</li>
+</ul>
+<p>这使得它在整体能力链中承担了一种承上启下的作用：它把“语言监督”推进到了“行为监督”。</p>
+<hr />
+<h2 id="21-agent">21. 与普通函数调用数据的区别：Agent 行为数据的特征<a class="headerlink" href="#21-agent" title="Permanent link">&para;</a></h2>
+<p>表面看，P07 也包含工具 schema、调用参数和执行结果，因此有人可能会觉得它和常见 function calling 数据没有本质区别。但其实二者差异很大。</p>
+<h3 id="211">21.1 普通函数调用数据更强调单次映射<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>传统 function calling 样本通常关心的是：</p>
+<ul>
+<li>用户意图是什么；</li>
+<li>应该调用哪个函数；</li>
+<li>参数如何填充；</li>
+<li>返回值如何呈现。</li>
+</ul>
+<p>这是一种“输入 -&gt; 调用 -&gt; 输出”的静态映射。</p>
+<h3 id="212-agent-tool-use">21.2 Agent Tool-Use 更强调行为过程<a class="headerlink" href="#212-agent-tool-use" title="Permanent link">&para;</a></h3>
+<p>P07 更强调的是：</p>
+<ul>
+<li>为什么现在应该调用工具；</li>
+<li>如果调用失败怎么办；</li>
+<li>如果需要多轮记忆怎么办；</li>
+<li>如果请求危险怎么办；</li>
+<li>如何把多步行为沉淀为训练资产。</li>
+</ul>
+<p>这已经不是简单的 function calling，而是更接近“可执行智能体的行为数据工程”。</p>
+<h3 id="213">21.3 为什么这个区分必须在章节里写清楚<a class="headerlink" href="#213" title="Permanent link">&para;</a></h3>
+<p>因为很多团队会低估 Agent 数据难度，觉得多加几个函数调用样本就够了。P07 恰好说明：困难的不是“能不能调”，而是“调错了怎么办、该停时能不能停、跨轮时能不能记住”。</p>
+<hr />
+<h2 id="22-agent-p07">22. 向其他 Agent 场景迁移：P07 的方法样板价值<a class="headerlink" href="#22-agent-p07" title="Permanent link">&para;</a></h2>
+<p>Agent Tool-Use 并不是唯一需要行为数据工厂的方向，但它是一个较好的样板。原因在于，它同时具备以下特征：</p>
+<ul>
+<li>工具空间明确；</li>
+<li>行为链可拆解；</li>
+<li>恢复机制重要；</li>
+<li>安全边界刚性；</li>
+<li>评估闭环必要。</li>
+</ul>
+<p>这些特征，其实同样存在于企业 Copilot、自动化工作流助手、开发助手、运维助手和多代理协作系统中。</p>
+<h3 id="221">22.1 哪些设计可以直接迁移<a class="headerlink" href="#221" title="Permanent link">&para;</a></h3>
+<ul>
+<li>从工具 schema 到任务规格的定义链路；</li>
+<li>success / recovery / block 并行建设的思路；</li>
+<li>模拟环境先行、真实环境后接入的策略；</li>
+<li>memory 与安全边界单独建模的做法；</li>
+<li>训练封装与检查闭环。</li>
+</ul>
+<h3 id="222">22.2 哪些部分不能直接照搬<a class="headerlink" href="#222" title="Permanent link">&para;</a></h3>
+<ul>
+<li>工具种类和权限体系必须重写；</li>
+<li>企业场景中的安全边界通常更复杂；</li>
+<li>多团队协作的工作流比单 Agent 场景更难；</li>
+<li>真实系统的异常类型远多于模拟环境。</li>
+</ul>
+<h3 id="223">22.3 最具迁移性的核心方法<a class="headerlink" href="#223" title="Permanent link">&para;</a></h3>
+<p>能迁移的不是某个调用模板，而是这条方法链：</p>
+<blockquote>
+<p>定义工具空间 -&gt; 设计任务规格 -&gt; 构造 success / recovery / block 轨迹 -&gt; 在环境中执行并记录 -&gt; 重组为训练资产 -&gt; 建立评估与检查闭环。</p>
+</blockquote>
+<hr />
+<h2 id="23_1">23. 主要交付物清单<a class="headerlink" href="#23_1" title="Permanent link">&para;</a></h2>
+<p>这里给出主要交付物清单。</p>
+<h3 id="231">23.1 工具与处理中间产物<a class="headerlink" href="#231" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/tool_schemas.json</code></li>
+<li><code>data/processed/trajectory_templates.json</code></li>
+<li><code>data/processed/task_specs.json</code></li>
+<li><code>data/processed/raw_trajectories.jsonl</code></li>
+<li><code>data/processed/executed_trajectories.jsonl</code></li>
+<li><code>data/processed/tool_execution_log.jsonl</code></li>
+<li><code>data/processed/execution_summary.json</code></li>
+</ul>
+<h3 id="232">23.2 训练接口产物<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/training/agent_tooluse_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<h3 id="233">23.3 报告与验证产物<a class="headerlink" href="#233" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/reports/p7_report.md</code></li>
+<li><code>data/reports/p7_metrics.json</code></li>
+<li><code>data/reports/p7_test_results.json</code></li>
+<li><code>data/reports/p7_test_report.md</code></li>
+</ul>
+<p>这份交付物列表说明，P07 最终沉淀下来的不是“验证一次实验”，而是一套从工具定义到训练接口再到评估报告的完整资产。</p>
+<hr />
+<h2 id="24-agent">24. 结语：Agent 数据工厂要训练的，不只是调用动作，而是行为能力<a class="headerlink" href="#24-agent" title="Permanent link">&para;</a></h2>
+<p>很多人在看到 Tool-Use 项目时，第一反应是把它理解成“让模型学会调用函数”。但 P07 所展示的，其实是更深一层的东西：</p>
+<p>它训练的不是一个机械 API 触发器，而是一个在工具世界中工作的行为系统。这个系统需要知道：</p>
+<ul>
+<li>什么情况下应该行动；</li>
+<li>行动时该如何调用；</li>
+<li>调错了怎样修复；</li>
+<li>有状态时如何记忆；</li>
+<li>有风险时如何停止。</li>
+</ul>
+<p>从这个意义上说，P07 的价值并不只在于它现在有多少样本、多少工具、多少指标，而在于它明确回答了一个对 Agent 时代需要重点关注的问题：</p>
+<blockquote>
+<p>如果我们想让模型学会“做事”，那就必须把行为本身变成数据工程对象。</p>
+</blockquote>
+<p>这正是 Agent Tool-Use 数据工厂的核心意义。</p>
+<hr />
+<h2 id="_11">专题：场景库建设与上线前门禁<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>Agent Tool-Use 项目在落地前，最容易出问题的地方并不是“模型会不会调工具”，而是“团队有没有把场景库和门禁条件建完整”。如果只有少量演示任务，系统看起来很聪明；一旦进入真实环境，工具空间、异常类型和安全要求同时放大，问题就会迅速暴露。</p>
+<h3 id="_12">一、场景库不能只覆盖成功路径<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>一个可用的 Agent 场景库，至少应同时覆盖三类内容：</p>
+<ul>
+<li>常规成功任务，验证模型能否在标准前提下完成目标；</li>
+<li>恢复型任务，验证模型在工具失败、参数缺失或环境冲突时能否回到正轨；</li>
+<li>阻断型任务，验证模型在越权、敏感或不合规请求前能否停下来。</li>
+</ul>
+<p>这三类任务缺一不可。只有 success，没有 recovery，系统会在真实环境中显得脆弱；只有 success 和 recovery，没有 block，系统就会在高风险场景里失控。P07 当前最有方法价值的地方，就是已经把这三种轨迹视为并列资产，而不是把恢复和阻断当成附属样本。</p>
+<h3 id="_13">二、门禁应覆盖工具正确性、恢复能力和安全边界<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>Agent 项目上线前，至少值得建立三道门禁：</p>
+<ul>
+<li>工具正确性门禁，确认模型会选对工具、填对关键参数、理解返回结果；</li>
+<li>恢复能力门禁，确认模型在报错、冲突和中断后能采取合理的下一步；</li>
+<li>安全边界门禁，确认模型不会在禁止条件下继续行动，也不会被简单诱导绕过策略。</li>
+</ul>
+<p>如果系统只通过第一道门禁，看起来像“会用工具”，但实际上还不具备进入真实流程的资格。因为真实流程中，错误与风险几乎一定会发生，恢复能力和安全阻断能力并不是少数边角需求，而是主链能力。</p>
+<h3 id="_14">三、场景库需要随着失败案例持续更新<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>P07 这类项目的场景库不应该是一次性写完的，而应该随着 failure replay 持续增长。每当系统在某类场景里出现以下问题时，都值得把它吸收到场景库中：</p>
+<ul>
+<li>工具选对了，但参数理解错了；</li>
+<li>工具调用失败后重复犯同样的错误；</li>
+<li>本应转向 memory 或澄清步骤，却盲目继续执行；</li>
+<li>明明触发了安全策略，却仍试图寻找绕过路径；</li>
+<li>多工具协作时中间状态丢失，导致后续行为漂移。</li>
+</ul>
+<p>这样建设出来的场景库，才能代表系统最脆弱的边界，而不是只代表系统最擅长展示的部分。</p>
+<hr />
+<h2 id="agent">专题：Agent 行为数据的运营与复盘机制<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h2>
+<p>和普通函数调用样本相比，Agent 行为数据更像一种“操作日志资产”。既然它描述的是行为过程，就更需要运营和复盘机制来不断校正。否则，哪怕训练集不断变大，团队也可能只是把旧问题换一种方式继续积累。</p>
+<h3 id="_15">一、复盘粒度应落在“行为链”上<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>很多团队在复盘 Agent 问题时，习惯只看最终结果：任务成功了还是失败了。但对 Tool-Use 来说，更有效的复盘粒度通常是行为链本身。例如：</p>
+<ul>
+<li>第一步为什么选了这个工具；</li>
+<li>第二步为什么忽略了返回值里的警告；</li>
+<li>第三步为什么没有触发澄清；</li>
+<li>第四步为什么在越权条件下仍继续执行；</li>
+<li>最终失败是因为单步错误，还是因为整个策略路径不合理。</li>
+</ul>
+<p>只有把复盘粒度落在行为链上，团队才有机会把问题转回训练资产，而不是停留在“这次又没做对”的模糊描述里。</p>
+<h3 id="_16">二、运营机制要让多角色看同一条轨迹<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>Agent 项目天然涉及多种角色：数据工程、模型工程、平台、安全、产品。不同角色对同一个问题的关注点并不一样，但最好让他们都围绕同一条轨迹讨论，而不是各看各的摘要。</p>
+<p>一个更有效的运营方式通常是：</p>
+<ul>
+<li>统一保留关键轨迹与执行日志；</li>
+<li>在评测报告中显式列出代表性 success、recovery 和 block 案例；</li>
+<li>对高风险失败场景建立固定 replay 集；</li>
+<li>在版本评审时优先讨论“哪些轨迹已修复，哪些轨迹仍未稳定”。</li>
+</ul>
+<p>这样做的价值，在于让不同角色虽然关注点不同，但能对系统问题形成同一幅画面。对于行为型系统来说，这种共享视图需要重点关注。</p>
+<h3 id="agent_1">三、Agent 数据工厂最终要服务持续迭代<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h3>
+<p>P07 当前已经展示了一个很关键的方法论：行为数据不是生成出来就结束，而是要在执行、评估、复盘和再训练中不断循环。未来如果继续扩展到更真实的企业 Agent 环境，这条循环会越来越重要。</p>
+<p>从长期看，团队最需要沉淀下来的不是某个单独模板，而是以下能力：</p>
+<ul>
+<li>能持续新增高价值场景；</li>
+<li>能持续把失败案例转成 replay 与训练样本；</li>
+<li>能持续更新安全边界和阻断规则；</li>
+<li>能持续跟踪多轮记忆、恢复效率和最终任务完成率。</li>
+</ul>
+<p>只要这几件事开始形成固定节奏，Agent Tool-Use 数据工厂就不再只是一个项目章节，而会逐步演化成行为数据基础设施。</p>
+<h2 id="_17">本章小结<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h2>
+<p>本章以“Agent Tool-Use 数据工厂”为案例，展示了把工具 schema、任务环境和交互轨迹组织成 Agent 工具使用训练数据的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以模拟环境和可控工具集为主，不代表开放互联网或真实企业权限环境。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_18">参考文献<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h2>
+<p>Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.</p>
+<p>Schick T, Dwivedi-Yu J, Dessì R, Raileanu R, Lomeli M, Hambro E, Zettlemoyer L, Cancedda N, Scialom T (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.</p>
+<p>NIST (2023) Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.</p>
+<p>OWASP Foundation (2025) OWASP Top 10 for Large Language Model Applications. https://genai.owasp.org/llm-top-10/.</p>
+<p>OpenTelemetry Authors (2026) OpenTelemetry Documentation. https://opentelemetry.io/docs/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

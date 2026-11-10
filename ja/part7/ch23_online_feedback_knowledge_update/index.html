@@ -1,0 +1,1743 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part7/ch23_online_feedback_knowledge_update/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第23章：在线反馈闭环与知识更新 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#23" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第23章：在线反馈闭环与知识更新
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part7/ch23_online_feedback_knowledge_update/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part7/ch23_online_feedback_knowledge_update/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 为什么“上线完成”只是数据飞轮的起点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.1 为什么“上线完成”只是数据飞轮的起点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2311" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.1 从离线验证到真实使用：上线并不是终点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2312" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.2 部署后才会暴露真实问题分布
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2313" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.3 在线反馈为什么比离线样本更有价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2314" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.4 没有回流机制时，系统为什么会越用越差
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2315" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.5 数据飞轮的基本结构：从反馈到改进
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2316" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1.6 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 事件采集与反馈分流
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.2 事件采集与反馈分流">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2321" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.1 为什么反馈闭环首先是事件工程问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2322" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.2 日志、点击、评分、纠错、工单与人工接管
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2323" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.3 显式反馈与隐式反馈的区别
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2324-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.4 事件采集 schema：从原始日志到可用样本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2325" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.5 问题分流：知识缺失、检索缺陷、生成缺陷与策略缺陷
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2326" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.6 反馈分流队列与运营责任
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2327" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2.7 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 知识更新、回滚与版本治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.3 知识更新、回滚与版本治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2331" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.1 知识更新为什么必须被工程化管理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2332" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.2 新知识注入：从文档接入到可用知识单元
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2333" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.3 旧知识失效与冲突内容治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2334" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.4 热更新、定时更新与审计式更新
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2335" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.5 版本冻结、灰度发布与快速回滚
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2336" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3.6 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#234" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 指标看板与运营节奏
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.4 指标看板与运营节奏">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2341" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.1 为什么在线反馈闭环需要指标看板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2342" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.2 在线成功率、人工接管率、纠错率与知识命中率
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2343" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.3 周度运营会、专题复盘会与大版本升级节奏
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2344" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.4 反馈闭环中的责任边界与协作机制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2345" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4.5 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#235-sop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5 案例复盘与 SOP
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23.5 案例复盘与 SOP">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2351-sop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.1 为什么需要线上知识更新 SOP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2352" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.2 案例：知识过期导致错误回答
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2353" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.3 高价值反馈样本的自动化回流
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2354-sop" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.4 线上知识更新 SOP 示例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2355" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5.5 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="23">第23章：在线反馈闭环与知识更新<a class="headerlink" href="#23" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；杜文卓；赵功鹏</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>检索增强生成（Retrieval-Augmented Generation，RAG）系统完成上线只是数据飞轮的起点而非终点。上线后系统面对的是非标准表达、省略条件的真实用户，以及制度、产品与流程持续变化的知识环境，其可靠性不再取决于初始知识库是否完整，而取决于能否从真实使用中持续发现、修复与更新。本章聚焦上线之后的数据闭环，论述如何把日志、点击、评分、纠错、工单与人工接管等在线信号转化为可治理的数据资产。全章先论证在线反馈飞轮的必要性，继而讨论事件采集与反馈分流如何从噪声信号中提取可用的失败样本与改进线索，再阐述知识更新、回滚与版本治理如何在不破坏现有能力的前提下安全地写入变更，随后建立指标看板与运营节奏以支撑长期运行，最后通过线上事故复盘与标准操作规程（Standard Operating Procedure，SOP），说明如何让每一次失败都成为后续改进的输入。</p>
+<p>当 RAG 系统完成上线，真正的数据工程并没有结束，而是进入了一个新的阶段。上线前，系统主要面对的是可控的测试集、整理过的知识库和相对标准的问题；上线后，它开始面对真实用户、真实业务流程和持续变化的知识环境。用户会用非标准表达提问，会带着省略条件进入对话，也会在制度、产品、流程不断更新的情况下提出新的问题。此时，系统是否可靠，不再只取决于初始知识库构建得是否完整，而取决于它能否从真实使用中持续发现问题、修复问题并更新自身。</p>
+<p>因此，本章聚焦系统上线之后的数据闭环问题，讨论如何将日志、点击、评分、纠错、工单和人工接管等在线信号转化为可治理的数据资产。它所关注的不是单次回答是否正确，而是系统能否建立稳定的反馈分流、错误归因、知识更新、版本回滚和运营节奏，使每一次失败都能成为后续改进的输入。</p>
+<p>围绕这一目标，本章将从在线反馈飞轮的必要性讲起，进一步讨论事件采集与反馈分流、知识更新与版本治理、指标看板与运营节奏，以及线上事故复盘与 SOP。它所要回答的核心问题是：当大模型应用从完成上线走向长期运行时，数据工程应当如何支撑系统持续变好。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>在线反馈；知识更新；RAG 运营；日志治理；版本回滚；数据飞轮</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够解释为什么系统上线只是数据飞轮的起点而非数据工作的终点。</li>
+<li>能够设计事件采集与反馈分流机制，从显式与隐式信号中提取可用失败样本。</li>
+<li>能够构建知识更新、回滚与版本治理流程，在不破坏现有能力的前提下安全写入变更。</li>
+<li>能够设计支撑长期运营的在线指标看板与运营节奏。</li>
+<li>能够通过事故复盘与标准操作规程把每次失败转化为后续改进的输入。</li>
+</ul>
+<hr />
+<h2 id="231">23.1 为什么“上线完成”只是数据飞轮的起点<a class="headerlink" href="#231" title="Permanent link">&para;</a></h2>
+<h3 id="2311">23.1.1 从离线验证到真实使用：上线并不是终点<a class="headerlink" href="#2311" title="Permanent link">&para;</a></h3>
+<p>在许多大模型应用项目中，上线常被视为一个阶段性终点。系统完成开发、通过测试、接入知识库、部署到生产环境，并在少量样例问题上表现稳定后，团队往往会认为项目已经进入收尾阶段。然而，对于 RAG、知识助手、企业问答系统以及面向真实用户的大模型应用而言，上线并不是数据工作的结束，而是数据飞轮真正开始转动的起点。</p>
+<p>出现这种现象的原因在于，离线阶段看到的问题分布，通常只是系统真实使用场景的一小部分。开发团队在构建评测集时，往往会选择相对明确、可控、易标注的问题，例如“某制度的报销标准是什么”、“某产品功能如何开启”、“某流程需要提交哪些材料”。这些问题有清晰答案，也容易对应到知识库中的某个文档片段。但系统上线后，用户提出的问题往往更复杂、更模糊，也更接近业务真实语境。用户不会按照文档标题提问，也不会主动提供完整条件。他们可能会问：“我这种情况能不能报？”、“上次那个流程现在还适用吗？”或是“这个指标为什么突然变了？”，这些问题往往包含省略、指代、上下文依赖、隐含约束和跨文档组合。这类“上线后才进入真实数据环境”的问题，与机器学习系统中数据依赖、外部世界变化和隐藏反馈环路会持续累积技术债的观察是一致的（Sculley et al. 2015; Amershi et al. 2019）。系统只有在真实交互中，才会暴露出离线评测难以覆盖的问题类型，这也是大模型应用的数据工程往往不能停留在构建一次知识库或完成一次评测集上的原因。生产环境不是静态考场，而是持续变化的业务现场，用户问题、知识内容、业务规则、权限范围、产品版本和组织流程都会随时间发生变化。如果系统缺少上线后的反馈采集、问题分流、知识更新和版本治理机制，那么系统能力不仅不会持续提升，反而可能随着知识过期、用户需求变化和错误累积而逐渐下降。</p>
+<p>因此，23章讨论的核心问题，是如何把上线后的真实使用转化为数据资产，并让这些数据持续回流到知识库、检索系统、生成策略和评测体系中。与 21章讨论的 RAG 数据流水线、22章讨论的多模态视觉检索相比，本章更关注系统运行之后的闭环机制：系统如何感知失败，如何归因问题，如何更新知识，如何验证更新是否有效，以及如何将这些动作纳入稳定的运营节奏。</p>
+<p>从这一角度看，大模型应用的上线并不是交付完成，而是进入了一个新的数据生命周期阶段。这个阶段的关键不再是一次性构建，而是持续采集、持续诊断、持续回补和持续治理。只有当系统具备这种闭环能力时，RAG 和多模态知识应用才可能从可演示走向可运营。</p>
+<hr />
+<h3 id="2312">23.1.2 部署后才会暴露真实问题分布<a class="headerlink" href="#2312" title="Permanent link">&para;</a></h3>
+<p>离线评测集通常具有明确边界。它来自已有文档、业务专家整理的问题、项目团队构造的典型样例，或者模型自动生成的问题集合（Gama et al. 2014; Koh et al. 2021）。这些数据对于上线前验证需要重点关注，但它们无法完全代表真实用户的提问方式。真实用户的问题往往具有三个显著特点：表达不标准、条件不完整、目标不稳定。</p>
+<p>首先，用户表达并不总是与知识库中的术语一致。如果系统只依赖文档中的标准术语进行检索，就可能无法召回正确知识。在线反馈数据能够暴露这些真实表达差异，帮助系统补充同义词、业务别名和 query 改写规则。</p>
+<p>其次，用户问题常常缺少关键条件。例如，员工询问“这个费用能不能报销”，但没有说明费用类型、发生地点、员工身份、项目归属和审批状态。此时，系统如果直接回答，可能会忽略适用条件；如果能识别条件缺失，则应追问或给出条件化回答。这类问题在离线评测中很难充分覆盖，因为评测样本通常会被整理成较完整的问题，而真实用户则往往只给出片段化信息。</p>
+<p>再次，用户目标可能会在多轮交互中变化。用户最初可能只是询问一个政策条款，随后转向“帮我判断我的情况是否适用”，再进一步要求“给我一段可以发给财务的说明”。这意味着系统需要从单次问答走向任务式交互，而在线日志中记录的多轮轨迹，正是理解真实任务流的重要数据来源。</p>
+<p>这种真实问题分布与离线评测分布之间的差异，可以称为“上线分布漂移”。它并不一定意味着模型能力下降，而是说明系统进入了更真实、更复杂的数据环境。许多 RAG 系统上线后表现不稳定，并不是因为离线评测造假，而是因为离线评测无法覆盖生产问题的长尾分布。</p>
+<p><em>表 23-1：离线评测问题与线上真实问题的差异</em></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>离线评测问题</th>
+<th>线上真实问题</th>
+<th>对系统的影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>表达方式</td>
+<td>术语规范，结构完整</td>
+<td>口语化、简称、别名较多</td>
+<td>影响 query 理解与检索召回</td>
+</tr>
+<tr>
+<td>条件完整性</td>
+<td>通常包含必要条件</td>
+<td>经常省略身份、时间、版本、场景</td>
+<td>需要追问、条件识别与风险提示</td>
+</tr>
+<tr>
+<td>问题边界</td>
+<td>单一问题较多</td>
+<td>多意图、多约束、跨文档组合</td>
+<td>需要分解问题与多路检索</td>
+</tr>
+<tr>
+<td>上下文依赖</td>
+<td>通常无上下文或上下文固定</td>
+<td>多轮交互中不断变化</td>
+<td>需要状态管理与会话记忆</td>
+</tr>
+<tr>
+<td>错误暴露方式</td>
+<td>通过人工判断或指标计算</td>
+<td>通过追问、点踩、纠错、放弃体现</td>
+<td>需要在线反馈采集与归因</td>
+</tr>
+</tbody>
+</table>
+<p>如图23-1的对比，在真实系统中，这种差异会直接影响数据工程的优先级。上线前，团队更关注知识库覆盖、解析质量、索引结构和基础评测；上线后，团队需要进一步关注用户表达、失败样本、反馈标注、知识过期、权限误召回、引用可信度和多轮任务连续性。也就是说，上线前的数据工程强调“把系统建起来”，上线后的数据工程强调“让系统持续变好”。</p>
+<p><a class="glightbox" href="../../../images/part7/Yu-Chap23-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图23-1：从离线评测到线上真实问题分布" src="../../../images/part7/Yu-Chap23-Fig01-EN.svg" /></a></p>
+<p><em>图23-1：从离线评测到线上真实问题分布</em></p>
+<p>上线后的真实问题分布还具有明显的时间性。某些问题会因为新政策发布、新产品上线、组织调整或外部事件而突然增加。例如，报销制度更新后，员工会集中询问新旧规则差异；新功能上线后，客户会集中询问使用方式和限制；财报发布后，分析人员会集中询问某些指标变化原因。若系统没有在线问题监控，就很难及时发现这些变化，更无法推动知识库和检索策略同步更新。因此，生产级大模型应用必须将线上问题视为一种持续生成的数据资产。用户问题不是噪声，而是系统最真实的需求信号；用户失败不是单点事故，而是系统优化的入口。只有建立面向线上分布的采集和分析机制，团队才能真正理解系统服务的对象、场景和边界。</p>
+<hr />
+<h3 id="2313">23.1.3 在线反馈为什么比离线样本更有价值<a class="headerlink" href="#2313" title="Permanent link">&para;</a></h3>
+<p>在线反馈之所以重要，是因为它同时具备真实性、时效性和行为信号三种特征。</p>
+<p>真实性指的是，在线反馈来自真实用户在真实任务中的实际行为。离线评测样本往往经过人为整理，问题边界清晰，答案也较容易标注，但这些信号通常带有位置偏差和解释歧义，不能未经审核直接当作强监督标签（Joachims 2002; Joachims et al. 2017）；而在线反馈包含了用户真实表达、真实上下文和真实业务目标。它不仅告诉团队“系统能否回答标准问题”，更能告诉团队“系统是否能帮助用户完成任务”。</p>
+<p>时效性指的是，在线反馈能够反映知识和需求的最新变化。企业知识库、产品文档、流程制度和业务规则都在持续更新。离线评测集即使构建质量很高，也可能很快过期。在线反馈则可以及时提出新问题、新术语、新需求和新冲突。例如，某个新版本产品上线后，如果用户频繁询问“旧接口还能不能用”，这说明文档中可能需要增加迁移说明；如果用户频繁追问某项制度的适用范围，说明原文条款可能不够清晰，或者检索结果没有完整覆盖条件。</p>
+<p>行为信号指的是，用户不仅通过显式反馈表达态度，也通过行为间接暴露系统质量。显式反馈包括点赞、点踩、纠错、文字评论和人工标记；隐式反馈包括是否继续追问、是否改写问题、是否点击引用来源、是否复制答案、是否转人工、是否放弃会话等。相比单一的正确/错误标签，这些行为信号更接近真实体验。</p>
+<p>例如，一个用户没有点踩，但连续三次改写同一个问题，说明系统前几次回答可能没有满足需求；一个用户点击了引用来源并停留较长时间，说明答案可能触发了验证需求；一个用户在答案后立即转人工，说明系统可能未能覆盖高风险或复杂判断场景。这些信号如果被系统化采集，就可以转化为高价值的训练样本、评测样本和知识更新任务。</p>
+<p>表23-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 23-2：在线反馈信号的类型与价值</em></p>
+<table>
+<thead>
+<tr>
+<th>反馈类型</th>
+<th>典型来源</th>
+<th>反映的问题</th>
+<th>可驱动的优化动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显式正反馈</td>
+<td>点赞、采纳、确认有帮助</td>
+<td>答案可能满足需求</td>
+<td>沉淀高质量问答样本，增强模板</td>
+</tr>
+<tr>
+<td>显式负反馈</td>
+<td>点踩、纠错、报错</td>
+<td>答案错误、不完整或不可信</td>
+<td>进入失败样本库，触发错误归因</td>
+</tr>
+<tr>
+<td>追问行为</td>
+<td>用户继续提问、补充条件</td>
+<td>上一轮答案不充分或条件未澄清</td>
+<td>优化追问策略与上下文组装</td>
+</tr>
+<tr>
+<td>改写行为</td>
+<td>用户换一种说法重新问</td>
+<td>query 理解或召回失败</td>
+<td>增加同义表达、query rewrite 样本</td>
+</tr>
+<tr>
+<td>引用点击</td>
+<td>用户查看来源文档</td>
+<td>用户需要验证证据</td>
+<td>优化引用可读性与证据定位</td>
+</tr>
+<tr>
+<td>转人工</td>
+<td>工单、人工接管</td>
+<td>系统无法完成高风险判断</td>
+<td>建立人工审核与回补流程</td>
+</tr>
+<tr>
+<td>放弃会话</td>
+<td>中断、不再继续</td>
+<td>用户体验失败但无显式反馈</td>
+<td>纳入弱负样本分析</td>
+</tr>
+</tbody>
+</table>
+<p>在线反馈的价值还在于它能够帮助团队建立问题优先级意识。在离线阶段，团队可能会追求指标整体提升，例如 Recall@k（前 k 个结果中被成功召回的相关结果数）、Answer Accuracy（回答正确率）、Citation Accuracy（引用正确率） 等。但上线后，真正需要优先处理的往往不是所有错误，而是高频错误、高风险错误和高影响错误。高频错误代表大量用户遇到同类问题，修复收益较高；高风险错误涉及法律、财务、医疗、合规、权限等敏感场景，必须优先控制；高影响错误可能出现在关键业务流程中，例如审批、报销、合同审阅、客户服务和运维故障处理。在线反馈能够提供错误出现频率、用户影响范围和业务后果，从而帮助团队把有限资源投入到最有价值的修复方向。</p>
+<p>需要注意的是，在线反馈并不等同于可直接训练的数据。用户反馈往往包含噪声、情绪、误操作和上下文缺失。例如，用户点踩可能是因为答案真的错误，也可能是因为答案太长、语气不合适、没有直接给结论，或者用户本身输入不完整。因此，在线反馈需要经过清洗、归因、标注和分流，才能转化为可用的数据资产。这正是在线反馈闭环的数据工程核心：不是简单收集日志，而是将用户行为转化为结构化问题，将结构化问题转化为修复任务，将修复任务转化为新的知识、索引、评测和模型改进。</p>
+<hr />
+<h3 id="2314">23.1.4 没有回流机制时，系统为什么会越用越差<a class="headerlink" href="#2314" title="Permanent link">&para;</a></h3>
+<p>一个没有回流机制的大模型应用，即使上线时表现良好，也可能在运行一段时间后逐渐退化。这里的“退化”不一定表现为模型参数变差，而是表现为系统与真实业务之间的错配不断扩大。</p>
+<p>第一类退化来自知识过期。企业制度、产品功能、接口文档、组织流程、价格规则和合规要求都会变化。如果知识库没有及时更新，系统就会继续基于旧知识回答。更危险的是，旧知识往往仍然看起来合理，用户难以及时发现。例如，系统可能基于旧版制度回答报销标准，或基于旧版产品说明解释功能限制。这类错误具有隐蔽性，尤其需要通过在线反馈和版本治理发现（Sculley et al. 2015; Breck et al. 2017）。</p>
+<p>第二类退化来自用户表达变化。随着用户逐渐熟悉系统，他们的提问方式会变化。早期用户可能尝试标准问题，后期则会提出更复杂、更具体、更任务化的问题。系统如果仍然只针对上线前评测集优化，就会越来越难覆盖真实需求。此时，用户会频繁追问、改写问题或转向人工渠道，系统使用率和信任度都会下降。</p>
+<p>第三类退化来自错误累积。RAG 和多模态系统通常由多个环节组成：采集、解析、切分、索引、检索、重排序、上下文组装、生成和引用。任何一个环节的小错误都可能在后续阶段放大。如果系统没有失败样本回流和错误归因机制，这些问题会长期存在，并在更多用户问题中重复出现。</p>
+<p>第四类退化来自组织责任断裂。上线之后，系统可能进入无人维护的状态：算法团队认为项目已交付，业务团队认为问题属于模型能力，平台团队只关注服务可用性，内容维护人员只负责上传文档。没有统一的反馈闭环，用户问题就会在多个团队之间流转，但无法形成明确修复动作。久而久之，系统表面在线，实际质量却不断下降。</p>
+<p>表23-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 23-3：缺少在线回流机制时的典型退化路径</em></p>
+<table>
+<thead>
+<tr>
+<th>退化来源</th>
+<th>具体表现</th>
+<th>用户侧感知</th>
+<th>根本原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>知识过期</td>
+<td>旧制度、旧接口、旧流程被召回</td>
+<td>答案看似合理但实际错误</td>
+<td>缺少知识版本更新与失效治理</td>
+</tr>
+<tr>
+<td>表达错配</td>
+<td>用户口语问题无法命中正式文档</td>
+<td>系统答非所问</td>
+<td>缺少线上 query 分析和同义表达回补</td>
+</tr>
+<tr>
+<td>错误重复</td>
+<td>同类错误反复出现</td>
+<td>用户认为系统“不长记性”</td>
+<td>缺少失败样本库和修复闭环</td>
+</tr>
+<tr>
+<td>引用失效</td>
+<td>答案引用旧文档或错误位置</td>
+<td>用户无法验证答案</td>
+<td>缺少引用锚点校验与索引更新</td>
+</tr>
+<tr>
+<td>责任断裂</td>
+<td>问题无法定位到团队或模块</td>
+<td>修复周期长</td>
+<td>缺少反馈分流和运营机制</td>
+</tr>
+<tr>
+<td>评测失真</td>
+<td>离线指标高但线上满意度低</td>
+<td>系统“测得好、用不好”</td>
+<td>离线评测集没有线上样本回流</td>
+</tr>
+</tbody>
+</table>
+<p>这种退化并不是某一个模型或模块的问题，而是系统没有进入持续运营状态的结果。大模型应用如果缺少回流机制，就像一个只在上线前体检一次的生产系统：上线时指标合格，但之后没有监控、没有复盘、没有修复，也没有版本更新。随着业务环境变化，系统自然会越来越偏离真实需求。</p>
+<p>因此，在线反馈闭环不是“锦上添花”的运营功能，而是生产级大模型应用的基本能力。它决定系统能否从用户使用中学习，能否将失败转化为改进，能否在知识变化和需求变化中保持稳定。</p>
+<hr />
+<h3 id="2315">23.1.5 数据飞轮的基本结构：从反馈到改进<a class="headerlink" href="#2315" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环可以被理解为一个数据飞轮。所谓数据飞轮，并不是指系统自动无监督地变好，而是指系统能够通过真实使用不断生成新的数据，这些数据经过筛选、标注、归因和治理后，反向推动知识库、索引、检索、生成和评测体系改进，从而提升下一轮用户体验。</p>
+<p>如图23-2，一个完整的数据飞轮通常包括六个阶段：事件采集、反馈分流、错误归因、修复动作、回归评测和上线验证。事件采集是飞轮的入口。系统需要记录用户 query、会话上下文、检索结果、上下文组装内容、生成答案、引用来源、用户反馈和后续行为。没有足够完整的日志，后续归因几乎无法进行。例如，如果只记录最终答案，不记录召回结果，就无法判断错误来自检索还是生成；如果不记录引用来源，就无法判断答案是否基于正确证据（Es et al. 2024）。反馈分流是将原始反馈转化为问题类型。用户的负反馈可能对应知识缺失、检索失败、引用错误、生成幻觉、权限问题或产品体验问题。不同问题需要进入不同处理队列，不能全部交给模型团队或内容团队。错误归因是将失败现象定位到系统链路中的具体环节。例如，答案错误可能是因为文档没有接入，也可能是因为接入了但解析失败，或者解析正确但 chunk 切分破坏语义，或者检索召回了错误版本，或者模型没有遵循证据。归因越准确，修复动作越有效。修复动作包括知识补充、文档重解析、元数据修正、索引重建、query rewrite 增强、rerank 样本补充、prompt 调整、拒答策略更新和评测集扩展。修复不是简单“改答案”，而是将错误映射到可复用的数据和系统改进。回归评测用于验证修复是否有效。每一次知识更新、索引更新或策略调整，都可能带来新的问题。因此，系统需要用黄金集、线上失败样本集和专项挑战集进行回归测试，确保修复当前问题的同时不破坏已有能力（Yu et al. 2024）。上线验证则用于观察修复后的线上效果。例如，同类问题的负反馈是否下降，引用点击率是否改善，人工接管率是否降低，用户追问轮数是否减少。这些指标反过来又进入下一轮反馈分析。</p>
+<p><a class="glightbox" href="../../../images/part7/Yu-Chap23-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图23-2：大模型应用的在线反馈数据飞轮" src="../../../images/part7/Yu-Chap23-Fig02-EN.svg" /></a></p>
+<p><em>图23-2：大模型应用的在线反馈数据飞轮</em></p>
+<p>数据飞轮的关键不是“自动化程度越高越好”，而是“每一类反馈都能找到稳定去处”。对于低风险、高频问题，可以通过自动化规则和模型辅助完成分流与回补；对于高风险问题，则需要人工审核、专家标注和上线审批。成熟系统通常采用“自动化 + 人工治理”的混合模式，将自动化用于规模化处理，将人工用于高风险决策和质量校准。</p>
+<p>此外，数据飞轮还需要与版本管理结合。每一次回补都应记录其来源、触发问题、修复动作、影响范围和评测结果。否则，团队无法判断某次上线效果提升是由哪一批数据、哪一次索引调整或哪一个策略变化带来的。没有版本，就没有复盘；没有复盘，就没有稳定迭代。</p>
+<hr />
+<h3 id="2316">23.1.6 本节小结<a class="headerlink" href="#2316" title="Permanent link">&para;</a></h3>
+<p>本节讨论了为什么大模型应用的上线并不是数据工作的终点，而是在线反馈闭环和数据飞轮的起点。离线评测能够帮助系统完成上线前验证，但真实用户问题只有在生产环境中才会充分暴露。上线后的问题分布往往更加口语化、长尾化、任务化和上下文依赖化，因此系统必须通过在线反馈持续感知真实需求。</p>
+<p>在线反馈之所以具有高价值，是因为它同时提供真实性、时效性和行为信号。用户的点赞、点踩、追问、改写、引用点击、转人工和会话中断，都是系统质量的重要线索。经过结构化处理后，这些信号可以进入失败样本库、知识更新队列、评测集扩展和系统优化流程。</p>
+<p>没有回流机制的系统会面临知识过期、表达错配、错误重复、引用失效和组织责任断裂等问题（Lewis et al. 2020; Mallen et al. 2023）。它可能在上线初期表现良好，但随着业务变化和用户需求变化，逐渐出现“测得好、用不好”的现象。因此，生产级大模型应用必须把反馈采集、问题分流、错误归因、修复动作、回归评测和上线验证组织成稳定的数据飞轮。</p>
+<p>下一节将进一步讨论在线反馈闭环中的事件采集与反馈分流机制，重点分析日志、点击、评分、纠错、工单和人工接管等反馈源如何进入统一的数据处理流程，并如何区分知识缺失、检索缺陷、生成缺陷和策略缺陷。</p>
+<hr />
+<h2 id="232">23.2 事件采集与反馈分流<a class="headerlink" href="#232" title="Permanent link">&para;</a></h2>
+<h3 id="2321">23.2.1 为什么反馈闭环首先是事件工程问题<a class="headerlink" href="#2321" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环并不是从“用户点踩”开始的，而是从系统能否完整记录一次交互事件开始的。在大模型应用中，一次看似简单的问答，背后往往包含多个关键环节：用户输入、上下文状态、检索请求、召回结果、重排序结果、上下文拼装、模型生成、引用来源、用户行为以及后续反馈。如果这些信息没有被系统化记录，团队就很难判断一次失败到底发生在哪里，也无法将线上问题转化为可复用的数据资产。因此，本节首先要强调一个基本观点：在线反馈闭环的基础不是标注平台，也不是训练脚本，而是事件采集体系。只有当系统能够把一次用户交互拆解为可追踪、可审计、可复盘的事件链路时，后续的反馈分流、错误归因、知识更新和回归评测才有可靠基础。</p>
+<p>在传统 Web 或 App 系统中，事件采集更多关注点击、浏览、停留时长、转化率等产品行为指标；而在大模型应用中，事件采集必须进一步覆盖模型侧与数据侧信息。例如，在一个 RAG 问答系统中，仅记录“用户问了什么”和“模型答了什么”是不够的。系统还必须记录当时召回了哪些文档、每个文档的分数是多少、最终进入上下文的是哪些片段、模型引用了哪些来源、用户后续是否继续追问或转人工等信息。如果缺少这些信息，错误复盘会变得较为困难。比如，用户点踩了一个答案，但系统只保存了最终回复。此时团队无法判断问题是知识库没有相关内容、检索没有召回正确片段、rerank 排错了顺序、上下文拼装遗漏了关键条件，还是模型在已有证据基础上生成了错误结论。最终，所有问题都会被笼统地归为模型回答不好，这会导致修复动作失焦。更严重的是，如果事件采集不完整，系统可能会反复修复错误的环节。例如，一个真实问题其实是文档版本过期，但由于系统没有记录被召回文档的版本号，团队可能误以为是 prompt 问题，于是不断调整提示词；另一个问题其实是权限过滤导致正确文档不可见，但如果日志中没有记录权限判断结果，团队可能误以为是向量检索召回率不足。长期来看，这种错误归因会浪费大量工程资源，并掩盖真正的数据问题（Breck et al. 2017）。</p>
+<p>因此，生产级大模型应用需要将事件采集设计为数据闭环的第一层基础设施。它既要服务于线上监控，也要服务于离线复盘；既要记录用户行为，也要记录模型输入输出；既要覆盖成功样本，也要覆盖失败样本。只有这样，系统才能把真实使用过程沉淀为可分析、可标注、可回补的数据。</p>
+<hr />
+<h3 id="2322">23.2.2 日志、点击、评分、纠错、工单与人工接管<a class="headerlink" href="#2322" title="Permanent link">&para;</a></h3>
+<p>在线反馈信号通常来自多个渠道。不同信号的可信度、粒度和使用方式并不相同，因此不能简单地把所有反馈混在一起处理。一个成熟的反馈体系通常会同时采集日志、点击、评分、纠错、工单和人工接管等多类事件，并将它们统一到同一套事件 schema 中。</p>
+<p>日志是最基础的反馈来源。它记录系统运行过程中的完整链路，包括用户 query、session id、检索结果、上下文片段、模型输出、引用来源、响应耗时、错误码和策略命中情况。日志本身未必直接表达用户满意度，但它为后续错误归因提供了必要证据。没有日志，团队只能看到失败结果；有了日志，团队才能看到失败过程。信息检索领域的点击日志研究表明，用户行为可以反映排序和结果质量，但原始点击会受到展示位置、摘要质量和任务意图影响，因此在用于学习排序或样本回补前通常需要偏差校正与上下文建模（Joachims 2002; Chapelle and Zhang 2009; Joachims et al. 2017）。</p>
+<p>点击行为则反映用户如何使用系统给出的结果。在 RAG 系统中，用户是否点击引用来源、是否展开更多证据、是否复制答案、是否跳转到原文档，都可以作为答案可信度和可用性的间接信号。例如，用户频繁点击引用但随后继续追问，可能说明答案引用存在但解释不足；用户完全不点击引用就采纳答案，可能说明答案足够明确，也可能说明用户对来源不敏感。这类信号需要结合上下文综合判断。</p>
+<p>评分是最常见的显式反馈形式，包括点赞、点踩、星级评分和“是否解决问题”的确认按钮。评分信号简单、直接、易于统计，但也容易受到用户主观因素影响。例如，用户可能因为答案太长而点踩，也可能因为系统拒绝回答高风险问题而点踩，但这并不一定意味着答案事实错误。因此，评分适合作为问题发现入口，而不应直接作为训练标签使用。</p>
+<p>纠错反馈比评分更有价值，因为它通常包含用户指出的具体错误。例如，用户可能标注“引用错了”“这个政策已经过期”“答案遗漏了试用期员工的情况”“图表中数值读错了”。这类反馈能够直接进入错误归因流程，并帮助团队构建更高质量的回补样本。不过，纠错反馈也需要审核，因为用户提供的纠错不一定总是准确，尤其在专业领域中，需要业务专家或内容负责人进行确认。</p>
+<p>工单是复杂问题的重要来源。在企业场景中，很多用户不会直接在聊天界面中完整反馈问题，而是通过客服系统、内部工单、运维平台或业务流程系统提交问题。工单通常包含更详细的背景、截图、附件和人工处理结果，适合用于构建高价值失败样本。但工单数据往往结构复杂，需要进行脱敏、去噪、字段映射和任务类型标注。</p>
+<p>人工接管是高风险或复杂任务中的关键反馈信号。当系统无法回答、用户要求人工处理，或者策略规定必须转人工时，这些接管事件都应被记录。人工接管不仅表示系统当前能力边界，也提供了专家处理轨迹。如果能够记录人工最终如何解决问题，系统就可以从中学习哪些知识缺失、哪些追问条件必要、哪些回答策略需要调整。</p>
+<p>表23-4汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 23-4：在线反馈来源与数据价值</em></p>
+<table>
+<thead>
+<tr>
+<th>反馈来源</th>
+<th>典型内容</th>
+<th>优势</th>
+<th>局限</th>
+<th>适合驱动的后续动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统日志</td>
+<td>query、召回片段、上下文、答案、引用、耗时</td>
+<td>链路完整，可用于复盘</td>
+<td>不直接表达用户满意度</td>
+<td>错误归因、性能诊断、回归评测</td>
+</tr>
+<tr>
+<td>点击行为</td>
+<td>引用点击、展开证据、复制答案、跳转原文</td>
+<td>能反映真实使用行为</td>
+<td>语义解释不唯一</td>
+<td>证据可用性分析、引用优化</td>
+</tr>
+<tr>
+<td>评分反馈</td>
+<td>点赞、点踩、星级评分、是否解决</td>
+<td>简单直接，易统计</td>
+<td>主观噪声较大</td>
+<td>失败样本筛选、满意度监控</td>
+</tr>
+<tr>
+<td>用户纠错</td>
+<td>指出错误、补充正确答案、反馈过期内容</td>
+<td>信息密度高，价值大</td>
+<td>需要审核确认</td>
+<td>知识更新、样本回补</td>
+</tr>
+<tr>
+<td>工单记录</td>
+<td>问题描述、截图、处理过程、最终结论</td>
+<td>背景完整，适合复杂案例</td>
+<td>结构不统一，处理成本高</td>
+<td>专项数据集构建、SOP 优化</td>
+</tr>
+<tr>
+<td>人工接管</td>
+<td>转人工原因、专家处理轨迹、最终答复</td>
+<td>暴露系统能力边界</td>
+<td>依赖人工流程规范</td>
+<td>高风险策略优化、专家样本沉淀</td>
+</tr>
+</tbody>
+</table>
+<p>这些反馈来源共同构成了在线反馈闭环的原始数据层。实际工程中，团队不应只依赖某一种反馈信号，而应建立多信号融合机制。例如，一个点踩样本如果同时伴随引用点击、重复追问和人工接管，那么它比普通点踩样本更值得优先分析；一个没有显式点踩但用户连续三次改写问题的会话，也应被识别为潜在失败样本。</p>
+<p>为了实现这种融合，系统需要将不同来源的事件统一到会话、问题和答案三个层次上。会话层记录用户在一段连续交互中的完整轨迹；问题层记录每一次用户输入及其检索和生成过程；答案层记录模型输出、引用证据、用户反馈和后续行为。只有建立这种层次化事件结构，反馈分流才不会停留在粗粒度统计，而能进入可操作的工程闭环。</p>
+<hr />
+<h3 id="2323">23.2.3 显式反馈与隐式反馈的区别<a class="headerlink" href="#2323" title="Permanent link">&para;</a></h3>
+<p>在线反馈可以分为显式反馈和隐式反馈。显式反馈是用户主动表达的评价或纠错，隐式反馈则是用户行为中间接体现出的满意度、困惑或失败信号。两者在数据闭环中的作用不同，必须区分使用。</p>
+<p>显式反馈的优势是语义明确。用户点踩或提交纠错说明时，通常意味着系统回答没有满足预期。对于数据运营团队而言，显式负反馈是最直接的失败样本入口。显式正反馈则可以用于沉淀高质量问答对，分析哪些回答格式、证据组织方式和解释风格更容易被用户接受。但显式反馈存在覆盖率不足的问题。多数用户不会主动反馈，尤其是在系统回答一般但不至于严重错误时，用户可能直接离开或换一种方式提问。此外，显式反馈还可能带有情绪和误操作噪声。比如，用户因为系统没有给出自己期待的结论而点踩，但系统拒答可能是正确的安全策略；用户因为答案太保守而点踩，但从合规角度看，保守回答可能更合适。</p>
+<p>隐式反馈的优势是覆盖面广。几乎所有用户行为都可以成为隐式反馈信号，包括停留时长、追问次数、问题改写、引用点击、复制答案、切换页面、转人工和会话中断等。这些信号不要求用户主动评价，因此更接近真实使用过程。但隐式反馈的解释更加困难。用户继续追问可能是因为答案不完整，也可能是因为用户想深入了解；用户点击引用可能是因为答案可信，也可能是因为答案令人怀疑；用户离开会话可能是因为问题已解决，也可能是因为系统没有帮助。因此，隐式反馈通常不能单独作为标签，而需要与显式反馈、日志信息和业务上下文结合分析。</p>
+<p>表 23-5 对比了显式反馈与隐式反馈在数据闭环中的作用差异。</p>
+<p><em>表 23-5：显式反馈与隐式反馈的比较</em></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>显式反馈</th>
+<th>隐式反馈</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>典型形式</td>
+<td>点赞、点踩、评分、纠错、评论</td>
+<td>追问、改写、点击引用、复制、转人工、中断</td>
+</tr>
+<tr>
+<td>优势</td>
+<td>语义直接，便于解释</td>
+<td>覆盖面广，接近真实行为</td>
+</tr>
+<tr>
+<td>局限</td>
+<td>覆盖率低，主观噪声明显</td>
+<td>含义不唯一，需要上下文解释</td>
+</tr>
+<tr>
+<td>数据价值</td>
+<td>适合做失败样本入口和人工审核队列</td>
+<td>适合做行为分析、弱标签和趋势监控</td>
+</tr>
+<tr>
+<td>使用方式</td>
+<td>需审核后进入标注或回补流程</td>
+<td>需结合日志和其他信号综合判断</td>
+</tr>
+<tr>
+<td>风险</td>
+<td>用户误判、情绪化反馈、恶意反馈</td>
+<td>误解释行为、将正常探索误判为失败</td>
+</tr>
+</tbody>
+</table>
+<p>在工程实践中，可以把显式反馈视为“强信号”，把隐式反馈视为“弱信号”。强信号适合直接进入人工审核和失败样本库；弱信号适合用于发现异常趋势和筛选候选问题（Hu, Koren and Volinsky 2008; Joachims et al. 2017）。例如，如果某类问题的点踩率上升，这是强烈的失败信号；如果某类问题的平均追问轮数上升、引用点击率下降、转人工率上升，即使没有大量点踩，也说明系统可能出现了质量退化。</p>
+<p>为了更稳定地使用隐式反馈，系统可以设计组合规则。例如，一个会话满足以下条件时，可被标记为“疑似未解决”：用户收到答案后 30 秒内改写同类问题；连续两轮检索命中不同文档但未采纳答案；最终转人工或提交工单。这样的组合信号比单一行为更可靠，也更适合作为后续分流和抽检的候选样本。</p>
+<hr />
+<h3 id="2324-schema">23.2.4 事件采集 schema：从原始日志到可用样本<a class="headerlink" href="#2324-schema" title="Permanent link">&para;</a></h3>
+<p>要将在线反馈转化为数据资产，必须设计统一的事件 schema。事件 schema 的作用，是把原始交互日志组织成可检索、可分析、可标注、可回放的数据结构。没有统一 schema，反馈数据会散落在日志系统、埋点系统、客服系统、数据库和模型服务中，难以形成闭环。</p>
+<p>一个完整的事件 schema 至少应包含六类信息：用户与会话信息、查询信息、检索信息、生成信息、反馈信息和治理信息。用户与会话信息用于标识一次交互所属的上下文。它不一定需要保存用户真实身份，但应记录匿名用户 ID、会话 ID、租户、权限范围、语言、终端和时间戳等信息。对于企业系统，还需要记录用户所属组织、角色或权限组，以便判断某些答案是否存在越权召回。查询信息用于描述用户输入本身，包括原始 query、规范化 query、query 改写结果、识别出的意图、实体、约束条件和上下文引用。例如，用户问“这个还能报吗”，系统需要记录“这个”指向上一轮哪项费用，“报”对应报销意图，缺失条件包括费用类型和发生地点。检索信息是 RAG 系统事件采集中最重要的部分之一。系统需要记录被检索的索引版本、召回文档 ID、chunk ID、分数、rerank 分数、最终进入上下文的片段、被过滤掉的片段以及过滤原因。如果缺少这些信息，检索失败和生成失败就很难区分。生成信息包括模型版本、prompt 版本、上下文长度、最终回答、引用来源、拒答策略、生成耗时和安全策略命中情况（Breck et al. 2017; Kreuzberger, Kühl and Hirschl 2023）。对于多模态系统，还需要记录图像区域、bbox、OCR 文本、表格结构和视觉证据 ID。反馈信息包括显式反馈和隐式反馈。显式反馈包括点赞、点踩、评分、用户纠错和文字评论；隐式反馈包括追问、改写、引用点击、复制答案、转人工、提交工单和会话中断。治理信息则包括数据脱敏状态、日志保留周期、是否允许用于训练、是否进入人工审核队列等。</p>
+<p>表 23-6 列出了在线反馈事件 schema 的核心字段。</p>
+<p><em>表 23-6：在线反馈事件 schema 的核心字段</em></p>
+<table>
+<thead>
+<tr>
+<th>字段类别</th>
+<th>核心字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>会话信息</td>
+<td>session_id、turn_id、timestamp、tenant、user_role</td>
+<td>用于还原交互上下文和权限范围</td>
+</tr>
+<tr>
+<td>查询信息</td>
+<td>raw_query、normalized_query、intent、entities、missing_slots</td>
+<td>用于分析用户意图、实体和缺失条件</td>
+</tr>
+<tr>
+<td>检索信息</td>
+<td>index_version、retrieved_docs、chunk_ids、scores、rerank_scores</td>
+<td>用于判断召回和排序是否正确</td>
+</tr>
+<tr>
+<td>上下文信息</td>
+<td>selected_context、citation_anchors、context_length</td>
+<td>用于复盘模型实际看到的证据</td>
+</tr>
+<tr>
+<td>生成信息</td>
+<td>model_version、prompt_version、answer、refusal_flag、latency</td>
+<td>用于判断生成策略和模型行为</td>
+</tr>
+<tr>
+<td>反馈信息</td>
+<td>rating、correction_text、clicks、follow_up、handoff_flag</td>
+<td>用于识别显式和隐式反馈</td>
+</tr>
+<tr>
+<td>治理信息</td>
+<td>pii_status、training_allowed、review_status、retention_policy</td>
+<td>用于控制合规、审核和数据使用边界</td>
+</tr>
+</tbody>
+</table>
+<p>在实现层面，事件 schema 不应只服务于日志存储，还应服务于后续的样本构建。也就是说，团队在设计字段时，需要提前考虑这些数据未来如何进入评测集、失败样本库、知识更新队列和模型训练流程。例如，<code>index_version</code> 和 <code>prompt_version</code> 看似只是工程字段，但它们决定了后续能否进行版本归因；<code>citation_anchors</code> 看似只是展示字段，但它决定了能否验证答案是否基于正确证据；<code>training_allowed</code> 看似只是合规字段，但它决定了数据能否进入后续训练或微调流程。</p>
+<p>图23-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Yu-Chap23-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图23-3：在线反馈事件采集与分流链路" src="../../../images/part7/Yu-Chap23-Fig03-EN.svg" /></a></p>
+<p><em>图23-3：在线反馈事件采集与分流链路</em></p>
+<hr />
+<h3 id="2325">23.2.5 问题分流：知识缺失、检索缺陷、生成缺陷与策略缺陷<a class="headerlink" href="#2325" title="Permanent link">&para;</a></h3>
+<p>反馈采集之后，最关键的工作是问题分流。所谓问题分流，是指将用户反馈映射到不同的系统问题类型，并进入对应的修复队列。没有分流机制，所有反馈都会堆积为模糊的“用户不满意”，无法形成有效改进。</p>
+<p>在 RAG 和大模型应用中，常见问题可以分为知识缺失、检索缺陷、生成缺陷和策略缺陷四类。知识缺失指的是知识库中没有足够信息回答用户问题。它可能是因为相关文档未接入、文档过期、新业务尚未补充、知识粒度太粗，或者信息存在于人工经验中但尚未文档化。知识缺失的典型表现是系统检索不到相关证据，或者返回的答案只能泛泛而谈。修复动作通常包括补充文档、更新 FAQ、增加结构化字段、引入专家知识或建立知识更新流程。检索缺陷指的是知识库中存在正确答案，但系统没有召回或没有排到前面。这类问题在 RAG 系统中常见。它可能来自 query 表达与文档术语不匹配、chunk 切分破坏语义、embedding 无法覆盖专业术语、关键词索引缺失、metadata 过滤错误或 rerank 排序失败。修复动作包括增加同义词、优化 query rewrite、调整 chunk 策略、补充 metadata、改进混合检索或增加 rerank 训练样本。生成缺陷指的是检索到了正确证据，但模型生成答案时出现问题。例如，模型忽略证据、误读证据、过度推断、遗漏条件、引用不完整或生成风格不符合要求。这类问题的修复动作通常包括调整 prompt、增加格式约束、引入答案模板、强化引用要求、增加拒答规则，或者将失败样本加入生成评测集。策略缺陷指的是系统在高风险、权限、拒答、追问和人工接管等策略上设计不当。例如，用户问题缺少关键条件，但系统没有追问；用户请求涉及高风险判断，但系统直接给出结论；某些用户没有权限查看某些文档，但系统仍然召回相关内容；某些问题应该转人工，但系统继续生成。这类问题通常不是模型能力不足，而是产品策略和安全策略没有设计清楚。</p>
+<p>问题分流的关键是建立可执行的判断规则。团队不能只给反馈打一个“错误”标签，而应进一步判断：正确知识是否存在？是否被召回？是否进入上下文？是否触发了权限或安全策略？这些判断共同构成了反馈分流的最小诊断链路。例如，对于一个用户点踩样本，可以按照如下顺序分析：如果知识库中没有正确内容，则归为知识缺失；如果知识库有正确内容但未召回，则归为检索缺陷；如果已召回但未进入最终上下文，则归为排序或上下文组装问题；如果上下文正确但答案错误，则归为生成缺陷；如果问题本身缺条件但系统未追问，则归为策略缺陷；如果答案正确但用户仍不满意，则可能是产品体验问题。</p>
+<hr />
+<h3 id="2326">23.2.6 反馈分流队列与运营责任<a class="headerlink" href="#2326" title="Permanent link">&para;</a></h3>
+<p>反馈分流不仅是技术分类问题，也是运营责任问题。每一类问题都应该对应明确的处理队列、责任团队、处理时限和验收标准。否则，即使系统能够识别问题，也无法推动修复。</p>
+<p>知识缺失通常由内容负责人、业务专家或知识库运营人员处理。他们需要判断是否补充文档、更新条款、增加 FAQ 或修订知识结构。检索缺陷通常由数据工程和检索工程团队处理，重点检查 chunk、索引、metadata、query rewrite 和 rerank。生成缺陷通常由模型应用团队处理，涉及 prompt、上下文格式、引用约束和生成策略。策略缺陷则需要产品、业务、合规和安全团队共同决定，因为它涉及系统是否应该回答、如何回答以及何时转人工。产品体验问题则通常由产品和前端团队处理。在组织流程上，将样本状态、责任人和验收标准显式化，也符合 MLOps 对端到端责任链路的要求：模型应用的质量不只取决于训练或推理环节，还取决于数据、部署、监控和运营团队之间的协作边界（Amershi et al. 2019; Kreuzberger, Kühl and Hirschl 2023）。</p>
+<p>为了提高处理效率，反馈队列应设置优先级。优先级可以由影响范围、风险等级、出现频率和修复成本共同决定。例如，高频低风险问题可以批量修复；低频高风险问题需要立即人工审核；低频低风险问题可以进入周期性优化池；高频高风险问题则应触发专项复盘和版本修复。在成熟的在线反馈体系中，每个反馈样本都应具有明确状态，例如：待分流、待审核、待修复、已修复、待回归、已上线、已关闭。这样，团队才能追踪一个线上失败样本是否真正进入闭环，而不是停留在问题列表中。</p>
+<hr />
+<h3 id="2327">23.2.7 本节小结<a class="headerlink" href="#2327" title="Permanent link">&para;</a></h3>
+<p>本节讨论了在线反馈闭环中的事件采集与反馈分流机制。对于大模型应用而言，反馈闭环首先是事件工程问题。系统必须完整记录用户输入、检索结果、上下文拼装、模型输出、引用来源、用户行为和后续反馈，才能支持后续错误归因和数据回补。</p>
+<p>在线反馈来源包括日志、点击、评分、纠错、工单和人工接管。不同反馈信号具有不同的数据价值和噪声特征，因此需要通过统一事件 schema 进行组织。显式反馈语义更直接，适合作为失败样本入口；隐式反馈覆盖更广，适合用于趋势监控和候选样本筛选。</p>
+<p>反馈采集之后，系统需要将问题分流为知识缺失、检索缺陷、生成缺陷、策略缺陷和产品体验问题。不同问题对应不同责任团队和修复动作。只有当每类反馈都能进入明确的队列，并经过审核、修复、回归和上线验证，在线反馈才能真正转化为持续改进的数据飞轮。</p>
+<p>下一节将进一步讨论知识更新、回滚与版本治理，重点分析新知识注入、旧知识失效、冲突内容治理、灰度发布和快速回滚如何支撑生产级大模型应用长期稳定运行。</p>
+<hr />
+<h2 id="233">23.3 知识更新、回滚与版本治理<a class="headerlink" href="#233" title="Permanent link">&para;</a></h2>
+<h3 id="2331">23.3.1 知识更新为什么必须被工程化管理<a class="headerlink" href="#2331" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环的最终目标，并不是简单地收集用户问题或统计满意度，而是要让系统能够基于真实使用持续修复自身。其中最核心的一类修复动作，就是知识更新。对于 RAG 系统、企业知识助手、客服机器人、合规问答系统和多模态文档检索系统而言，知识库不是静态资产，而是会随着业务、制度、产品、流程和外部环境不断变化的动态资产。</p>
+<p>在真实应用中，知识更新的复杂性主要来自三个方面。第一，知识本身具有时效性。企业制度会调整，产品功能会迭代，接口字段会废弃，价格规则会变化，组织架构会重组，法律法规也可能更新。对于这些内容，旧知识并不是简单地“价值变低”，而是可能变成错误信息。RAG 系统如果继续召回旧知识，就会生成看似有依据但实际过期的答案。这类错误比没有答案更危险，因为用户往往会因为答案带有引用而更加信任它。第二，知识之间可能存在冲突。一个系统中可能同时存在正式制度、历史制度、FAQ、会议纪要、客服话术、产品手册和临时通知。这些来源在时间、权威性和适用范围上并不相同。如果系统没有建立知识优先级和冲突治理规则，就可能在同一次回答中召回互相矛盾的证据。例如，正式制度规定某项流程需要三级审批，但某份旧 FAQ 中仍然写着二级审批；产品文档说明某功能仅支持企业版，但客服话术中为了简化表达写成“所有用户均可使用”。这些冲突并不能只靠模型判断，而必须由知识治理机制提前处理。第三，知识更新会影响系统行为。新增一批文档、修改元数据、重建索引或调整 chunk 策略，都可能改变检索结果。一个更新可能修复某类问题，也可能破坏原本表现良好的问题。因此，知识更新必须像代码发布一样被版本化、被测试、被灰度、被监控，而不能直接覆盖生产知识库。</p>
+<p>从动态知识系统的角度看，RAG 的优势在于能够通过外部语料更新知识，但这一优势只有在知识源、索引和生成策略同步治理时才成立；否则，非参数化记忆同样会引入过期和冲突风险（Lewis et al. 2020; Mallen et al. 2023）。因此，生产级 RAG 系统需要把知识更新从“文档维护动作”升级为“工程发布流程”。每一次知识变更都应有明确来源、变更说明、责任人、影响范围、评测结果、发布时间和回滚策略。只有这样，系统才能在持续更新中保持稳定，而不是在频繁变更中逐渐失控。</p>
+<hr />
+<h3 id="2332">23.3.2 新知识注入：从文档接入到可用知识单元<a class="headerlink" href="#2332" title="Permanent link">&para;</a></h3>
+<p>新知识注入是知识更新中最常见的场景。它可能来自新制度发布、新产品文档上线、新 FAQ 补充、新财报接入、新合同模板导入，也可能来自线上反馈暴露出的知识缺口。与初始知识库建设相比，上线后的新知识注入更强调增量性、可控性和可验证性。</p>
+<p>一个完整的新知识注入流程通常包括五个步骤：来源确认、内容解析、结构化处理、索引更新和上线验证。</p>
+<p>来源确认是知识注入的第一步。系统需要记录新知识来自哪里，是否具备使用权限，是否为正式版本，是否已经经过业务或法务确认。对于企业内部系统，文档来源的权威性需要重点关注。正式制度、审批通过的产品手册和业务负责人确认的 FAQ，应当具有更高优先级；会议纪要、临时聊天记录和个人整理文档，则应设置较低权重，甚至仅作为辅助参考。内容解析是将文档转化为机器可处理结构的过程。对于 PDF、Word、网页、表格、图片和扫描件，解析质量会直接决定后续检索效果。上线后的知识注入不应跳过解析质量检查，尤其是涉及表格、图表、页眉页脚、脚注、版本号和章节层级的复杂文档。如果解析阶段丢失了适用条件、数值单位、表格结构或文档版本，后续即使索引成功，也可能生成错误答案。结构化处理将解析后的内容转化为知识单元，需要补充元数据，例如来源文档、章节路径、发布时间、生效时间、失效时间、适用对象、权限范围、文档版本、知识类型和权威级别。对于生产级 RAG 系统而言，元数据不是附属信息，而是检索、过滤、排序和冲突治理的重要依据。索引更新将知识单元写入检索系统。根据系统架构不同，可能涉及向量索引、关键词索引、结构化索引、图数据库、表格索引和多模态索引。增量更新时需要特别注意索引一致性：新知识是否已经完成所有索引类型写入，旧索引是否需要删除或降权，父子索引是否同步更新，多模态图表区域是否与文本说明保持一致。上线验证则是新知识进入生产前的最后一步。系统应使用相关问题集进行回归测试，验证新知识是否能够被正确召回、正确引用和正确生成。如果新知识是为了修复某个线上失败问题，还应重新运行原始失败 query，确认问题是否已经解决。</p>
+<p>表 23-7 汇总了新知识注入流程中的关键检查项。</p>
+<p><em>表 23-7：新知识注入流程中的关键检查项</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>关键问题</th>
+<th>检查重点</th>
+<th>常见风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>来源确认</td>
+<td>文档是否可信、是否可用</td>
+<td>来源、权限、责任人、审批状态</td>
+<td>非正式文档进入生产知识库</td>
+</tr>
+<tr>
+<td>内容解析</td>
+<td>文档是否被正确读取</td>
+<td>章节、表格、图表、脚注、版本号</td>
+<td>表格错乱、条件丢失、OCR 错误</td>
+</tr>
+<tr>
+<td>结构化处理</td>
+<td>是否形成可检索知识单元</td>
+<td>chunk、元数据、适用范围、引用锚点</td>
+<td>缺少版本、生效时间或权限信息</td>
+</tr>
+<tr>
+<td>索引更新</td>
+<td>是否写入正确索引</td>
+<td>向量、关键词、结构化字段、多模态索引</td>
+<td>索引不一致、旧内容未下线</td>
+</tr>
+<tr>
+<td>上线验证</td>
+<td>是否真正解决问题</td>
+<td>失败 query 回放、引用检查、回归评测</td>
+<td>修复局部问题但引入新错误</td>
+</tr>
+</tbody>
+</table>
+<p>新知识注入还应区分“补充型更新”和“替换型更新”。补充型更新是在原有知识基础上增加新内容，例如新增 FAQ、新增案例、新增图表说明；替换型更新则意味着旧知识不再适用，例如制度版本升级、接口字段废弃、价格规则调整。两者的风险不同。补充型更新主要关注召回覆盖与排序；替换型更新则必须关注旧知识失效和冲突治理。</p>
+<hr />
+<h3 id="2333">23.3.3 旧知识失效与冲突内容治理<a class="headerlink" href="#2333" title="Permanent link">&para;</a></h3>
+<p>知识更新中最容易被忽视的问题，不是新知识没有加进去，而是旧知识没有被替换出来。在许多系统中，团队会不断向知识库添加新文档，却很少主动清理旧文档。结果是知识库越来越大，检索结果越来越混乱，模型在生成时可能同时看到新旧冲突证据。</p>
+<p>旧知识失效通常有三种形式：时间失效、版本失效和范围失效。时间失效指某条知识只在特定时间内有效。例如，临时通知、阶段性政策、促销规则、季度报告和项目安排都具有明确时间边界。时间失效的知识不一定要删除，但必须在检索和生成阶段被正确降权或过滤。版本失效指新版本替代旧版本。例如，产品手册 v3.0 发布后，v2.0 的某些功能描述可能不再适用；制度 2025 版发布后，2023 版制度中的流程可能已经废弃。如果系统没有文档版本和生效状态字段，就很难避免旧版本被召回。范围失效指知识仍然有效，但不适用于当前用户或当前场景。例如，某项报销政策只适用于正式员工，不适用于实习生；某个产品功能只适用于企业版，不适用于个人版；某个操作流程只适用于国内业务，不适用于海外分支。范围失效不是知识过期，而是适用条件没有被正确识别。</p>
+<p>知识冲突也可以被视为一种数据质量问题：同一实体、规则或指标在不同来源中出现不一致时，系统必须通过版本、权威性和适用范围来消解，而不能把冲突证据直接交给生成模型临场判断（Breck et al. 2017; Gao et al. 2023）。冲突内容治理需要从知识级别、索引级别和生成级别共同处理。在知识级别，需要为每条知识设置权威级别和适用范围。正式制度优先于 FAQ，最新版本优先于旧版本，结构化字段优先于非正式描述，业务负责人确认内容优先于用户评论或会议纪要。在索引级别，需要让检索系统能够识别时间、版本、权限和适用对象。对于已经失效的内容，可以选择删除、归档、降权或仅在历史查询场景中可见。对于仍需保留但不应默认召回的内容，应通过 metadata filter 控制使用范围。在生成级别，需要要求模型识别证据冲突。当上下文中出现多个版本或互相矛盾的片段时，模型不应简单拼接答案，而应基于版本、日期和权威级别选择可信证据，必要时提示“当前知识库存在冲突，需要人工确认”。不过，这种能力不能完全依赖模型自身判断，前置的数据治理仍然是关键。</p>
+<p>表 23-8 汇总了旧知识失效与冲突治理策略。</p>
+<p><em>表 23-8：旧知识失效与冲突治理策略</em></p>
+<table>
+<thead>
+<tr>
+<th>问题类型</th>
+<th>典型表现</th>
+<th>数据治理策略</th>
+<th>系统侧处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>时间失效</td>
+<td>临时通知、季度规则仍被召回</td>
+<td>增加生效时间、失效时间字段</td>
+<td>按查询时间过滤或降权</td>
+</tr>
+<tr>
+<td>版本失效</td>
+<td>新旧产品手册同时命中</td>
+<td>建立版本号、当前版本标记</td>
+<td>默认召回最新版本，旧版归档</td>
+</tr>
+<tr>
+<td>范围失效</td>
+<td>不适用用户的政策被引用</td>
+<td>标注适用对象、地区、角色、权限</td>
+<td>metadata filter 与权限过滤</td>
+</tr>
+<tr>
+<td>来源冲突</td>
+<td>FAQ 与正式制度不一致</td>
+<td>建立权威级别和来源优先级</td>
+<td>rerank 时提高权威内容权重</td>
+</tr>
+<tr>
+<td>内容冲突</td>
+<td>同一指标、流程或规则存在矛盾</td>
+<td>建立冲突检测和人工审核队列</td>
+<td>冲突场景提示或拒答</td>
+</tr>
+<tr>
+<td>引用失效</td>
+<td>答案引用已删除或迁移文档</td>
+<td>维护引用锚点和文档映射</td>
+<td>引用校验与索引重建</td>
+</tr>
+</tbody>
+</table>
+<p>知识冲突治理的难点在于，它往往跨越多个团队。内容团队负责文档更新，业务团队负责规则确认，平台团队负责索引机制，算法团队负责检索排序，产品团队负责展示与提醒。如果没有明确流程，冲突内容很容易长期留在系统中。因此，知识库应建立定期巡检机制，对高频召回文档、过期文档、低信任来源和用户反馈较多的内容进行专项审查。</p>
+<hr />
+<h3 id="2334">23.3.4 热更新、定时更新与审计式更新<a class="headerlink" href="#2334" title="Permanent link">&para;</a></h3>
+<p>知识更新并不是只有一种发布方式。根据风险等级、时效要求和业务影响范围，可以将更新方式分为热更新、定时更新和审计式更新。</p>
+<p>热更新适用于低风险、高时效的内容，例如 FAQ 补充、错别字修正、小范围说明更新、低风险产品提示等。热更新的优势是响应快，可以快速修复线上问题；风险是如果缺少自动校验，错误内容也可能快速进入生产。因此，热更新必须至少包含基础检查，如文档格式校验、解析成功校验、索引写入校验和小规模 query 回放。</p>
+<p>定时更新适用于周期性变化的知识，例如每日同步的帮助中心、每周更新的产品文档、每月发布的运营报告、季度财报或制度包。定时更新的优势是节奏稳定，便于批量校验和资源规划。它通常适合通过调度系统自动执行，并在完成后生成更新报告，包括新增文档数、删除文档数、解析失败数、索引更新数和回归评测结果。</p>
+<p>审计式更新适用于高风险内容，例如合规制度、金融规则、医疗指南、法律条款、权限政策、合同模板和关键业务流程。审计式更新不能直接自动上线，而需要经过责任人确认、专家审核、回归评测、审批留痕和灰度发布。对于这类知识，更新速度不是唯一目标，正确性、可追溯性和可回滚性更加重要。</p>
+<p>图23-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Yu-Chap23-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图23-4：知识更新、灰度发布与回滚治理流程" src="../../../images/part7/Yu-Chap23-Fig04-EN.svg" /></a></p>
+<p><em>图23-4：知识更新、灰度发布与回滚治理流程</em></p>
+<p>在实际工程中，三种更新方式往往并存。系统可以允许低风险内容走热更新，中风险内容走定时更新，高风险内容走审计式更新。这就要求知识更新平台具备风险分级能力，每一次更新请求都应根据知识类型、来源、影响范围和用户群体自动或半自动分级，并进入相应流程。例如，一个客服 FAQ 的措辞优化可以走热更新；一批产品文档的版本同步可以走定时更新；涉及合同责任、财务审批或医疗建议的内容，则必须走审计式更新。这样的分层机制能够在效率和安全之间取得平衡，避免所有更新都被低效审批拖慢，也避免高风险内容未经检查进入生产。</p>
+<hr />
+<h3 id="2335">23.3.5 版本冻结、灰度发布与快速回滚<a class="headerlink" href="#2335" title="Permanent link">&para;</a></h3>
+<p>知识更新的最终风险控制，依赖于版本治理。没有版本治理，就无法回答三个关键问题：当前线上知识库是什么版本？某个错误答案是由哪次更新引入的？如果更新出错，能否快速回到上一个稳定版本？</p>
+<p>具体来看，版本治理的主要方法可以总结为版本冻结、灰度发布与快速回滚三种类型。版本冻结是指在某个时间点将知识库、索引、prompt、模型配置和评测集状态固定下来，形成可复现的发布版本。对于生产级 RAG 系统而言，版本不应只记录文档文件夹，而应记录完整依赖关系，包括原始文档版本、解析器版本、chunk 策略、embedding 模型、索引构建参数、rerank 模型、prompt 模板和权限规则。只有这样，团队才能在问题发生时准确复盘。灰度发布是降低知识更新风险的重要方式。知识更新不应总是一次性面向全部用户发布。对于重要更新，可以先面向内部测试用户、小比例真实用户或特定租户开放，观察检索命中率、回答正确率、引用点击率、负反馈率、人工接管率等指标。如果灰度表现稳定，再逐步扩大范围。对于多租户企业系统，灰度还可以按部门、地区、业务线或用户角色进行。快速回滚则是在更新出现问题时，将系统恢复到上一个稳定版本。回滚能力要求系统保留旧版本索引、旧版本知识包和旧版本配置。如果每次更新都直接覆盖生产索引，而没有保留快照，那么回滚会变得较为困难。更成熟的做法是采用“蓝绿索引”或“双索引发布”：先构建新索引，在验证通过后切换流量；如果出现问题，立即切回旧索引。版本冻结和双索引发布的价值在于保证可复现性。MLOps 研究通常强调数据、代码、模型、配置和运行环境的共同版本化；对于 RAG，还必须把知识包、chunk 策略、embedding 模型和索引构建参数一并纳入版本边界（Amershi et al. 2019; Kreuzberger, Kühl and Hirschl 2023）。</p>
+<p>回滚不仅适用于知识内容，也适用于索引策略和生成策略。例如，某次更新可能没有修改文档，但调整了 chunk 粒度或 rerank 权重，导致线上召回质量下降；某次 prompt 更新可能提高了答案完整性，却降低了引用忠实性。这些变更都应纳入版本管理和回滚范围。一个可靠的版本治理体系，至少应记录以下信息：版本编号、发布时间、变更内容、变更来源、责任人、影响范围、评测结果、灰度范围、监控指标、回滚点和审批记录。这些信息不仅用于事故处理，也用于长期复盘和团队协作。</p>
+<hr />
+<h3 id="2336">23.3.6 本节小结<a class="headerlink" href="#2336" title="Permanent link">&para;</a></h3>
+<p>本节讨论了在线反馈闭环中的知识更新、回滚与版本治理问题。对于生产级大模型应用而言，知识库不是一次性构建完成的静态资产，而是需要持续更新、持续验证和持续治理的动态系统。新知识注入需要经过来源确认、内容解析、结构化处理、索引更新和上线验证；旧知识失效和冲突内容治理则需要依赖时间、版本、范围、权威性和权限等元数据。知识更新方式应根据风险等级进行分层：低风险内容可以热更新，中等风险内容适合定时更新，高风险内容则必须走审计式更新。与此同时，系统必须建立版本冻结、灰度发布和快速回滚机制，确保每一次知识变更都可追踪、可验证、可回退。在在线反馈闭环中，知识更新并不是孤立动作。它连接着用户失败反馈、错误归因、修复任务、回归评测和线上监控。只有当知识更新被纳入工程化治理流程，RAG 系统才能在不断变化的业务环境中保持可靠、可控和可持续演进。</p>
+<p>下一节将进一步讨论指标看板与运营节奏，重点分析在线成功率、人工接管率、纠错率、知识命中率等指标如何进入周度运营会、专题复盘会和大版本升级节奏，从而把数据闭环落实到团队日常工作中。</p>
+<hr />
+<h2 id="234">23.4 指标看板与运营节奏<a class="headerlink" href="#234" title="Permanent link">&para;</a></h2>
+<h3 id="2341">23.4.1 为什么在线反馈闭环需要指标看板<a class="headerlink" href="#2341" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环如果只停留在单个失败样本的修复层面，很容易陷入“被动处置式运营”。用户点踩一个问题，团队修一个问题；业务反馈一个知识缺口，团队补一份文档；某次回答引用错误，团队手动调整一条索引。这种方式在系统上线初期可以快速响应，但随着用户规模扩大、知识库增长和业务场景增多，单点修复会逐渐失效。团队需要从“处理问题”升级为“运营系统”，而指标看板正是实现这一转变的基础工具。</p>
+<p>指标看板的作用，不只是展示系统运行状态，而是把线上反馈转化为可观察、可比较、可归因、可决策的管理语言。对于生产级 RAG 或大模型应用而言，系统是否健康，不能只看接口是否可用、延迟是否正常，也不能只看用户访问量是否增长。更重要的是，系统是否真正回答了用户问题，是否基于正确知识，是否降低了人工处理成本，是否在知识更新后保持稳定，是否在高风险场景中采取了正确策略。</p>
+<p>因此，在线反馈闭环中的指标看板应同时覆盖四类指标：质量指标、行为指标、运营指标和风险指标。质量指标关注答案是否正确、引用是否可靠、检索是否命中；行为指标关注用户是否采纳、是否追问、是否转人工；运营指标关注问题处理效率、知识更新周期和修复闭环进度；风险指标关注错误回答、高风险误答、权限越界、旧知识召回等问题。只有这些指标共同呈现，团队才能判断系统是在真实变好，还是只是在局部指标上看起来变好。例如，一个系统的回答正确率上升，但人工接管率也上升，这可能说明系统在低风险问题上表现更好，却无法处理复杂问题；一个系统的检索召回率较高，但引用点击率很低，可能说明答案看似有来源，但用户并不信任引用展示；一个系统的用户满意度上升，但知识更新滞后严重，可能意味着短期体验不错，但未来存在过期知识风险。看板的价值就在于，它让这些张力显性化，避免团队被单一指标误导。</p>
+<hr />
+<h3 id="2342">23.4.2 在线成功率、人工接管率、纠错率与知识命中率<a class="headerlink" href="#2342" title="Permanent link">&para;</a></h3>
+<p>如表23-9所示，在线反馈闭环中，最常用的一组核心指标包括在线成功率、人工接管率、纠错率和知识命中率。它们分别从用户结果、人工成本、错误暴露和知识覆盖四个角度衡量系统表现。指标的设计通常会注意避免只涉及单一平均值。在线实验和搜索系统评估通常强调同时观察成功率、用户行为、错误成本和长尾影响，因为单一指标的上升可能掩盖高风险子场景的退化（Kohavi, Tang and Xu 2020; Joachims et al. 2017）。</p>
+<p>在线成功率用于衡量用户问题是否被系统有效解决。它可以由显式反馈和隐式反馈共同估计。例如，用户点击“已解决”、点赞、复制答案、未继续追问，或者在答案后结束会话，都可以作为成功信号。但在线成功率并不是一个简单的二元指标，因为不同场景中“成功”的定义不同。对于客服问答，成功可能意味着用户不再转人工；对于企业知识库，成功可能意味着用户点击了正确引用并完成后续操作；对于合规问答，成功可能不是直接给出结论，而是正确提示风险并引导人工审核。</p>
+<p>人工接管率用于衡量系统无法独立完成任务的比例。它既可以反映系统能力边界，也可以反映策略设计是否合理。在高风险领域，适度的人工接管是必要的；但如果普通问题也频繁转人工，就说明知识库、检索或生成策略存在不足。人工接管率应结合问题类型分析，而不能简单追求越低越好。对于法律、医疗、财务审批等场景，低接管率如果伴随高错误率，反而是危险信号。</p>
+<p>纠错率用于衡量用户或人工审核发现错误的频率。它包括用户主动纠错、专家复核发现错误、工单回流中的错误标注等。纠错率上升并不一定意味着系统变差，也可能说明反馈入口更加易用、用户更愿意反馈，或者系统覆盖了更多复杂场景。因此，纠错率需要和问题量、问题难度、上线版本、知识更新批次共同分析。</p>
+<p>知识命中率用于衡量用户问题是否能够匹配到知识库中的有效内容。它关注的是知识层面的覆盖情况，而不仅是检索算法的召回情况。一个问题如果知识库中根本没有答案，即使检索系统表现正常，也无法生成可靠回答。知识命中率低通常意味着知识缺口、文档未接入、文档过期、元数据缺失或用户问题超出系统边界。</p>
+<p><em>表 23-9：在线反馈闭环核心指标</em></p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>主要含义</th>
+<th>典型计算方式</th>
+<th>主要用于发现的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在线成功率</td>
+<td>用户问题是否被有效解决</td>
+<td>已解决会话数 / 总会话数，或基于显式与隐式反馈综合估计</td>
+<td>答案不可用、体验不佳、任务未完成</td>
+</tr>
+<tr>
+<td>人工接管率</td>
+<td>系统是否需要人工介入</td>
+<td>转人工会话数 / 总会话数</td>
+<td>系统能力边界、策略过严或检索失败</td>
+</tr>
+<tr>
+<td>纠错率</td>
+<td>用户或审核发现错误的比例</td>
+<td>纠错样本数 / 已回答样本数</td>
+<td>事实错误、引用错误、过期知识</td>
+</tr>
+<tr>
+<td>知识命中率</td>
+<td>问题是否在知识库中有有效证据</td>
+<td>有效证据命中问题数 / 总问题数</td>
+<td>知识缺失、文档未接入、元数据不足</td>
+</tr>
+<tr>
+<td>引用准确率</td>
+<td>答案引用是否支持结论</td>
+<td>正确引用答案数 / 含引用答案数</td>
+<td>引用错位、证据不足、上下文组装错误</td>
+</tr>
+<tr>
+<td>追问率</td>
+<td>用户是否需要继续追问</td>
+<td>发生追问会话数 / 总会话数</td>
+<td>答案不完整、条件未澄清、表达不清</td>
+</tr>
+</tbody>
+</table>
+<p>这些指标之间存在互补关系。在线成功率是结果指标，人工接管率是成本与边界指标，纠错率是错误暴露指标，知识命中率是知识资产指标。系统运营时不能只盯一个指标，而应观察它们之间的组合变化。</p>
+<p>例如，如果在线成功率下降，同时知识命中率下降，优先排查知识缺失或知识过期；如果知识命中率正常，但回答正确率下降，可能是生成或上下文组装问题；如果回答正确率正常，但追问率上升，可能是答案表达不够直接或缺少操作步骤；如果人工接管率突然升高，则需要进一步判断是业务复杂度增加，还是系统策略误触发。</p>
+<hr />
+<h3 id="2343">23.4.3 周度运营会、专题复盘会与大版本升级节奏<a class="headerlink" href="#2343" title="Permanent link">&para;</a></h3>
+<p>指标看板只有进入稳定的运营节奏，才能真正发挥作用。否则，看板只是被动展示数据，无法驱动系统改进。对于生产级大模型应用，建议建立三层运营节奏：周度运营会、专题复盘会和大版本升级评审。</p>
+<p>周度运营会关注系统日常运行状态，重点查看核心指标变化、线上失败样本、知识更新进展和待处理问题队列。它的目标不是深入解决每一个技术细节，而是确保团队知道系统当前最主要的问题是什么，哪些问题正在处理，哪些风险需要升级。周度运营会通常应由产品、数据工程、算法、平台、业务内容负责人共同参与，避免反馈只停留在单一团队内部。</p>
+<p>专题复盘会用于处理某一类集中暴露的问题。例如，某一周财务报表问答错误明显增加，或者某个产品版本上线后用户大量反馈功能说明不一致，就需要召开专题复盘。专题复盘应围绕具体问题链路展开：用户如何提问，系统召回了什么，答案如何生成，引用是否正确，用户为什么不满意，问题根因属于知识缺失、检索缺陷、生成缺陷还是策略缺陷。复盘结论必须转化为明确修复动作，而不是停留在“后续优化”。</p>
+<p>大版本升级评审则面向较大范围的知识库更新、索引策略调整、模型版本升级或 prompt 体系变更。大版本升级不能只依赖开发团队自测，而应经过回归评测、灰度发布、线上监控和回滚预案。尤其是涉及高频知识、关键业务流程或高风险回答策略的更新，必须在上线前明确影响范围和验收标准。</p>
+<p>表 23-10 概括了在线反馈闭环的运营节奏。</p>
+<p><em>表 23-10：在线反馈闭环的运营节奏</em></p>
+<table>
+<thead>
+<tr>
+<th>运营机制</th>
+<th>频率</th>
+<th>主要输入</th>
+<th>主要输出</th>
+<th>参与角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>周度运营会</td>
+<td>每周</td>
+<td>指标看板、失败样本 Top 类别、知识更新队列</td>
+<td>优先级排序、责任分配、风险升级</td>
+<td>产品、数据工程、算法、业务内容、平台</td>
+</tr>
+<tr>
+<td>专题复盘会</td>
+<td>按问题触发</td>
+<td>某类高频或高风险失败样本</td>
+<td>根因分析、修复方案、回归样本</td>
+<td>相关 Owner、业务专家、算法与平台</td>
+</tr>
+<tr>
+<td>大版本升级评审</td>
+<td>版本发布前</td>
+<td>变更说明、回归评测、灰度结果、回滚方案</td>
+<td>发布决策、灰度范围、回滚点</td>
+<td>项目负责人、平台、业务、合规、质量负责人</td>
+</tr>
+<tr>
+<td>月度质量复盘</td>
+<td>每月</td>
+<td>趋势指标、成本指标、用户反馈摘要</td>
+<td>阶段性质量报告、资源规划</td>
+<td>项目管理、产品、数据运营、技术负责人</td>
+</tr>
+</tbody>
+</table>
+<p>运营节奏的关键在于形成闭环记录。每一次会议都应明确问题、责任人、截止时间、验收指标和后续跟踪方式。例如，“优化检索效果”不是一个合格的任务；“针对报销政策类问题补充 30 条同义表达，并使相关失败样本 Recall@5 从 62% 提升到 85% 以上”才是可执行的任务。只有当任务被指标化、样本化和版本化，运营会议才能推动真实改进。</p>
+<hr />
+<h3 id="2344">23.4.4 反馈闭环中的责任边界与协作机制<a class="headerlink" href="#2344" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环往往涉及多个团队，因此责任边界必须清晰。一个用户点踩样本可能同时牵涉知识库内容、检索策略、模型生成、产品交互和权限控制。如果没有明确分工，这类问题很容易在团队之间反复流转，最终无人负责。</p>
+<p>一种有效做法是将反馈问题按照根因类型绑定责任团队。知识缺失由内容或业务 Owner 负责；检索缺陷由数据工程和检索团队负责；生成缺陷由模型应用团队负责；策略缺陷由产品、业务和合规共同负责；平台稳定性问题由基础设施团队负责；产品体验问题由产品和前端团队负责。对于无法一次判断的问题，则进入联合复盘队列，由数据运营负责人牵头。</p>
+<p>同时，反馈闭环需要设置问题状态流转机制。一个反馈样本从进入队列到最终关闭，通常会经历“待分流、待确认、待修复、待回归、待上线、已关闭”几个状态。每个状态都应有明确进入条件和退出条件。比如，待修复状态必须包含根因标签和修复方案；待回归状态必须绑定回归样本；已关闭状态必须有验证结果或上线指标变化作为依据。</p>
+<p>协作机制还应关注优先级规则。所有问题不可能同时处理，团队需要根据影响范围、风险等级、出现频率和修复成本进行排序。高风险问题即使低频，也应优先处理；高频低风险问题适合批量优化；低频低风险问题可以进入长期积累池；高频高风险问题则应触发专项事故级响应。</p>
+<p>此外，反馈闭环还需要知识沉淀。每一次问题复盘都应进入案例库，包括问题背景、失败表现、根因、修复动作、上线结果和经验总结。长期积累后，这些案例会成为团队的运营知识库，帮助新成员理解系统常见问题，也能反向指导评测集设计和上线检查清单。</p>
+<hr />
+<h3 id="2345">23.4.5 本节小结<a class="headerlink" href="#2345" title="Permanent link">&para;</a></h3>
+<p>本节讨论了在线反馈闭环中的指标看板与运营节奏。对于生产级大模型应用而言，看板不是简单的数据展示工具，而是将线上反馈转化为运营决策的基础设施。在线成功率、人工接管率、纠错率、知识命中率、引用准确率和追问率等指标共同构成系统质量观察框架，帮助团队识别知识缺失、检索缺陷、生成缺陷、策略缺陷和体验问题。</p>
+<p>指标必须进入稳定的运营节奏，才能推动系统持续改进。周度运营会用于处理日常问题和优先级排序，专题复盘会用于分析高频或高风险失败，大版本升级评审用于控制知识、索引、模型和策略变更风险。与此同时，反馈闭环必须明确责任边界，建立问题状态流转机制和优先级规则，避免线上反馈在团队之间反复流转却无法闭环。</p>
+<p>在线反馈闭环的成熟程度，最终体现为团队是否能够将真实用户问题持续转化为数据资产、修复任务、评测样本和知识更新。下一节将进一步通过线上知识更新 SOP 与事故复盘案例，讨论如何把这些机制落实到具体的生产流程中。</p>
+<hr />
+<h2 id="235-sop">23.5 案例复盘与 SOP<a class="headerlink" href="#235-sop" title="Permanent link">&para;</a></h2>
+<h3 id="2351-sop">23.5.1 为什么需要线上知识更新 SOP<a class="headerlink" href="#2351-sop" title="Permanent link">&para;</a></h3>
+<p>在前几节中，我们已经讨论了在线反馈闭环、事件采集、反馈分流、知识更新、版本治理以及指标运营。本节进一步将这些机制落到实际生产流程中，讨论如何通过 SOP（Standard Operating Procedure，标准作业流程）来管理线上知识更新和事故复盘。</p>
+<p>对于生产级 RAG 系统而言，知识更新不是简单的上传文档，也不是某个工程师手动重建索引。一个看似很小的知识变更，可能影响大量用户问题的召回结果、答案引用和风险判断。如果没有标准流程，团队很容易出现以下几类问题：新知识上线前没有验证，导致错误内容进入生产；旧知识没有及时下线，导致新旧版本冲突；索引更新后没有回归测试，导致原本正确的问题开始失败；问题发生后没有记录变更来源，导致无法判断是哪一次更新引入了错误。因此，线上知识更新 SOP 的核心目标，是把“知识变更”转化为可审批、可执行、可验证、可回滚的工程动作。它需要明确每个阶段由谁负责、输入是什么、输出是什么、通过标准是什么，以及出现异常时如何处理。</p>
+<p>一个完整的线上知识更新 SOP 通常至少包括七个环节：变更提出、来源校验、解析与结构化、冲突检测、索引更新、回归评测、灰度发布与监控。对于低风险知识，可以压缩流程；对于高风险知识，则必须增加人工审批、合规检查和回滚预案。</p>
+<p>表 23-11 给出了线上知识更新 SOP 的阶段划分。</p>
+<p><em>表 23-11：线上知识更新 SOP</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>输入</th>
+<th>关键动作</th>
+<th>输出</th>
+<th>通过标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变更提出</td>
+<td>新文档、修改说明、反馈样本</td>
+<td>填写变更来源、影响范围和责任人</td>
+<td>知识变更单</td>
+<td>变更原因清晰，责任人明确</td>
+</tr>
+<tr>
+<td>来源校验</td>
+<td>文档来源、权限信息、审批记录</td>
+<td>校验可信度、合法性、适用范围</td>
+<td>来源校验结果</td>
+<td>来源可信，权限合规</td>
+</tr>
+<tr>
+<td>解析与结构化</td>
+<td>原始文档、解析配置</td>
+<td>抽取章节、表格、图表、元数据</td>
+<td>结构化知识单元</td>
+<td>内容完整，元数据齐全</td>
+</tr>
+<tr>
+<td>冲突检测</td>
+<td>新旧知识单元</td>
+<td>检查版本冲突、时间冲突、范围冲突</td>
+<td>冲突报告</td>
+<td>高风险冲突已处理</td>
+</tr>
+<tr>
+<td>索引更新</td>
+<td>知识单元、索引配置</td>
+<td>更新向量索引、关键词索引、结构化索引</td>
+<td>新索引版本</td>
+<td>索引构建成功，可追溯</td>
+</tr>
+<tr>
+<td>回归评测</td>
+<td>黄金集、失败样本集、专项集</td>
+<td>测试召回、引用、答案正确性</td>
+<td>评测报告</td>
+<td>指标达标，无严重回归</td>
+</tr>
+<tr>
+<td>灰度发布</td>
+<td>新索引版本、灰度策略</td>
+<td>小流量上线并监控反馈</td>
+<td>灰度结果</td>
+<td>无明显质量下降</td>
+</tr>
+<tr>
+<td>全量发布/回滚</td>
+<td>灰度结果、监控指标</td>
+<td>扩大流量或回退旧版本</td>
+<td>发布记录</td>
+<td>发布成功或安全回滚</td>
+</tr>
+</tbody>
+</table>
+<p>在实际执行中，SOP 不应设计得过于繁琐，否则团队会绕过流程；也不应过于粗糙，否则无法控制风险。比较可行的方式是按风险分级执行不同流程。例如，低风险 FAQ 更新可以自动完成解析、索引和小规模回归；涉及财务、合同、医疗、合规等高风险内容时，则必须经过专家审核和灰度验证。</p>
+<hr />
+<h3 id="2352">23.5.2 案例：知识过期导致错误回答<a class="headerlink" href="#2352" title="Permanent link">&para;</a></h3>
+<p>下面以一个企业内部制度问答系统为例，说明没有知识更新闭环时，线上问题如何发生，以及如何通过 SOP 进行修复。</p>
+<p>某企业上线了一个内部知识助手，用于回答员工关于报销、休假、采购和审批流程的问题。系统上线初期表现良好，能够回答大部分标准问题。上线两个月后，公司财务部门发布了新版差旅报销制度，其中对住宿标准、交通补贴和审批权限进行了调整。然而，旧版制度仍然保留在知识库中，新版制度虽然被上传到了文档系统，但没有完成结构化解析和索引更新。几天后，员工开始询问：“出差去一线城市，酒店最高能报多少？”系统召回了旧版制度中的住宿标准，并生成了带引用的回答。由于答案中包含来源链接，用户误以为系统回答可信，按照旧标准提交了报销申请。财务审核时发现标准不一致，随后将问题反馈给系统运营团队。复盘发现，这次错误并不是单纯的模型幻觉，而是典型的知识过期问题。系统召回的文档确实存在，但它已经不是当前有效版本；新版制度已经发布，但没有进入生产索引；旧版制度没有失效时间和版本状态字段，因此检索系统无法判断它应当降权或过滤。</p>
+<p>这个案例暴露出三个数据工程问题：第一，知识库缺少生效时间和失效时间管理；第二，新知识发布没有触发索引更新；第三，系统没有针对高频制度问题运行回归评测。修复动作也应围绕这三个问题展开，而不是简单修改某一条答案。</p>
+<p>表 23-12 汇总了知识过期案例的错误归因与修复动作。</p>
+<p><em>表 23-12：知识过期案例的错误归因与修复动作</em></p>
+<table>
+<thead>
+<tr>
+<th>问题表现</th>
+<th>根因分类</th>
+<th>具体原因</th>
+<th>修复动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>系统引用旧版制度</td>
+<td>知识版本治理缺陷</td>
+<td>旧文档没有失效状态</td>
+<td>为制度文档补充版本号、生效时间、失效时间</td>
+</tr>
+<tr>
+<td>新制度未被召回</td>
+<td>索引更新缺陷</td>
+<td>新文档未进入生产索引</td>
+<td>触发新制度解析、结构化和索引重建</td>
+</tr>
+<tr>
+<td>用户无法判断版本</td>
+<td>引用展示缺陷</td>
+<td>答案未展示制度版本和生效日期</td>
+<td>在引用中展示版本号与生效时间</td>
+</tr>
+<tr>
+<td>同类问题未提前发现</td>
+<td>回归评测缺陷</td>
+<td>缺少制度类问题专项评测集</td>
+<td>构建差旅制度回归样本集</td>
+</tr>
+<tr>
+<td>修复后缺少验证</td>
+<td>运营闭环缺陷</td>
+<td>无灰度监控和验收指标</td>
+<td>灰度上线并监控报销类问题负反馈率</td>
+</tr>
+</tbody>
+</table>
+<p>这个案例说明，线上事故往往不是某个单点模块出错，而是知识生命周期管理不到位。正确的修复方式，不是只把旧答案删掉，而是将“制度版本治理”系统化，包括元数据补齐、索引更新、引用展示、评测集扩展和监控看板更新。另一方面也说明，RAG 的引用并不天然等于可信：如果引用指向的是过期文档或错误版本，系统反而会以更强的形式放大旧知识风险，因此引用准确性和知识时效性必须共同评估（Mallen et al. 2023; Es et al. 2024）。</p>
+<hr />
+<h3 id="2353">23.5.3 高价值反馈样本的自动化回流<a class="headerlink" href="#2353" title="Permanent link">&para;</a></h3>
+<p>在线反馈闭环中，并不是所有用户反馈都值得进入人工复盘。生产系统每天可能产生大量日志、评分、点击和追问行为，如果全部人工处理，成本会较高。因此，系统需要自动识别高价值反馈样本，将其优先送入审核和回补流程。</p>
+<p>高价值反馈样本通常具备以下特征：涉及高频问题、来自高风险场景、伴随强负反馈、包含用户纠错文本、触发人工接管、与近期知识更新相关，或者同类失败在短时间内集中出现。系统可以为每个反馈样本计算一个优先级分数，用于决定是否进入人工审核、知识更新队列或评测集扩展。对这类样本的筛选类似于主动学习和在线学习中的样本选择问题：系统应优先利用不确定性高、风险高、频次高或能够代表错误簇的样本，而不是平均处理所有日志（Settles 2009; Kohavi, Tang and Xu 2020）。</p>
+<p>下面给出一个简化的反馈样本优先级打分示例。它并不是完整生产代码，而是展示如何将显式反馈、隐式行为、风险等级和知识更新状态组合成一个可解释的筛选规则。</p>
+<p>代码清单23-1给出了流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">FeedbackEvent</span><span class="p">:</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">query</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">explicit_negative</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>      <span class="c1"># 是否点踩、报错或明确表示无帮助</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">has_correction</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>         <span class="c1"># 是否包含用户纠错文本</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">followup_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>              <span class="c1"># 后续追问轮数</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">reformulated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>           <span class="c1"># 是否改写问题后再次提交</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">human_handoff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>          <span class="c1"># 是否转人工</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">risk_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;low&quot;</span>              <span class="c1"># low / medium / high</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">related_to_recent_update</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">frequency_7d</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>                <span class="c1"># 近 7 天同类问题出现次数</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="k">def</span><span class="w"> </span><span class="nf">score_feedback</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">FeedbackEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">explicit_negative</span><span class="p">:</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">3</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">has_correction</span><span class="p">:</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">4</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">followup_count</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">2</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">reformulated</span><span class="p">:</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">2</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">human_handoff</span><span class="p">:</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">4</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">risk_level</span> <span class="o">==</span> <span class="s2">&quot;medium&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">2</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">risk_level</span> <span class="o">==</span> <span class="s2">&quot;high&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">5</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">related_to_recent_update</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">3</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">frequency_7d</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">3</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">frequency_7d</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        <span class="n">score</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    <span class="k">return</span> <span class="n">score</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="k">def</span><span class="w"> </span><span class="nf">route_feedback</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">FeedbackEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    <span class="n">score</span> <span class="o">=</span> <span class="n">score_feedback</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">risk_level</span> <span class="o">==</span> <span class="s2">&quot;high&quot;</span> <span class="ow">and</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">explicit_negative</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">human_handoff</span><span class="p">):</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="k">return</span> <span class="s2">&quot;expert_review_queue&quot;</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mi">10</span><span class="p">:</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        <span class="k">return</span> <span class="s2">&quot;priority_failure_queue&quot;</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    <span class="k">elif</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">:</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>        <span class="k">return</span> <span class="s2">&quot;sampling_review_queue&quot;</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>        <span class="k">return</span> <span class="s2">&quot;monitoring_pool&quot;</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="n">event</span> <span class="o">=</span> <span class="n">FeedbackEvent</span><span class="p">(</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    <span class="n">query</span><span class="o">=</span><span class="s2">&quot;新版差旅制度下，一线城市住宿还能按旧标准报销吗？&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>    <span class="n">explicit_negative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>    <span class="n">has_correction</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>    <span class="n">followup_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>    <span class="n">human_handoff</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>    <span class="n">risk_level</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>    <span class="n">related_to_recent_update</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>    <span class="n">frequency_7d</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="p">)</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="nb">print</span><span class="p">(</span><span class="n">score_feedback</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="nb">print</span><span class="p">(</span><span class="n">route_feedback</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+</code></pre></div>
+<p><em>代码清单23-1：流程示例</em></p>
+<p>这段代码体现了一个重要原则：反馈样本的价值不只由是否点踩决定，而应由多个信号共同判断。一个低风险问题即使被点踩，也未必需要立即处理；一个高风险问题即使只出现一次，也可能需要专家审核；一个问题如果在短时间内高频出现，则说明它可能代表知识缺口或系统性检索失败。</p>
+<p>在生产系统中，这类规则通常会进一步与模型分类器结合。例如，系统可以先通过规则筛出明显高价值样本，再使用分类模型判断其根因类型，如知识缺失、检索缺陷、生成缺陷、策略缺陷或产品体验问题。规则提供可解释性，模型提供扩展性，两者结合更适合复杂线上环境。</p>
+<hr />
+<h3 id="2354-sop">23.5.4 线上知识更新 SOP 示例<a class="headerlink" href="#2354-sop" title="Permanent link">&para;</a></h3>
+<p>结合前面的案例和自动化回流机制，可以形成一个较完整的线上知识更新 SOP。下面给出一个适合企业 RAG 系统的简化版本。</p>
+<p>第一步，系统从用户反馈、工单和日志中发现失败样本，并根据优先级规则进入对应队列。对于高风险问题，应立即进入专家审核队列；对于普通问题，可以进入抽样复盘或周期性处理池。</p>
+<p>第二步，运营人员或系统自动完成根因初判。判断问题属于知识缺失、知识过期、检索缺陷、生成缺陷还是策略缺陷。如果无法判断，则保留完整事件链路，进入联合复盘。</p>
+<p>第三步，若问题属于知识更新类，则创建知识变更单。变更单应包含问题来源、用户 query、错误答案、错误引用、正确知识来源、责任人、风险等级和期望上线时间。</p>
+<p>第四步，知识负责人补充或修订文档，并进行来源校验。对于高风险内容，需要业务专家或合规负责人确认。确认后，文档进入解析和结构化流程。</p>
+<p>第五步，系统完成冲突检测和索引更新。若发现新旧知识冲突，应优先确认权威来源和适用范围，而不是直接让两份内容同时进入生产索引。</p>
+<p>第六步，运行回归评测。评测集至少应包括原始失败样本、同类问题样本、黄金集样本和高风险边界样本。只有当关键指标达到阈值后，才能进入灰度发布。</p>
+<p>第七步，灰度上线并监控指标。如果负反馈率、人工接管率或引用错误率异常上升，应立即回滚；如果灰度稳定，则扩大流量并最终全量发布。</p>
+<p>第八步，关闭反馈单并沉淀复盘记录。复盘记录应写明根因、修复动作、影响版本、上线结果和后续预防措施。这些记录将成为后续运营会议和案例库的重要输入。</p>
+<p>这个 SOP 的价值在于，它把一次线上失败转化为一条完整的数据闭环。失败不再只是用户体验问题，而成为知识更新、评测增强和系统治理的输入。随着这种流程持续运行，系统不仅能修复单个问题，还能不断提升对相似问题的鲁棒性。</p>
+<hr />
+<h3 id="2355">23.5.5 本节小结<a class="headerlink" href="#2355" title="Permanent link">&para;</a></h3>
+<p>本节通过线上知识过期案例，讨论了在线反馈闭环如何落地为具体的 SOP。生产级 RAG 系统中，很多错误并不是模型随机幻觉，而是知识版本、索引更新、引用展示和回归评测共同失效的结果。因此，事故复盘不能只停留在“答案错了”，而应定位到知识生命周期中的具体环节。</p>
+<p>为了提升反馈处理效率，系统需要自动识别高价值反馈样本，并根据显式负反馈、用户纠错、追问行为、人工接管、风险等级、近期更新和问题频次等信号进行优先级排序。通过规则和模型结合，系统可以将大量线上反馈转化为可处理的审核队列、修复任务和评测样本。</p>
+<p>线上知识更新 SOP 的核心，是将失败样本收集、根因分析、知识变更、结构化处理、索引更新、回归评测、灰度发布和复盘沉淀组织成稳定流程。只有当这些动作形成制度化闭环，大模型应用才能从“上线可用”走向“长期可靠”。</p>
+<hr />
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本章把系统上线视为数据飞轮的起点，论证了长期可靠性取决于系统能否从真实使用中持续发现并修复问题。围绕这一目标，本章给出了事件采集与反馈分流的设计，将日志、点击、评分、纠错与人工接管等在线信号转化为可治理、可定位的失败样本与改进线索；阐述了知识更新、回滚与版本治理如何在保留现有能力的前提下安全地写入变更，使知识库的每一次修改都可追溯、可回退。</p>
+<p>在运行层面，本章建立了指标看板与运营节奏，把分散的反馈动作收敛为稳定的发现、归因、更新与验证循环，并通过线上事故复盘与 SOP，将处理经验沉淀为可复用的操作规程。这些方法共同支撑大模型应用从完成上线走向长期运行时的持续改进。至此，应用级数据工程的核心环节已完整呈现。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291–300. https://doi.org/10.1109/icse-seip.2019.00042.</p>
+<p>Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123–1132.</p>
+<p>Chapelle O, Zhang Y (2009) A Dynamic Bayesian Network Click Model for Web Search Ranking. In: Proceedings of the 18th International Conference on World Wide Web, pp 1–10. https://doi.org/10.1145/1526709.1526711.</p>
+<p>Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158. https://doi.org/10.18653/v1/2024.eacl-demo.16.</p>
+<p>Gama J, Žliobaitė I, Bifet A, Pechenizkiy M, Bouchachia A (2014) A Survey on Concept Drift Adaptation. ACM Computing Surveys 46(4):1–37. https://doi.org/10.1145/2523813.</p>
+<p>Gao Y, Xiong Y, Gao X, Jia K, Pan J, Bi Y, Dai Y, Sun J, Wang M, Wang H (2023) Retrieval-Augmented Generation for Large Language Models: A Survey. arXiv preprint arXiv:2312.10997.</p>
+<p>Hu Y, Koren Y, Volinsky C (2008) Collaborative Filtering for Implicit Feedback Datasets. In: Proceedings of the 2008 IEEE International Conference on Data Mining, pp 263–272. https://doi.org/10.1109/icdm.2008.22.</p>
+<p>Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O’Reilly Media.</p>
+<p>Joachims T (2002) Optimizing Search Engines Using Clickthrough Data. In: Proceedings of the Eighth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 133–142. https://doi.org/10.1145/775066.775067.</p>
+<p>Joachims T, Swaminathan A, Schnabel T (2017) Unbiased Learning-to-Rank with Biased Feedback. In: Proceedings of the Tenth ACM International Conference on Web Search and Data Mining, pp 781–789. https://doi.org/10.1145/3018661.3018699.</p>
+<p>Koh P W, Sagawa S, Marklund H, Xie S M, Zhang M, Balsubramani A, Hu W, Yasunaga M, Phillips R L, Gao I, Lee T, David E, Stavness I, Guo W, Earnshaw B A, Haque I S, Beery S, Leskovec J, Kundaje A, Pierson E, Levine S, Finn C, Liang P (2021) WILDS: A Benchmark of in-the-Wild Distribution Shifts. In: Proceedings of the 38th International Conference on Machine Learning, pp 5637–5664.</p>
+<p>Kohavi R, Tang D, Xu Y (2020) Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing. Cambridge University Press.</p>
+<p>Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866–31879. arXiv:2205.02302.</p>
+<p>Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W-t, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459–9474. arXiv:2005.11401.</p>
+<p>Mallen A, Asai A, Zhong V, Das R, Khashabi D, Hajishirzi H (2023) When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 9802–9822. https://doi.org/10.18653/v1/2023.acl-long.546.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.</p>
+<p>Settles B (2009) Active Learning Literature Survey. University of Wisconsin–Madison Computer Sciences Technical Report 1648.</p>
+<p>Yu H, Gan A, Zhang K, Tong S, Liu Q, Liu Z (2024) Evaluation of Retrieval-Augmented Generation: A Survey. arXiv preprint arXiv:2405.07437.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

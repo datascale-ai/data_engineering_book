@@ -1,0 +1,4914 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part14/p13_multimodal_instruction_factory/">
+      
+      
+        <link rel="prev" href="../p12_r1_reasoning_flywheel/">
+      
+      
+        <link rel="next" href="../p14_video_generation/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Project 13: Qwen-VL Multimodal Instruction Factory - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-13-qwen-vl-multimodal-instruction-factory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project 13: Qwen-VL Multimodal Instruction Factory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p13_multimodal_instruction_factory/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part14/p13_multimodal_instruction_factory/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-goals-and-reader-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Goals and Reader Outcomes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-and-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema and Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-fragments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Fragments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducible-resource-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducible Resource Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Background and Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step-by-Step Implementation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-seed-selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Seed Selector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-instruction-template-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Instruction Template Design
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-high-throughput-generation-with-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: High-throughput Generation with vLLM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-llm-as-judge-quality-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: LLM-as-Judge Quality Filtering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-unified-downstream-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Unified Downstream Packaging
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-run-path-and-minimal-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Engineering Run Path and Minimal Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-schema-and-sample-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Schema and Sample Contract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-filtering-from-length-thresholds-to-calibrated-rubrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality Filtering: From Length Thresholds to Calibrated Rubrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multilingual-expansion-and-cross-language-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multilingual Expansion and Cross-Language Acceptance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage-and-code-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Coverage and Code Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-faults-and-troubleshooting-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Faults and Troubleshooting Paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manual-spot-checks-and-release-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manual Spot Checks and Release Gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-image-and-video-extension-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Image and Video Extension Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deliverable-directory-and-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deliverable Directory and Version Management
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-dashboard-and-continuous-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Dashboard and Continuous Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-takedown-and-copyright-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Takedown and Copyright Response
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-transfer-from-general-images-to-industry-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domain Transfer: From General Images to Industry Assets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-with-p03-and-p14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Relationship with P03 and P14
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-and-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost and Optimization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-compliance-and-open-source-licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Compliance and Open-source Licensing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-goals-and-reader-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Goals and Reader Outcomes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-and-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema and Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-fragments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Fragments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducible-resource-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducible Resource Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Background and Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step-by-Step Implementation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-seed-selector" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Seed Selector
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-instruction-template-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Instruction Template Design
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-high-throughput-generation-with-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: High-throughput Generation with vLLM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-llm-as-judge-quality-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: LLM-as-Judge Quality Filtering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-unified-downstream-packaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Unified Downstream Packaging
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-run-path-and-minimal-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Engineering Run Path and Minimal Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-schema-and-sample-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Schema and Sample Contract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quality-filtering-from-length-thresholds-to-calibrated-rubrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quality Filtering: From Length Thresholds to Calibrated Rubrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multilingual-expansion-and-cross-language-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multilingual Expansion and Cross-Language Acceptance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage-and-code-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Test Coverage and Code Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-faults-and-troubleshooting-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Faults and Troubleshooting Paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manual-spot-checks-and-release-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      Manual Spot Checks and Release Gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-image-and-video-extension-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multi-Image and Video Extension Path
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deliverable-directory-and-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deliverable Directory and Version Management
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-dashboard-and-continuous-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Dashboard and Continuous Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-takedown-and-copyright-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Takedown and Copyright Response
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domain-transfer-from-general-images-to-industry-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domain Transfer: From General Images to Industry Assets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationship-with-p03-and-p14" class="md-nav__link">
+    <span class="md-ellipsis">
+      Relationship with P03 and P14
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-and-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost and Optimization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extensions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-compliance-and-open-source-licensing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Compliance and Open-source Licensing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="project-13-qwen-vl-multimodal-instruction-factory">Project 13: Qwen-VL Multimodal Instruction Factory<a class="headerlink" href="#project-13-qwen-vl-multimodal-instruction-factory" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Ke Wang; Wenzhuo Du</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This project builds a reproducible data-engineering case around a "multimodal instruction factory." It focuses on business goals, data boundaries, architecture decisions, core implementation, acceptance metrics, and risk control. Installation commands and script details are condensed into an engineering-review perspective. The emphasis is on the relationship among sample schema, data flow, failure modes, and deliverables, so that readers can turn methods from earlier chapters into auditable and extensible project assets.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>multimodal instruction factory; practical project; reproducible data engineering; data pipeline; acceptance metrics</p>
+<h2 id="project-goals-and-reader-outcomes">Project Goals and Reader Outcomes<a class="headerlink" href="#project-goals-and-reader-outcomes" title="Permanent link">&para;</a></h2>
+<p>This project uses the multimodal instruction factory as its core case. The goal is to build a multimodal instruction production chain covering images, text, OCR, charts, and dialogue tasks. After completing this chapter, readers should be able to identify the key data objects in this scenario, decompose the engineering pipeline, set acceptance metrics, and transfer the same approach to adjacent data-engineering tasks.</p>
+<h2 id="scenario-constraints-and-data-boundaries">Scenario Constraints and Data Boundaries<a class="headerlink" href="#scenario-constraints-and-data-boundaries" title="Permanent link">&para;</a></h2>
+<p>This project targets controlled assets and sample factories. It does not cover unauthorized media collection or fully automated safety review. These boundaries make the case reproducible and auditable. When data scale, data sources, permission scope, or deployment environment changes, sampling strategy, quality thresholds, runtime cost, and compliance requirements must be reassessed.</p>
+<p>The boundary between this project and P03 must be explicit. P03 focuses on the classic LLaVA flow: image assets, OCR, bounding boxes, conversation templates, visual spot checks, and training packaging as the baseline chain. P13 focuses on modern multimodal-instruction factory capabilities: Qwen-VL-style generation, self-consistency quality calibration, LLM-as-Judge filtering, multilingual expansion, and unified packaging for multi-image and video references. P13 therefore does not repeat the proof of the LLaVA baseline pipeline; it shows how newer factory capabilities extend the data-factory skeleton already established in P03.</p>
+<h2 id="architecture-decisions">Architecture Decisions<a class="headerlink" href="#architecture-decisions" title="Permanent link">&para;</a></h2>
+<p>This project uses an architecture path of asset selection, task templates, caption/OCR signals, dialogue generation, quality scoring, and data packaging. The decision prioritizes input-output contracts, traceable versions, localizable exceptions, and reviewable results rather than compressing all logic into a one-off script.</p>
+<h2 id="sample-schema-and-data-flow">Sample Schema and Data Flow<a class="headerlink" href="#sample-schema-and-data-flow" title="Permanent link">&para;</a></h2>
+<p>The core data flow can be summarized as:</p>
+<p>Listing P13-1 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>visual assets -&gt; metadata/OCR/caption -&gt; instruction tasks -&gt; multi-turn samples -&gt; quality filtering -&gt; multimodal training set
+</code></pre></div>
+<p><em>Listing P13-1: Process flow example</em></p>
+<p>At minimum, the sample schema should retain fields such as <code>id</code>, <code>source</code>, <code>content_or_payload</code>, <code>metadata</code>, <code>quality_signals</code>, <code>split_or_stage</code>, and <code>audit_trace</code>. The exact fields are further refined by the data type, downstream task, and acceptance method used in this project.</p>
+<h2 id="core-implementation-fragments">Core Implementation Fragments<a class="headerlink" href="#core-implementation-fragments" title="Permanent link">&para;</a></h2>
+<p>The chapter keeps only implementation fragments that explain design trade-offs. Full scripts, long configurations, runtime logs, and large files should live in the companion repository or appendix notes. Code examples focus on input-output contracts, quality thresholds, exception handling, and acceptance interfaces.</p>
+<h2 id="experiment-or-acceptance-metrics">Experiment or Acceptance Metrics<a class="headerlink" href="#experiment-or-acceptance-metrics" title="Permanent link">&para;</a></h2>
+<p>Acceptance metrics include task coverage, image-text consistency, OCR usability, format pass rate, safety-filtering rate, and manual spot-check quality. If the project enters production, a course environment, or a public reproduction environment, it should also record version numbers, dependency environment, random seeds, sample spot-check results, and failure-sample review records.</p>
+<p>Table P13-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-1: Publication acceptance table for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Acceptance dimension</th>
+<th>Metric / evidence</th>
+<th>Publication review rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Task coverage</td>
+<td>Ratio of description, OCR, chart, grounding, and multi-turn QA tasks</td>
+<td>Task types must correspond to data sources, model capability, and downstream training goals</td>
+</tr>
+<tr>
+<td>Quality filtering</td>
+<td>Image-text consistency, format pass rate, safety-filtering rate, self-consistency result, manual review quality</td>
+<td>LLM-as-Judge results must retain scoring rules, spot-check calibration examples, and multi-sample consistency records</td>
+</tr>
+<tr>
+<td>Multilingual expansion</td>
+<td>Ratio of Chinese, English, and translated samples; cross-language terminology consistency; format-preservation rate</td>
+<td>Multilingual samples must not be judged by quantity only; semantic consistency, visual reference, and proper-name translation require sampling review</td>
+</tr>
+<tr>
+<td>Copyright safety</td>
+<td>Image authorization, sensitive-content interception, redistribution boundary</td>
+<td>Public examples should prefer authorized or owned assets; external images require separate registration</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cost-risk-and-compliance-boundaries">Cost, Risk, and Compliance Boundaries<a class="headerlink" href="#cost-risk-and-compliance-boundaries" title="Permanent link">&para;</a></h2>
+<p>Cost mainly comes from vision-language models, OCR, and manual review. Risk concentrates in image authorization, sensitive content, hallucinated descriptions, and task homogenization. When external data, personal information, copyrighted material, or third-party services are involved, retain source notes, permission status, masking strategy, call records, and manual-review records.</p>
+<h2 id="common-failure-modes">Common Failure Modes<a class="headerlink" href="#common-failure-modes" title="Permanent link">&para;</a></h2>
+<p>Common failures include input-distribution drift, missing schema fields, quality thresholds that are too loose or too strict, insufficient evaluation-sample coverage, unstable model calls, and results that cannot be traced. Troubleshooting should locate data boundaries and intermediate artifacts first, then inspect models, toolchains, and deployment environment.</p>
+<h2 id="reproducible-resource-notes">Reproducible Resource Notes<a class="headerlink" href="#reproducible-resource-notes" title="Permanent link">&para;</a></h2>
+<p>Reproduction materials should include data-source notes, a minimal sample set, configuration files, run commands, metric scripts, inspection reports, and output directories. The chapter keeps necessary fragments; full notebooks, long scripts, and large files should be maintained as companion resources.</p>
+<h2 id="background-and-objectives">Background and Objectives<a class="headerlink" href="#background-and-objectives" title="Permanent link">&para;</a></h2>
+<p>In VLM data engineering, the bottleneck is often not only the number of image-text pairs but also the construction of high-quality, diverse instruction data. Project 3 already introduced the entry-level process for generating simple descriptions and QA instructions from single images. Under modern multimodal architectures represented by Qwen2.5-VL (Bai et al. 2025) and InternVL3 (Zhu et al. 2025), however, datasets also need to cover complex reasoning, OCR reading, fine-grained grounding, interleaved multi-image input, and video understanding.</p>
+<p>Therefore, this chapter is not a repeated version of P03. P03 answers "how to organize the basic pipeline of a LLaVA-style data factory clearly"; this chapter answers "after the foundation model, sampling strategy, and quality-filtering capability are upgraded, how should multimodal instruction production be extended into a pipeline closer to an industrial factory." The former emphasizes reproducibility of the classic process, while the latter emphasizes newer capabilities such as Qwen-VL generation, self-consistency, LLM-as-Judge, multilingual expansion, and unified packaging.</p>
+<p>Industrial multimodal instruction synthesis must handle several challenges:</p>
+<ol>
+<li><strong>Instruction diversity</strong>: Beyond description, datasets need reasoning, fine-grained grounding, chart reading, and OCR tasks.</li>
+<li><strong>Multi-source and multi-form input</strong>: Data should support not only single images, but also interleaved images and video.</li>
+<li><strong>Quality control</strong>: Pure generation creates severe hallucinations, so multi-sample verification and LLM-as-Judge filtering (Zheng et al. 2023) are needed.</li>
+</ol>
+<p>This project builds a complete multimodal instruction data factory. Starting from an image-only pool such as a LAION subset, it uses strong foundation models, including Qwen2.5-VL-7B and Qwen2.5-72B, to produce high-quality complex instructions in an automated and scalable way. After completing the project, readers can adapt the same production line to private image collections in domains such as medicine, law, and e-commerce.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<p>The factory is divided into five components, shown in Figure P13-1.</p>
+<p><a class="glightbox" href="../../../images/part14/Yu-Project13-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure P13-1: Multimodal Instruction Factory" src="../../../images/part14/Yu-Project13-Fig01-EN.svg" /></a>
+<em>Figure P13-1: Qwen-VL-style multimodal instruction synthesis pipeline</em></p>
+<ol>
+<li><strong>Seed selector</strong>: Retrieves seed images from massive image pools, emphasizing OCR-rich images, charts, and realistic complex scenes.</li>
+<li><strong>Instruction generator</strong>: Defines six categories of complex instruction templates and calls Qwen2.5-VL through vLLM (Kwon et al. 2023) for high-throughput generation.</li>
+<li><strong>Quality scorer and self-consistency</strong>: Uses self-consistency (Wang et al. 2023) to validate reasoning tasks through repeated sampling.</li>
+<li><strong>LLM-as-Judge filter</strong>: Uses a strong text-only model such as Qwen2.5-72B-Instruct to score logic and detail, discarding samples below 4.0.</li>
+<li><strong>Multilingual expander and packer</strong>: Extends data through Chinese-English translation where needed and exports a unified format that supports image, multi-image, and video references.</li>
+</ol>
+<p>Table P13-2 maps architecture components to code entry points and key artifacts. Unlike P03, P13 does not walk through LLaVA image-text preparation again. Its focus is how a modern multimodal instruction factory organizes seed selection, templates, generation, filtering, expansion, packaging, and acceptance into a reviewable chain.</p>
+<p><em>Table P13-2: Stage artifacts and code entry points for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Code entry</th>
+<th>Main input</th>
+<th>Main output</th>
+<th>Key review point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed selection</td>
+<td><code>seed_selector.py</code></td>
+<td>LAION metadata or private visual-asset manifest</td>
+<td>Seed list</td>
+<td>Resolution, aspect ratio, original caption length, authorization status</td>
+</tr>
+<tr>
+<td>Template management</td>
+<td><code>instruction_templates.py</code></td>
+<td>Task type</td>
+<td>Prompt template</td>
+<td>Task coverage, template repetition, prompt boundary</td>
+</tr>
+<tr>
+<td>VLM generation</td>
+<td><code>generate_with_qwen_vl.py</code></td>
+<td>Seed list, templates, Qwen2.5-VL</td>
+<td>Raw instruction records</td>
+<td>Model version, sampling parameters, failed samples</td>
+</tr>
+<tr>
+<td>LLM-as-Judge</td>
+<td><code>llm_judge.py</code></td>
+<td>Instruction and response</td>
+<td>Scored records</td>
+<td>Scoring rule, threshold, human calibration examples</td>
+</tr>
+<tr>
+<td>Self-consistency</td>
+<td><code>self_consistency.py</code></td>
+<td>Multi-sample generations</td>
+<td>Consistency score</td>
+<td>Multi-sample agreement, reasoning-task stability</td>
+</tr>
+<tr>
+<td>Multilingual expansion</td>
+<td><code>multilingual_expand.py</code></td>
+<td>High-quality English samples</td>
+<td>Bilingual records</td>
+<td>Terminology consistency, visual-reference preservation</td>
+</tr>
+<tr>
+<td>Unified packaging</td>
+<td><code>pack_multi_image_video.py</code></td>
+<td>Scored records</td>
+<td><code>mm_sft_final.jsonl</code></td>
+<td>Qwen format, image/video paths, conversation fields</td>
+</tr>
+<tr>
+<td>Unit tests</td>
+<td><code>tests/test_factory.py</code></td>
+<td>Template, judge, expansion, packaging functions</td>
+<td>Test report</td>
+<td>Basic contracts and example-output completeness</td>
+</tr>
+</tbody>
+</table>
+<p>The key function of Table P13-2 is to split "generation" out of a single model call. In real projects, VLM generation is only the middle of the pipeline. Before it, controlled seeds and task templates are required; after it, consistency checks, score filtering, multilingual review, and format packaging are required. If only the generation script is kept, the chapter becomes a demo. If stage artifacts and review fields are kept, the chapter has the engineering depth expected of a project chapter.</p>
+<h2 id="step-by-step-implementation">Step-by-Step Implementation<a class="headerlink" href="#step-by-step-implementation" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-seed-selector">Step 1: Seed Selector<a class="headerlink" href="#step-1-seed-selector" title="Permanent link">&para;</a></h3>
+<p>From an open LAION subset (Schuhmann et al. 2022), use metadata such as image width, height, original caption length, and tags to select promising seeds.</p>
+<p>Listing P13-2 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/seed_selector.py</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">select_seeds</span><span class="p">(</span><span class="n">dataset_name</span><span class="o">=</span><span class="s2">&quot;laion/laion2B-en&quot;</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading LAION metadata...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># In production, stream metadata first instead of downloading all images.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">ds</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WIDTH&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HEIGHT&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="k">if</span> <span class="n">w</span> <span class="o">&gt;</span> <span class="mi">512</span> <span class="ow">and</span> <span class="n">h</span> <span class="o">&gt;</span> <span class="mi">512</span> <span class="ow">and</span> <span class="mf">0.5</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                <span class="c1"># Text longer than 10 words suggests richer visual context.</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEXT&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                    <span class="n">seeds</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                        <span class="s2">&quot;original_caption&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;TEXT&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                    <span class="p">})</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>            <span class="k">continue</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_samples</span><span class="p">:</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>            <span class="k">break</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Selected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span><span class="si">}</span><span class="s2"> high-quality seed images.&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="k">return</span> <span class="n">seeds</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    <span class="n">select_seeds</span><span class="p">(</span><span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing P13-2: Python implementation excerpt</em></p>
+<h3 id="step-2-instruction-template-design">Step 2: Instruction Template Design<a class="headerlink" href="#step-2-instruction-template-design" title="Permanent link">&para;</a></h3>
+<p>Unlike fixed-question LLaVA data, this pipeline needs diverse roles and task templates.</p>
+<p>Listing P13-3 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/instruction_templates.py</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">TEMPLATES</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="s2">&quot;detailed_description&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="s2">&quot;Please provide a highly detailed, comprehensive description of this image, capturing every visible element, spatial relationship, and background context.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="s2">&quot;Describe this image as if you are explaining it to someone who cannot see it, ensuring no detail is left out.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="p">],</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="s2">&quot;complex_reasoning&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;Based on the visual evidence in the image, infer the sequence of events that likely led to this scene. Explain your reasoning step-by-step.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">&quot;What are the implicit relationships between the objects shown? Provide a logical deduction.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="p">],</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="s2">&quot;ocr_reading&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="s2">&quot;Extract all visible text in this image and format it into a structured markdown table or list.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="p">],</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">}</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_random_prompt</span><span class="p">(</span><span class="n">task_type</span><span class="p">):</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">TEMPLATES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task_type</span><span class="p">,</span> <span class="n">TEMPLATES</span><span class="p">[</span><span class="s2">&quot;detailed_description&quot;</span><span class="p">]))</span>
+</code></pre></div>
+<p><em>Listing P13-3: Python implementation excerpt</em></p>
+<h3 id="step-3-high-throughput-generation-with-vllm">Step 3: High-throughput Generation with vLLM<a class="headerlink" href="#step-3-high-throughput-generation-with-vllm" title="Permanent link">&para;</a></h3>
+<p>With vLLM's high concurrency, selected images and instruction templates can be sent to a base multimodal model at scale.</p>
+<p>Listing P13-4 provides a latent-reasoning trace sample.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/generate_with_qwen_vl.py</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SamplingParams</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">instruction_templates</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_random_prompt</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_instructions</span><span class="p">(</span><span class="n">seeds</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-7B-Instruct&quot;</span><span class="p">):</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">model</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">max_num_seqs</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="n">gpu_memory_utilization</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="p">)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">sampling_params</span> <span class="o">=</span> <span class="n">SamplingParams</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">:</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;detailed_description&quot;</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="n">prompt</span> <span class="o">=</span> <span class="n">get_random_prompt</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>                <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;image_url&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]}},</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>                <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">},</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>            <span class="p">],</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>        <span class="p">}]</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>        <span class="c1"># In production, use the transformers tokenizer to process messages.</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>        <span class="n">prompt_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;|im_start|&gt;user</span><span class="se">\n</span><span class="s2">&lt;|image_pad|&gt;</span><span class="se">\n</span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="s2">&lt;|im_end|&gt;</span><span class="se">\n</span><span class="s2">&lt;|im_start|&gt;assistant</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>        <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>            <span class="s2">&quot;multi_modal_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]},</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">task</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">},</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>        <span class="p">})</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating answers for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="si">}</span><span class="s2"> seeds...&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="n">outputs</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params</span><span class="p">)</span>
+<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>
+<a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>    <span class="k">for</span> <span class="n">output</span><span class="p">,</span> <span class="n">req</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">req</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a>            <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">req</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;task&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>            <span class="s2">&quot;instruction&quot;</span><span class="p">:</span> <span class="n">req</span><span class="p">[</span><span class="s2">&quot;metadata&quot;</span><span class="p">][</span><span class="s2">&quot;prompt&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>            <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">output</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>        <span class="p">})</span>
+<a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a>
+<a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a>    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p><em>Listing P13-4: Latent-reasoning trace sample</em></p>
+<h3 id="step-4-llm-as-judge-quality-filtering">Step 4: LLM-as-Judge Quality Filtering<a class="headerlink" href="#step-4-llm-as-judge-quality-filtering" title="Permanent link">&para;</a></h3>
+<p>Generated responses often hallucinate. We introduce a strong judge model such as Qwen2.5-72B-Instruct. Because a text-only 72B model cannot directly inspect images, we use text-only evaluation: the judge scores the internal logic, completeness, and structure of the generated long response.</p>
+<p>Listing P13-5 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/llm_judge.py</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">score_with_llm_judge</span><span class="p">(</span><span class="n">generated_data</span><span class="p">):</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="sd">    Demonstration logic. In a real pipeline this function calls a 72B judge model</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="sd">    served by vLLM. Input is an instruction and response; output is a 1-5 score.</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">scored_data</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">generated_data</span><span class="p">:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="c1"># Example production prompt:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="c1"># Rate the quality of this response to the instruction. Score 1 to 5.</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="n">word_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="n">score</span> <span class="o">=</span> <span class="mf">4.5</span> <span class="k">if</span> <span class="n">word_count</span> <span class="o">&gt;</span> <span class="mi">50</span> <span class="k">else</span> <span class="mf">3.0</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>        <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mf">4.0</span><span class="p">:</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>            <span class="n">item</span><span class="p">[</span><span class="s2">&quot;judge_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>            <span class="n">scored_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">generated_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> down to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scored_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> high-quality samples.&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="k">return</span> <span class="n">scored_data</span>
+</code></pre></div>
+<p><em>Listing P13-5: Python implementation excerpt</em></p>
+<h3 id="step-5-unified-downstream-packaging">Step 5: Unified Downstream Packaging<a class="headerlink" href="#step-5-unified-downstream-packaging" title="Permanent link">&para;</a></h3>
+<p>Whether the source is a single image, multiple images, or a video clip, the final output is written as JSONL in a community format such as ShareGPT or a model-specific format such as Qwen2.5-VL fine-tuning format.</p>
+<p>Listing P13-6 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/pack_multi_image_video.py</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">pack_to_qwen_format</span><span class="p">(</span><span class="n">scored_data</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;./data/mm_sft_final.jsonl&quot;</span><span class="p">):</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">formatted_dataset</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">scored_data</span><span class="p">:</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>            <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>            <span class="s2">&quot;conversations&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>                <span class="p">{</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>                    <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>                    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;&lt;image&gt;</span><span class="se">\n</span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;instruction&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>                <span class="p">},</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>                <span class="p">{</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>                    <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>                    <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">],</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>                <span class="p">},</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>            <span class="p">],</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>            <span class="s2">&quot;quality&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;judge_score&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;judge_score&quot;</span><span class="p">]},</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span class="p">}</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span class="n">formatted_dataset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">formatted_dataset</span><span class="p">:</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">formatted_dataset</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>    <span class="n">dummy_data</span> <span class="o">=</span> <span class="p">[{</span>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>        <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://example.jpg&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>        <span class="s2">&quot;instruction&quot;</span><span class="p">:</span> <span class="s2">&quot;Describe&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>        <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="s2">&quot;A cat.&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>        <span class="s2">&quot;judge_score&quot;</span><span class="p">:</span> <span class="mf">4.5</span><span class="p">,</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>    <span class="p">}]</span>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>    <span class="n">pack_to_qwen_format</span><span class="p">(</span><span class="n">dummy_data</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing P13-6: Python implementation excerpt</em></p>
+<h2 id="engineering-run-path-and-minimal-reproduction">Engineering Run Path and Minimal Reproduction<a class="headerlink" href="#engineering-run-path-and-minimal-reproduction" title="Permanent link">&para;</a></h2>
+<p>The P13 code directory is <code>code/zh/project_13_mm_instruction_factory</code>. Compared with P11 and P14, this project is more of a generative data factory. The minimal reproduction path is therefore not one fixed shell script, but a staged function chain: select seeds, generate instructions from templates, then run judge, self-consistency, multilingual expansion, and format packaging. In teaching environments, a small seed set and mock judge can first validate artifact contracts before replacing them with real Qwen2.5-VL and Qwen2.5-72B-Instruct services.</p>
+<p>Listing P13-7 shows the minimal run order. A production implementation can wrap it in shell, Makefile, Airflow, or Ray, but the project chapter should make stage boundaries and artifact transfer explicit.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">seed_selector</span><span class="w"> </span><span class="kn">import</span> <span class="n">select_seeds</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">generate_with_qwen_vl</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_instructions</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_judge</span><span class="w"> </span><span class="kn">import</span> <span class="n">score_with_llm_judge</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">self_consistency</span><span class="w"> </span><span class="kn">import</span> <span class="n">self_consistency_filter</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">multilingual_expand</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_multilingual</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pack_multi_image_video</span><span class="w"> </span><span class="kn">import</span> <span class="n">pack_to_qwen_format</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">seeds</span> <span class="o">=</span> <span class="n">select_seeds</span><span class="p">(</span><span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">raw</span> <span class="o">=</span> <span class="n">generate_instructions</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">consistent</span> <span class="o">=</span> <span class="n">self_consistency_filter</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">scored</span> <span class="o">=</span> <span class="n">score_with_llm_judge</span><span class="p">(</span><span class="n">consistent</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">expanded</span> <span class="o">=</span> <span class="n">expand_multilingual</span><span class="p">(</span><span class="n">scored</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="n">pack_to_qwen_format</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="s2">&quot;./data/mm_sft_final.jsonl&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing P13-7: Python implementation excerpt</em></p>
+<p>This code describes the factory's minimal closed loop, but it is not yet a production script. Production runs need four additional controls. First, model calls must record model path, temperature, top-p, max tokens, and concurrency. Second, seeds must record source, authorization, and download status. Third, judge output must retain the scoring prompt, threshold, and human calibration set. Fourth, before packaging, the pipeline must check image links, conversation format, and sample deduplication.</p>
+<p>Table P13-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-3: Runtime records for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Record item</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Asset version</td>
+<td>Image source, URL, authorization, download time</td>
+<td>Proves sample traceability</td>
+</tr>
+<tr>
+<td>Generation model</td>
+<td>Qwen2.5-VL path, inference framework, sampling parameters</td>
+<td>Explains output differences</td>
+</tr>
+<tr>
+<td>Template version</td>
+<td>Task type, template text, template hash</td>
+<td>Controls task distribution</td>
+</tr>
+<tr>
+<td>Judge version</td>
+<td>Scoring model, scoring rubric, threshold</td>
+<td>Reviews filtering results</td>
+</tr>
+<tr>
+<td>Multilingual version</td>
+<td>Translation model, terminology table, language ratio</td>
+<td>Reviews cross-language consistency</td>
+</tr>
+<tr>
+<td>Packaging version</td>
+<td>Output format, field schema, target training framework</td>
+<td>Ensures training scripts can read the data</td>
+</tr>
+<tr>
+<td>Spot-check record</td>
+<td>Human samples, failure samples, revision notes</td>
+<td>Supports release gates</td>
+</tr>
+</tbody>
+</table>
+<h2 id="data-schema-and-sample-contract">Data Schema and Sample Contract<a class="headerlink" href="#data-schema-and-sample-contract" title="Permanent link">&para;</a></h2>
+<p>A minimal multimodal instruction record cannot contain only <code>image</code>, <code>instruction</code>, and <code>response</code>. The project chapter should emphasize that training formats can be narrow, but engineering intermediate states must be wider. Otherwise, once hallucination, format errors, or copyright problems appear, the data team cannot trace a sample back to its image, template, model call, or filtering step.</p>
+<p>Table P13-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-4: Intermediate-state sample schema for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Example</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_id</code></td>
+<td><code>p13_laion_000001</code></td>
+<td>Stable primary key across logs</td>
+</tr>
+<tr>
+<td><code>asset.url</code></td>
+<td><code>https://...jpg</code></td>
+<td>Original image or video address</td>
+</tr>
+<tr>
+<td><code>asset.license</code></td>
+<td><code>cc-by</code>, <code>internal</code></td>
+<td>Basis for release and redistribution judgment</td>
+</tr>
+<tr>
+<td><code>seed.original_caption</code></td>
+<td>Original alt text</td>
+<td>Used to judge seed quality</td>
+</tr>
+<tr>
+<td><code>task.type</code></td>
+<td><code>detailed_description</code>, <code>ocr_reading</code></td>
+<td>Controls task distribution</td>
+</tr>
+<tr>
+<td><code>prompt.template_id</code></td>
+<td><code>ocr_v1_002</code></td>
+<td>Tracks template version</td>
+</tr>
+<tr>
+<td><code>generation.model</code></td>
+<td><code>Qwen2.5-VL-7B-Instruct</code></td>
+<td>Tracks generation model</td>
+</tr>
+<tr>
+<td><code>generation.response</code></td>
+<td>Long response text</td>
+<td>Candidate training sample</td>
+</tr>
+<tr>
+<td><code>quality.judge_score</code></td>
+<td><code>4.5</code></td>
+<td>Basis for LLM-as-Judge filtering</td>
+</tr>
+<tr>
+<td><code>quality.consistency_score</code></td>
+<td><code>1.0</code></td>
+<td>Multi-sample consistency</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td><code>en</code>, <code>zh</code></td>
+<td>Distinguishes multilingual samples</td>
+</tr>
+<tr>
+<td><code>audit_trace</code></td>
+<td>Batch, timestamp, script version</td>
+<td>Supports review and takedown</td>
+</tr>
+</tbody>
+</table>
+<p>The final <code>mm_sft_final.jsonl</code> file in Qwen format can be narrower than the intermediate state, but the intermediate state should not be discarded. Training files serve the training framework; audit files serve quality and release. They can be joined by <code>sample_id</code>.</p>
+<h2 id="quality-filtering-from-length-thresholds-to-calibrated-rubrics">Quality Filtering: From Length Thresholds to Calibrated Rubrics<a class="headerlink" href="#quality-filtering-from-length-thresholds-to-calibrated-rubrics" title="Permanent link">&para;</a></h2>
+<p>The demonstration <code>llm_judge.py</code> uses response length as a proxy: answers above a certain word count receive 4.5, while shorter answers receive 3.0. This is acceptable for teaching, but not for a real release gate. A real LLM-as-Judge setup should include at least four scoring dimensions: image-text consistency, answer completeness, task following, and safety/compliance.</p>
+<p>Table P13-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-5: LLM-as-Judge scoring rubric for multimodal instruction samples</em></p>
+<table>
+<thead>
+<tr>
+<th>Scoring dimension</th>
+<th>5-point behavior</th>
+<th>Low-score risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image-text consistency</td>
+<td>Describes only content supported by visual evidence</td>
+<td>Hallucinates subjects, actions, or text</td>
+</tr>
+<tr>
+<td>Task following</td>
+<td>Strictly follows the template requirement, such as OCR table output</td>
+<td>Off-task answer or invalid format</td>
+</tr>
+<tr>
+<td>Detail completeness</td>
+<td>Covers subjects, spatial relations, text, and background</td>
+<td>Too short, generic, missing trainable information</td>
+</tr>
+<tr>
+<td>Reasoning reliability</td>
+<td>Reasoning steps are supported by visual evidence</td>
+<td>Over-infers causality or intention</td>
+</tr>
+<tr>
+<td>Safety and compliance</td>
+<td>Avoids sensitive identity inference and improper content</td>
+<td>Privacy, bias, or dangerous guidance</td>
+</tr>
+<tr>
+<td>Language quality</td>
+<td>Clear expression without severe repetition</td>
+<td>Mechanical repetition, garbling, or abnormal language mixing</td>
+</tr>
+</tbody>
+</table>
+<p>Self-consistency complements judge blind spots. For complex reasoning questions, the model can generate multiple answers, then compare whether conclusions and key evidence agree. If different samples conflict on subjects, text, or spatial relationships, the record should not enter the training set even if one answer is long and fluent. The current <code>self_consistency.py</code> is a simplified interface and teaching implementation; real projects should plug in multi-sample generation and consistency metrics.</p>
+<h2 id="multilingual-expansion-and-cross-language-acceptance">Multilingual Expansion and Cross-Language Acceptance<a class="headerlink" href="#multilingual-expansion-and-cross-language-acceptance" title="Permanent link">&para;</a></h2>
+<p>Multilingual expansion is not simply copying an English instruction and adding an <code>instruction_zh</code> field. In multimodal tasks, cross-language errors often occur in visual references and proper-name translation. For example, "the sign on the left" may be translated as "the sign on the right," or brands, place names, and units may be localized incorrectly. P13 should treat Chinese and English as two sample sets that both require spot checks, not as a cheap way to double the count.</p>
+<p>Table P13-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-6: Multilingual expansion acceptance items</em></p>
+<table>
+<thead>
+<tr>
+<th>Acceptance item</th>
+<th>Check method</th>
+<th>Common issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reference consistency</td>
+<td>Compare image against left/right, top/bottom, foreground/background</td>
+<td>Direction words mistranslated</td>
+</tr>
+<tr>
+<td>Terminology consistency</td>
+<td>Check OCR, chart, bbox, caption against the glossary</td>
+<td>Terminology changes across samples</td>
+</tr>
+<tr>
+<td>Proper-name preservation</td>
+<td>Check brands, places, people, and units</td>
+<td>Over-translation or mistranslation</td>
+</tr>
+<tr>
+<td>Format preservation</td>
+<td>Check tables, lists, JSON, Markdown</td>
+<td>Translation breaks structure</td>
+</tr>
+<tr>
+<td>Safety boundary</td>
+<td>Check whether sensitive content bypasses filtering in another language</td>
+<td>English filtering works but Chinese filtering fails</td>
+</tr>
+</tbody>
+</table>
+<p>If the project targets Chinese-model training, do not only translate English samples into Chinese. Keep a portion of native Chinese templates and native Chinese judge prompts. Translated samples are useful for scale, but native Chinese samples better reflect real Chinese user questions.</p>
+<h2 id="test-coverage-and-code-notes">Test Coverage and Code Notes<a class="headerlink" href="#test-coverage-and-code-notes" title="Permanent link">&para;</a></h2>
+<p><code>tests/test_factory.py</code> covers template existence, random prompt return type, judge filtering, Chinese expansion, and JSONL packaging. These tests prevent basic interface breakage, but they do not prove the factory is releasable. In particular, <code>generate_with_qwen_vl.py</code> is a teaching example. Before real vLLM or Qwen-VL integration, it needs input variables, exception handling, model-call result parsing, and failed-sample records. The chapter presents it to explain the generation-stage interface, not to claim production completeness.</p>
+<p>Table P13-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-7: Test coverage and acceptance gaps for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Test item</th>
+<th>Covered</th>
+<th>Still needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Template test</td>
+<td>Three template types exist; prompt returns a string</td>
+<td>Template repetition rate, task ratio</td>
+</tr>
+<tr>
+<td>Judge test</td>
+<td>Short responses filtered; long responses retained</td>
+<td>Real judge rubric and human agreement</td>
+</tr>
+<tr>
+<td>Multilingual test</td>
+<td>Chinese expansion field generated</td>
+<td>Semantic consistency and format preservation</td>
+</tr>
+<tr>
+<td>Packaging test</td>
+<td>JSONL file can be written</td>
+<td>Conversation-field spot check</td>
+</tr>
+<tr>
+<td>End-to-end mock</td>
+<td>Test entry exists</td>
+<td>Small-sample real model run</td>
+</tr>
+</tbody>
+</table>
+<h2 id="common-faults-and-troubleshooting-paths">Common Faults and Troubleshooting Paths<a class="headerlink" href="#common-faults-and-troubleshooting-paths" title="Permanent link">&para;</a></h2>
+<p>Seed-stage issues usually involve dead image links, missing image-size fields, or low-quality original captions. First count filtering reasons rather than only final seed count. If many images are removed by aspect-ratio filters, confirm field units and source schema.</p>
+<p>Generation-stage issues include incorrect model input format, image-download failure, empty VLM output, and OOM or timeout from excessive concurrency. With vLLM, record concurrency, GPU memory, and failed requests. With APIs, record retry count, error codes, and billing units.</p>
+<p>Filtering-stage issues often come from a judge that over-rewards long answers. Long answers are not necessarily high quality; in multimodal settings they may contain more hallucinations. Review high-score, low-score, and threshold-near samples separately, and periodically calibrate the judge with human labels.</p>
+<p>Packaging-stage issues involve mismatch among image URLs, <code>&lt;image&gt;</code> markers, and the target training framework's conversation format. Randomly read JSONL lines and confirm that each line is valid JSON, <code>conversations[0].value</code> contains an image placeholder, assistant output is non-empty, and quality fields link back to intermediate records.</p>
+<h2 id="manual-spot-checks-and-release-gates">Manual Spot Checks and Release Gates<a class="headerlink" href="#manual-spot-checks-and-release-gates" title="Permanent link">&para;</a></h2>
+<p>Multimodal instruction factories often look good on automated metrics while failing under human reading. High-scoring samples may be fluent but unfaithful to the image; multilingual samples may be grammatical but wrong on direction, count, or OCR text. Manual spot checks are therefore mandatory before release.</p>
+<p>Table P13-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-8: Manual review strata for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Review layer</th>
+<th>Sample source</th>
+<th>Review focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>High-score samples</td>
+<td>Highest judge-score batch</td>
+<td>Whether the judge over-rewards long text</td>
+</tr>
+<tr>
+<td>Boundary samples</td>
+<td>Samples close to threshold</td>
+<td>Whether the threshold is too strict or too loose</td>
+</tr>
+<tr>
+<td>Low-score samples</td>
+<td>Filtered samples</td>
+<td>Whether valuable samples were wrongly removed</td>
+</tr>
+<tr>
+<td>OCR samples</td>
+<td><code>ocr_reading</code> tasks</td>
+<td>Text accuracy and format preservation</td>
+</tr>
+<tr>
+<td>Reasoning samples</td>
+<td><code>complex_reasoning</code> tasks</td>
+<td>Whether reasoning has visual evidence</td>
+</tr>
+<tr>
+<td>Chinese samples</td>
+<td>Multilingual expansion results</td>
+<td>Terminology, direction, proper names</td>
+</tr>
+<tr>
+<td>Multi-image / video samples</td>
+<td>Packer extensions</td>
+<td>Reference order and placeholders</td>
+</tr>
+</tbody>
+</table>
+<p>Manual review should use dual review plus arbitration. The first reviewer checks image-text consistency and task following. The second checks language quality and safety boundaries. Conflicts enter an arbitration pool, which is then used to revise judge prompts, templates, and thresholds. Manual review is not a one-time quality check; it is part of factory iteration.</p>
+<p>Release gates should include at least four checks. First, sample sources must be traceable, and external images must not be represented only by naked URLs. Second, training files must be readable by the target framework, not merely valid JSON. Third, there must be an agreement report between judge and human review. Fourth, if multilingual samples are released, Chinese and English quality must be reported separately.</p>
+<p>Table P13-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-9: Release-gate checklist for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Required evidence</th>
+<th>Action on failure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source gate</td>
+<td>URL, license, download status, deletion-request handling</td>
+<td>Remove unauthorized or untraceable samples</td>
+</tr>
+<tr>
+<td>Format gate</td>
+<td>JSONL validation, small-sample training loader read</td>
+<td>Fix packer or field schema</td>
+</tr>
+<tr>
+<td>Quality gate</td>
+<td>Judge distribution, human-review pass rate, failure types</td>
+<td>Adjust templates, thresholds, or generation parameters</td>
+</tr>
+<tr>
+<td>Multilingual gate</td>
+<td>Separate Chinese and English review reports</td>
+<td>Roll back low-quality translation batches</td>
+</tr>
+<tr>
+<td>Safety gate</td>
+<td>Sensitive content, privacy, identity-inference checks</td>
+<td>Delete samples and update filtering rules</td>
+</tr>
+<tr>
+<td>Version gate</td>
+<td>Model version, template version, run batch</td>
+<td>Freeze versions before release</td>
+</tr>
+</tbody>
+</table>
+<h2 id="multi-image-and-video-extension-path">Multi-Image and Video Extension Path<a class="headerlink" href="#multi-image-and-video-extension-path" title="Permanent link">&para;</a></h2>
+<p>The presence of <code>pack_multi_image_video.py</code> indicates that this project targets more than single-image SFT. Modern VLM training increasingly depends on interleaved images, multi-image comparison, and short video clips. The core issue is not concatenating several <code>&lt;image&gt;</code> tags, but making the instruction clearly point to each visual input and making the answer explicitly express comparison, ordering, temporal change, or cross-image relation.</p>
+<p>Table P13-10 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-10: Comparison of multimodal instruction types</em></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Input organization</th>
+<th>Instruction focus</th>
+<th>Common error</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single image</td>
+<td>One <code>&lt;image&gt;</code></td>
+<td>Description, OCR, local reasoning</td>
+<td>Hallucinated object or text</td>
+</tr>
+<tr>
+<td>Multi-image comparison</td>
+<td><code>&lt;image_1&gt;</code>, <code>&lt;image_2&gt;</code></td>
+<td>Difference, similarity, ordering, change</td>
+<td>Image order confused</td>
+</tr>
+<tr>
+<td>Interleaved text-image</td>
+<td>Text paragraphs with multiple images</td>
+<td>Refer to images through context</td>
+<td>Wrong image reference or missing context</td>
+</tr>
+<tr>
+<td>Short video</td>
+<td>Multiple frames or <code>&lt;video&gt;</code></td>
+<td>Action, temporal order, camera movement</td>
+<td>Describes video as static image</td>
+</tr>
+<tr>
+<td>Chart screenshot</td>
+<td>Image plus OCR/table structure</td>
+<td>Numeric reading, trend explanation</td>
+<td>Fabricated value or axis</td>
+</tr>
+</tbody>
+</table>
+<p>For video, reuse P14's shot-level structure: <code>frame_paths</code>, <code>caption_en</code>, <code>shot_language</code>, and <code>camera_motion</code> can become video-instruction material for P13. A video QA sample can ask the model to explain how the subject moves or infer camera movement. P13 and P14 are therefore upstream and downstream: P13 is the instruction factory, while P14 is the video data pipeline.</p>
+<h2 id="deliverable-directory-and-version-management">Deliverable Directory and Version Management<a class="headerlink" href="#deliverable-directory-and-version-management" title="Permanent link">&para;</a></h2>
+<p>P13 deliverables should be separated into raw, scored, expanded, packed, and reports. This avoids mixing training files with audit files and makes stage-level rollback possible.</p>
+<p>Table P13-11 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-11: Deliverable directory for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Content</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/seeds.jsonl</code></td>
+<td>Seed asset list</td>
+<td>URL, authorization, original caption, filtering reason</td>
+</tr>
+<tr>
+<td><code>data/generated_raw.jsonl</code></td>
+<td>Raw VLM generations</td>
+<td>Not used directly for training; used for review</td>
+</tr>
+<tr>
+<td><code>data/scored.jsonl</code></td>
+<td>Judge-filtered records</td>
+<td>Score, rubric, model version</td>
+</tr>
+<tr>
+<td><code>data/consistent.jsonl</code></td>
+<td>Self-consistency-filtered records</td>
+<td>Multi-sample consistency evidence</td>
+</tr>
+<tr>
+<td><code>data/multilingual.jsonl</code></td>
+<td>Multilingual expansion samples</td>
+<td>Language, glossary version, translation model</td>
+</tr>
+<tr>
+<td><code>data/mm_sft_final.jsonl</code></td>
+<td>Training input file</td>
+<td>Targeting Qwen-VL or another training framework</td>
+</tr>
+<tr>
+<td><code>reports/task_distribution.json</code></td>
+<td>Task-distribution report</td>
+<td>Checks task imbalance</td>
+</tr>
+<tr>
+<td><code>reports/human_review.md</code></td>
+<td>Manual review report</td>
+<td>Core release-gate evidence</td>
+</tr>
+<tr>
+<td><code>reports/license_audit.md</code></td>
+<td>Copyright and source audit</td>
+<td>Required for public release</td>
+</tr>
+</tbody>
+</table>
+<p>For version management, hash templates and judge prompts. A model version can remain fixed while template text changes enough to shift sample distribution. A small judge-prompt change can also move pass rates. Release reports should include model version, template version, judge-prompt version, and data batch, not just "generated with Qwen2.5-VL."</p>
+<h2 id="data-dashboard-and-continuous-iteration">Data Dashboard and Continuous Iteration<a class="headerlink" href="#data-dashboard-and-continuous-iteration" title="Permanent link">&para;</a></h2>
+<p>After launch, the factory must continue observing sample distribution instead of generating once and sending data directly to training. The dashboard can start as JSONL statistics scripts; it does not need to be a complex platform. Each batch should answer: whether task types are balanced, whether judge pass rate is abnormal, whether multilingual ratio is stable, and which asset types dominate failure samples.</p>
+<p>Table P13-12 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-12: Dashboard metrics for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Dashboard metric</th>
+<th>Object</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seed pass rate</td>
+<td><code>seeds.jsonl</code></td>
+<td>Judge whether asset-selection thresholds are too strict</td>
+</tr>
+<tr>
+<td>Task-type distribution</td>
+<td><code>task.type</code></td>
+<td>Prevent over-production of detailed-description samples</td>
+</tr>
+<tr>
+<td>Average response length</td>
+<td>Raw/scored samples</td>
+<td>Detect templated short answers or verbose hallucination</td>
+</tr>
+<tr>
+<td>Judge-score distribution</td>
+<td><code>quality.judge_score</code></td>
+<td>Observe model and rubric drift</td>
+</tr>
+<tr>
+<td>Consistency distribution</td>
+<td><code>quality.consistency_score</code></td>
+<td>Detect unstable reasoning tasks</td>
+</tr>
+<tr>
+<td>Chinese-English ratio</td>
+<td><code>language</code></td>
+<td>Control multilingual expansion scale</td>
+</tr>
+<tr>
+<td>Format error rate</td>
+<td>JSONL validation result</td>
+<td>Detect packer or template problems</td>
+</tr>
+<tr>
+<td>Manual-review pass rate</td>
+<td>Review report</td>
+<td>Judge release-gate readiness</td>
+</tr>
+<tr>
+<td>Safety-interception rate</td>
+<td>Safety filter</td>
+<td>Monitor sensitive content and privacy risk</td>
+</tr>
+</tbody>
+</table>
+<p>Dashboards must be stored by batch. A sudden judge-pass-rate increase does not necessarily mean quality improved; the judge prompt may have become looser, templates may have become longer, or the model may have learned to produce verbose answers. If OCR-task pass rate is much lower than description-task pass rate, inspect OCR image quality and the scoring rubric separately instead of raising the global threshold.</p>
+<h2 id="sample-takedown-and-copyright-response">Sample Takedown and Copyright Response<a class="headerlink" href="#sample-takedown-and-copyright-response" title="Permanent link">&para;</a></h2>
+<p>Multimodal data triggers copyright, portrait-right, and privacy risks more easily than pure text. A public URL does not imply unlimited redistribution of images or generated results. P13 must keep a takedown path: when an image, author, or source collection must be deleted, the system should locate related instructions, translated samples, and final training files.</p>
+<p>Table P13-13 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-13: Takedown path for multimodal instruction samples</em></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Operation</th>
+<th>Affected artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Register request</td>
+<td>Record URL, author, source, request time, evidence</td>
+<td>Ticket</td>
+</tr>
+<tr>
+<td>Locate asset</td>
+<td>Search seed by URL, hash, source, or sample ID</td>
+<td><code>seeds.jsonl</code></td>
+</tr>
+<tr>
+<td>Locate derived samples</td>
+<td>Search raw, scored, multilingual, and packed records</td>
+<td>All intermediate states</td>
+</tr>
+<tr>
+<td>Delete training samples</td>
+<td>Remove corresponding lines from <code>mm_sft_final.jsonl</code></td>
+<td>Training file</td>
+</tr>
+<tr>
+<td>Recompute statistics</td>
+<td>Update task distribution, language ratio, quality report</td>
+<td>Reports</td>
+</tr>
+<tr>
+<td>Publish note</td>
+<td>Record deletion reason and new version</td>
+<td>Release note</td>
+</tr>
+</tbody>
+</table>
+<p>The takedown mechanism requires stable <code>sample_id</code> in the intermediate state. If only the final Qwen conversation format is saved, it is hard to trace a training sample back to the original image and generation batch. P13 must therefore distinguish the narrow training table from the wide audit table.</p>
+<h2 id="domain-transfer-from-general-images-to-industry-assets">Domain Transfer: From General Images to Industry Assets<a class="headerlink" href="#domain-transfer-from-general-images-to-industry-assets" title="Permanent link">&para;</a></h2>
+<p>P13 can transfer to medical imaging, industrial inspection, e-commerce product images, legal-evidence screenshots, and educational charts. But templates and gates must be redesigned for each domain. Visual evidence and risk boundaries differ too much to reuse generic LAION templates directly.</p>
+<p>Table P13-14 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-14: Domain-transfer adjustments for the multimodal instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Asset type</th>
+<th>Template adjustment</th>
+<th>Risk control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Medical</td>
+<td>Images, report screenshots</td>
+<td>Describe abnormal regions; avoid diagnostic conclusions</td>
+<td>Expert review, privacy masking</td>
+</tr>
+<tr>
+<td>Industrial</td>
+<td>Defect images, equipment photos</td>
+<td>Describe defect location, morphology, severity</td>
+<td>Internal confidentiality, misjudgment cost</td>
+</tr>
+<tr>
+<td>E-commerce</td>
+<td>Product images, detail-page screenshots</td>
+<td>Attribute extraction, comparison, OCR reading</td>
+<td>Brand authorization, exaggerated descriptions</td>
+</tr>
+<tr>
+<td>Finance</td>
+<td>Report screenshots, charts</td>
+<td>Table reading, trend explanation, evidence citation</td>
+<td>Numeric accuracy, investment-advice boundary</td>
+</tr>
+<tr>
+<td>Education</td>
+<td>Problem figures, board writing, textbook illustrations</td>
+<td>Solving hints, chart understanding</td>
+<td>Copyright, answer leakage</td>
+</tr>
+</tbody>
+</table>
+<p>For domain transfer, build a small set of high-quality templates and expert-review samples before scaling. In high-risk domains, do not rely entirely on LLM-as-Judge. The judge can pre-filter, but release gates should be decided jointly by domain experts or rule systems.</p>
+<h2 id="relationship-with-p03-and-p14">Relationship with P03 and P14<a class="headerlink" href="#relationship-with-p03-and-p14" title="Permanent link">&para;</a></h2>
+<p>P13 sits between P03 and P14. P03 establishes the classic LLaVA image-text and conversation baseline. P13 adds Qwen-VL-style generation, judge, self-consistency, and multilingual expansion. P14 extends visual input from static images to video shots. Together they form a progression from single-image baseline to modern multimodal factory and then to video-generation data.</p>
+<p>Table P13-15 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P13-15: Project boundaries among P03, P13, and P14</em></p>
+<table>
+<thead>
+<tr>
+<th>Project</th>
+<th>Core object</th>
+<th>Key capability</th>
+<th>Boundary not to confuse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P03</td>
+<td>LLaVA image-text pairs and conversation</td>
+<td>Classic flow, OCR, bbox, visual spot checks</td>
+<td>Does not emphasize newer Qwen-VL factory capability</td>
+</tr>
+<tr>
+<td>P13</td>
+<td>Multimodal instruction samples</td>
+<td>Templates, VLM generation, judge, multilingual packaging</td>
+<td>Does not handle video cutting and T2V quality filtering</td>
+</tr>
+<tr>
+<td>P14</td>
+<td>Video shot data</td>
+<td>Shot segmentation, motion, aesthetics, caption, shot language</td>
+<td>Does not handle large-scale instruction diversification</td>
+</tr>
+</tbody>
+</table>
+<p>With this organization, readers can treat P03 as the baseline data structure, P13 as the instruction-generation factory, and P14 as the video-material and temporal-supervision source. A future Video-QA or Video-Instruct dataset can first use P14 to create video segments and shot fields, then use P13 templates, judge, and packaging to produce instruction samples.</p>
+<h2 id="results-and-analysis">Results and Analysis<a class="headerlink" href="#results-and-analysis" title="Permanent link">&para;</a></h2>
+<p>The example acceptance setting deploys Qwen2.5-VL-7B with vLLM on one node with four 4090 GPUs and calls a 72B model as judge through an API, producing a candidate batch of multimodal instruction samples. In formal reproduction, replace the example scale with actual task configuration, generation logs, and sample manifests.</p>
+<ul>
+<li><strong>Task distribution</strong>: Detailed description (40%), complex reasoning (30%), OCR and tables (20%), and fine-grained grounding (10%). No single category exceeded 40%.</li>
+<li><strong>Quality distribution</strong>: Samples passing LLM-as-Judge filtering should record mean, quantiles, and rejection reasons. An example acceptance report may show an average score such as <strong>4.3 / 5.0</strong>, but formal results must retain scoring details and judge version.</li>
+</ul>
+<p>Formal acceptance should check four kinds of evidence. First, the data can be read by downstream training scripts. Second, the task-type distribution matches the planned ratio. Third, image, instruction, and answer are not obviously mismatched. Fourth, source license, model license, and redistribution rules for generated artifacts are registered. Only after these checks can generated data move from the candidate pool into the training set.</p>
+<h2 id="cost-and-optimization">Cost and Optimization<a class="headerlink" href="#cost-and-optimization" title="Permanent link">&para;</a></h2>
+<p>The industrial synthesis factory has the following cost profile:</p>
+<ul>
+<li><strong>Synthesis cost</strong>: On private compute, a 7B VLM takes about 1-2 seconds to generate one long image-conditioned response. With commercial APIs, the cost is about <span class="arithmatex">\(5-\)</span>10 per thousand high-quality samples.</li>
+<li><strong>Scalability</strong>: vLLM tensor parallelism handles multimodal generation pressure well. When compute is limited, reduce <code>max_num_seqs</code> and lower the sampling temperature to prevent low-value divergence.</li>
+</ul>
+<h2 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h2>
+<p>Compared with earlier LLaVA-style data pipelines that relied heavily on manual work or expensive GPT-4V distillation, the Qwen-VL plus LLM-as-Judge self-distillation pipeline substantially lowers fine-tuning cost.</p>
+<p>Video clips can be inserted into the same pipeline by changing the packer: sampled frames can be represented as multiple <code>&lt;image&gt;</code> tags or one <code>&lt;video&gt;</code> field, enabling data synthesis for T2V or Video-QA models.</p>
+<h3 id="data-compliance-and-open-source-licensing">Data Compliance and Open-source Licensing<a class="headerlink" href="#data-compliance-and-open-source-licensing" title="Permanent link">&para;</a></h3>
+<p>When building and publishing instruction datasets, observe these constraints:</p>
+<ul>
+<li><strong>LAION seed images</strong>: Original image links may be governed by CC-BY or other public licenses and should be used for research under the corresponding terms.</li>
+<li><strong>Qwen2.5-VL</strong>: Model use and redistribution of generated content are governed by the model's open-source or commercial license.</li>
+<li><strong>Generated artifacts</strong>: A dataset such as <code>dataforge-mm-instruction-50k</code> can be released under CC-BY-SA when the upstream licenses allow it.</li>
+</ul>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter used the multimodal instruction factory as a project case to show how to build a multimodal instruction production chain covering image, text, OCR, chart, and dialogue tasks. Its main value is putting task definition, data boundaries, architecture decisions, sample schema, acceptance metrics, and reproduction resources into one chain, so the project is not merely a sequence of operations but a reviewable case study.</p>
+<p>The boundary of the case must also remain explicit. It targets controlled assets and sample factories; it does not cover unauthorized media collection or fully automated safety review. In larger-scale, higher-risk, or more strictly regulated settings, data sources, permission status, human-review ratio, runtime cost, and rollback plans must be reassessed.</p>
+<p>As part of Part XIV, this chapter validates methods from earlier chapters at the project layer. Readers can combine this case with Part XIII's data recipes, the platform-governance chapters, and the appendix checklists to form a closed loop from method understanding to engineering delivery.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, et al. (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.</p>
+<p>Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, et al. (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the 29th ACM Symposium on Operating Systems Principles, pp 611-626. https://doi.org/10.1145/3600006.3613165.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, et al. (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35, pp 25278-25294. Available at: https://arxiv.org/abs/2210.08402.</p>
+<p>Wang X, Wei J, Schuurmans D, Le Q, Chi E, Narang S, Chowdhery A, Zhou D (2023) Self-Consistency Improves Chain of Thought Reasoning in Language Models. In: International Conference on Learning Representations. arXiv:2203.11171.</p>
+<p>Zheng L, Chiang W L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E P, Zhang H, Gonzalez J E, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36. arXiv:2306.05685.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../p12_r1_reasoning_flywheel/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Project 12: A Pedagogical R1 Reasoning Data Flywheel">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Project 12: A Pedagogical R1 Reasoning Data Flywheel
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../p14_video_generation/" class="md-footer__link md-footer__link--next" aria-label="Next: Project 14: Video Generation Data Pipeline">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Project 14: Video Generation Data Pipeline
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,4098 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part14/p12_r1_reasoning_flywheel/">
+      
+      
+        <link rel="prev" href="../p11_mini_deepseek/">
+      
+      
+        <link rel="next" href="../p13_multimodal_instruction_factory/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Project 12: A Pedagogical R1 Reasoning Data Flywheel - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-12-a-pedagogical-r1-reasoning-data-flywheel" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project 12: A Pedagogical R1 Reasoning Data Flywheel
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p12_r1_reasoning_flywheel/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part14/p12_r1_reasoning_flywheel/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-objectives-and-reader-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Objectives and Reader Takeaways
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-excerpts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Excerpts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducibility-resource-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducibility Resource Description
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#r1-style-reasoning-data-flywheel-from-long-cot-cold-start-to-rejection-sampling-recirculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Background and Objectives
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-design-a-six-component-pedagogical-r1-reasoning-data-flywheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Architecture Design: A Six-Component Pedagogical R1 Reasoning Data Flywheel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-step-by-step-implementation-from-cold-start-samples-to-a-recirculable-sft-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-environment-and-task-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare the Environment and Task Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-extract-cold-start-sft-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Extract Cold-Start SFT Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-generate-multi-path-reasoning-traces-using-mock-or-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Generate Multi-Path Reasoning Traces Using Mock or vLLM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-build-math-code-and-format-verifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Build Math, Code, and Format Verifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-rejection-sampling-and-generating-recirculated-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Rejection Sampling and Generating Recirculated Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-merge-second-round-sft-data-train-lora-and-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Merge Second-Round SFT Data, Train LoRA, and Evaluate
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-presentation-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results Presentation and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-objectives-and-reader-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Objectives and Reader Takeaways
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-excerpts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Excerpts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducibility-resource-description" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducibility Resource Description
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#r1-style-reasoning-data-flywheel-from-long-cot-cold-start-to-rejection-sampling-recirculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Background and Objectives
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-design-a-six-component-pedagogical-r1-reasoning-data-flywheel" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Architecture Design: A Six-Component Pedagogical R1 Reasoning Data Flywheel
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-step-by-step-implementation-from-cold-start-samples-to-a-recirculable-sft-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-environment-and-task-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare the Environment and Task Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-extract-cold-start-sft-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Extract Cold-Start SFT Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-generate-multi-path-reasoning-traces-using-mock-or-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Generate Multi-Path Reasoning Traces Using Mock or vLLM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-build-math-code-and-format-verifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Build Math, Code, and Format Verifiers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-rejection-sampling-and-generating-recirculated-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Rejection Sampling and Generating Recirculated Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-merge-second-round-sft-data-train-lora-and-evaluate" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Merge Second-Round SFT Data, Train LoRA, and Evaluate
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-presentation-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results Presentation and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="project-12-a-pedagogical-r1-reasoning-data-flywheel">Project 12: A Pedagogical R1 Reasoning Data Flywheel<a class="headerlink" href="#project-12-a-pedagogical-r1-reasoning-data-flywheel" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Cong Wang; Xin Xu; Yang Luo</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This project constructs a reproducible data engineering case study around the "Pedagogical R1 Reasoning Data Flywheel," focusing on business objectives, data boundaries, architectural decisions, core implementation, acceptance metrics, and risk controls. The chapter distills installation commands and script details into an engineering retrospective perspective, highlighting the relationships among sample schemas, data flows, failure modes, and deliverables, thereby helping readers translate the methodologies presented earlier into auditable, scalable project assets.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>R1; project practice; reproducible data engineering; data pipeline; acceptance metrics</p>
+<h2 id="project-objectives-and-reader-takeaways">Project Objectives and Reader Takeaways<a class="headerlink" href="#project-objectives-and-reader-takeaways" title="Permanent link">&para;</a></h2>
+<p>This project uses the "Pedagogical R1 Reasoning Data Flywheel" as its core case study. The objective is to build a closed-loop reasoning data pipeline covering Long-CoT cold start, rejection sampling, and recirculated SFT. Upon completing this chapter, readers should be able to identify the key data objects in this scenario, decompose the engineering chain, define acceptance metrics, and transfer the case methodology to comparable data engineering tasks.</p>
+<h2 id="scenario-constraints-and-data-boundaries">Scenario Constraints and Data Boundaries<a class="headerlink" href="#scenario-constraints-and-data-boundaries" title="Permanent link">&para;</a></h2>
+<p>The focus is on the reasoning data engineering pipeline; it does not cover a complete reinforcement learning platform or large-scale online training, nor does it claim to reproduce the full training process of DeepSeek-R1. These boundaries make the case reproducible and auditable. When data scale, data sources, permission scope, or deployment environment change, sampling strategies, quality thresholds, operating costs, and compliance requirements must be reassessed.</p>
+<h2 id="architectural-decisions">Architectural Decisions<a class="headerlink" href="#architectural-decisions" title="Permanent link">&para;</a></h2>
+<p>This project adopts an architectural path of "cold-start samples → long-chain reasoning → candidate sampling → verification and filtering → rejection sampling → SFT recirculation." This decision prioritizes input/output contract clarity, version traceability, exception localizability, and result verifiability over compressing all logic into a single one-off script run.</p>
+<h2 id="sample-schema-data-flow">Sample Schema / Data Flow<a class="headerlink" href="#sample-schema-data-flow" title="Permanent link">&para;</a></h2>
+<p>The core data flow can be summarized as:</p>
+<p>Listing P12-1 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Reasoning seeds -&gt; Long-CoT generation -&gt; Multi-candidate sampling -&gt; Verification/scoring -&gt; Rejection sampling -&gt; Recirculated SFT dataset
+</code></pre></div></p>
+<p><em>Listing P12-1: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The sample schema should retain at minimum the fields <code>id</code>, <code>source</code>, <code>content_or_payload</code>, <code>metadata</code>, <code>quality_signals</code>, <code>split_or_stage</code>, and <code>audit_trace</code>; specific fields are further refined by the data types, downstream tasks, and acceptance methods of this project.</p>
+<h2 id="core-implementation-excerpts">Core Implementation Excerpts<a class="headerlink" href="#core-implementation-excerpts" title="Permanent link">&para;</a></h2>
+<p>The main text retains only the key implementation excerpts that illuminate design trade-offs. Complete scripts, long configuration files, run logs, and large files should be placed in the companion repository or appendix; code presentation focuses on input/output contracts, quality thresholds, exception handling, and acceptance interfaces.</p>
+<h2 id="experiment-or-acceptance-metrics">Experiment or Acceptance Metrics<a class="headerlink" href="#experiment-or-acceptance-metrics" title="Permanent link">&para;</a></h2>
+<p>Acceptance metrics include reasoning accuracy, candidate retention rate, verification coverage, long-chain length distribution, recirculated sample quality, and cost per sample. If the project enters production, a course, or a public reproducibility experiment environment, the version number, dependency environment, random seeds, sample spot-check results, and failed-sample post-mortem records should also be logged.</p>
+<p>Table P12-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P12-1: Publication Acceptance Table for the Pedagogical R1 Reasoning Data Flywheel</em></p>
+<table>
+<thead>
+<tr>
+<th>Acceptance Dimension</th>
+<th>Metric / Evidence</th>
+<th>Publication Review Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Candidate generation</td>
+<td>Number of multi-path samples, long-chain length distribution, and task-source coverage</td>
+<td>Describe the differences between mock, vLLM, and real model sampling</td>
+</tr>
+<tr>
+<td>Filtering and recirculation</td>
+<td>Verifier coverage, candidate retention rate, recirculated sample quality, and format pass rate</td>
+<td>Each recirculated sample should be traceable to its original task, candidate trace, and verification result</td>
+</tr>
+<tr>
+<td>Risk control</td>
+<td>Post-mortem of self-reinforcing errors, verifier bias, and overly long trace noise</td>
+<td>Do not equate a rejection-sampling pass with an improvement in reasoning capability</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cost-risk-and-compliance-boundaries">Cost, Risk, and Compliance Boundaries<a class="headerlink" href="#cost-risk-and-compliance-boundaries" title="Permanent link">&para;</a></h2>
+<p>Costs arise primarily from long-chain generation, multi-candidate sampling, and verification. Risks concentrate on self-reinforcing errors, verifier bias, and overly long trace noise. When external data, personal information, copyrighted content, or third-party services are involved, source descriptions, permission status, desensitization strategies, call logs, and manual review records should be retained.</p>
+<h2 id="common-failure-modes">Common Failure Modes<a class="headerlink" href="#common-failure-modes" title="Permanent link">&para;</a></h2>
+<p>Common failures include input distribution drift, missing schema fields, quality thresholds that are too loose or too tight, insufficient evaluation sample coverage, unstable model calls, and non-traceable results. When troubleshooting, prioritize locating data boundaries and intermediate artifacts before examining models, toolchains, and deployment environments.</p>
+<h2 id="reproducibility-resource-description">Reproducibility Resource Description<a class="headerlink" href="#reproducibility-resource-description" title="Permanent link">&para;</a></h2>
+<p>Reproducibility materials should include data source descriptions, minimal samples, configuration files, run commands, metric scripts, inspection reports, and artifact directories. The main text retains necessary excerpts; complete notebooks, long scripts, and large files are maintained separately as companion resources.</p>
+<h2 id="r1-style-reasoning-data-flywheel-from-long-cot-cold-start-to-rejection-sampling-recirculation">R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation<a class="headerlink" href="#r1-style-reasoning-data-flywheel-from-long-cot-cold-start-to-rejection-sampling-recirculation" title="Permanent link">&para;</a></h2>
+<h3 id="background-and-objectives">Background and Objectives<a class="headerlink" href="#background-and-objectives" title="Permanent link">&para;</a></h3>
+<p>The insight brought by reasoning models such as R1 / QwQ (Guo et al. 2025; Qwen Team 2025) is not merely that "models can output longer chains of thought," but that reasoning capability can be decomposed into a runnable data engineering pipeline. Traditional SFT projects typically revolve around a fixed batch of <code>instruction-response</code> samples, and the data itself rarely changes after training. The R1-style data flywheel is different: the model generates multiple candidate traces for the same task, the system uses a verifier to determine which traces are correct, which are format-stable, and which are worth recirculating, and then reorganizes the selected successful samples into supervised fine-tuning data for the next round. In this way, data is no longer a static asset prepared before training but becomes part of the model's capability iteration.</p>
+<p>For small and medium-sized teams, fully reproducing large-scale RL training is often impractical. Large-scale online sampling, reward modeling, multi-round policy updates, and long-context inference all require continuous GPU resources and complex training-framework governance. A more actionable approach is to first build the "data flywheel" itself: cold-start data can be generated, multi-path sampling can run, the verifier can score automatically, rejection sampling can select high-quality traces, second-round SFT data can be merged, and evaluation scripts can compare changes before and after training. As long as this pipeline is stable, subsequent integration of larger models, more complex rewards, or migration to industry tasks all have a reusable engineering foundation.</p>
+<p>This project is built around the code in <code>code/zh/project_12_r1_flywheel</code>. The goal is to implement a pedagogical, small-scale, minimal-runnable version of an R1-style reasoning data flywheel. It does not aim to reproduce the complete reinforcement learning process of R1-Zero in one shot, nor is it equivalent to reproducing the full training system of DeepSeek-R1. This chapter retains only the data engineering stages — cold start, candidate sampling, verification and filtering, rejection sampling, and SFT recirculation — and positions benchmark scores in the role of closed-loop validation rather than treating them as the sole objective. The project uses <code>Qwen2.5-7B-Instruct</code> (Hui et al. 2024) as the base model by default, and <code>OpenThoughts</code> (Guha et al. 2025), <code>GSM8K</code> (Cobbe et al. 2021), <code>MATH-500</code> (Hendrycks et al. 2021), and <code>HumanEval</code> (Chen et al. 2021) as the primary data sources, constructing a closed loop from cold-start SFT to rejection-sampling recirculation.</p>
+<p>The entire pipeline can be summarized as:</p>
+<p>Listing P12-2 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>OpenThoughts / GSM8K / MATH-500 / HumanEval
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  -&gt; cold-start SFT data
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  -&gt; vLLM sampled reasoning traces
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  -&gt; math / code / format verifier
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  -&gt; rejection sampling
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  -&gt; merged SFT data
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  -&gt; LoRA training and evaluation
+</code></pre></div></p>
+<p><em>Listing P12-2: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Upon completing this project, readers should understand three things. First, the key engineering objects in an R1-style system are not individual model weights but the task pool, sampled traces, verifier, rejection-sampling results, and training data manifest. Second, the reasoning data flywheel can be validated first using rule-based rewards and supervised recirculation, without entering full RL from the outset. Third, as long as the target task can construct an automatic verifier, this structure can be transferred to SQL generation, code repair, structured extraction, tool calls, or an enterprise-internal question bank.</p>
+<h2 id="2-architecture-design-a-six-component-pedagogical-r1-reasoning-data-flywheel">2. Architecture Design: A Six-Component Pedagogical R1 Reasoning Data Flywheel<a class="headerlink" href="#2-architecture-design-a-six-component-pedagogical-r1-reasoning-data-flywheel" title="Permanent link">&para;</a></h2>
+<p>This project's architecture can be decomposed into six components: cold-start data extraction, multi-path reasoning sampling, verifier pool, rejection sampling, second-round SFT data merging, and training and evaluation. The six components communicate via files and a unified schema, rather than being tightly coupled in a single long script. The benefit of this approach is that each layer can be re-run independently: if sampling fails, only the sampling step needs to be re-run; if the verifier is updated, only rejection sampling needs to be re-run; if training proportions change, only the data merge needs to be redone.</p>
+<p>Figure P12-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part14/p12/Wang-Project12-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure P12-1: The closed-loop structure from cold-start data extraction, multi-path reasoning sampling, verifier pool, and rejection sampling to second-round SFT merging and training evaluation" src="../../../images/part14/p12/Wang-Project12-Fig01.svg" /></a>
+<em>Figure P12-1: Closed-loop structure of the R1 reasoning data flywheel</em></p>
+<p>The loop runs from cold-start data extraction through multi-path reasoning sampling, verifier pooling, rejection sampling, second-round SFT merging, and training evaluation.</p>
+<p>The first component is <strong>cold-start data extraction</strong>. The corresponding script is <code>cold_start_data.py</code>. It extracts samples suitable for SFT from existing data sources and normalizes them into the <code>messages</code> format. Math samples are organized with <code>Reasoning:</code> and <code>Final Answer:</code> sections; code samples are organized with <code>Reasoning:</code> and a fenced Python code block. The purpose of cold-start data is not to directly train the highest-performance model, but to give the model a basic reasoning output structure, language style, and parseable format.</p>
+<p>The second component is <strong>multi-path reasoning sampling</strong>. The corresponding script is <code>sample_traces.py</code>. It generates multiple candidate reasoning traces for the same prompt and records <code>prompt_id</code>, <code>sample_idx</code>, <code>raw_trace</code>, <code>parsed_answer</code>, and <code>generation_params</code>. The project supports three backends simultaneously: mock, local vLLM Python API, and an external OpenAI-compatible API. In a production environment, the inference service and data processing scripts can be deployed separately to reduce conflicts among CUDA, torch, and vLLM dependencies.</p>
+<p>The third component is the <strong>verifier pool</strong>. The corresponding script is <code>verifier_pool.py</code>. It implements three categories of rule-based verifiers: math, code, and format. The math verifier extracts the final answer, parses the numeric value, and compares it; the code verifier extracts fenced Python code blocks and runs test cases; the format verifier checks whether structures such as <code>Reasoning:</code>, <code>Final Answer:</code>, and <code>Code:</code> are present. The current verifiers are rule-based rewards rather than complex reward models, but they have the advantages of being stable, inexpensive, and interpretable.</p>
+<p>The fourth component is <strong>rejection sampling</strong>. The corresponding script is <code>rejection_sampling.py</code>. It reads sampled traces, groups them by prompt, calls the verifier, and then sorts by <code>verifier_pass</code>, <code>reward_score</code>, and <code>sample_idx</code> to retain the best candidates for each question. Retained traces are repackaged into SFT samples and written to <code>rejection_selected_10k_30k.jsonl</code>. This step is the core of the data flywheel: the model generates candidates, the system automatically filters them, and successful traces are recirculated for training.</p>
+<p>The fifth component is <strong>second-round SFT data merging</strong>. The corresponding script is <code>merge_sft_data.py</code>. It merges cold-start data and rejection-sampled data into <code>merged_sft_data.jsonl</code> and generates <code>training_manifest.json</code>. Although both cold-start samples and recirculated samples enter SFT, they carry different meanings: the former provides the initial format and reasoning style, while the latter preserves successful traces that the model itself explored.</p>
+<p>The sixth component is <strong>training and evaluation</strong>. <code>train_lora.py</code> provides a minimal LoRA demonstration training, and <code>eval_gsm8k_math.py</code> provides a GSM8K/MATH evaluation entry point. In this project, training and evaluation serve as validation interfaces for the data flywheel rather than being written as a complete experiment platform. Their primary function is to verify: can the merged data enter training, and after training, can a unified evaluation script compare the base model against the LoRA adapter?</p>
+<p>The main artifacts are as follows:</p>
+<p>Table P12-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P12-2: Stage and Description Reference Table</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Default Artifact</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cold-start extraction</td>
+<td><code>data/processed/cold_start_5k.jsonl</code></td>
+<td>First-round SFT samples</td>
+</tr>
+<tr>
+<td>Cold-start statistics</td>
+<td><code>data/processed/cold_start_summary.json</code></td>
+<td>Source, domain, and count statistics</td>
+</tr>
+<tr>
+<td>Multi-path sampling</td>
+<td><code>data/sampled_traces/*.jsonl</code></td>
+<td>Model candidate reasoning traces</td>
+</tr>
+<tr>
+<td>Verifier output</td>
+<td><code>data/verified_candidates/*.jsonl</code></td>
+<td>Verification results for each candidate</td>
+</tr>
+<tr>
+<td>Rejection sampling</td>
+<td><code>data/processed/rejection_selected_10k_30k.jsonl</code></td>
+<td>High-scoring traces eligible for recirculation</td>
+</tr>
+<tr>
+<td>Data merging</td>
+<td><code>data/training/merged_sft_data.jsonl</code></td>
+<td>Second-round SFT input</td>
+</tr>
+<tr>
+<td>Training record</td>
+<td><code>data/training/training_manifest.json</code></td>
+<td>Training data composition</td>
+</tr>
+<tr>
+<td>Evaluation results</td>
+<td><code>data/reports/eval_results_gsm8k_math.json</code></td>
+<td>GSM8K/MATH comparison results</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-step-by-step-implementation-from-cold-start-samples-to-a-recirculable-sft-dataset">3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset<a class="headerlink" href="#3-step-by-step-implementation-from-cold-start-samples-to-a-recirculable-sft-dataset" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-prepare-the-environment-and-task-data">Step 1: Prepare the Environment and Task Data<a class="headerlink" href="#step-1-prepare-the-environment-and-task-data" title="Permanent link">&para;</a></h3>
+<p>The project recommends running in an isolated conda environment. After entering the code directory, create the environment:</p>
+<p>Listing P12-3 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>code/zh/project_12_r1_flywheel
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>conda<span class="w"> </span>activate<span class="w"> </span>p12-r1-flywheel
+</code></pre></div></p>
+<p><em>Listing P12-3: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Before formal sampling, run the tests first to confirm that the mock pipeline and base modules are intact:</p>
+<p>Listing P12-4 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pytest<span class="w"> </span>-q
+</code></pre></div></p>
+<p><em>Listing P12-4: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The current <code>tests/test_pipeline.py</code> covers cold-start extraction, math/code/format verifiers, mock sampling, rejection sampling, SFT merging, mock LoRA training, and mock evaluation. A passing test only indicates that the engineering skeleton is intact; it does not mean that real vLLM sampling or large-scale training has been completed. However, if the tests do not pass, one should not proceed directly to long-running tasks.</p>
+<p>Input data can be understood by task type: <code>OpenThoughts</code> provides Long-CoT cold-start samples, <code>GSM8K</code> and <code>MATH-500</code> provide math problems, and <code>HumanEval</code> provides coding tasks. In real deployments, data can come from public datasets or be replaced with an enterprise-internal question bank; as long as samples can be organized into a unified schema and provide reference answers or test cases, they can enter this flywheel.</p>
+<hr />
+<h3 id="step-2-extract-cold-start-sft-data">Step 2: Extract Cold-Start SFT Data<a class="headerlink" href="#step-2-extract-cold-start-sft-data" title="Permanent link">&para;</a></h3>
+<p>The goal of the cold-start stage is to organize data from different sources into a unified SFT message format. The command is as follows:</p>
+<p>Listing P12-5 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>cold_start_data.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--max-openthoughts<span class="w"> </span><span class="m">5000</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--max-math<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--max-gsm8k<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--max-code<span class="w"> </span><span class="m">100</span>
+</code></pre></div></p>
+<p><em>Listing P12-5: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The default output files are:</p>
+<p>Listing P12-6 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>data/processed/cold_start_5k.jsonl
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>data/processed/cold_start_summary.json
+</code></pre></div></p>
+<p><em>Listing P12-6: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Each cold-start sample contains <code>record_id</code>, <code>source_dataset</code>, <code>domain</code>, <code>prompt</code>, <code>reference_reasoning</code>, <code>reference_answer</code>, and <code>messages</code>. The <code>messages</code> field is what training actually consumes; its structure is approximately as follows:</p>
+<p>Listing P12-7 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;reference_reasoning&quot;</span><span class="p">:</span> <span class="s2">&quot;Step-by-step solution...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">&quot;reference_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a careful reasoning assistant.&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">}</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="p">],</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>Listing P12-7: Python implementation excerpt</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>For coding tasks, the <code>assistant</code> content becomes:</p>
+<p>Listing P12-8 shows the assistant-response format used for code tasks.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Reasoning: explain the implementation idea
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Code:
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>```python
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>def solve(...):
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    ...
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>```
+</code></pre></div></p>
+<p><em>Listing P12-8: Code-task assistant-response format example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>There is an easily overlooked detail here. The <code>canonical_solution</code> in <code>HumanEval</code> often contains only the function body; if used directly for training, the model may learn incomplete code fragments. The project implements <code>render_humaneval_solution(...)</code> in <code>pipeline_utils.py</code>, which concatenates the function signature from the prompt with the <code>canonical_solution</code> to form a complete function definition, making <code>reference_answer</code> more suitable for training and verification.</p>
+<p>After cold-start data is generated, <code>cold_start_summary.json</code> should be inspected first. The three key items to check are: whether the total number of samples meets expectations, whether <code>domain_distribution</code> is overly skewed toward a single task, and whether spot-checking the <code>messages</code> field reveals empty responses or format corruption. If data quality at this step is insufficient, subsequent sampling and rejection sampling will suffer amplified contamination.</p>
+<hr />
+<h3 id="step-3-generate-multi-path-reasoning-traces-using-mock-or-vllm">Step 3: Generate Multi-Path Reasoning Traces Using Mock or vLLM<a class="headerlink" href="#step-3-generate-multi-path-reasoning-traces-using-mock-or-vllm" title="Permanent link">&para;</a></h3>
+<p>The input to the sampling stage is the prompts from <code>cold_start_5k.jsonl</code>; the output is multiple candidate reasoning traces per prompt. To validate the pipeline first, the mock backend can be used:</p>
+<p>Listing P12-9 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>sample_traces.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--input<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>--num-examples<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span>--num-samples<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span>--backend<span class="w"> </span>mock<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span>--force-mock
+</code></pre></div></p>
+<p><em>Listing P12-9: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The mock backend is not used for evaluating real model capability; it is used only to check whether the data pipeline can continue flowing downstream. For real sampling, the vLLM service can be started and called via the OpenAI-compatible API:</p>
+<p>Listing P12-10 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>bash<span class="w"> </span>scripts/serve_qwen_vllm.sh
+</code></pre></div></p>
+<p><em>Listing P12-10: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Then run the sampling script:</p>
+<p>Listing P12-11 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>sample_traces.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--input<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>--num-examples<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span>--num-samples<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--backend<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>--parallel-prompts<span class="w"> </span><span class="m">4</span>
+</code></pre></div></p>
+<p><em>Listing P12-11: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The core fields of a sampling record are as follows:</p>
+<p>Listing P12-12 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">sample</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="s2">&quot;prompt_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">&quot;sample_idx&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="s2">&quot;generation_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">768</span><span class="p">,</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="p">},</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="s2">&quot;raw_trace&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="s2">&quot;parsed_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="s2">&quot;finish_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="s2">&quot;token_count&quot;</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>Listing P12-12: Python implementation excerpt</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The most important aspect of the sampling stage is retaining the complete <code>raw_trace</code> rather than keeping only the final answer. The complete trace has three downstream uses: first, it is passed to the verifier to determine correctness; second, high-quality candidates are recirculated for training; third, it serves as an error analysis sample to help identify whether the model failed due to format errors, answer errors, or reasoning-path errors.</p>
+<p>If VRAM or throughput is insufficient, <code>num_samples</code>, <code>parallel_prompts</code>, and <code>max_tokens</code> can be reduced. These reductions affect only scale and should not alter the data format.</p>
+<hr />
+<h3 id="step-4-build-math-code-and-format-verifiers">Step 4: Build Math, Code, and Format Verifiers<a class="headerlink" href="#step-4-build-math-code-and-format-verifiers" title="Permanent link">&para;</a></h3>
+<p>The verifier is the core of this project because it determines which candidates can become recirculated data. The verifiers in the current <code>verifier_pool.py</code> fall into three categories.</p>
+<p>The math verifier first extracts the final answer from the model output, prioritizing patterns such as <code>\boxed{}</code> and <code>Final Answer:</code>, then attempts to parse the numeric value. If both the predicted value and the reference answer can be parsed as numbers, a tolerance-based comparison is performed; otherwise, a normalized string comparison is used. It returns <code>verifier_pass</code>, <code>reward_score</code>, <code>parsed_answer</code>, and <code>reason</code>.</p>
+<p>The code verifier extracts fenced Python code blocks or code snippets containing <code>def</code>, then runs them together with test cases. A passing test receives a high score; missing a code block, execution timeout, thrown exceptions, or test failures all have their specific reasons recorded. The current implementation is suited to HumanEval-style tasks and is not equivalent to a full code evaluation platform, but it is sufficient to support a rejection-sampling prototype.</p>
+<p>The format verifier checks whether the output structure is stable. A math response should contain at least <code>Reasoning:</code> and a parseable final answer; a code response should contain at least <code>Reasoning:</code> and a Python code block. Many candidate traces are not entirely wrong in content but fail answer extraction due to format instability. The format verifier's role is to flag such samples early.</p>
+<p>A verifier output can be understood as:</p>
+<p>Listing P12-13 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">verdict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="s2">&quot;verifier_type&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">&quot;verifier_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="s2">&quot;format_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="s2">&quot;reward_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="s2">&quot;parsed_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="s2">&quot;verification_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;exact_numeric_match&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="s2">&quot;verification_details&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="s2">&quot;expected&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="p">},</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>Listing P12-13: Python implementation excerpt</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>This structure is more valuable than a single score. If the rejection-sampling pass rate drops suddenly later on, the <code>verification_reason</code> field allows one to diagnose whether the problem originates from format drift, answer parsing, code execution, or the task itself being too difficult. For a data flywheel, interpretable failure reasons are just as important as successful samples.</p>
+<hr />
+<h3 id="step-5-rejection-sampling-and-generating-recirculated-samples">Step 5: Rejection Sampling and Generating Recirculated Samples<a class="headerlink" href="#step-5-rejection-sampling-and-generating-recirculated-samples" title="Permanent link">&para;</a></h3>
+<p>Rejection sampling reads candidates from <code>data/sampled_traces</code>, calls the verifier, and then groups by prompt to filter. The command is as follows:</p>
+<p>Listing P12-14 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>rejection_sampling.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--cold-start<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--sample-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--selected-per-prompt<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--min-reward<span class="w"> </span><span class="m">0</span>.8
+</code></pre></div></p>
+<p><em>Listing P12-14: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The filtering priority is:</p>
+<ol>
+<li><code>verifier_pass</code></li>
+<li><code>reward_score</code></li>
+<li><code>sample_idx</code></li>
+</ol>
+<p>By default, at most <code>selected_per_prompt</code> traces are retained per prompt. Selected records are written to:</p>
+<p>Listing P12-15 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>data/processed/rejection_selected_10k_30k.jsonl
+</code></pre></div></p>
+<p><em>Listing P12-15: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Meanwhile, the verification results for each prompt are written to:</p>
+<p>Listing P12-16 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>data/verified_candidates/*.jsonl
+</code></pre></div></p>
+<p><em>Listing P12-16: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The output samples from rejection sampling are reorganized into SFT format:</p>
+<p>Listing P12-17 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">selected</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001_rs0&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a careful reasoning assistant.&quot;</span><span class="p">},</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">},</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">}</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="p">],</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="s2">&quot;verifier_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>    <span class="s2">&quot;reward_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>Listing P12-17: Python implementation excerpt</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>One misconception must be avoided here: rejection sampling is not simply "deleting all failed samples." The current training data uses only successful traces, but failed traces are still saved in <code>verified_candidates</code>. They can be used to analyze the model's common errors, fix verifier bugs, build a hard-case pool, or train a reward model in subsequent stages.</p>
+<p>If the goal is to generate <code>10K+</code> recirculated samples, the candidate volume must be back-calculated from the pass rate. For example, when sampling 4 traces per question with a 25% pass rate and retaining at most 1 trace per question, the final number of selected samples will be noticeably lower than the total number of candidates. When scaling up, one should not simply relax <code>min_reward</code>; the pass rate, format failure rate, and task difficulty distribution should also be examined.</p>
+<hr />
+<h3 id="step-6-merge-second-round-sft-data-train-lora-and-evaluate">Step 6: Merge Second-Round SFT Data, Train LoRA, and Evaluate<a class="headerlink" href="#step-6-merge-second-round-sft-data-train-lora-and-evaluate" title="Permanent link">&para;</a></h3>
+<p>After rejection sampling is complete, merge the cold-start data with the recirculated data:</p>
+<p>Listing P12-18 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python<span class="w"> </span>merge_sft_data.py
+</code></pre></div></p>
+<p><em>Listing P12-18: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Default output:</p>
+<p>Listing P12-19 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>data/training/merged_sft_data.jsonl
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>data/training/training_manifest.json
+</code></pre></div></p>
+<p><em>Listing P12-19: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>During merging, deduplication is performed on prompt and assistant content, and the source distribution is recorded. Cold-start data and recirculated data should retain different <code>source_stage</code> values in training, because the two serve different roles. Cold-start samples primarily provide a stable format and baseline reasoning style, while recirculated samples come from model sampling and verifier filtering, representing successful traces already explored by the current policy.</p>
+<p>The LoRA demonstration training command is:</p>
+<p>Listing P12-20 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python<span class="w"> </span>train_lora.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--dataset<span class="w"> </span>data/training/merged_sft_data.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/training/lora_ckpt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--max-train-samples<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--epochs<span class="w"> </span><span class="m">2</span>
+</code></pre></div></p>
+<p><em>Listing P12-20: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>The evaluation command is:</p>
+<p>Listing P12-21 provides a command-line run example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python<span class="w"> </span>eval_gsm8k_math.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--model-path<span class="w"> </span>&lt;base-model-path&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>--adapter-path<span class="w"> </span>data/training/lora_ckpt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span>--max-examples<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">  </span>--tasks<span class="w"> </span>gsm8k,math<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">  </span>--backend<span class="w"> </span>openai
+</code></pre></div></p>
+<p><em>Listing P12-21: Command-line run example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>Evaluation results are written by default to:</p>
+<p>Listing P12-22 provides a process or path example illustrating the input/output relationships, structural constraints, or execution modes in this section.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>data/reports/eval_results_gsm8k_math.json
+</code></pre></div></p>
+<p><em>Listing P12-22: Process or path example</em></p>
+<p>This excerpt translates the above process into an inspectable, structured representation.</p>
+<p>It should be emphasized that LoRA and the evaluation script in this project are primarily used to validate the data closed loop, not to guarantee stable metric gains from a single training run. Final gains depend heavily on sample scale, sampling quality, verifier strictness, training data proportions, learning rate, and evaluation set isolation. Engineering closed-loop validation and model performance improvement are two related but non-equivalent outcomes.</p>
+<hr />
+<h2 id="results-presentation-and-analysis">Results Presentation and Analysis<a class="headerlink" href="#results-presentation-and-analysis" title="Permanent link">&para;</a></h2>
+<p>The final output of this project is not a single score table but a set of reviewable data assets. The minimum acceptable results should include:</p>
+<p>Table P12-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P12-3: Artifact and Checkpoint Reference Table</em></p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Checkpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cold_start_5k.jsonl</code></td>
+<td>Fields are complete; <code>messages</code> can be used directly for SFT</td>
+</tr>
+<tr>
+<td><code>cold_start_summary.json</code></td>
+<td>Source and domain distribution is visible</td>
+</tr>
+<tr>
+<td><code>sampled_traces/*.jsonl</code></td>
+<td>The same prompt has multiple candidate traces</td>
+</tr>
+<tr>
+<td><code>verified_candidates/*.jsonl</code></td>
+<td>Each candidate has a verifier result and failure reason</td>
+</tr>
+<tr>
+<td><code>rejection_selected_10k_30k.jsonl</code></td>
+<td>High-scoring traces are repackaged as SFT samples</td>
+</tr>
+<tr>
+<td><code>merged_sft_data.jsonl</code></td>
+<td>Cold-start and recirculated data are merged</td>
+</tr>
+<tr>
+<td><code>training_manifest.json</code></td>
+<td>Merge scale and domain distribution are recorded</td>
+</tr>
+<tr>
+<td><code>eval_results_gsm8k_math.json</code></td>
+<td>Base and LoRA evaluation results can be compared</td>
+</tr>
+</tbody>
+</table>
+<p>From an engineering perspective, acceptance can be divided into three tiers. The first tier is pipeline acceptance: <code>pytest -q</code> passes, and mock mode can complete cold start, sampling, verification, rejection sampling, merging, training, and evaluation. The second tier is real-sampling acceptance: the vLLM service can be called by <code>sample_traces.py</code>, sampling results enter <code>sampled_traces</code>, and can be processed by the verifier. The third tier is performance acceptance: after LoRA training, there is a stable gain over the base model on GSM8K/MATH. The current project prioritizes the first two tiers; the third tier requires larger-scale data and multiple rounds of hyperparameter tuning.</p>
+<p>In terms of cost, the primary expenses come from multi-path sampling and training. If resources are constrained, the following fallback strategies can be applied:</p>
+<p>Table P12-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P12-4: Resource Bottleneck and Fallback Strategy Reference Table</em></p>
+<table>
+<thead>
+<tr>
+<th>Resource Bottleneck</th>
+<th>Fallback Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Insufficient VRAM</td>
+<td>Reduce <code>max_model_len</code>, <code>max_num_seqs</code>, or concurrent prompts</td>
+</tr>
+<tr>
+<td>Sampling too slow</td>
+<td>Reduce <code>num_samples</code> from 16 to 4</td>
+</tr>
+<tr>
+<td>Low verifier pass rate</td>
+<td>Run only math tasks first, defer code tasks</td>
+</tr>
+<tr>
+<td>Insufficient recirculated samples</td>
+<td>Expand candidate sampling rather than blindly relaxing the verifier</td>
+</tr>
+<tr>
+<td>Slow LoRA training</td>
+<td>First run a smoke train with <code>--max-train-samples 1024</code></td>
+</tr>
+<tr>
+<td>Long evaluation time</td>
+<td>Start with <code>--max-examples 100</code>, then expand the evaluation scale</td>
+</tr>
+</tbody>
+</table>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter presented the Pedagogical R1 Reasoning Data Flywheel as a closed-loop reasoning data pipeline covering Long-CoT cold start, rejection sampling, and recirculated SFT. The project connects task definition, data boundaries, architecture choices, sample schemas, metric acceptance, and reproducibility resources in one reviewable chain.</p>
+<p>The focus is a pedagogical, small-scale reasoning data engineering pipeline. It does not cover a complete reinforcement learning platform, large-scale online training, or full DeepSeek-R1 reproduction. Larger-scale, higher-risk, or stricter compliance settings require reassessment of data sources, permission status, manual review rates, operating costs, and rollback plans.</p>
+<p>As part of Part XIV, this chapter corresponds to the project-level validation of the methods presented in earlier parts. Readers can use this case alongside the data recipes of Part XIII, the platform governance chapters in the earlier sections, and the checklists in the appendix to form a closed loop from methodological understanding to engineering delivery.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Guo D, Yang D, Zhang H, Song J, Zhang R, Xu R, Zhu Q, Ma S, Wang P, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.</p>
+<p>Guha E, Marten R, Keh S, Raoof N, Smyrnis G, Bansal H, Nezhurina M, Mercat J, Vu T, Sprague Z, others (2025) OpenThoughts: Data Recipes for Reasoning Models. arXiv preprint arXiv:2506.04178.</p>
+<p>Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving with the MATH Dataset. In: Advances in Neural Information Processing Systems 34:24262-24273. arXiv:2103.03874.</p>
+<p>Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.</p>
+<p>Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog. https://qwenlm.github.io/blog/qwq-32b/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../p11_mini_deepseek/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Project 11: Mini-DeepSeek Pre-Training Reproduction">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Project 11: Mini-DeepSeek Pre-Training Reproduction
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../p13_multimodal_instruction_factory/" class="md-footer__link md-footer__link--next" aria-label="Next: Project 13: Qwen-VL Multimodal Instruction Factory">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Project 13: Qwen-VL Multimodal Instruction Factory
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

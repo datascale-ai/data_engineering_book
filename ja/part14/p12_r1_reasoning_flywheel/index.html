@@ -1,0 +1,1153 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p12_r1_reasoning_flywheel/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目十二：教学化 R1 推理数据飞轮 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#r1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目十二：教学化 R1 推理数据飞轮
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p12_r1_reasoning_flywheel/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p12_r1_reasoning_flywheel/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#r1-long-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      R1 风格推理数据飞轮——从 Long-CoT 冷启动到拒绝采样回流
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="R1 风格推理数据飞轮——从 Long-CoT 冷启动到拒绝采样回流">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      背景与目标
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-r1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 架构设计：六组件教学化 R1 推理数据飞轮
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 分步实现：从冷启动样本到可回流 SFT 数据集
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 分步实现：从冷启动样本到可回流 SFT 数据集">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1：准备环境与任务数据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2：抽取冷启动 SFT 数据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-mock-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3：使用 mock 或 vLLM 生成多路推理轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4：构建数学、代码与格式 verifier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5：拒绝采样并生成回流样本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-sft-lora" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6：合并二轮 SFT 数据、训练 LoRA 并评估
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      结果展示与分析
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="r1">项目十二：教学化 R1 推理数据飞轮<a class="headerlink" href="#r1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王聪；徐鑫；骆阳</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本项目围绕“教学化 R1 推理数据飞轮”构建可复现的数据工程案例，重点说明业务目标、数据边界、架构决策、核心实现、验收指标与风险控制。章节将安装命令和脚本细节收敛到工程复盘视角，突出样本 schema、数据流、失败模式和可交付物之间的关系，帮助读者把前文方法转化为可审计、可扩展的项目资产。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>R1；项目实战；可复现数据工程；数据流水线；验收指标</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“教学化 R1 推理数据飞轮”为核心案例，目标是构建 Long-CoT 冷启动、拒绝采样和回流 SFT 的推理数据闭环。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以推理数据工程链路为主，不覆盖完整强化学习平台和大规模在线训练，也不声明复现 DeepSeek-R1 的完整训练过程。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“冷启动样本、长链推理、候选采样、验证筛选、拒绝采样和 SFT 回流”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P12-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>推理种子 -&gt; Long-CoT 生成 -&gt; 多候选采样 -&gt; 验证/打分 -&gt; 拒绝采样 -&gt; 回流 SFT 数据集
+</code></pre></div></p>
+<p><em>代码清单P12-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括推理正确率、候选保留率、验证覆盖、长链长度分布、回流样本质量和成本/样本。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P12-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P12-1：教学化 R1 推理数据飞轮出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>候选生成</td>
+<td>多路采样数量、长链长度分布和任务来源覆盖</td>
+<td>说明 mock、vLLM 与真实模型采样之间的差异</td>
+</tr>
+<tr>
+<td>筛选回流</td>
+<td>verifier 覆盖、候选保留率、回流样本质量和格式合格率</td>
+<td>每条回流样本应能追踪到原任务、候选轨迹和验证结果</td>
+</tr>
+<tr>
+<td>风险控制</td>
+<td>自我强化错误、验证器偏差和过长轨迹噪声复盘</td>
+<td>不把拒绝采样通过直接等同于推理能力提升</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自长链生成、多候选采样和验证；风险集中在自我强化错误、验证器偏差和过长轨迹噪声。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="r1-long-cot">R1 风格推理数据飞轮——从 Long-CoT 冷启动到拒绝采样回流<a class="headerlink" href="#r1-long-cot" title="Permanent link">&para;</a></h2>
+<h3 id="_11">背景与目标<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p>R1 / QwQ (Guo et al. 2025; Qwen Team 2025) 这类推理模型带来的启发，并不只是“模型可以输出更长的思维链”，而是推理能力可以被拆成一条可运行的数据工程流水线。传统 SFT 项目通常围绕一批固定的 <code>instruction-response</code> 样本展开，训练完成后数据本身很少继续变化。R1 风格的数据飞轮则不同：模型会围绕同一任务生成多条候选轨迹，系统用 verifier 判断哪些轨迹正确、哪些轨迹格式稳定、哪些轨迹值得回流，再把筛选出的成功样本重新组织成下一轮监督微调数据。这样一来，数据不再只是训练前准备好的静态资产，而成为模型能力迭代的一部分。</p>
+<p>对中小团队来说，完整复现大规模 RL 训练往往不现实。大规模在线采样、奖励建模、多轮策略更新和长上下文推理都需要持续占用 GPU 资源，也需要复杂的训练框架治理。更可落地的方式，是先把“数据飞轮”本身搭起来：冷启动数据能生成，多路采样能运行，verifier 能自动打分，拒绝采样能筛出高质量轨迹，二轮 SFT 数据能合并，评估脚本能比较训练前后的变化。只要这条链路稳定，后续无论接入更大的模型、更复杂的奖励，还是迁移到行业任务，都有可复用的工程基础。</p>
+<p>本项目围绕 <code>code/zh/project_12_r1_flywheel</code> 中的代码展开，目标是实现一个教学化、小规模、最小可运行版 R1 风格推理数据飞轮。它不追求一次性复现 R1-Zero 的完整强化学习过程，也不等同于复现 DeepSeek-R1 的完整训练系统；本章只保留冷启动、候选采样、验证筛选、拒绝采样和 SFT 回流这些数据工程环节，并把 benchmark 分数放在验证闭环的位置，而不是作为唯一目标。项目默认以 <code>Qwen2.5-7B-Instruct</code> (Hui et al. 2024) 为基础模型，以 <code>OpenThoughts</code> (Guha et al. 2025)、<code>GSM8K</code> (Cobbe et al. 2021)、<code>MATH-500</code> (Hendrycks et al. 2021) 和 <code>HumanEval</code> (Chen et al. 2021) 为主要数据源，构建从冷启动 SFT 到拒绝采样回流的闭环。</p>
+<p>整条链路可以概括为：</p>
+<p>代码清单P12-2 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>OpenThoughts / GSM8K / MATH-500 / HumanEval
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  -&gt; cold-start SFT data
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  -&gt; vLLM sampled reasoning traces
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  -&gt; math / code / format verifier
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  -&gt; rejection sampling
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  -&gt; merged SFT data
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  -&gt; LoRA training and evaluation
+</code></pre></div></p>
+<p><em>代码清单P12-2：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>完成本项目后，读者应能理解三件事。第一，R1 风格系统中的关键工程对象不是单个模型权重，而是任务池、采样轨迹、verifier、拒绝采样结果和训练数据 manifest。第二，推理数据飞轮可以先用规则奖励和监督回流验证，不必一开始就进入完整 RL。第三，只要目标任务能够构造自动 verifier，这套结构就可以迁移到 SQL 生成、代码修复、结构化抽取、工具调用或企业内部题库。</p>
+<h2 id="2-r1">2. 架构设计：六组件教学化 R1 推理数据飞轮<a class="headerlink" href="#2-r1" title="Permanent link">&para;</a></h2>
+<p>本项目的架构可以拆成六个组件：冷启动数据抽取、多路推理采样、verifier 池、拒绝采样、二轮 SFT 数据合并、训练与评估。六个组件之间通过文件和统一 schema 交接，而不是强耦合在一个长脚本里。这样做的好处是每一层都可以单独重跑：采样失败可以只重跑采样，verifier 更新可以只重跑拒绝采样，训练配比变化可以只重做数据合并。</p>
+<p>图P12-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p12/Wang-Project12-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P12-1：从冷启动数据抽取、多路推理采样、verifier 池、拒绝采样到二轮 SFT 合并与训练评估的闭环结构" src="../../../images/part14/p12/Wang-Project12-Fig01.svg" /></a>
+<em>图 P12-1：R1 推理数据飞轮闭环结构</em></p>
+<p>第一个组件是 <strong>冷启动数据抽取</strong>。对应脚本为 <code>cold_start_data.py</code>。它负责从已有数据源中抽取适合 SFT 的样本，并统一为 <code>messages</code> 格式。数学样本会组织成 <code>Reasoning:</code> 和 <code>Final Answer:</code>，代码样本会组织成 <code>Reasoning:</code> 和 fenced Python code block。冷启动数据的作用不是直接训练出最高性能模型，而是让模型具备基本的推理输出结构、语言风格和可解析格式。</p>
+<p>第二个组件是 <strong>多路推理采样</strong>。对应脚本为 <code>sample_traces.py</code>。它让同一个 prompt 生成多条候选推理轨迹，并记录 <code>prompt_id</code>、<code>sample_idx</code>、<code>raw_trace</code>、<code>parsed_answer</code> 和 <code>generation_params</code>。项目同时支持 mock、本地 vLLM Python API 和外部 OpenAI 兼容 API 三种后端。在生产环境中，推理服务和数据处理脚本可以拆开部署，减少 CUDA、torch、vLLM 依赖互相牵制。</p>
+<p>第三个组件是 <strong>verifier 池</strong>。对应脚本为 <code>verifier_pool.py</code>。它实现数学、代码和格式三类规则验证器。数学 verifier 负责答案抽取、数值解析和比较；代码 verifier 负责抽取 Python 代码块并运行测试；格式 verifier 负责检查 <code>Reasoning:</code>、<code>Final Answer:</code>、<code>Code:</code> 等结构是否存在。当前 verifier 属于 rule-based reward，不是复杂奖励模型，但它具有稳定、便宜、可解释的优点。</p>
+<p>第四个组件是 <strong>拒绝采样</strong>。对应脚本为 <code>rejection_sampling.py</code>。它读取采样轨迹，按 prompt 分组调用 verifier，再根据 <code>verifier_pass</code>、<code>reward_score</code> 和 <code>sample_idx</code> 排序，保留每道题中较好的候选。被保留的轨迹会重新打包成 SFT 样本，写入 <code>rejection_selected_10k_30k.jsonl</code>。这一步是数据飞轮的核心：模型生成候选，系统自动筛选，成功轨迹回流训练。</p>
+<p>第五个组件是 <strong>二轮 SFT 数据合并</strong>。对应脚本为 <code>merge_sft_data.py</code>。它把冷启动数据和拒绝采样数据合并为 <code>merged_sft_data.jsonl</code>，并生成 <code>training_manifest.json</code>。冷启动样本和回流样本虽然都进入 SFT，但含义不同：前者提供初始格式和推理风格，后者沉淀模型自己探索出的成功轨迹。</p>
+<p>第六个组件是 <strong>训练与评估</strong>。<code>train_lora.py</code> 提供最小 LoRA 演示训练，<code>eval_gsm8k_math.py</code> 提供 GSM8K / MATH 评估入口。当前项目把训练和评估作为数据飞轮的验证接口，而不是把它们写成完整实验平台。它们的主要作用是检查：合并后的数据能否进入训练，训练后能否用统一评估脚本比较 base model 与 LoRA adapter。</p>
+<p>主要产物如下：</p>
+<p>表P12-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P12-2：阶段与含义对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>默认产物</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>冷启动抽取</td>
+<td><code>data/processed/cold_start_5k.jsonl</code></td>
+<td>首轮 SFT 样本</td>
+</tr>
+<tr>
+<td>冷启动统计</td>
+<td><code>data/processed/cold_start_summary.json</code></td>
+<td>来源、领域、数量统计</td>
+</tr>
+<tr>
+<td>多路采样</td>
+<td><code>data/sampled_traces/*.jsonl</code></td>
+<td>模型候选推理轨迹</td>
+</tr>
+<tr>
+<td>verifier 输出</td>
+<td><code>data/verified_candidates/*.jsonl</code></td>
+<td>每个候选的验证结果</td>
+</tr>
+<tr>
+<td>拒绝采样</td>
+<td><code>data/processed/rejection_selected_10k_30k.jsonl</code></td>
+<td>可回流高分轨迹</td>
+</tr>
+<tr>
+<td>数据合并</td>
+<td><code>data/training/merged_sft_data.jsonl</code></td>
+<td>二轮 SFT 输入</td>
+</tr>
+<tr>
+<td>训练记录</td>
+<td><code>data/training/training_manifest.json</code></td>
+<td>训练数据组成</td>
+</tr>
+<tr>
+<td>评估结果</td>
+<td><code>data/reports/eval_results_gsm8k_math.json</code></td>
+<td>GSM8K / MATH 对比结果</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-sft">3. 分步实现：从冷启动样本到可回流 SFT 数据集<a class="headerlink" href="#3-sft" title="Permanent link">&para;</a></h2>
+<h3 id="step-1">Step 1：准备环境与任务数据<a class="headerlink" href="#step-1" title="Permanent link">&para;</a></h3>
+<p>项目建议在独立 conda 环境中运行。进入代码目录后创建环境：</p>
+<p>代码清单P12-3 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>code/zh/project_12_r1_flywheel
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>conda<span class="w"> </span>activate<span class="w"> </span>p12-r1-flywheel
+</code></pre></div></p>
+<p><em>代码清单P12-3：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>在正式采样之前，可以先运行测试，确认 mock 管线和基础模块没有断：</p>
+<p>代码清单P12-4 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pytest<span class="w"> </span>-q
+</code></pre></div></p>
+<p><em>代码清单P12-4：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>当前 <code>tests/test_pipeline.py</code> 覆盖冷启动抽取、math/code/format verifier、mock 采样、拒绝采样、SFT 合并、mock LoRA 训练和 mock 评估。测试通过只能说明工程骨架没有断，并不代表真实 vLLM 采样或大规模训练已经完成；但如果测试不通过，不应直接进入长任务。</p>
+<p>输入数据可以按任务类型理解：<code>OpenThoughts</code> 提供 Long-CoT 冷启动样本，<code>GSM8K</code> 和 <code>MATH-500</code> 提供数学题，<code>HumanEval</code> 提供代码任务。真正落地时，数据可以来自公开数据集，也可以替换为企业内部题库；只要样本能被整理成统一 schema，并能提供 reference answer 或测试用例，就可以进入这条飞轮。</p>
+<hr />
+<h3 id="step-2-sft">Step 2：抽取冷启动 SFT 数据<a class="headerlink" href="#step-2-sft" title="Permanent link">&para;</a></h3>
+<p>冷启动阶段的目标，是把不同来源的数据整理成统一的 SFT 消息格式。运行命令如下：</p>
+<p>代码清单P12-5 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span class="w"> </span>cold_start_data.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--max-openthoughts<span class="w"> </span><span class="m">5000</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--max-math<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--max-gsm8k<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>--max-code<span class="w"> </span><span class="m">100</span>
+</code></pre></div></p>
+<p><em>代码清单P12-5：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>输出文件默认为：</p>
+<p>代码清单P12-6 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>data/processed/cold_start_5k.jsonl
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>data/processed/cold_start_summary.json
+</code></pre></div></p>
+<p><em>代码清单P12-6：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>每条冷启动样本包含 <code>record_id</code>、<code>source_dataset</code>、<code>domain</code>、<code>prompt</code>、<code>reference_reasoning</code>、<code>reference_answer</code> 和 <code>messages</code>。其中 <code>messages</code> 是训练真正消费的字段，结构大致如下：</p>
+<p>代码清单P12-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;reference_reasoning&quot;</span><span class="p">:</span> <span class="s2">&quot;Step-by-step solution...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">&quot;reference_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a careful reasoning assistant.&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">}</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="p">],</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P12-7：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>对于代码任务，<code>assistant</code> 内容会变成：</p>
+<p>代码清单P12-8展示了代码任务中 assistant 回复内容的格式示例。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Reasoning: explain the implementation idea
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Code:
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>```python
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>def solve(...):
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    ...
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>```
+</code></pre></div></p>
+<p><em>代码清单P12-8：代码任务 assistant 回复格式示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这里有一个容易忽略的细节。<code>HumanEval</code> 中的 <code>canonical_solution</code> 往往只包含函数体，如果直接拿来训练，模型可能学到不完整代码片段。项目在 <code>pipeline_utils.py</code> 中实现了 <code>render_humaneval_solution(...)</code>，把 prompt 中的函数签名和 <code>canonical_solution</code> 拼成完整函数定义，从而让 <code>reference_answer</code> 更适合训练和验证。</p>
+<p>冷启动数据生成后，应先检查 <code>cold_start_summary.json</code>。重点看三项：总样本数是否符合预期，<code>domain_distribution</code> 是否过度偏向单一任务，抽样查看 <code>messages</code> 是否存在空回答或格式错乱。如果这一步数据质量不足，后续采样和拒绝采样都会被放大污染。</p>
+<hr />
+<h3 id="step-3-mock-vllm">Step 3：使用 mock 或 vLLM 生成多路推理轨迹<a class="headerlink" href="#step-3-mock-vllm" title="Permanent link">&para;</a></h3>
+<p>采样阶段的输入是 <code>cold_start_5k.jsonl</code> 中的 prompt，输出是每个 prompt 的多条候选推理轨迹。为了先验证流程，可以使用 mock 后端：</p>
+<p>代码清单P12-9 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>python<span class="w"> </span>sample_traces.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--input<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>--num-examples<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span>--num-samples<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span>--backend<span class="w"> </span>mock<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span>--force-mock
+</code></pre></div></p>
+<p><em>代码清单P12-9：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>mock 后端不用于评估真实模型能力，只用于检查数据链路是否能继续向下游流动。真实采样时，可以启动 vLLM 服务，并通过 OpenAI 兼容 API 调用：</p>
+<p>代码清单P12-10 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>bash<span class="w"> </span>scripts/serve_qwen_vllm.sh
+</code></pre></div></p>
+<p><em>代码清单P12-10：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>随后执行采样脚本：</p>
+<p>代码清单P12-11 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python<span class="w"> </span>sample_traces.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--input<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>--num-examples<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span>--num-samples<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--backend<span class="w"> </span>openai<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>--parallel-prompts<span class="w"> </span><span class="m">4</span>
+</code></pre></div></p>
+<p><em>代码清单P12-11：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>采样记录的核心字段如下：</p>
+<p>代码清单P12-12 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">sample</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="s2">&quot;prompt_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">&quot;sample_idx&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="s2">&quot;generation_params&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">768</span><span class="p">,</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="p">},</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="s2">&quot;raw_trace&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="s2">&quot;parsed_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    <span class="s2">&quot;finish_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;stop&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    <span class="s2">&quot;token_count&quot;</span><span class="p">:</span> <span class="mi">512</span><span class="p">,</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P12-12：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>采样阶段最重要的是保留完整 <code>raw_trace</code>，而不是只保留最终答案。完整轨迹后续有三种用途：第一，进入 verifier 判断是否正确；第二，作为高质量候选回流训练；第三，作为错误分析样本，帮助定位模型是格式失败、答案失败，还是推理路径失败。</p>
+<p>如果显存或吞吐不足，可以先降低 <code>num_samples</code>、<code>parallel_prompts</code> 和 <code>max_tokens</code>。这些降级只影响规模，不应改变数据格式。</p>
+<hr />
+<h3 id="step-4-verifier">Step 4：构建数学、代码与格式 verifier<a class="headerlink" href="#step-4-verifier" title="Permanent link">&para;</a></h3>
+<p>verifier 是本项目的核心，因为它决定哪些候选可以成为回流数据。当前 <code>verifier_pool.py</code> 中的验证器分三类。</p>
+<p>数学 verifier 会先从模型输出中提取最终答案，优先识别 <code>\boxed{}</code>、<code>Final Answer:</code> 等模式，再尝试解析数值。如果预测值和参考答案都能解析为数值，则按容差比较；否则做归一化字符串比较。它会返回 <code>verifier_pass</code>、<code>reward_score</code>、<code>parsed_answer</code> 和 <code>reason</code>。</p>
+<p>代码 verifier 会抽取 fenced Python code block 或包含 <code>def</code> 的代码片段，再和测试样例一起运行。通过测试则给高分；缺少代码块、执行超时、抛异常或测试失败都会记录具体原因。当前实现适合 HumanEval 风格任务，不等同于完整代码评测平台，但足以支撑拒绝采样原型。</p>
+<p>格式 verifier 检查输出结构是否稳定。数学题至少应包含 <code>Reasoning:</code> 和可解析的最终答案；代码题至少应包含 <code>Reasoning:</code> 和 Python 代码块。许多候选轨迹并不是内容完全错误，而是格式不稳定导致无法抽取答案。格式 verifier 的作用就是把这类样本尽早标记出来。</p>
+<p>一个 verifier 输出可以理解为：</p>
+<p>代码清单P12-13 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">verdict</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="s2">&quot;verifier_type&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">&quot;verifier_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="s2">&quot;format_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="s2">&quot;reward_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="s2">&quot;parsed_answer&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="s2">&quot;verification_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;exact_numeric_match&quot;</span><span class="p">,</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="s2">&quot;verification_details&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="s2">&quot;expected&quot;</span><span class="p">:</span> <span class="s2">&quot;42&quot;</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="p">},</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P12-13：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这个结构比单一分数更有价值。后续如果拒绝采样通过率突然下降，可以根据 <code>verification_reason</code> 判断问题来自格式漂移、答案解析、代码执行，还是任务本身过难。对一个数据飞轮来说，可解释的失败原因和成功样本同样重要。</p>
+<hr />
+<h3 id="step-5">Step 5：拒绝采样并生成回流样本<a class="headerlink" href="#step-5" title="Permanent link">&para;</a></h3>
+<p>拒绝采样读取 <code>data/sampled_traces</code> 中的候选，调用 verifier 后按 prompt 分组筛选。运行命令如下：</p>
+<p>代码清单P12-14 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>rejection_sampling.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--cold-start<span class="w"> </span>data/processed/cold_start_5k.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--sample-dir<span class="w"> </span>data/sampled_traces<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--selected-per-prompt<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--min-reward<span class="w"> </span><span class="m">0</span>.8
+</code></pre></div></p>
+<p><em>代码清单P12-14：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>筛选优先级为：</p>
+<ol>
+<li><code>verifier_pass</code></li>
+<li><code>reward_score</code></li>
+<li><code>sample_idx</code></li>
+</ol>
+<p>默认每个 prompt 保留最多 <code>selected_per_prompt</code> 条轨迹。被选中的记录会写入：</p>
+<p>代码清单P12-15 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>data/processed/rejection_selected_10k_30k.jsonl
+</code></pre></div></p>
+<p><em>代码清单P12-15：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>同时，每个 prompt 的验证结果会写入：</p>
+<p>代码清单P12-16 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>data/verified_candidates/*.jsonl
+</code></pre></div></p>
+<p><em>代码清单P12-16：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>拒绝采样的输出样本会被重新组织成 SFT 格式：</p>
+<p>代码清单P12-17 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">selected</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;math_gsm8k_000001_rs0&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>    <span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a careful reasoning assistant.&quot;</span><span class="p">},</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;A math problem...&quot;</span><span class="p">},</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Reasoning: ...</span><span class="se">\n</span><span class="s2">Final Answer: 42&quot;</span><span class="p">}</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="p">],</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="s2">&quot;verifier_pass&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>    <span class="s2">&quot;reward_score&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P12-17：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这里需要避免一个误区：拒绝采样不是简单地“删除所有失败样本”。当前训练数据只使用成功轨迹，但失败轨迹仍然会保存在 <code>verified_candidates</code> 中。它们可以用于分析模型常见错误、修复 verifier 漏洞、构建 hard case 池或后续训练过程奖励模型。</p>
+<p>如果目标是生成 <code>10K+</code> 回流样本，需要根据通过率反推候选规模。例如每题采样 4 条、通过率 25%、每题最多保留 1 条时，最终入选样本数会明显低于候选总数。扩大规模时不应只放宽 <code>min_reward</code>，还要检查通过率、格式失败率和题目难度分布。</p>
+<hr />
+<h3 id="step-6-sft-lora">Step 6：合并二轮 SFT 数据、训练 LoRA 并评估<a class="headerlink" href="#step-6-sft-lora" title="Permanent link">&para;</a></h3>
+<p>拒绝采样完成后，将冷启动数据和回流数据合并：</p>
+<p>代码清单P12-18 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>python<span class="w"> </span>merge_sft_data.py
+</code></pre></div></p>
+<p><em>代码清单P12-18：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>默认输出：</p>
+<p>代码清单P12-19 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>data/training/merged_sft_data.jsonl
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>data/training/training_manifest.json
+</code></pre></div></p>
+<p><em>代码清单P12-19：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>合并时会按 prompt 和 assistant 内容去重，并记录来源分布。冷启动数据和回流数据在训练中应当保留不同 <code>source_stage</code>，因为二者承担的作用不同。冷启动样本主要提供稳定格式和基础推理风格，回流样本则来自模型采样和 verifier 筛选，代表当前策略已经探索出的成功轨迹。</p>
+<p>LoRA 演示训练命令如下：</p>
+<p>代码清单P12-20 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>python<span class="w"> </span>train_lora.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--dataset<span class="w"> </span>data/training/merged_sft_data.jsonl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--output-dir<span class="w"> </span>data/training/lora_ckpt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--max-train-samples<span class="w"> </span><span class="m">1024</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--epochs<span class="w"> </span><span class="m">2</span>
+</code></pre></div></p>
+<p><em>代码清单P12-20：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>评估命令如下：</p>
+<p>代码清单P12-21 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>python<span class="w"> </span>eval_gsm8k_math.py<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--model-path<span class="w"> </span>&lt;base-model-path&gt;<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>--adapter-path<span class="w"> </span>data/training/lora_ckpt<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span>--max-examples<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">  </span>--tasks<span class="w"> </span>gsm8k,math<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">  </span>--backend<span class="w"> </span>openai
+</code></pre></div></p>
+<p><em>代码清单P12-21：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>评估结果默认写入：</p>
+<p>代码清单P12-22 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>data/reports/eval_results_gsm8k_math.json
+</code></pre></div></p>
+<p><em>代码清单P12-22：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>需要强调的是，LoRA 与评估脚本在本项目中主要用于验证数据闭环，而不是保证一次训练就获得稳定涨分。最终收益高度依赖样本规模、采样质量、verifier 严格程度、训练比例、学习率和评估集隔离情况。工程闭环验证和模型效果提升是两件相关但不等价的事。</p>
+<hr />
+<h2 id="_12">结果展示与分析<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>本项目的最终产出不是一张单独的分数表，而是一组可以复盘的数据资产。最小可验收结果应包括：</p>
+<p>表P12-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P12-3：产物与检查点对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>产物</th>
+<th>检查点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cold_start_5k.jsonl</code></td>
+<td>字段完整，<code>messages</code> 可直接用于 SFT</td>
+</tr>
+<tr>
+<td><code>cold_start_summary.json</code></td>
+<td>能看到来源和领域分布</td>
+</tr>
+<tr>
+<td><code>sampled_traces/*.jsonl</code></td>
+<td>同一 prompt 有多条候选轨迹</td>
+</tr>
+<tr>
+<td><code>verified_candidates/*.jsonl</code></td>
+<td>每条候选有 verifier 结果和失败原因</td>
+</tr>
+<tr>
+<td><code>rejection_selected_10k_30k.jsonl</code></td>
+<td>高分轨迹被重新打包为 SFT 样本</td>
+</tr>
+<tr>
+<td><code>merged_sft_data.jsonl</code></td>
+<td>冷启动和回流数据完成合并</td>
+</tr>
+<tr>
+<td><code>training_manifest.json</code></td>
+<td>记录合并规模与领域分布</td>
+</tr>
+<tr>
+<td><code>eval_results_gsm8k_math.json</code></td>
+<td>能比较 base 与 LoRA 的评估结果</td>
+</tr>
+</tbody>
+</table>
+<p>从工程角度看，验收可以分成三层。第一层是链路验收：<code>pytest -q</code> 通过，mock 模式可以完成冷启动、采样、验证、拒绝采样、合并、训练和评估。第二层是真实采样验收：vLLM 服务可以被 <code>sample_traces.py</code> 调用，采样结果进入 <code>sampled_traces</code>，并能被 verifier 处理。第三层是效果验收：LoRA 训练后在 GSM8K / MATH 上相对 base model 有稳定收益。当前项目优先保证前两层，第三层需要更大规模数据和多轮调参。</p>
+<p>成本方面，最主要的开销来自多路采样和训练。若资源紧张，可以采用以下降级策略：</p>
+<p>表P12-4汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P12-4：资源瓶颈与降级方式对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>资源瓶颈</th>
+<th>降级方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显存不足</td>
+<td>降低 <code>max_model_len</code>、<code>max_num_seqs</code> 或并发 prompt</td>
+</tr>
+<tr>
+<td>采样过慢</td>
+<td>将 <code>num_samples</code> 从 16 降到 4</td>
+</tr>
+<tr>
+<td>verifier 通过率低</td>
+<td>先只跑数学任务，暂缓代码任务</td>
+</tr>
+<tr>
+<td>回流样本不足</td>
+<td>扩大候选采样，而不是盲目放宽 verifier</td>
+</tr>
+<tr>
+<td>LoRA 训练慢</td>
+<td>先用 <code>--max-train-samples 1024</code> 做 smoke train</td>
+</tr>
+<tr>
+<td>评估耗时长</td>
+<td>先用 <code>--max-examples 100</code>，再扩大评估规模</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_13">本章小结<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<p>本章以“教学化 R1 推理数据飞轮”为案例，展示了构建 Long-CoT 冷启动、拒绝采样和回流 SFT 的推理数据闭环的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以教学化、小规模推理数据工程链路为主，不覆盖完整强化学习平台、大规模在线训练或 DeepSeek-R1 完整训练复现。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_14">参考文献<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Guo D, Yang D, Zhang H, Song J, Zhang R, Xu R, Zhu Q, Ma S, Wang P, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.</p>
+<p>Guha E, Marten R, Keh S, Raoof N, Smyrnis G, Bansal H, Nezhurina M, Mercat J, Vu T, Sprague Z, others (2025) OpenThoughts: Data Recipes for Reasoning Models. arXiv preprint arXiv:2506.04178.</p>
+<p>Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving with the MATH Dataset. In: Advances in Neural Information Processing Systems 34:24262-24273. arXiv:2103.03874.</p>
+<p>Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.</p>
+<p>Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog. https://qwenlm.github.io/blog/qwq-32b/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,3561 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/appendix_h_mindspore_note/">
+      
+      
+        <link rel="prev" href="../appendix_g_datagallery_note/">
+      
+      
+        <link rel="next" href="../afterword/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Appendix H: MindSpore Technical Appendix and Acknowledgments - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#appendix-h-mindspore-technical-appendix-and-acknowledgments" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Appendix H: MindSpore Technical Appendix and Acknowledgments
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_h_mindspore_note/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ja/appendix_h_mindspore_note/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#h1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h2-mindspores-engineering-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.2 MindSpore's Engineering Position
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h3-relationship-to-data-engineering-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.3 Relationship to Data Engineering Practice
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h4-typical-components-and-data-engineering-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.4 Typical Components and Data Engineering Concerns
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h5-core-programming-model-and-data-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.5 Core Programming Model and Data Contracts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h6-from-a-handwritten-digit-example-to-a-reproducible-training-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.6 From a Handwritten-Digit Example to a Reproducible Training Pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h7-automatic-differentiation-computation-graphs-and-jit-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.7 Automatic Differentiation, Computation Graphs, and JIT Execution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h8-minddata-mindinsight-mindarmour-and-toolchain-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.8 MindData, MindInsight, MindArmour, and Toolchain Observability
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h9-example-extension-mindface-and-face-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.9 Example Extension: MindFace and Face Data Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h10-automatic-parallelism-for-large-models-and-training-system-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.10 Automatic Parallelism for Large Models and Training-System Constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h11-migration-path-from-examples-to-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.11 Migration Path from Examples to Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h12-common-implementation-problems-debugging-clues-and-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.12 Common Implementation Problems, Debugging Clues, and Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h13-reading-and-usage-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.13 Reading and Usage Suggestions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h14-acknowledgments" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.14 Acknowledgments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#h1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h2-mindspores-engineering-position" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.2 MindSpore's Engineering Position
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h3-relationship-to-data-engineering-practice" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.3 Relationship to Data Engineering Practice
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h4-typical-components-and-data-engineering-concerns" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.4 Typical Components and Data Engineering Concerns
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h5-core-programming-model-and-data-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.5 Core Programming Model and Data Contracts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h6-from-a-handwritten-digit-example-to-a-reproducible-training-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.6 From a Handwritten-Digit Example to a Reproducible Training Pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h7-automatic-differentiation-computation-graphs-and-jit-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.7 Automatic Differentiation, Computation Graphs, and JIT Execution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h8-minddata-mindinsight-mindarmour-and-toolchain-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.8 MindData, MindInsight, MindArmour, and Toolchain Observability
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h9-example-extension-mindface-and-face-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.9 Example Extension: MindFace and Face Data Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h10-automatic-parallelism-for-large-models-and-training-system-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.10 Automatic Parallelism for Large Models and Training-System Constraints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h11-migration-path-from-examples-to-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.11 Migration Path from Examples to Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h12-common-implementation-problems-debugging-clues-and-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.12 Common Implementation Problems, Debugging Clues, and Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h13-reading-and-usage-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.13 Reading and Usage Suggestions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#h14-acknowledgments" class="md-nav__link">
+    <span class="md-ellipsis">
+      H.14 Acknowledgments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="appendix-h-mindspore-technical-appendix-and-acknowledgments">Appendix H: MindSpore Technical Appendix and Acknowledgments<a class="headerlink" href="#appendix-h-mindspore-technical-appendix-and-acknowledgments" title="Permanent link">&para;</a></h1>
+<h2 id="h1-purpose-of-this-appendix">H.1 Purpose of This Appendix<a class="headerlink" href="#h1-purpose-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>This appendix explains the role of MindSpore in selected practical parts of this book. It is not a framework tutorial, nor does it replace the official MindSpore documentation, course lab instructions, or the concrete installation and execution guides in the companion code repositories. Readers who need API details, version compatibility, hardware adaptation, operator support, distributed training configuration, or deployment details should use the official documentation and project repositories as the primary references (MindSpore Contributors 2026a; MindSpore Contributors 2026b).</p>
+<p>In the context of this book, MindSpore is best understood as an engineering implementation environment rather than as an isolated technical term. Data engineering does not stop at collection, cleaning, annotation, evaluation, and release. When data enters training, fine-tuning, inference, deployment, and teaching reproduction, the framework, compute platform, compiler runtime, and toolchain all affect data formats, sample organization, parallel strategies, experiment records, and reproducibility. This appendix therefore discusses MindSpore inside the implementation chain of data engineering: it connects data assets, training execution, evaluation validation, and deployment reproduction, rather than merely providing model-authoring interfaces.</p>
+<p>Part XII and other chapters that involve companion implementations, course labs, training entry points, or reproducible experiments place MindSpore in concrete practice chains. The point is not to compare frameworks abstractly, but to explain how data engineering enters executable, verifiable, and reproducible training and deployment environments.</p>
+<p>This positioning also determines how Appendix H is written. It does not expand into operator implementation, network definitions, or complete training code. Instead, it follows the lifecycle of a data engineering project and explains where MindSpore sits. In a real project, framework choice affects the output format of data preparation, the throughput and parallel organization of training, the metric records and failure-sample localization of evaluation, and the model export, environment configuration, and service validation of deployment. For data engineering to land in training and application systems, these framework-related constraints must be included in design early.</p>
+<p>MindSpore is therefore both a deep learning framework and a lens for observing implementation problems in data engineering. It makes the question "is the data usable?" more concrete: can the data be loaded stably, can sample fields be consumed correctly by the training entry point, can preprocessing remain consistent between training and inference, can logs and checkpoints support reproducible experiments, and can evaluation results flow back into cleaning and relabeling? These questions form the engineering background for this appendix.</p>
+<h2 id="h2-mindspores-engineering-position">H.2 MindSpore's Engineering Position<a class="headerlink" href="#h2-mindspores-engineering-position" title="Permanent link">&para;</a></h2>
+<p>MindSpore is a deep learning framework for cloud, edge, and device scenarios. Its design goals are usually summarized as easy development, efficient execution, and all-scenario adaptation. In the Ascend AI full-stack solution, Ascend processors, Atlas training and inference hardware, the CANN chip enablement layer, the MindSpore framework, MindX application development components, the ModelArts cloud development platform, and the MindStudio development toolchain form a continuous technical chain from underlying compute to upper-layer applications. Within that chain, MindSpore mainly provides model expression, training execution, automatic differentiation, data processing, compiler optimization, distributed training, and inference-deployment interfaces.</p>
+<p>This position matters for data engineering practice. Whether a dataset can enter model training smoothly depends not only on whether samples have been cleaned and annotated correctly, but also on whether the framework can consume the data reliably, whether training scripts cooperate with the data pipeline, and whether the runtime can support target throughput, memory, and parallelism. In other words, the endpoint of data engineering is not "a batch of files." It is making those files traceable, reviewable, and reusable engineering assets in real training, evaluation, and deployment environments.</p>
+<p>Structurally, MindSpore can be understood as a system composed of front-end expression, graph compilation, runtime, and extension ecosystem. The front-end expression layer provides Python-style interfaces for networks, tensors, operators, losses, and optimizers. The graph compilation layer carries type inference, automatic differentiation, expression simplification, graph-kernel fusion, memory optimization, automatic parallelism, pipeline execution, quantization, pruning, and other optimizations through intermediate representation. The runtime schedules computation on different hardware and scenarios. The extension ecosystem connects model libraries, tool libraries, and application suites. For data engineering, these capabilities are not only internal details of model engineering. They also affect data I/O, sample batching, training throughput, debugging methods, and deployment boundaries.</p>
+<p>In programming style, one core feature of MindSpore is its attempt to balance the flexibility of dynamic graphs with the execution efficiency of static graphs. Through automatic differentiation based on source-code transformation, developer-written functions, control flow, and network structures are converted into intermediate representation and then built into executable computation graphs. The practical value is that development can retain a relatively natural Python style, while formal training and deployment can still benefit from graph-level optimization. For projects that repeatedly debug data processing, training entry points, and evaluation workflows, this balance has direct engineering value.</p>
+<p>MindSpore also provides multiple interface levels, from low-level tensors and operators, through network modules, to higher-level training management. Low-level interfaces fit scenarios that need fine control of computation logic; middle-level interfaces are commonly used for layers, losses, and optimizers; high-level interfaces are closer to engineering workflows such as training, evaluation, mixed precision, debugging, and profiling. Data engineering practice does not need to unfold every interface detail, but it must keep one basic contract: the data pipeline is not isolated. It must eventually align with network definitions, loss functions, optimizers, training loops, logging, checkpoints, and evaluation scripts.</p>
+<p>From the cloud-edge-device perspective, MindSpore brings another set of data engineering constraints. Cloud training emphasizes large-scale data throughput, distributed parallelism, long-running experiment management, and resource scheduling. Edge and device deployment care more about model size, input specifications, preprocessing consistency, inference latency, device compute, and runtime stability. The same dataset may need different packaging, compression, sampling, and validation-set designs in different scenarios. Cloud training may keep richer sample fields for diagnosis, while device-side inference often keeps only necessary inputs and requires preprocessing to be deterministic, lightweight, and reproducible.</p>
+<p>This means that a MindSpore-oriented project should not merely provide a "readable directory" to the training script. A more robust design separates data artifacts into layers: the raw data layer keeps source, license, and immutable records; the intermediate processing layer keeps cleaning, deduplication, parsing, annotation, and augmentation outputs; the training input layer organizes samples for MindData or a specific training entry point; the evaluation layer freezes validation sets, test sets, and metric inputs; and the deployment layer records inference input specifications, model export format, and online replay samples. These layers are connected through version numbers, manifests, checksums, configuration files, and logs to form a reviewable engineering chain.</p>
+<p>From the compiler and runtime angle, graph mode, dynamic mode, JIT compilation, graph optimization, and runtime scheduling also affect debugging. Dynamic mode is better for quick checks of sample fields, shapes, value ranges, and intermediate outputs. Graph mode is better for formal training and performance optimization, but requires more stable input structures. If a data pipeline produces dynamic fields, variable-length samples, or abnormal types during execution, problems may surface during graph compilation, batch assembly, or operator execution. Data engineering projects should therefore establish small-sample smoke tests, shape checks, field-schema checks, and extreme-sample tests early, rather than waiting for a full training job to fail.</p>
+<h2 id="h3-relationship-to-data-engineering-practice">H.3 Relationship to Data Engineering Practice<a class="headerlink" href="#h3-relationship-to-data-engineering-practice" title="Permanent link">&para;</a></h2>
+<p>In the data engineering context of large models and intelligent systems, MindSpore's importance lies less in its complete framework architecture and more in its relationship to the data engineering loop.</p>
+<p>First, MindSpore provides a relatively complete set of interfaces from data processing, network construction, and training management to inference deployment. MindData is responsible for data loading, augmentation, and transfer. MindInsight supports training visualization, performance analysis, debugging, and lineage tracing. MindArmour focuses on robustness, privacy protection, and security-related topics. Together, these components point to one engineering fact: data engineering does not end after samples are prepared and handed to a training script. It must form a loop with training monitoring, performance analysis, error localization, security evaluation, and deployment validation.</p>
+<p>Second, MindSpore provides substantial engineering support for distributed and large-model training, including data parallelism, model parallelism, hybrid parallelism, pipeline parallelism, optimizer parallelism, recomputation, and automatic parallel strategy search. For large corpora, multimodal samples, and long-context tasks, a change in parallel strategy often requires corresponding changes in data sharding, sample packing, sequence-length organization, checkpoint recovery, logging, and evaluation alignment. Data engineering teams therefore need to include training-strategy constraints in their data-organization design.</p>
+<p>Third, the domestic compute and software ecosystem around MindSpore provides a path close to real deployment conditions for some course labs, research reproduction, and engineering implementation. When teaching environments, project validation, or companion code are organized around the Ascend ecosystem, MindSpore can serve as a framework anchor connecting data processing, training execution, and deployment validation. This does not mean that all tasks must use one framework. It means that under specific hardware conditions, course requirements, or reproduction goals, framework choice itself is part of the data engineering solution.</p>
+<p>More concretely, a MindSpore-based data engineering project usually needs to manage at least the following contracts.</p>
+<p>The first is the data-interface contract. The project must specify how raw data is parsed into samples, which fields samples contain, what the field types, shapes, units, coordinate systems, and missing-value rules are, and whether training and evaluation share the same preprocessing logic. Multimodal projects also need to explain how images, text, audio, video, tables, or tool-call trajectories are aligned.</p>
+<p>The second is the training-entry contract. The training script needs the data directory, index files, batch organization, random seed, sampling strategy, augmentation strategy, mixed-precision settings, parallel strategy, and checkpoint policy. If this information is scattered across scripts, environment variables, and ad hoc commands, the project can easily run once but become hard to reproduce.</p>
+<p>The third is the evaluation and provenance contract. Evaluation-set versions, metric definitions, postprocessing logic, threshold choices, failure attribution, and logging determine whether model effects are comparable. The value of tools such as MindInsight is not only displaying curves; it is organizing training processes, performance bottlenecks, and experiment lineage into reviewable evidence chains.</p>
+<p>The fourth is the security and compliance contract. Real projects often involve copyright, privacy, sensitive attributes, authorization scope, and deletion requests. The robustness, adversarial-sample, differential-privacy, and security-evaluation capabilities represented by components such as MindArmour need to be translated into security-evaluation and risk-handling mechanisms. In high-sensitivity scenarios such as health care, finance, face data, and identity recognition, governance requirements should be moved forward into collection, annotation, training, evaluation, and deployment.</p>
+<p>The fifth is the performance and resource contract. Training data is not automatically better because it is more complete or more complex. Data decoding, augmentation, shuffle, cache, cross-device transfer, and batch organization all consume resources and directly affect training throughput. MindData-style data processing must match model computation. If data loading becomes the bottleneck, expensive training devices wait for input. If preprocessing is too deeply coupled to the training entry point, later migration and debugging become difficult. The data engineering plan should therefore specify throughput targets, cache strategies, concurrent-read strategies, sample-balancing strategies, and failed-sample handling.</p>
+<p>The sixth is the model export and deployment contract. Training completion does not mean project completion. When a model enters inference services, edge devices, or device-side applications, input fields, image sizes, normalization parameters, tokenizer versions, class mappings, thresholds, and postprocessing logic must remain consistent with training and evaluation. If deployment reimplements preprocessing, replay samples and consistency tests must confirm output differences. For data engineering, deployment samples, online logs, misclassified samples, and user feedback are also part of later data iteration, not accessory material outside model engineering.</p>
+<p>The seventh is the team-collaboration contract. MindSpore projects often involve data engineering, algorithm, platform, operations, and business teams. Data engineering must provide stable, interpretable, traceable input to algorithm teams. Algorithm teams must feed failure modes, loss anomalies, evaluation fluctuations, and sample needs back to data engineering. Platform teams provide resources, environments, logs, and permission boundaries. Business teams confirm task goals, risk boundaries, and acceptance metrics. The framework is one link in the technical chain; whether the project can run over time depends on whether these contracts are continuously maintained.</p>
+<h2 id="h4-typical-components-and-data-engineering-concerns">H.4 Typical Components and Data Engineering Concerns<a class="headerlink" href="#h4-typical-components-and-data-engineering-concerns" title="Permanent link">&para;</a></h2>
+<p>MindSpore's engineering value often appears in component collaboration. A training script alone is only an entry point for model iteration. In a full project, it connects data loading, training execution, performance diagnosis, experiment records, security evaluation, model export, and deployment validation. Data engineering should focus not on the name of the component being used, but on the responsibility each component carries in the data lifecycle, the constraints it exposes, and the evidence it produces.</p>
+<p>At the component-map level, MindData carries data loading, transformation, batching, and transfer. MindInsight carries training visualization, performance analysis, debugging, and lineage. MindArmour carries adversarial attack defense, robustness evaluation, and privacy protection. ModelArts, MindStudio, and Ascend-related toolchains carry cloud-side training, environment management, development debugging, and deployment collaboration. Together, they correspond to the input, observability, security, environment, and deployment dimensions of data engineering.</p>
+<p>Accordingly, the rest of this appendix does not treat these components as a flat API list. It uses them to organize the data engineering problems they expose: how data becomes tensors, how training entry points consume data, how automatic differentiation and computation graphs affect debugging, how MindData and MindInsight support observability, how MindFace brings framework capabilities into a vertical task, how automatic parallelism for large models changes sharding and batching, and how an example can be migrated into a reproducible project.</p>
+<p>Together, these components form an engineering chain: MindData brings data into training, MindInsight makes training observable, MindArmour gives security and robustness evaluation an entry point, ModelArts and MindStudio support environment and collaboration, and deployment toolchains carry models into applications. If data engineering covers only the first step, the project can merely run. If it covers the whole chain, the project has a chance to run stably over time.</p>
+<h2 id="h5-core-programming-model-and-data-contracts">H.5 Core Programming Model and Data Contracts<a class="headerlink" href="#h5-core-programming-model-and-data-contracts" title="Permanent link">&para;</a></h2>
+<p>MindSpore is not only a framework in the Ascend software stack; it is also a programming model. For readers of this book, the key point is not to memorize API names, but to understand how the programming model shapes data contracts. A MindSpore program commonly revolves around several concepts: tensors as typed multidimensional data objects, datasets as asynchronous input pipelines, operators as basic computation units, cells as composable network modules, and models as higher-level training or inference containers. These concepts form the handoff surface between data engineering and model engineering.</p>
+<p>Tensor is the basic form that data takes after entering the computation graph. For data engineering, a tensor is not merely an array; it carries type, shape, channel order, numeric range, missing-value handling, and device-transfer assumptions. Token IDs, attention masks, and position IDs in text tasks; <code>NCHW</code> or <code>NHWC</code> image tensors in vision tasks; waveform segments or spectral features in audio tasks; and alignment keys in multimodal tasks eventually become tensors or tensor collections consumed by the training entry point. If these conventions are not fixed in a data schema, model code and data code depend on implicit assumptions, and later migration, tuning, and reproduction become fragile.</p>
+<p>The dataset abstraction is especially important. A dataset pipeline prepares tensors that feed the rest of the network, usually through named columns, source dataset operators, shuffling and sharding flags, transformations, batching, iteration, and device transfer. A sample is therefore not just a file path or a JSON object; it becomes a row with fields that the framework can route, transform, batch, and send to computation. If the original corpus has ambiguous field names, inconsistent label types, variable image channel order, unstable tokenization, or implicit missing-value rules, these problems eventually appear as tensor-shape errors, type errors, silent truncation, or difficult-to-debug training behavior.</p>
+<p>Operators and cells define how data is consumed. Operators are basic computation units such as convolution, matrix multiplication, activation, normalization, and loss computation. Cells are higher-level composable network modules, typically created by deriving from <code>nn.Cell</code> and implementing forward computation in <code>construct</code>. For data engineering teams, network code is not entirely external. The fields a cell expects, their order, whether variable length is allowed, whether a fixed class mapping is assumed, and whether <code>construct</code> contains control flow all shape the data preparation contract.</p>
+<p>The Model layer encapsulates training, evaluation, and inference workflows, so simple tasks can use higher-level training management. In complex projects, however, teams often separate the forward function, gradient function, optimizer step, checkpointing, evaluation loop, and export path. At that point, the data contract must evolve from "the model can read the data" to "training, evaluation, inference, and deployment can consume the same data consistently." This is why this book emphasizes data assetization: training data is not temporary input, but an engineering asset with format, version, configuration, and usage boundaries.</p>
+<p>MindSpore's hybrid programming style also matters for data contracts. Network construction often keeps an object-oriented form: users define a class derived from <code>nn.Cell</code>, instantiate layers in initialization, and implement forward computation in <code>construct</code>. Training logic, however, can be organized more functionally: a forward function computes logits and loss, function transformation obtains gradients, and a training-step function applies the optimizer. This blend matters because data engineering artifacts must satisfy both sides. They must be stable enough for module-based network definitions and explicit enough for function-transformation, gradient, optimizer, and checkpoint workflows.</p>
+<p>A MindSpore-oriented data contract should therefore include at least five kinds of information. First, sample fields: names, types, shapes, units, coordinate systems, missing-value rules, and defaults. Second, transformation flow: which transformations happen offline, which occur during training, and which must be shared with inference. Third, batching rules: batch size, dynamic padding, length bucketing, random sampling, distributed sharding, and abnormal-sample handling. Fourth, training interfaces: the label format required by the loss, trainable parameters used by the optimizer, checkpoint paths, and log directories. Fifth, evaluation and deployment interfaces: metric inputs, postprocessing, export formats, replay samples, and consistency checks.</p>
+<h2 id="h6-from-a-handwritten-digit-example-to-a-reproducible-training-pipeline">H.6 From a Handwritten-Digit Example to a Reproducible Training Pipeline<a class="headerlink" href="#h6-from-a-handwritten-digit-example-to-a-reproducible-training-pipeline" title="Permanent link">&para;</a></h2>
+<p>An end-to-end handwritten-digit tutorial maps naturally to a general project checklist. First, the dataset is downloaded or imported and loaded through the dataset interface. Second, raw samples are transformed through rescaling, normalization, channel conversion, batching, and iteration. Third, the network is constructed through layers and activation functions. Fourth, the training loop performs forward computation, loss calculation, gradient computation, and parameter update. Fifth, evaluation runs the trained model on held-out data with deterministic settings. Sixth, inference and deployment rely on saved checkpoints, loaded parameters, and consistent preprocessing. Although Appendix H does not reproduce the tutorial code, this sequence is exactly the kind of lifecycle that data engineering must document.</p>
+<p>The first step is data download, ingestion, and loading. In a simple MNIST-style example, data may be downloaded, extracted, and loaded through built-in dataset APIs. Real projects must add more engineering information: data source, authorization status, download time, original checksums, extracted directory structure, train/test split rules, whether re-crawling is allowed, and whether any manual revision or filtering has occurred. A teaching example may only specify <code>dataset_dir</code>; a reviewable data engineering project must explain why the directory is trustworthy.</p>
+<p>The second step is data transformation. Image examples often include rescaling, normalization, channel conversion, batching, and iteration. Text examples include tokenization, truncation, padding, and special tokens. Audio examples include sampling rate, framing, feature extraction, and normalization. Multimodal examples additionally need cross-modal alignment. MindSpore data transformations are usually composed as a pipeline, but the engineering point is not the name of a transform. The point is to keep boundaries clear across training, evaluation, and inference. Random augmentation should be training-only; deterministic preprocessing must be reused consistently in evaluation and inference.</p>
+<p>The third step is network construction. A handwritten-digit classifier may use basic components such as Flatten, Dense, ReLU, SequentialCell, and Softmax. For data engineering, the value of this network structure is that it exposes input and output boundaries: whether the input tensor shape is fixed, whether the final class count equals the label table length, whether the loss accepts integer labels or one-hot labels, and whether the model assumes a particular normalization range. If these boundaries are not written into data preparation notes, it is difficult to tell whether a training failure is caused by the network or by the data.</p>
+<p>The fourth step is the training loop. A typical training step can be decomposed into forward computation, loss calculation, backpropagation, and weight update. This decomposition is useful for data engineering because every training anomaly should be localizable to a specific stage. <code>nan</code> loss may come from abnormal inputs, label overflow, too high a learning rate, or numeric precision. Zero gradients may come from data distribution, initialization, loss definition, or frozen parameters. Low throughput may come from data reading, augmentation, device transfer, or variable batch length. Writing the training step as a clear function makes small-sample smoke tests and anomaly localization easier.</p>
+<p>The fifth step is evaluation. Evaluation is not merely an attachment to the training loop; it is the decision mechanism of the data engineering loop. A standard test loop switches the model to non-training mode and computes loss and accuracy on the test set. Real projects should additionally record evaluation-set version, metric definition, thresholds, postprocessing, class mapping, randomness control, and failure-sample export. If an evaluation set is repeatedly used for tuning, sample selection, and threshold selection, the project should separate development validation sets, regression sets, and final test sets to avoid overfitting to the benchmark.</p>
+<p>The sixth step is inference and deployment. Checkpoint saving, parameter loading, and inference all depend on the same data contract. For data engineering, deployment is where preprocessing drift often appears: training uses one resize and normalization implementation, while the inference service uses another; the training class table differs from the deployed table; the evaluation threshold and online threshold diverge. A robust project keeps deployment replay samples and reruns consistency checks whenever a model is exported, the inference backend changes, preprocessing changes, or thresholds are adjusted.</p>
+<p>The handwritten-digit example is simple, but it maps to the minimum closed loop of most MindSpore projects: data enters the system, passes through recorded transformations, reaches the network and training loop, is evaluated under fixed settings, and enters inference through checkpoints and exported artifacts. The purpose of this technical appendix is not to make readers copy the example, but to show the data engineering contract behind a runnable training example.</p>
+<h2 id="h7-automatic-differentiation-computation-graphs-and-jit-execution">H.7 Automatic Differentiation, Computation Graphs, and JIT Execution<a class="headerlink" href="#h7-automatic-differentiation-computation-graphs-and-jit-execution" title="Permanent link">&para;</a></h2>
+<p>MindSpore's functional automatic differentiation is useful to understand at a conceptual level. Rather than treating backpropagation only as an implicit side effect, the framework can transform a forward function into a gradient function. For data engineering, this means the training step has a clearer input-output contract: data and labels enter the forward computation, loss and logits are produced, gradients are computed with respect to trainable parameters, and the optimizer updates the model. When a training job behaves abnormally, this structure helps separate data problems from loss-definition problems, gradient problems, and optimizer-configuration problems.</p>
+<p>MindSpore presents automatic differentiation as function transformation. If a function takes data, labels, weights, and bias as inputs, <code>value_and_grad</code> can specify which input positions or trainable parameters should be differentiated. In neural-network settings, parameters are usually encapsulated inside a Cell, so common code sets <code>grad_position</code> to <code>None</code> and passes <code>trainable_params()</code> or optimizer parameters. This design keeps training code close to mathematical semantics: the forward function describes the objective, the gradient function describes derivatives, and the optimizer describes parameter updates.</p>
+<p>This functional view naturally extends to higher-order gradients and gradient clipping. Some models require gradient penalties, second derivatives, or more complex physical constraints, especially in AI for Science, generative modeling, and reinforcement learning. Repeated gradient transformations can obtain higher-order gradients, and gradients can be clipped by value or by global norm before optimizer updates. For data engineering, this means training samples influence not only loss but also gradient distribution; abnormal samples, extreme lengths, wrong labels, and outliers can amplify training risk through gradients.</p>
+<p>Computation graphs are the key to understanding MindSpore execution. Dynamic graphs follow a define-by-run style: graph construction and execution happen together, making the workflow Pythonic, easy to debug, and easy to inspect through intermediate values. Their limitation is that global optimization is harder. Static graphs follow a define-and-run style: the full computation graph is built first and then optimized and executed by the compiler. They support global optimization, memory planning, operator fusion, and parallel partitioning, but the debugging experience is less direct. Data engineering teams do not need to implement compilers, but they should understand that stable input structures make graph-mode optimization easier.</p>
+<p>MindSpore connects dynamic and static execution through source-code transformation and JIT mechanisms, including global context switching into graph mode and local use of <code>ms.jit</code> on functions or <code>construct</code> methods. This is valuable in engineering workflows: early development can use dynamic execution to inspect fields, shapes, value ranges, and intermediate outputs; stable or performance-sensitive paths can then use graph mode and JIT compilation for efficiency.</p>
+<p>This leads to a direct data engineering principle: do not wait until graph compilation or distributed training to discover input instability. Before full training, run a small sample through data loading, preprocessing, batching, forward computation, loss computation, and one training step. Then run a few iterations with a fixed random seed. Only after that should the project enter long-running or parallel training. If the data pipeline can produce variable fields, abnormal types, or extreme shapes, schema checks, shape assertions, and sample previews should intercept them early.</p>
+<p>From a debugging perspective, dynamic execution, static graphs, and JIT should form a layered strategy. Dynamic execution is used to localize sample and intermediate-tensor problems. Local JIT accelerates stable computation fragments. Graph mode serves formal training, export, and performance optimization. Each layer should keep data records: sample ID, batch ID, transformation parameters, random seed, training configuration, output checkpoint, and evaluation logs. This keeps experiment traceability intact even when framework execution modes change.</p>
+<h2 id="h8-minddata-mindinsight-mindarmour-and-toolchain-observability">H.8 MindData, MindInsight, MindArmour, and Toolchain Observability<a class="headerlink" href="#h8-minddata-mindinsight-mindarmour-and-toolchain-observability" title="Permanent link">&para;</a></h2>
+<p>MindData is the component most directly connecting data engineering to training systems. It organizes samples from disks, object storage, index files, or memory into data flows that training can consume, and supports pipeline actions such as map, shuffle, batch, repeat, cache, prefetch, image augmentation, and text processing. For data engineering, the core MindData question is not "can the data be read?" but "is the data flow stable, interpretable, and scalable?" A mature data pipeline usually specifies source type, field names, sample order, random seed, reader concurrency, cache location, abnormal-sample policy, and batch assembly rules. Without these rules, the same data may behave differently across machines, parallel degrees, or versions.</p>
+<p>MindData also affects quality control. Traditional cleaning often happens offline, but training-time augmentation, random crop, color perturbation, negative sampling, dynamic padding, and within-batch reordering also change what the model actually sees. Quality checks must therefore cover not only raw files but also the actual tensors entering training. Image tasks should sample and visualize augmented images, boxes, and key points. Text tasks should check tokenized length distribution, truncation rate, and special tokens. Multimodal tasks should check that image-text, audio-text, or video-text alignment still holds. Only by combining offline data quality and training-time data quality does the loop become complete.</p>
+<p>MindSpore data pipelines are often asynchronous and parallel, and data can be accessed through iterators or sent directly to devices through queues. Asynchronous pipelines improve throughput, but they can make errors harder to reproduce: abnormal samples may appear in multiple workers, random augmentation can change the failure surface, and cache may hide upstream changes. Before formal training, a project should keep a deterministic debug profile: fixed random seed, disabled or logged random augmentation, limited reader concurrency, and sample IDs plus transformed outputs for failure localization.</p>
+<p>MindInsight is closer to an observability anchor for experiments. Training curves, loss fluctuations, performance bottlenecks, operator time, memory usage, data-loading time, and lineage information can all help localize training anomalies. Data engineering teams often see cases where model performance decline looks like an algorithm issue, while the root cause is a data-version change, label-distribution shift, validation-leakage fix, augmentation change, or a filtered sample class. Without records of data version, configuration version, and key metrics, it is difficult to distinguish data-caused effects from model or environment changes.</p>
+<p>MindInsight's profiler can also push data-pipeline optimization. When device utilization is low, step time fluctuates, or data queues are often empty, the cause may be slow decoding, remote-read latency, expensive augmentation functions, unbalanced batch assembly, or excessive sample-length variation. The solution may not be model modification, but data-format changes, pre-caching, concurrency tuning, sample reordering, length bucketing, or reducing online augmentation cost. These issues show the direct relationship between data engineering and training performance.</p>
+<p>MindArmour represents engineering capability in security and trustworthiness. Adversarial samples, robustness evaluation, privacy protection, and differential privacy are not only security-chapter topics. Whenever data involves sensitive information, identity attributes, medical images, financial records, user behavior, or enterprise internal material, the team must consider whether training leaks privacy, whether models are overly sensitive to perturbations, whether evaluation sets cover security boundaries, and whether deployed systems face abnormal-input attacks. Data engineering carries forward governance responsibility here: identifying sensitive fields, minimizing usable data, recording authorization scope, controlling access permissions, preserving deletion paths, and including security-evaluation samples in fixed test sets.</p>
+<p>ModelArts, MindStudio, and Ascend-related toolchains affect environment organization and collaboration. Cloud platforms can carry data storage, training jobs, image environments, resource scheduling, and experiment records. Development toolchains help debug scripts, adapt hardware, and analyze runtime issues. If a data engineering project depends on such platforms, the platform configuration must be part of the reproduction notes: how data buckets or directories are mounted, which image version is used, which driver and CANN versions are required, what training resource specification is used, where model and logs are written, which configurations are variable, and which must remain fixed. Without this information, reproducing an experiment becomes environment guessing even if the code and data exist.</p>
+<p>Deployment also belongs in the engineering view of Appendix H. When a MindSpore-trained model enters inference, common tasks include loading checkpoints, exporting models, converting formats, deploying to services or devices, building input preprocessing, performing postprocessing, and validating output consistency. Data engineering should keep a set of deployment replay samples from real or near-real scenarios, including typical samples, boundary samples, historical failures, and high-risk samples. Every model export, inference-backend switch, threshold adjustment, or preprocessing change should run consistency checks on this set.</p>
+<h2 id="h9-example-extension-mindface-and-face-data-engineering">H.9 Example Extension: MindFace and Face Data Engineering<a class="headerlink" href="#h9-example-extension-mindface-and-face-data-engineering" title="Permanent link">&para;</a></h2>
+<p>MindFace is an open-source face recognition and detection toolkit based on MindSpore. It targets common computer-vision tasks such as face detection and recognition, provides relatively unified application interfaces, and supports multiple backbones, datasets, and loss-function extensions (MindFace Contributors 2026). From a data engineering perspective, the value of MindFace is not merely that it provides model implementations. It shows how a task-specific toolkit connects framework capability, model structure, data preparation, and evaluation protocols.</p>
+<p>For face detection, common RetinaFace-style paths in MindFace do more than output classification results. They organize training and evaluation around face boxes, key points, alignment information, and multi-scale targets. Data engineering teams preparing such data must handle image collection sources, authorization and masking, image-quality filtering, duplicate removal, face-box annotation, key-point annotation, occlusion and pose distribution, hard-sample splits, and train/validation/test isolation. If the detection model enters edge or real-time applications, the pipeline must also consider resolution, compression artifacts, lighting variation, camera source, density of multiple faces, and latency targets.</p>
+<p>For face recognition, ArcFace-style paths emphasize stronger separation of identity features through angular margins. Data engineering therefore must care not only whether images are clear, but also whether identity labels are reliable, whether the same identity spans enough pose and age variation, whether labels confuse different identities, whether identities leak between training and evaluation, and whether long-tail identities are under-sampled. Data quality problems in recognition tasks often become decision-boundary problems in embedding space: one wrong identity label, duplicate identity, or collection bias can create anomalies that are hard to explain.</p>
+<p>In implementation, toolkits such as MindFace provide model-library capabilities, but a sustainable project still needs to organize them into data engineering assets. Model libraries usually provide network structures, training scripts, inference examples, pretrained weights, and evaluation entries. Data engineering assets must add source documentation, annotation standards, quality gates, split strategies, version records, failure-sample analysis, and compliance boundaries. Only when these two parts are connected does the project become reproducible, transferable, and auditable.</p>
+<p>In the practice chain, MindFace is a vertical extension example inside the MindSpore ecosystem. It shows how MindSpore's data pipeline, network construction, training execution, evaluation, and deployment capabilities land in a specific vision task. It also shows that task-specific toolkits do not reduce data engineering complexity; they make requirements more detailed. For face tasks, at least five questions must be explicit.</p>
+<p>First, does the data have lawful authorization and a clear use boundary? Face data is strongly related to identity attributes. Collection, storage, annotation, training, evaluation, and release must specify authorization scope, retention period, access permission, and deletion mechanism.</p>
+<p>Second, does the label system serve the task goal? Detection tasks care about boxes, key points, occlusion, pose, and scale. Recognition tasks care about identity ID, same-person aggregation, different-person separation, label conflict, and identity leakage. Liveness detection, attribute analysis, and expression recognition introduce different label structures and risk boundaries.</p>
+<p>Third, can the split support trustworthy evaluation? Face recognition especially needs to avoid leakage of the same identity or near-duplicate images across training and test sets. Detection tasks must avoid overly optimistic evaluation caused by the same video segment, camera, or highly similar scene.</p>
+<p>Fourth, do metrics match the application scenario? Detection recall, false positives, key-point error, and hard-subset performance, as well as verification accuracy, ROC, TAR/FAR, open-set recognition, and threshold stability for recognition, only have engineering meaning when tied to real deployment goals.</p>
+<p>Fifth, can model outputs flow back into data iteration? Toolkits such as MindFace can help identify low-confidence samples, false detections, identity-confusion samples, and boundary samples. Feeding these failures back into cleaning, relabeling, sampling, and augmentation forms the data flywheel.</p>
+<p>MindFace's key value in this appendix is therefore not a computer-vision tutorial. It shows how a general framework changes when entering a vertical task: data engineering must move from file preparation to integrated design across task contracts, training contracts, evaluation contracts, and governance contracts.</p>
+<p>Looking further, face tasks represented by MindFace show several common difficulties in vision data engineering. Images are inherently contextual: one picture may include the target face, background, occluders, lighting, camera device, and compression traces, all of which affect model performance and whether the sample is suitable for training. Labels are rarely single-class labels; they may include boxes, key points, identity, pose, quality score, occlusion state, collection scenario, and evaluation subset. Face data is highly related to personal identity, so authorization, masking, access control, and deletion mechanisms cannot be added after the fact.</p>
+<p>In face detection projects, data engineering usually needs a complete chain from image to detection sample. Raw images enter with source, collection time, authorization status, and basic quality metrics. They then pass through format standardization, corrupt-image filtering, duplicate detection, scale statistics, and scene-distribution analysis. Annotation must define face-box boundaries, key-point counts, occlusion rules, small-face rules, blur-sample rules, and multi-face rules. Before training, the project generates training indexes, validation indexes, and hard-sample subsets. RetinaFace-style models further make key points and multi-scale targets affect anchors or candidate boxes, augmentation strategy, and evaluation split.</p>
+<p>In face recognition projects, the focus shifts to identity consistency and sample distribution. ArcFace-style methods rely on stable identity labels to learn discriminative embeddings, so wrong labels, same-name different people, same person with multiple IDs, low-quality images, and identity leakage all amplify training risk. A reproducible recognition dataset records identity-ID generation rules, same-person aggregation, deduplication rules, low-quality filtering, train/eval identity isolation, and long-tail identity handling. Evaluation sets also need construction rules for verification pairs, positive/negative ratio, threshold selection, and whether they include cross-age, cross-pose, cross-lighting, and cross-device subsets.</p>
+<p>MindFace can also serve as a small data-flywheel example. Low-confidence boxes, missed detections, and false positives from detection models can return to annotation standards and hard-sample mining. High-similarity different-person pairs, low-similarity same-person pairs, and clustering anomalies from recognition models can return to identity cleaning and sample review. If this feedback remains only in ad hoc analysis scripts, the project struggles to accumulate long-term improvement. If it is hardened into data versions, error types, relabeling tasks, and regression evaluation sets, it becomes stable data iteration.</p>
+<p>MindFace materials often include performance tables for face detection and recognition tasks. These numbers can provide historical context for the examples, but in a formal manuscript the more important point is the evaluation condition behind each table: which dataset is used, what backbone is selected, whether multi-scale testing is applied, whether input image scale is aligned with other frameworks, and whether metrics are calculated on the same validation set. If scores are cited without configuration, readers cannot judge whether differences come from the framework, model, preprocessing, evaluation script, or input scale.</p>
+<p>For detection evaluation such as WiderFace, the Easy, Medium, and Hard subsets are not merely score columns; they represent different difficulty distributions. Data engineering teams should analyze small faces, occlusion, blur, dense crowds, pose variation, and lighting conditions across these subsets, and decide whether the training data covers the corresponding hard cases. For recognition benchmarks such as LFW, CFP-FP, AgeDB, CALFW, and CPLFW, the data team should care about verification-pair construction, age and pose variation, positive/negative ratio, cross-domain shifts, and threshold stability. Tables should serve error analysis rather than exist as isolated performance displays.</p>
+<p>MindFace can therefore be understood in three layers. The model layer provides detection and recognition capabilities such as RetinaFace and ArcFace. The engineering layer uses MindSpore for data loading, network construction, training execution, evaluation, and deployment support. The data-asset layer maintains sources, annotation standards, quality rules, split strategies, version records, compliance boundaries, and failure-sample feedback. Only when all three layers hold can a model library become a sustainable engineering project.</p>
+<h2 id="h10-automatic-parallelism-for-large-models-and-training-system-constraints">H.10 Automatic Parallelism for Large Models and Training-System Constraints<a class="headerlink" href="#h10-automatic-parallelism-for-large-models-and-training-system-constraints" title="Permanent link">&para;</a></h2>
+<p>MindSpore is also relevant to large-model training, where data engineering becomes a distributed-systems problem. As model parameters, context length, training data volume, and cluster size increase, teams encounter memory pressure, communication overhead, distributed-programming complexity, unstable long-running jobs, expensive inference, and difficult strategy tuning. These issues are not isolated from data: sequence length, sample packing, sharding, batching, checkpoint frequency, validation cadence, and failure recovery all interact with the parallel training plan.</p>
+<p>Large-model training challenges can be grouped into several "walls." The first is the memory wall: parameters, activations, gradients, and optimizer states together exceed what a single device can hold. The second is the performance wall: after the model is partitioned, communication becomes a dominant bottleneck, and strategy design must jointly consider parameter count, computation, communication topology, and sample organization. The third is the efficiency wall: distributed parallel algorithm development is complex, and both algorithm engineers and system engineers must understand partitioning strategies. The fourth is the optimization wall: correctness, performance, and availability are hard to guarantee manually at large scale. Data engineering does not own all system optimization, but it directly affects observability and tunability.</p>
+<p>MindSpore's distributed-training capabilities are usually described through multiple parallel dimensions. Data parallelism replicates the model while splitting samples. Operator-level or tensor parallelism partitions large operations or tensors across devices. Pipeline parallelism assigns different layers or stages to different devices and uses micro-batches to improve utilization. Optimizer parallelism and ZeRO-style partitioning reduce memory pressure by distributing optimizer states, gradients, and model states. Recomputation trades additional computation for lower activation memory. In large-model projects, data engineering must know which of these strategies are used, because they affect sample order, micro-batch size, gradient accumulation, checkpoint layout, and evaluation comparability.</p>
+<p>Automatic parallel strategy search and cost modeling can reduce manual tuning. MindSpore incorporates communication operators into automatic differentiation and strategy search, and uses cost models to select partitioning plans. For data engineering, the implication is not that the data team should design all parallel algorithms. Instead, the data team should preserve the information that makes strategy tuning observable: sequence-length histograms, token or sample counts per shard, batch construction rules, failed-sample logs, throughput records, device utilization, and evaluation-set versions. Without these records, a change in training speed or model quality may be wrongly attributed to the model architecture when the true cause is data distribution or batching.</p>
+<p>Communication and memory behavior are another reason to connect data engineering with framework design. Tensor parallelism can introduce communication between devices; pipeline parallelism can create idle bubbles; data parallelism requires gradient aggregation; activation memory can constrain micro-batch size. Techniques such as intra-layer pipelining, interleaved pipeline schedules, recomputation, memory-pool planning, and checkpoint-based recovery are framework-side responses to these pressures. Data-side responses include length bucketing, packed-sample design, shard balancing, stable random seeds, streaming-friendly formats, and recovery-safe manifests. A robust project treats these as one design space rather than two disconnected concerns.</p>
+<p>Pipeline bubbles, gradient-aggregation communication, SOMAS static memory optimization, graph sinking, and failure recovery can be translated into four data-engineering constraints. First, sample length and batch construction affect micro-batch utilization. Second, unbalanced data shards amplify waiting time in pipeline and data parallelism. Third, checkpoints and data cursors must support recovery, otherwise continuity after failure is hard to guarantee. Fourth, performance diagnosis must inspect not only the model graph but also data reading, decoding, caching, and transfer.</p>
+<p>The MindSpore ecosystem also includes higher-level toolkits for large-model workflows, parameter-efficient fine-tuning, reinforcement learning from human feedback, generative models, and AI for Science scenarios. The exact toolkit names and current version support should be checked against official documentation at submission time, but the engineering lesson is stable: framework ecosystems increasingly package not only network code, but also training recipes, fine-tuning methods, inference paths, task templates, and deployment assumptions. Reusing such ecosystems requires the data team to verify data format, license boundary, preprocessing assumptions, metric definitions, and export constraints.</p>
+<p>Finally, the ecosystem perspective reinforces why this appendix belongs in a data engineering book. MindSpore is not only an import statement, a training API, or an acceleration backend. It is one possible implementation environment in which data contracts meet compiler contracts, distributed-training contracts, observability contracts, and deployment contracts. When a project moves from a small example to a large-model or production setting, these contracts become inseparable.</p>
+<h2 id="h11-migration-path-from-examples-to-projects">H.11 Migration Path from Examples to Projects<a class="headerlink" href="#h11-migration-path-from-examples-to-projects" title="Permanent link">&para;</a></h2>
+<p>Public examples around MindSpore or MindFace usually emphasize "how to run." Engineering projects emphasize "how to run stably, review, migrate, and iterate." When moving from example to project, the most underestimated issues are not model structures, but implicit assumptions between data and environment. An example may assume fixed directories, fixed data formats, fixed devices, fixed batch sizes, and fixed evaluation scripts. In a real project, these assumptions must become explicit.</p>
+<p>The first step is to establish a minimum reproducible experiment. The goal is not optimal effect, but verifying that data download or import, preprocessing, training entry, evaluation entry, and checkpoint saving form a closed loop. This stage should keep a tiny data subset, fixed random seed, fixed configuration file, and clear expected outputs. For MindSpore projects, small-sample experiments can also verify that input structures are consistent in graph mode and dynamic mode, preventing large training jobs from being the first place where shape, type, or field problems appear.</p>
+<p>The second step is to establish a data schema. Text tasks define field names, language, length, filtering rules, and label structure. Vision tasks define image paths, size, channels, annotation coordinates, class mappings, and augmentation strategy. Multimodal tasks define cross-modal alignment keys, missing-modality handling, and sample-combination rules. Schema serves not only data engineering but also training, evaluation, and deployment. Without schema, training scripts and data pipelines depend on implicit field names and temporary comments, and maintenance cost grows quickly.</p>
+<p>The third step is to separate configuration from code. Data directories, training parameters, parallel strategies, evaluation-set paths, output directories, log directories, and model export parameters should enter configuration files or command-line parameters rather than being hard-coded. The value is not only easier modification; it is reviewability. Every training run should be traceable to a data version, configuration version, code commit, environment version, and output directory.</p>
+<p>The fourth step is to establish quality gates. Before data enters training, it should pass format checks, field checks, duplicate checks, null checks, distribution checks, and small-sample visualization. During training, the project should observe loss, throughput, memory, sample read speed, and abnormal batches. After evaluation, it should preserve failure samples, abnormal categories, hard subsets, and reasons for metric fluctuations. Quality gates do not need to be complex, but they must run consistently. In teaching projects, they may be several check scripts; in production, they may enter CI, data platforms, or training schedulers.</p>
+<p>The fifth step is to establish a migration checklist. When a MindSpore project moves to another framework, hardware, or deployment environment, the team should check data reading, preprocessing, random augmentation, numeric precision, weight conversion, metric implementation, and postprocessing logic one by one. Many migration errors do not come from the model body, but from differences in image resize, normalization order, tokenizer version, class mapping, or threshold choice. A checklist reduces the cost of finding these hidden issues.</p>
+<p>The sixth step is to establish a regression evaluation set. A regression set is not a one-off test set, but a stable sample collection maintained over time. It should cover ordinary samples, boundary samples, historical failures, and key business scenarios. Every data cleaning change, model adjustment, framework upgrade, or deployment-environment change should be verified against it. For face tasks such as MindFace, the regression set should also cover lighting, pose, occlusion, scale, device, and population distribution to avoid a model that is stable only in one scenario.</p>
+<p>The seventh step is to establish export and deployment consistency validation. Training checkpoints, exported models, inference backends, and online services must share input fields, preprocessing, class mappings, thresholds, and postprocessing logic. After every export, fixed replay samples should compare key outputs, allowed tolerance, and version differences.</p>
+<p>The eighth step is to establish project documentation. The documentation should include environment versions, dependency installation, data preparation, training entry, evaluation entry, export entry, expected outputs, common errors, debugging paths, and contact points. For teaching reproduction, this reduces the reader's setup cost. For engineering handoff, it reduces the amount of tacit knowledge that maintainers must recover.</p>
+<p>Through this path, MindSpore is no longer merely an <code>import</code> statement in a training script, and MindFace is no longer merely a model repository. They become part of the complete data engineering lifecycle: data enters the system, is cleaned and annotated, becomes training input, enters training and evaluation, produces models and failure samples, and then returns to data iteration and deployment validation. This is the data engineering loop emphasized throughout the book.</p>
+<h2 id="h12-common-implementation-problems-debugging-clues-and-checklist">H.12 Common Implementation Problems, Debugging Clues, and Checklist<a class="headerlink" href="#h12-common-implementation-problems-debugging-clues-and-checklist" title="Permanent link">&para;</a></h2>
+<p>MindSpore-oriented data engineering projects often fail at the boundary between data, environment, and training entry point. The first class of problems is inconsistent data format. Offline cleaning scripts output one field structure, while training scripts expect another; image annotations use <code>x_min, y_min, x_max, y_max</code>, while the model entry parses <code>x, y, width, height</code>; text samples retain empty labels or abnormal line breaks that only surface after tokenization. Schema, sample previews, and small-batch smoke tests should catch these problems early.</p>
+<p>The second class is inconsistent preprocessing. Training may use one resize, normalization, crop, padding, or tokenizer version, while evaluation and inference use another. When model performance declines, these differences may be hard to see from code alone but can significantly affect results. The solution is to centralize preprocessing and use fixed replay samples to compare input tensors and outputs across training, evaluation, and inference.</p>
+<p>The third class is uncontrolled randomness. Random sampling, random augmentation, shuffle, distributed sharding, and multiprocessing reads all introduce randomness. Randomness is not necessarily bad, but it must be recorded and constrained. Training configurations should record random seeds, data split versions, sampling strategies, and parallel degree. Evaluation should use deterministic flows where possible. Otherwise, experiment fluctuations make attribution difficult.</p>
+<p>The fourth class is misclassifying performance bottlenecks as model problems. Slow training, low device utilization, or high step-time variance may come not from model structure, but from data reading, decoding, augmentation, network storage, within-batch length variance, or abnormal-sample retry. Training logs, data queues, profiler output, and system-resource monitoring should be inspected together. Data engineering optimization can directly improve training efficiency.</p>
+<p>The fifth class is overuse of evaluation sets. If an evaluation set is repeatedly used for tuning, sample selection, and threshold choice, it gradually loses independence. A safer design separates development validation sets, regression evaluation sets, and final test sets, and records each set's source, construction rules, and use boundaries. For high-risk tasks such as face, medical, and financial applications, evaluation sets should also include fixed hard and safety subsets.</p>
+<p>The sixth class is missing compliance material. Whether data is authorized, contains sensitive information, can be used for training, can release derived artifacts, or supports deletion requests cannot be handled only at project end. Data engineering should record authorization scope and processing actions during collection or ingestion, and write compliance status into data-asset metadata.</p>
+<p>The seventh class is documentation that covers only "how to train" and not "how to reproduce." Complete documentation should include environment versions, dependency installation, data preparation, training entry, evaluation entry, model export, expected outputs, common errors, and debugging paths. MindSpore-related projects that harden these notes reduce the cost of teaching reproduction, research reproduction, and engineering handoff.</p>
+<h2 id="h13-reading-and-usage-suggestions">H.13 Reading and Usage Suggestions<a class="headerlink" href="#h13-reading-and-usage-suggestions" title="Permanent link">&para;</a></h2>
+<p>When using the related companion materials, MindSpore information can be handled at four levels.</p>
+<p>First, as background. If a chapter mentions a MindSpore implementation or a MindSpore-version repository, it usually means the practice can be reproduced within the corresponding framework and compute ecosystem, not that readers must master every detail of the framework first.</p>
+<p>Second, as an engineering constraint. Training entry points, data reading, batch organization, parallel strategies, environment configuration, and evaluation scripts must remain consistent. When migrating to another framework or hardware environment, check data format, random seeds, preprocessing logic, metric implementation, and version dependencies carefully.</p>
+<p>Third, as a reproduction clue. For course labs, specialized datasets, or public implementations, MindSpore-related repositories should usually specify data preparation, dependency versions, training or inference entry points, evaluation scripts, and expected outputs. If this information is missing, complete the reproduction notes before focusing only on whether the model can run once.</p>
+<p>Fourth, as an ecosystem-extension entry. MindFace, MindFormers, MindCV, and similar ecosystem projects represent engineering packages for different task directions. Before using them, identify their task boundaries, data formats, training assumptions, and evaluation protocols, and then decide whether to reuse, adapt, or migrate them into your project.</p>
+<p>In this sense, MindSpore is not promotional add-on content. It is part of the implementation context of data engineering: a mature data engineering project must answer where data comes from, how it is processed, how it enters training, how it is evaluated, how it is deployed, and how later maintainers can review it.</p>
+<h2 id="h14-acknowledgments">H.14 Acknowledgments<a class="headerlink" href="#h14-acknowledgments" title="Permanent link">&para;</a></h2>
+<p>Part of the teaching, practice, and companion implementation work related to this book received funding and resource support from the MindSpore ecosystem. This support helped course lab organization, environment setup, implementation validation, and engineering reproduction. The authors gratefully acknowledge the relevant support.</p>
+<p>This acknowledgment explains the collaboration background and resource sources for part of the practical work. It does not change the book's independent discussion of data engineering methods, tool selection, technical judgment, or implementation paths. The frameworks, tools, and implementation choices mentioned in the book should always be understood and selected in relation to specific tasks, hardware conditions, reproduction requirements, and teaching goals.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>MindFace Contributors (2026) MindFace source repository. https://gitee.com/mindspore-lab/mindface.</p>
+<p>MindSpore Contributors (2026a) MindSpore Documentation. https://www.mindspore.cn/view/en.</p>
+<p>MindSpore Contributors (2026b) MindSpore source repository. https://gitcode.com/mindspore/mindspore.</p>
+<p>MindSpore Contributors (2026c) Automatic Differentiation, MindSpore Tutorials. https://www.mindspore.cn/tutorials/en/r2.9.0/beginner/autograd.html.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../appendix_g_datagallery_note/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../afterword/" class="md-footer__link md-footer__link--next" aria-label="Next: Closing Volume: Afterword and User Guide">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Closing Volume: Afterword and User Guide
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

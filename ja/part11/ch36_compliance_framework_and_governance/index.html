@@ -1,0 +1,2581 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part11/ch36_compliance_framework_and_governance/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第36章：数据合规框架与治理 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#36" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第36章：数据合规框架与治理
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part11/ch36_compliance_framework_and_governance/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part11/ch36_compliance_framework_and_governance/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章前导读
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标（Learning Objectives）
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景引入
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="场景引入">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例一：推荐系统中的目的漂移
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例二：测试环境中的脱敏失效
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例三：模型删除请求无法闭环
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景背后的核心工程痛点（Core Engineering Pain Points）
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#361" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1 为什么合规是系统约束而不是审批附件
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.1 为什么合规是系统约束而不是审批附件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3611" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1.1 合规后置的代价
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3612" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1.2 全球视野：合规基线差异
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3613" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1.3 治理交汇点：数据、模型与业务的协同
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3614" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1.4 传统流程与左移流程对比
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3615" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.1.5 工程治理视角下的“默认安全”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#362" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2 法规映射、风险分级与责任链
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.2 法规映射、风险分级与责任链">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3621" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.1 数据分类分级架构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3622" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.2 从字段级、表级到场景级的多维分级
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3623" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.3 各等级数据的典型治理要求
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.2.3 各等级数据的典型治理要求">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-l1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. L1 低敏感数据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-l2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. L2 中敏感数据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-l3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. L3 高敏感数据
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3624-risk-assessment-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.4 风险评估矩阵（Risk Assessment Matrix）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3625" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.5 风险矩阵示例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3626-raci-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.6 责任链条构建（RACI Matrix）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3627" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.7 责任链落地中的常见误区
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3628" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.2.8 从制度文本到系统标签
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#363" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3 项目立项、评审与上线前检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.3 项目立项、评审与上线前检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3631-ropa" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.1 建立 RoPA（处理活动记录）
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.3.1 建立 RoPA（处理活动记录）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ropa" class="md-nav__link">
+    <span class="md-ellipsis">
+      RoPA 最小表单设计示例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ropa_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      RoPA 的工程化要求
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3632-dpia" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.2 执行 DPIA（数据保护影响评估）
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.3.2 执行 DPIA（数据保护影响评估）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dpia" class="md-nav__link">
+    <span class="md-ellipsis">
+      DPIA 的典型评估步骤
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dpia_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      DPIA 风险评分示例
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3633" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.3 最小必要原则与字段瘦身
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3634" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.4 同意管理、授权范围与目的绑定
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3635" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.5 审计准备与合规留痕
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.3.5 审计准备与合规留痕">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      审计日志设计示例
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3636-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.6 上线前检查：把合规嵌入 CI/CD
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3637" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.7 治理流水线：从文档要求走向系统执行
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3638" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.8 治理指标如何转化为工程语言
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3639" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.9 合规上线门禁清单（示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36310" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.3.10 运行期治理不是上线后的附加项
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#364" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4 高风险场景治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.4 高风险场景治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3641" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.1 医疗与金融：强监管行业的基础控制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.4.1 医疗与金融：强监管行业的基础控制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      医疗场景
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      金融场景
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3642" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.2 未成年人数据治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3643" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.3 外采数据与供应链风险
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3644-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.4 委托处理与第三方 API 风险
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3645" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.5 跨境传输治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3646-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.6 大模型时代的新风险：Prompt 合规
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3647" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.4.7 高风险场景治理总表
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#365" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5 案例与治理模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.5 案例与治理模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3651-ropa-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.1 治理工具箱：RoPA 声明配置（YAML 示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3652-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.2 数据分类策略（JSON 示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3653-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.3 访问控制策略（YAML 示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3654-dpia-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.4 DPIA 模板（Markdown 表单示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3655-jsonl" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.5 审计日志结构（JSONL 示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3656-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.6 预检清单（JSON 示例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3657" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.7 事故响应与复盘模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3658" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.8 治理交付物映射（样例）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3659" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.5.9 从模板到平台：治理系统的演进路径
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#366" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6 治理落地的最小链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.6 治理落地的最小链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3661" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6.1 规格与范围定义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3662" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6.2 分类、脱敏与隔离
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3663" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6.3 审计、告警与门禁
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3664" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6.4 指标与验收
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3665" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.6.5 与项目型章节的分工
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#367" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7 从合规框架到组织能力：落地建议
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="36.7 从合规框架到组织能力：落地建议">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3671" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7.1 不要试图一次做完所有能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3672" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7.2 先做“高价值默认项”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3673" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7.3 把合规语言翻译成研发语言
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3674" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7.4 让审计与研发共用同一份事实来源
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3675" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.7.5 指标化治理，而不是口号化治理
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#369" class="md-nav__link">
+    <span class="md-ellipsis">
+      36.9 延伸思考
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="36">第36章：数据合规框架与治理<a class="headerlink" href="#36" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">汪志立；徐鑫；於俊</div>
+
+<h2 id="_1">章前导读<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>核心目标</strong>：回答“数据能不能用、怎么用、用了是否可控”三大核心问题。</li>
+<li><strong>设计理念</strong>：坚持合规与隐私保护“左移”，将其前置到系统架构与流程设计中（Privacy by Design）。</li>
+<li><strong>落地支撑</strong>：以治理模板、门禁清单与最小治理链路为支撑，将制度规范、流程管控、自动化审计与工程实现打通，形成从需求到下线的合规治理闭环。</li>
+</ul>
+<hr />
+<h2 id="_2">摘要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>在数据驱动的时代，合规不再是法务部门在项目上线前盖的一个章，而是决定系统能否长期稳定运行的基础架构约束。很多系统在算法效果、业务转化、灰度表现上都达到了上线标准，却在最终评审中因数据来源不清、授权边界模糊、日志留痕不全或敏感信息暴露而被紧急叫停。问题并不在于团队“不重视合规”，而在于合规要求长期被视为研发完成之后的审批附件，而不是系统设计之初就必须纳入的约束条件。</p>
+<p>本章围绕一个核心命题展开：<strong>数据合规的成本与修复难度，会随着项目生命周期的推进而快速上升</strong>。因此，企业不能把合规当作一次性的法务审核动作，而必须把它嵌入到需求定义、数据建模、特征开发、模型训练、上线审批、审计留痕与下线销毁的全过程中。换言之，真正有效的合规，不是“出了问题后补文档”，而是“在系统还未形成惯性之前就把风险关口前移”。</p>
+<p>本章将从四个层面建立完整框架。第一，解释为什么合规是一种系统约束，而不是审批附件，并说明 Privacy by Design 的工程意义。第二，建立面向业务系统的数据分类分级、风险评估矩阵与责任链条，使团队能够明确“有哪些数据”“谁对这些数据负责”“什么场景下可以用、怎么用、谁批准”。第三，围绕处理活动记录（Record of Processing Activities，RoPA）、数据保护影响评估（Data Protection Impact Assessment，DPIA）、审计留痕和 CI/CD 阶段的自动化拦截机制，说明合规要求如何真正变成工程流程的一部分。第四，抽取一条最小治理链路，展示治理配置、脱敏策略、权限控制、预检机制、事件响应与复盘闭环如何落到具体系统产物中。</p>
+<p>与很多只停留在法规条文层面的内容不同，本章更关注“工程化治理”。我们不只是说明法规要求了什么，还会进一步讨论：如何在元数据中心里标注数据等级，如何通过策略文件约束数据进入分析域，如何利用流水线在上线前自动阻断高风险变更，如何通过日志与血缘支持审计回溯，如何为医疗、金融、未成年人、第三方处理与跨境传输等高风险场景设计专门的控制措施。通过这些内容，读者将建立一个更接近真实企业环境的数据合规治理图景。</p>
+<hr />
+<h2 id="_3">关键词<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>数据合规框架与治理；数据合规；隐私保护；治理框架；风险控制</p>
+<h2 id="learning-objectives">学习目标（Learning Objectives）<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>通过本章学习，读者应能够：</p>
+<ul>
+<li>理解为什么数据合规必须作为系统约束前移到需求、架构与研发阶段，而不能仅在上线前进行被动审批。</li>
+<li>掌握数据分类分级的设计原则，能够区分低敏感、中敏感和高敏感数据，并为不同等级设计差异化的处理策略。</li>
+<li>构建面向真实业务的数据风险评估矩阵，把数据级别、使用目的、处理动作与影响范围组合成可执行的风险判断逻辑。</li>
+<li>设计清晰的责任链条，明确法务、业务、平台、算法、数据开发、安全与审计等角色在治理流程中的责任边界。</li>
+<li>理解 RoPA、DPIA、审计留痕、同意管理、访问审批、数据保留与销毁机制在项目生命周期中的作用。</li>
+<li>学会把合规要求嵌入研发流水线，在代码提交、配置变更、数据接入、模型训练和上线审批阶段实现自动化检查与阻断。</li>
+<li>能够针对医疗、金融、未成年人、第三方处理和跨境传输等高风险场景提出专项治理策略。</li>
+<li>理解合规治理如何通过配置文件、策略规则、日志产物与检查脚本落地执行。</li>
+</ul>
+<hr />
+<h2 id="_4">场景引入<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>团队历时三个月研发的用户洞察与推荐系统准备在下周全量上线。业务侧对该模型带来的 20% 转化率提升寄予厚望，算法团队也对离线评估与灰度实验结果充满信心。然而，在周五的最终评审会上，法务与合规负责人按下了暂停键。</p>
+<p>合规负责人连续提出三个问题。第一，系统使用了用户精准地理位置与近三个月浏览记录，这些数据的使用目的是否与用户授权一致。第二，数据湖中的测试集是否已经完成脱敏，为什么在某些调试日志里还能看到明文手机号。第三，如果用户请求注销账号并行使删除权，训练集中已经形成的特征和派生标签能否同步删除，还是只能删除主表中的原始记录。</p>
+<p>会议室里一度陷入沉默。业务方认为自己只提出了“提升推荐效果”的需求；算法团队认为数据都是平台侧提供的；平台团队认为已经给出了基础权限能力；法务则指出，系统中根本没有完整记录“什么数据因为什么目的被谁使用”的台账。最后，项目不得不延期，团队开始重新梳理数据来源、清洗逻辑、脱敏链路与审批流程。</p>
+<p>这个案例揭示了一个常见但代价极高的问题：<strong>合规后置</strong>。当一个系统的表结构、特征流程、训练管道和日志体系都已经成型后，再去补充授权、重构脱敏、增加审计留痕，往往意味着底层改造、历史数据重跑和跨团队流程重建。此时产生的成本，远高于系统设计之初做对治理边界的成本。</p>
+<p>为了进一步说明问题，我们再看三个简化的失败案例。</p>
+<h3 id="_5">案例一：推荐系统中的目的漂移<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>某内容推荐系统最初仅基于点击行为进行排序优化，后续为了提升广告转化，引入了设备标识、停留时长、交易记录与位置数据。项目早期的隐私政策只覆盖“改进服务体验”，并未覆盖“精准营销”和“自动化定价”。结果系统虽然技术上可运行，但在目的合法性上已经发生漂移。问题并不只是“多采了一些字段”，而是<strong>使用目的发生变化时，授权与处理依据没有同步更新</strong>。</p>
+<h3 id="_6">案例二：测试环境中的脱敏失效<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>某团队在生产环境启用了手机号哈希和邮箱掩码，却在测试环境中为了排查问题，直接导入了生产快照。开发和测试人员拥有较宽的库表读取权限，日志系统也默认打印完整请求参数。最终，真正暴露敏感信息的并不是正式链路，而是测试环境与运维日志。这个案例说明，<strong>制度合规如果没有技术强制，就会在灰色地带失效</strong>。</p>
+<h3 id="_7">案例三：模型删除请求无法闭环<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>某风控模型接到用户删除请求后，只删除了源表中的用户信息，却没有同步处理特征仓、训练样本集、离线快照、模型缓存和下游画像标签。对外看似完成了删除，对内却仍有历史副本残留。这个案例说明，<strong>数据删除不只是表级删除，更是全链路删除能力的考验</strong>(Garg et al. 2020)。</p>
+<h3 id="core-engineering-pain-points">场景背后的核心工程痛点（Core Engineering Pain Points）<a class="headerlink" href="#core-engineering-pain-points" title="Permanent link">&para;</a></h3>
+<p>从上述案例中，可以总结出现实工程中的四类痛点：</p>
+<ol>
+<li><strong>合规滞后的极高代价</strong>：一旦在系统后期才发现问题，往往伴随返工、延期、停摆与潜在处罚。</li>
+<li><strong>权责边界模糊</strong>：业务线想要数据，算法想要特征，平台侧提供能力，法务把关条文，但没有清晰的责任闭环。</li>
+<li><strong>技术与制度脱节</strong>：合规文档看起来完备，但没有元数据标注、脱敏引擎、策略校验、访问审计等技术抓手。</li>
+<li><strong>生命周期不闭合</strong>：从采集、加工、使用、共享、留存到删除，没有形成可验证、可回溯、可审计的闭环。</li>
+</ol>
+<hr />
+<h2 id="361">36.1 为什么合规是系统约束而不是审批附件<a class="headerlink" href="#361" title="Permanent link">&para;</a></h2>
+<p>传统研发流程把合规审查放在接近上线的尾部位置。需求立项时先谈功能目标，开发时先做效果验证，上线前再请法务或合规团队做检查。这种模式在功能简单、数据敏感度低的系统里或许还能勉强工作，但在今天的数据驱动系统中已经越来越危险。</p>
+<p>现代数据治理强调 <strong>Privacy by Design（隐私保护设计）</strong>。它的核心不是多做一轮审批，而是承认隐私与合规本身就是系统架构的一部分(Cavoukian et al. 2009; Gürses et al. 2011)。数据库如何分层、日志打到哪里、特征是否可回溯、训练集如何清理、第三方 API 是否带出敏感字段，这些都不是“上线前补一个审批单”能解决的问题，而是必须在架构阶段就考虑的基础约束(Spiekermann and Cranor 2009; ENISA 2022)。</p>
+<h3 id="3611">36.1.1 合规后置的代价<a class="headerlink" href="#3611" title="Permanent link">&para;</a></h3>
+<p>合规后置的代价主要体现在五个方面。</p>
+<p><strong>第一，架构返工成本高。</strong><br />
+如果系统已经广泛依赖某个敏感字段作为核心特征，那么后来发现该字段没有合法授权，意味着表结构、特征工程、模型训练和下游消费全都要调整。</p>
+<p><strong>第二，历史数据回收困难。</strong><br />
+当敏感数据已经进入训练集、画像系统、缓存层和报表链路时，再去补做删除、替换或重新训练，成本远高于初期限制使用范围。</p>
+<p><strong>第三，跨团队协调成本指数上升。</strong><br />
+项目越接近上线，参与方越多、依赖越复杂。此时引入合规整改，往往需要业务、算法、平台、法务、安全、测试与运维同时调整。</p>
+<p><strong>第四，业务窗口期流失。</strong><br />
+很多项目不是“不能改”，而是“来不及改”。当合规问题在上线前爆发，最直接的损失就是错过业务节奏与市场窗口。</p>
+<p><strong>第五，审计与处罚风险陡增。</strong><br />
+系统一旦上线并形成真实用户影响，再发现问题就不只是内部整改，而可能升级为外部投诉、审计检查或监管处罚。</p>
+<p>为了帮助读者形成更直观的工程认识，可以把合规整改成本理解为一条随生命周期推进而快速抬升的曲线：在需求阶段修正一个不合理的数据字段，也许只是改一份文档；在训练阶段修正，则要重做数据清洗和特征开发；在上线后修正，则可能涉及回滚、解释、删数、补偿和对外沟通。</p>
+<h3 id="3612">36.1.2 全球视野：合规基线差异<a class="headerlink" href="#3612" title="Permanent link">&para;</a></h3>
+<p>对于跨地区业务而言，合规要求并不是完全一致的。中国的 PIPL 强调“告知—同意”、敏感个人信息的单独同意以及数据出境的控制要求；欧洲 GDPR 强调数据最小化、删除权、可携权以及自动化决策的透明性。企业在不同区域运行同一业务时，不能假设“一套采集逻辑走天下”，而要在技术层具备差异化落地能力。</p>
+<p>这意味着，系统设计不能只围绕“功能是否能验证”，还必须围绕“地区规则差异如何映射到产品、数据和模型链路”。例如，同样是用户画像，在不同法域下可能对应不同的法律依据、保留期限、用户权利响应机制和共享限制。真正成熟的治理体系，不是让开发者去背诵所有法规条文，而是把这些差异沉淀到模板、策略、审批规则和默认行为中(Zieni et al. 2021; Kosenkov et al. 2026)。</p>
+<h3 id="3613">36.1.3 治理交汇点：数据、模型与业务的协同<a class="headerlink" href="#3613" title="Permanent link">&para;</a></h3>
+<p>合规不是孤立存在的。它是数据治理、模型治理与业务治理的交汇点。</p>
+<ul>
+<li><strong>数据治理</strong>关注数据质量、元数据、血缘、生命周期和留存策略。</li>
+<li><strong>模型治理</strong>关注特征来源、偏见风险、解释性、训练集边界和模型使用目的。</li>
+<li><strong>业务治理</strong>关注业务目标、用户承诺、授权依据、对外披露与运营规则。</li>
+</ul>
+<p>如果这三者分离，系统就会出现常见错位：业务要求新能力，模型迅速接入新特征，平台侧开放了可用接口，但没有人统一判断这条数据链路是否合规。只有通过统一的元数据管理中心、策略中心和审计中心，才能把这些原本散落在不同团队的要求联动起来。图36-1展示了合规左移与治理协同的整体架构，说明合规审查如何从上线前置到需求分析与架构设计阶段。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-1：合规左移与治理协同架构图" src="../../../images/part11/Wang-Chap36-Fig01-EN.svg" /></a>
+<em>图36-1：合规左移与治理协同架构图</em></p>
+<h3 id="3614">36.1.4 传统流程与左移流程对比<a class="headerlink" href="#3614" title="Permanent link">&para;</a></h3>
+<p>下表用更工程化的方式说明两种流程的差异：</p>
+<p>表36-1列出了相关字段与出版复核口径。</p>
+<p><em>表36-1：阶段、产物与复核字段</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">阶段</th>
+<th style="text-align: left;">传统模式</th>
+<th style="text-align: left;">左移治理模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">需求分析</td>
+<td style="text-align: left;">关注业务功能，极少定义数据边界</td>
+<td style="text-align: left;">明确数据类型、使用目的、授权依据与输出边界</td>
+</tr>
+<tr>
+<td style="text-align: left;">架构设计</td>
+<td style="text-align: left;">优先保证可用性与性能</td>
+<td style="text-align: left;">同步定义分级、脱敏、审计、保留与删除机制</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据接入</td>
+<td style="text-align: left;">先拉齐字段，后补说明</td>
+<td style="text-align: left;">接入前完成登记、分类与合法性校验</td>
+</tr>
+<tr>
+<td style="text-align: left;">特征开发</td>
+<td style="text-align: left;">以效果为优先</td>
+<td style="text-align: left;">限制高敏感字段直接进入训练与分析链路</td>
+</tr>
+<tr>
+<td style="text-align: left;">测试与灰度</td>
+<td style="text-align: left;">常以真实数据快照验证</td>
+<td style="text-align: left;">测试环境默认去标识化，日志默认最小暴露</td>
+</tr>
+<tr>
+<td style="text-align: left;">上线评审</td>
+<td style="text-align: left;">临时拉法务审核</td>
+<td style="text-align: left;">基于 RoPA、DPIA、预检报告和审计留痕审批</td>
+</tr>
+<tr>
+<td style="text-align: left;">运行期</td>
+<td style="text-align: left;">主要关注故障与性能</td>
+<td style="text-align: left;">同时关注访问异常、导出风险、删除请求与事件响应</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3615">36.1.5 工程治理视角下的“默认安全”<a class="headerlink" href="#3615" title="Permanent link">&para;</a></h3>
+<p>从架构角度看，成熟的合规治理不是依赖所有人都自觉，而是建立“默认安全”的系统行为。隐私设计策略研究也强调，应通过最小化、隔离、聚合、告知与控制等策略，把隐私保护转化为系统默认机制(Hoepman 2014)：</p>
+<ul>
+<li>新接入数据集，默认无权限，必须显式申请。</li>
+<li>敏感字段默认掩码展示，而不是“先明文，必要时再隐藏”。</li>
+<li>C2/C3 级数据默认不能直接进入外部 API 或大模型 Prompt。</li>
+<li>测试环境默认不允许导入生产明文快照。</li>
+<li>未登记用途的数据，默认不能进入模型训练链路。</li>
+<li>缺失 RoPA、DPIA 或审批记录时，CI/CD 默认阻断上线。</li>
+</ul>
+<p>这类默认行为的本质，是把合规从“人为提醒”升级为“系统护栏”。</p>
+<hr />
+<h2 id="362">36.2 法规映射、风险分级与责任链<a class="headerlink" href="#362" title="Permanent link">&para;</a></h2>
+<p>如果说“合规左移”回答的是为什么合规必须前移，那么本节回答的是：<strong>前移之后，团队具体要管理什么</strong>。答案可以概括为三个问题：</p>
+<ol>
+<li>我们手里有哪些数据？</li>
+<li>这些数据在什么场景下能用？</li>
+<li>出了问题谁负责？</li>
+</ol>
+<h3 id="3621">36.2.1 数据分类分级架构<a class="headerlink" href="#3621" title="Permanent link">&para;</a></h3>
+<p>并不是所有数据都值得用同样的强度治理。如果把所有数据都当作最高等级保护，系统会过度僵化，性能和迭代效率都会受到影响；但如果把所有数据都用统一的宽松标准处理，就会导致敏感数据暴露。因此，企业必须建立差异化的数据分类分级体系(Perera et al. 2016; ENISA 2022)。</p>
+<p>本章采用三层分级作为基础框架：</p>
+<p>表36-2列出了相关字段与出版复核口径。</p>
+<p><em>表36-2：关键要点与工程复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">安全级别</th>
+<th style="text-align: left;">定义与示例</th>
+<th style="text-align: left;">处理要求</th>
+<th style="text-align: left;">脱敏与加密策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>L3 高敏感（C3）</strong></td>
+<td style="text-align: left;">敏感个人信息（生物识别、医疗健康、精确位置）、核心商业机密（未公开财报）</td>
+<td style="text-align: left;">需用户单独同意；严禁未经脱敏进入分析域；法务一票否决</td>
+<td style="text-align: left;">存储级强加密（AES-256）；展示时全脱敏；可用不可见（隐私计算）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>L2 中敏感（C2）</strong></td>
+<td style="text-align: left;">一般个人信息（姓名、手机号、设备 ID）、内部业务数据</td>
+<td style="text-align: left;">纳入隐私政策；仅限授权人员与项目访问</td>
+<td style="text-align: left;">传输加密；存储加密或哈希去标识化；部分掩码展示</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>L1 低敏感（C1）</strong></td>
+<td style="text-align: left;">公开数据、完全匿名化数据、聚合统计结果</td>
+<td style="text-align: left;">常规访问控制；可用于广泛 BI 分析和模型训练</td>
+<td style="text-align: left;">无特殊要求，按需存储</td>
+</tr>
+</tbody>
+</table>
+<p>这个分级体系的价值，不只是帮助团队贴标签，而是为后续的权限策略、脱敏规则、审批流程、日志要求和保留期限提供统一依据。对于高敏感分析场景，还可以进一步引入差分隐私、隐私保护机器学习等技术，以降低单个用户记录被推断或泄露的风险(Dwork 2008; Shokri and Shmatikov 2015)。</p>
+<h3 id="3622">36.2.2 从字段级、表级到场景级的多维分级<a class="headerlink" href="#3622" title="Permanent link">&para;</a></h3>
+<p>很多团队把“分级”理解为给一张表打一个整体标签，但真实系统往往更复杂：</p>
+<ul>
+<li>同一张表中可能同时存在 C1、C2 与 C3 字段。</li>
+<li>同一字段在不同场景下风险不同。</li>
+<li>同一份数据在原始态、脱敏态和聚合态下等级可能不同。</li>
+</ul>
+<p>因此，成熟的分级至少需要三个维度：</p>
+<p><strong>字段级分级</strong>：例如手机号、邮箱、身份证号、精确位置、银行卡号、病历号等字段应有明确标签。<br />
+<strong>表级分级</strong>：例如用户主档、交易流水、行为日志、风控标签、客服录音等数据集应有整体等级基线。<br />
+<strong>场景级分级</strong>：例如“用于模型训练”“用于客服检索”“用于 BI 报表”“用于对外接口”这些使用场景本身也会影响风险等级。</p>
+<p>只有把这三个维度同时纳入，系统才能避免“同表不同字段、同字段不同用途”的判断混乱。这类判断本质上属于隐私需求工程问题，需要把法律、业务和系统规格共同转化为可执行的需求与约束(Anthonysamy et al. 2017)。</p>
+<h3 id="3623">36.2.3 各等级数据的典型治理要求<a class="headerlink" href="#3623" title="Permanent link">&para;</a></h3>
+<h4 id="1-l1">1. L1 低敏感数据<a class="headerlink" href="#1-l1" title="Permanent link">&para;</a></h4>
+<p>L1 数据通常是公开数据、匿名化数据或聚合统计结果。例如公共宏观指标、去标识后的区域级转化率、无个体可识别性的运营指标等。<br />
+L1 数据通常可以在更广范围内流通，用于 BI 分析、模型调优、可视化看板和容量规划等场景。其治理重点在于基本的访问控制、数据质量保证和合理保留。</p>
+<h4 id="2-l2">2. L2 中敏感数据<a class="headerlink" href="#2-l2" title="Permanent link">&para;</a></h4>
+<p>L2 数据通常包括姓名、手机号、邮箱、设备 ID、员工编号、内部业务记录等一般个人信息或内部受限数据。<br />
+此类数据不能随意导出，也不应在日志、测试环境和外部接口中明文暴露。治理重点包括加密、哈希去标识化、部分掩码展示、最小权限访问和用途受限。</p>
+<h4 id="3-l3">3. L3 高敏感数据<a class="headerlink" href="#3-l3" title="Permanent link">&para;</a></h4>
+<p>L3 数据包括生物识别、医疗健康、精确位置、金融账户、未公开商业机密等。<br />
+这类数据一旦泄露，影响巨大，因此通常需要单独同意、严格审批、独立存储、强加密与更高标准的审计。默认情况下，L3 数据不应直接进入通用分析域，也不应被下游任意消费。</p>
+<h3 id="3624-risk-assessment-matrix">36.2.4 风险评估矩阵（Risk Assessment Matrix）<a class="headerlink" href="#3624-risk-assessment-matrix" title="Permanent link">&para;</a></h3>
+<p>仅仅知道“数据是什么等级”还不够。一个字段的风险不是静态的，还取决于它被“用来做什么”和“怎么处理”。</p>
+<p>例如：</p>
+<ul>
+<li>使用 L3 数据进行自动化决策，属于高风险。</li>
+<li>使用 L2 数据做内部分析且不对个体产生直接影响，属于中风险。</li>
+<li>使用 L1 数据做系统稳定性监控，通常属于低风险。</li>
+</ul>
+<p>因此，风险评估需要同时考虑以下维度：</p>
+<ol>
+<li><strong>数据等级</strong>：C1 / C2 / C3  </li>
+<li><strong>使用目的</strong>：服务履约、风控、推荐、营销、审计、研发测试等  </li>
+<li><strong>处理动作</strong>：查询、导出、训练、共享、推送、自动化决策  </li>
+<li><strong>影响对象</strong>：内部团队、合作方、外部用户、跨境接收方  </li>
+<li><strong>结果影响</strong>：是否会进一步影响用户权益、定价、画像、推荐、授信或账户状态  </li>
+</ol>
+<p>归纳起来，上述维度可以压缩为一条更便于工程落地的判断逻辑：</p>
+<p>代码清单36-1给出了风险评分公式示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>风险等级 = 数据敏感度 × 处理动作强度 × 业务影响范围
+</code></pre></div>
+<p><em>代码清单36-1：风险评分公式示例</em></p>
+<p>在工程实践中，这种逻辑往往最终会被编码为一个策略引擎：
+当数据等级较高、处理动作较强、影响范围较广时，需要更多审批、更严格脱敏和更高等级审计。</p>
+<h3 id="3625">36.2.5 风险矩阵示例<a class="headerlink" href="#3625" title="Permanent link">&para;</a></h3>
+<p>如图36-2所示，数据等级、使用目的与处理动作三者组合可构成一个直观的风险矩阵，下表给出若干典型组合及其默认控制措施。</p>
+<p>表36-3列出了相关字段与出版复核口径。</p>
+<p><em>表36-3：风险、控制措施与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">数据等级</th>
+<th style="text-align: left;">使用目的</th>
+<th style="text-align: left;">处理动作</th>
+<th style="text-align: left;">风险等级</th>
+<th style="text-align: left;">默认控制措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">C1</td>
+<td style="text-align: left;">稳定性监控</td>
+<td style="text-align: left;">聚合查询</td>
+<td style="text-align: left;">低</td>
+<td style="text-align: left;">常规访问控制</td>
+</tr>
+<tr>
+<td style="text-align: left;">C2</td>
+<td style="text-align: left;">内部分析</td>
+<td style="text-align: left;">画像分析</td>
+<td style="text-align: left;">中</td>
+<td style="text-align: left;">角色授权、部分脱敏、访问留痕</td>
+</tr>
+<tr>
+<td style="text-align: left;">C2</td>
+<td style="text-align: left;">模型训练</td>
+<td style="text-align: left;">批量抽取</td>
+<td style="text-align: left;">中高</td>
+<td style="text-align: left;">特征白名单、训练审批、结果审查</td>
+</tr>
+<tr>
+<td style="text-align: left;">C3</td>
+<td style="text-align: left;">自动化决策</td>
+<td style="text-align: left;">训练/评分</td>
+<td style="text-align: left;">高</td>
+<td style="text-align: left;">DPIA、法务审批、强审计、上线阻断</td>
+</tr>
+<tr>
+<td style="text-align: left;">C3</td>
+<td style="text-align: left;">第三方共享</td>
+<td style="text-align: left;">导出/接口调用</td>
+<td style="text-align: left;">极高</td>
+<td style="text-align: left;">DPA、脱敏网关、最小字段集、专项评估</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-2：数据分级、用途和处理动作构成的风险矩阵图" src="../../../images/part11/Wang-Chap36-Fig02-EN.svg" /></a>
+<em>图36-2：数据分级、用途和处理动作构成的风险矩阵图</em></p>
+<h3 id="3626-raci-matrix">36.2.6 责任链条构建（RACI Matrix）<a class="headerlink" href="#3626-raci-matrix" title="Permanent link">&para;</a></h3>
+<p>没有清晰的责任链，再好的规则也会在执行中失真。治理体系必须把“谁负责提出需求、谁负责判断合法性、谁负责提供技术控制、谁负责使用过程合规、谁负责审计复核”明确下来。</p>
+<p>下表给出一个典型的 RACI 设计：</p>
+<p>表36-4列出了相关字段与出版复核口径。</p>
+<p><em>表36-4：角色职责与协作边界</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">角色</th>
+<th style="text-align: left;">主要职责</th>
+<th style="text-align: left;">RACI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">法务/合规</td>
+<td style="text-align: left;">解释法规、设定红线、审批高风险场景</td>
+<td style="text-align: left;">Accountable</td>
+</tr>
+<tr>
+<td style="text-align: left;">业务方</td>
+<td style="text-align: left;">说明使用目的、业务必要性与用户承诺</td>
+<td style="text-align: left;">Responsible</td>
+</tr>
+<tr>
+<td style="text-align: left;">平台/基础架构</td>
+<td style="text-align: left;">提供分级、脱敏、权限、审计与血缘能力</td>
+<td style="text-align: left;">Responsible</td>
+</tr>
+<tr>
+<td style="text-align: left;">算法/数据开发</td>
+<td style="text-align: left;">在授权范围内开发特征、训练模型与消费数据</td>
+<td style="text-align: left;">Consulted / Informed</td>
+</tr>
+<tr>
+<td style="text-align: left;">安全团队</td>
+<td style="text-align: left;">检查边界安全、审计策略、异常访问与导出风险</td>
+<td style="text-align: left;">Consulted</td>
+</tr>
+<tr>
+<td style="text-align: left;">审计/内控</td>
+<td style="text-align: left;">定期复核留痕、流程执行与整改闭环</td>
+<td style="text-align: left;">Informed / Consulted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3627">36.2.7 责任链落地中的常见误区<a class="headerlink" href="#3627" title="Permanent link">&para;</a></h3>
+<p>实际落地时，团队常犯三种错误：</p>
+<p><strong>误区一：把合规责任全部推给法务。</strong>
+法务可以解释边界，但不能替代业务澄清目的，也不能替代平台实现控制。</p>
+<p><strong>误区二：把技术控制全部推给平台。</strong>
+平台能提供能力，但如果业务和算法不申报真实用途，平台并不知道哪些使用行为不合理。</p>
+<p><strong>误区三：认为“有审批就等于合规”。</strong>
+审批只是一个节点，真正关键的是审批前的信息是否完整、审批后的行为是否可验证，以及运行期是否能持续发现偏离。</p>
+<h3 id="3628">36.2.8 从制度文本到系统标签<a class="headerlink" href="#3628" title="Permanent link">&para;</a></h3>
+<p>成熟团队会把责任链映射为系统中的实际对象：</p>
+<ul>
+<li>业务 owner → 项目 owner 字段</li>
+<li>合规审批人 → 审批节点与工单流</li>
+<li>数据 owner → 数据集元数据管理</li>
+<li>使用目的 → RoPA 表单字段</li>
+<li>使用权限 → RBAC/ABAC 策略</li>
+<li>风险等级 → 预检规则参数</li>
+<li>访问留痕 → 审计日志事件</li>
+</ul>
+<p>这一步关键，因为只有当制度语言进入系统元数据，合规才真正具备自动化执行的可能。</p>
+<hr />
+<h2 id="363">36.3 项目立项、评审与上线前检查<a class="headerlink" href="#363" title="Permanent link">&para;</a></h2>
+<p>合规治理如果要真正成为研发的一部分，就不能只停留在原则层，而必须变成清晰的流程节点。项目从立项到下线，至少要回答六个问题：</p>
+<ol>
+<li>这项处理活动是否被登记？</li>
+<li>这项处理是否有合法依据？</li>
+<li>涉及哪些等级的数据？</li>
+<li>是否做过风险评估？</li>
+<li>是否具备审计与删除能力？</li>
+<li>是否达到上线门槛？</li>
+</ol>
+<h3 id="3631-ropa">36.3.1 建立 RoPA（处理活动记录）<a class="headerlink" href="#3631-ropa" title="Permanent link">&para;</a></h3>
+<p><strong>RoPA（Record of Processing Activities）</strong> 是处理活动的总账本。它不是一份为了审计才临时填写的表格，而是数据使用的系统化登记。</p>
+<p>每个项目在申请接入数据、训练模型或开放接口前，都应填写至少以下信息：</p>
+<ol>
+<li>数据类型与来源（第一方、第三方、公开数据）</li>
+<li>使用目的与法律依据</li>
+<li>涉及的系统、表、字段与输出对象</li>
+<li>数据保留期限（TTL）与销毁机制</li>
+<li>是否包含敏感数据、是否涉及第三方或跨境传输</li>
+<li>数据 owner、项目 owner、审批人和使用团队</li>
+</ol>
+<p>RoPA 的价值在于：没有它，团队永远说不清“哪些数据是因为什么理由被谁使用”。而一旦出现投诉、审计或删除请求，没有台账就无法定位链路。</p>
+<h4 id="ropa">RoPA 最小表单设计示例<a class="headerlink" href="#ropa" title="Permanent link">&para;</a></h4>
+<p>表36-5列出了相关字段与出版复核口径。</p>
+<p><em>表36-5：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">字段</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">project_id</td>
+<td style="text-align: left;">项目唯一编号</td>
+</tr>
+<tr>
+<td style="text-align: left;">owner</td>
+<td style="text-align: left;">项目负责人</td>
+</tr>
+<tr>
+<td style="text-align: left;">system_name</td>
+<td style="text-align: left;">系统名称</td>
+</tr>
+<tr>
+<td style="text-align: left;">data_sources</td>
+<td style="text-align: left;">数据来源与表名</td>
+</tr>
+<tr>
+<td style="text-align: left;">purpose</td>
+<td style="text-align: left;">使用目的</td>
+</tr>
+<tr>
+<td style="text-align: left;">legal_basis</td>
+<td style="text-align: left;">法律依据或授权依据</td>
+</tr>
+<tr>
+<td style="text-align: left;">data_level</td>
+<td style="text-align: left;">数据等级</td>
+</tr>
+<tr>
+<td style="text-align: left;">retention_days</td>
+<td style="text-align: left;">保留期限</td>
+</tr>
+<tr>
+<td style="text-align: left;">third_party_share</td>
+<td style="text-align: left;">是否共享给第三方</td>
+</tr>
+<tr>
+<td style="text-align: left;">cross_border</td>
+<td style="text-align: left;">是否涉及跨境</td>
+</tr>
+<tr>
+<td style="text-align: left;">deletion_path</td>
+<td style="text-align: left;">删除路径说明</td>
+</tr>
+<tr>
+<td style="text-align: left;">audit_required</td>
+<td style="text-align: left;">是否强制审计</td>
+</tr>
+<tr>
+<td style="text-align: left;">approval_chain</td>
+<td style="text-align: left;">审批链路</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ropa_1">RoPA 的工程化要求<a class="headerlink" href="#ropa_1" title="Permanent link">&para;</a></h4>
+<p>在成熟平台中，RoPA 不应该是线下 Excel，而应具备以下特征：</p>
+<ul>
+<li>通过系统表单提交并版本化存储</li>
+<li>与项目代码仓、数据集元数据和审批工单关联</li>
+<li>支持字段级与表级自动校验</li>
+<li>与 CI/CD 流水线联动，缺失关键信息时阻断上线</li>
+<li>可追溯历史变更，满足审计要求</li>
+</ul>
+<h3 id="3632-dpia">36.3.2 执行 DPIA（数据保护影响评估）<a class="headerlink" href="#3632-dpia" title="Permanent link">&para;</a></h3>
+<p>当项目涉及中高敏感数据、新的处理方式、自动化决策或高影响场景时，仅有 RoPA 还不够，需要进一步进行 <strong>DPIA（Data Protection Impact Assessment）</strong>。系统化 DPIA 方法通常要求把处理活动、风险识别、必要性评估和控制措施串联起来，而不是只形成静态合规模板(Oetzel and Spiekermann 2014; Notario et al. 2015)。</p>
+<p>DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题：</p>
+<ul>
+<li>是否真的有必要收集这些数据？</li>
+<li>这些数据是否超出了原始授权范围？</li>
+<li>处理结果是否会对用户造成显著影响？</li>
+<li>是否存在歧视、滥用、越界画像或误判风险？</li>
+<li>如果发生泄露、误用或越权访问，系统是否有响应和止损能力？</li>
+</ul>
+<h4 id="dpia">DPIA 的典型评估步骤<a class="headerlink" href="#dpia" title="Permanent link">&para;</a></h4>
+<p><strong>第一步：识别处理活动。</strong>
+明确数据来源、处理目的、主要参与系统与输出结果。</p>
+<p><strong>第二步：识别风险点。</strong>
+包括数据过采、目的漂移、第三方泄露、模型偏见、日志暴露、删除不闭环等。</p>
+<p><strong>第三步：评估必要性与比例性。</strong>
+判断字段是否最小必要，处理方式是否与业务目的相匹配。</p>
+<p><strong>第四步：设计控制措施。</strong>
+例如字段删减、默认脱敏、强审计、访问审批、模型可解释性说明、删除链路补强等。</p>
+<p><strong>第五步：形成审批结论。</strong>
+给出可上线、需整改后上线或禁止上线的明确结论。</p>
+<h4 id="dpia_1">DPIA 风险评分示例<a class="headerlink" href="#dpia_1" title="Permanent link">&para;</a></h4>
+<p>表36-6列出了相关字段与出版复核口径。</p>
+<p><em>表36-6：风险、控制措施与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">维度</th>
+<th style="text-align: left;">评分说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据敏感度</td>
+<td style="text-align: left;">C1=1，C2=2，C3=3</td>
+</tr>
+<tr>
+<td style="text-align: left;">使用强度</td>
+<td style="text-align: left;">查询=1，分析=2，训练/自动决策=3</td>
+</tr>
+<tr>
+<td style="text-align: left;">扩散范围</td>
+<td style="text-align: left;">内部单团队=1，多团队共享=2，第三方/跨境=3</td>
+</tr>
+<tr>
+<td style="text-align: left;">权益影响</td>
+<td style="text-align: left;">无直接影响=1，间接影响=2，直接影响=3</td>
+</tr>
+</tbody>
+</table>
+<p>总分越高，意味着控制要求越严。例如总分 8 分以上可强制触发法务审批与上线阻断。</p>
+<h3 id="3633">36.3.3 最小必要原则与字段瘦身<a class="headerlink" href="#3633" title="Permanent link">&para;</a></h3>
+<p>很多治理失败并不是因为控制措施不足，而是因为一开始就采了太多不必要的数据。
+“最小必要原则”要求团队持续追问：</p>
+<ul>
+<li>这个字段是否真的必要？</li>
+<li>是否可以用更低敏感度字段替代？</li>
+<li>是否可以先聚合再用，而不是直接用明细？</li>
+<li>是否可以只保留短期窗口，而不是长期留存？</li>
+</ul>
+<p>在工程中，最小必要原则的落地方式包括：</p>
+<ul>
+<li>字段白名单而不是全表开放</li>
+<li>训练特征集与原始明细隔离</li>
+<li>时间窗口裁剪</li>
+<li>默认不保留原始标识符</li>
+<li>聚合后下发，而非明细外放</li>
+</ul>
+<h3 id="3634">36.3.4 同意管理、授权范围与目的绑定<a class="headerlink" href="#3634" title="Permanent link">&para;</a></h3>
+<p>很多数据争议不是“数据本身违法”，而是“数据用途超出了最初告知”。因此，系统需要把授权与用途真正绑定起来。</p>
+<p>这意味着：</p>
+<ul>
+<li>用户授权版本应可追踪</li>
+<li>每个用途应能映射到明确的处理活动</li>
+<li>用途变更时需要重新评估</li>
+<li>不能把“改进体验”笼统覆盖到所有业务场景</li>
+<li>对敏感数据、高风险画像、自动化决策要有更高等级的授权与说明机制</li>
+</ul>
+<p>从系统角度看，同意管理至少应保留：用户 ID、授权版本、授权时间、用途范围、撤回状态、适用产品线与有效期。敏捷开发场景下的 GDPR 合规实践也表明，隐私要求需要随着迭代持续进入用户故事、验收标准和系统规格，而不是在发布前一次性补齐(Miri et al. 2018; Zieni et al. 2021)。</p>
+<h3 id="3635">36.3.5 审计准备与合规留痕<a class="headerlink" href="#3635" title="Permanent link">&para;</a></h3>
+<p>任何制度如果没有留痕，最终都很难自证执行。
+因此，授权记录、审批工单、访问日志、导出记录、策略命中、预检结果与删除执行结果，都应具备防篡改存储和可追溯能力。</p>
+<p>一个成熟的审计体系至少需要记录以下事件：</p>
+<ul>
+<li>谁在什么时间访问了什么数据</li>
+<li>访问使用了什么角色和审批依据</li>
+<li>访问涉及哪些字段和多少条记录</li>
+<li>是否发生导出、下载或共享</li>
+<li>是否命中脱敏、阻断或告警规则</li>
+<li>是否有针对指定用户的删除、纠正或查询请求</li>
+<li>请求在多长时间内被完成</li>
+</ul>
+<h4 id="_8">审计日志设计示例<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h4>
+<p>表36-7列出了相关字段与出版复核口径。</p>
+<p><em>表36-7：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">字段</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">event_time</td>
+<td style="text-align: left;">事件时间</td>
+</tr>
+<tr>
+<td style="text-align: left;">actor</td>
+<td style="text-align: left;">操作主体</td>
+</tr>
+<tr>
+<td style="text-align: left;">role</td>
+<td style="text-align: left;">所用角色</td>
+</tr>
+<tr>
+<td style="text-align: left;">action</td>
+<td style="text-align: left;">查询、导出、更新、删除、共享</td>
+</tr>
+<tr>
+<td style="text-align: left;">dataset</td>
+<td style="text-align: left;">数据集名称</td>
+</tr>
+<tr>
+<td style="text-align: left;">fields</td>
+<td style="text-align: left;">涉及字段</td>
+</tr>
+<tr>
+<td style="text-align: left;">record_count</td>
+<td style="text-align: left;">记录数</td>
+</tr>
+<tr>
+<td style="text-align: left;">purpose</td>
+<td style="text-align: left;">使用目的</td>
+</tr>
+<tr>
+<td style="text-align: left;">approval_id</td>
+<td style="text-align: left;">对应审批单</td>
+</tr>
+<tr>
+<td style="text-align: left;">policy_result</td>
+<td style="text-align: left;">允许、脱敏后允许、阻断</td>
+</tr>
+<tr>
+<td style="text-align: left;">trace_id</td>
+<td style="text-align: left;">链路追踪 ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3636-cicd">36.3.6 上线前检查：把合规嵌入 CI/CD<a class="headerlink" href="#3636-cicd" title="Permanent link">&para;</a></h3>
+<p>很多团队真正的分水岭，不在于是否写了制度，而在于是否把制度变成上线前的自动化门槛。类似 Compliance-as-Code 的思路强调将控制要求转化为机器可执行规则，使合规检查能够持续嵌入云环境和交付流水线(Agarwal et al. 2022)。</p>
+<p>典型的 CI/CD 合规预检应包括：</p>
+<ul>
+<li>是否存在有效 RoPA</li>
+<li>是否存在必需的 DPIA</li>
+<li>是否完成数据分级</li>
+<li>是否具备字段级脱敏规则</li>
+<li>是否配置访问权限与角色边界</li>
+<li>是否具备审计日志输出</li>
+<li>是否定义数据保留期限与销毁机制</li>
+<li>是否识别第三方共享与跨境传输</li>
+<li>是否配置删除请求处理路径</li>
+<li>是否通过测试环境脱敏检查</li>
+</ul>
+<p>当任意高风险项缺失时，流水线应阻断构建、阻断部署或阻断训练任务执行。图36-3给出了从数据接入到模型训练的合规门禁流程，展示各检查点如何在关键阶段拦截高风险变更。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-3：从数据接入到模型训练的合规门禁流程图" src="../../../images/part11/Wang-Chap36-Fig03-EN.svg" /></a>
+<em>图36-3：从数据接入到模型训练的合规门禁流程图</em></p>
+<h3 id="3637">36.3.7 治理流水线：从文档要求走向系统执行<a class="headerlink" href="#3637" title="Permanent link">&para;</a></h3>
+<p>当合规要求进入工程阶段后，治理对象不能只停留在制度文本里，而需要被组织成可执行流水线。一个最小治理链路通常包含以下步骤：</p>
+<ol>
+<li>生成隐私规格与策略</li>
+<li>执行隐私处理流水线</li>
+<li>模拟运维与事件处理</li>
+<li>评估隐私流水线</li>
+<li>运行项目检查</li>
+</ol>
+<p>这一链路反映了一个关键事实：<strong>合规不是单点动作，而是一条从策略生成、数据处理、告警响应到评估验证的流水线</strong>。图36-4展示了隐私规格与策略的生成流程，是上述最小治理链路的起点环节。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-4：隐私规格与策略生成流程图" src="../../../images/part11/Wang-Chap36-Fig04-EN.svg" /></a>
+<em>图36-4：隐私规格与策略生成流程图</em></p>
+<h3 id="3638">36.3.8 治理指标如何转化为工程语言<a class="headerlink" href="#3638" title="Permanent link">&para;</a></h3>
+<p>治理指标的价值，不在于样本规模本身，而在于它是否能够说明识别、处理、门禁、告警和检查链路已经形成闭环。例如：</p>
+<ul>
+<li>原始记录 8 条，restricted 记录 7 条，说明系统确实识别并隔离了大部分受限数据。</li>
+<li>直接 PII 去除率 100%，说明脱敏逻辑至少覆盖了样本中的直接身份标识。</li>
+<li>preflight pass rate 100%，说明上线前的检查链路已形成明确门槛。</li>
+<li>告警解决率 100%，说明告警不是“看见了但没人管”，而是进入闭环处理。</li>
+<li>总检查项 13 项且全部通过，说明当前规则、产物与检查逻辑在样本范围内是自洽的。</li>
+</ul>
+<p>这类指标的意义，不在于绝对数值多大，而在于它们把合规治理从抽象理念转成了可检查、可复盘、可持续运行的系统行为。图36-5展示了 DPIA 与 RoPA 工程化审批流，即数据合规生命周期中从业务立项到下线的自动化拦截与审计流程。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig05-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-5：DPIA与RoPA工程化审批流" src="../../../images/part11/Wang-Chap36-Fig05-EN.svg" /></a>
+<em>图36-5：DPIA与RoPA工程化审批流</em></p>
+<h3 id="3639">36.3.9 合规上线门禁清单（示例）<a class="headerlink" href="#3639" title="Permanent link">&para;</a></h3>
+<p>下面给出一个可直接用于项目评审的上线前门禁清单。为了便于评审和责任分配，建议按四类逐项确认：</p>
+<p><strong>一、治理与审批</strong></p>
+<ul>
+<li>☐ 已完成 RoPA 登记并通过审批</li>
+<li>☐ 已完成必要的 DPIA</li>
+<li>☐ 已完成上线审批留痕</li>
+</ul>
+<p><strong>二、数据与环境隔离</strong></p>
+<ul>
+<li>☐ 已完成数据分类分级并绑定字段标签</li>
+<li>☐ 训练集/分析集已与原始敏感数据隔离</li>
+<li>☐ 测试环境无明文敏感数据快照</li>
+</ul>
+<p><strong>三、访问控制与审计留痕</strong></p>
+<ul>
+<li>☐ 日志中不打印直接身份标识</li>
+<li>☐ 已配置角色权限与最小访问边界</li>
+<li>☐ 已接入审计日志与异常访问告警</li>
+</ul>
+<p><strong>四、生命周期与发布控制</strong></p>
+<ul>
+<li>☐ 已配置数据保留期限与销毁机制</li>
+<li>☐ 已配置删除请求的全链路处理路径</li>
+<li>☐ 已识别第三方共享与跨境流转风险</li>
+<li>☐ 已通过 CI/CD 合规预检</li>
+</ul>
+<h3 id="36310">36.3.10 运行期治理不是上线后的附加项<a class="headerlink" href="#36310" title="Permanent link">&para;</a></h3>
+<p>很多团队把上线前治理做得不错，但上线后很快松散下来。事实上，真正的风险往往发生在运行期：</p>
+<ul>
+<li>新人加入团队后权限没有收敛</li>
+<li>新需求接入时复用老审批但用途已改变</li>
+<li>第三方接口调用范围逐渐扩大</li>
+<li>数据导出、报表分享和日志排查成为新的泄露入口</li>
+<li>删除请求、整改要求和审计问询在运行期才集中出现</li>
+</ul>
+<p>因此，运行期治理要包括：</p>
+<ul>
+<li>周期性权限回顾</li>
+<li>导出行为审计</li>
+<li>新用途变更评估</li>
+<li>异常访问检测</li>
+<li>删除请求 SLA 追踪</li>
+<li>事故响应与 postmortem 机制</li>
+</ul>
+<p>上述运行期治理动作最终需要形成闭环，图36-6展示了审计日志、告警、事件响应与复盘之间的闭环关系。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig06-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-6：审计日志、告警、事件响应与复盘闭环图" src="../../../images/part11/Wang-Chap36-Fig06-EN.svg" /></a>
+<em>图36-6：审计日志、告警、事件响应与复盘闭环图</em></p>
+<hr />
+<h2 id="364">36.4 高风险场景治理<a class="headerlink" href="#364" title="Permanent link">&para;</a></h2>
+<p>并不是所有场景都需要同样强度的治理。某些领域天然带有更高的敏感度和更复杂的责任边界，因此必须设计专门的控制措施。</p>
+<h3 id="3641">36.4.1 医疗与金融：强监管行业的基础控制<a class="headerlink" href="#3641" title="Permanent link">&para;</a></h3>
+<p>医疗与金融场景的共同特征是：数据高度敏感、误用成本极高、监管要求严格、用户信任脆弱。</p>
+<h4 id="_9">医疗场景<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h4>
+<p>医疗数据通常包括病历、检验结果、健康指标、生理特征、用药历史、就诊记录等。这些数据不仅属于高度敏感个人信息，而且常常会与身份、家庭、保险与财务信息交叉关联。</p>
+<p>因此，医疗场景应重点控制：</p>
+<ul>
+<li>原始健康数据与行为日志分区存储</li>
+<li>敏感字段强加密与细粒度访问控制</li>
+<li>医疗明细默认不进入通用分析域</li>
+<li>对外共享前必须去标识化与最小字段化</li>
+<li>审计日志必须覆盖访问、导出与共享行为</li>
+<li>删除与更正请求需要联动多系统执行</li>
+</ul>
+<h4 id="_10">金融场景<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h4>
+<p>金融场景中常见的敏感数据包括银行卡号、交易流水、授信记录、还款行为、设备风险标签与风控评分。
+在这类系统里，自动化决策往往会直接影响用户授信、支付、定价或账户状态，因此除了数据保护，还要关注模型解释性、公平性和误判纠正机制。</p>
+<p>金融场景的专项控制通常包括：</p>
+<ul>
+<li>高敏感账户信息与普通行为日志隔离</li>
+<li>模型输入特征可追踪、可解释、可删除</li>
+<li>人工复核机制覆盖高影响决策</li>
+<li>风险标签与原始凭证可关联回溯</li>
+<li>异常访问、导出和批量查询重点告警</li>
+</ul>
+<h3 id="3642">36.4.2 未成年人数据治理<a class="headerlink" href="#3642" title="Permanent link">&para;</a></h3>
+<p>未成年人数据治理的重点，不只是“多一个勾选框”，而是围绕保护性原则重构整个数据处理方式。</p>
+<p>需要重点考虑：</p>
+<ul>
+<li>独立的监护人同意与撤回机制</li>
+<li>更严格的数据最小化原则</li>
+<li>禁止或严格限制商业化推荐与深度画像</li>
+<li>更短的保留周期</li>
+<li>更强的默认隐私保护</li>
+<li>更易理解的告知与说明方式</li>
+</ul>
+<p>在工程设计上，可以通过“年龄段分层 + 特殊标签 + 特殊用途限制”的方式实现。例如，一旦识别为未成年人账户，某些推荐、营销、画像与第三方共享链路应默认关闭或进入更高等级审批。</p>
+<h3 id="3643">36.4.3 外采数据与供应链风险<a class="headerlink" href="#3643" title="Permanent link">&para;</a></h3>
+<p>企业使用的数据并不总是全部自产。很多项目会引入外部供应商、合作方数据集或公共数据源。
+在这种情况下，最大的风险往往不是字段本身，而是<strong>来源合法性不清、授权链条不透明、用途承诺不一致</strong>。</p>
+<p>治理要求包括：</p>
+<ul>
+<li>核验数据来源和收集依据</li>
+<li>审查供应商是否有合法授权与转授权能力</li>
+<li>签订 DPA（数据处理协议）与安全条款</li>
+<li>明确责任划分、泄露通报和删除协同义务</li>
+<li>对外部数据设置独立标签与用途限制</li>
+</ul>
+<h3 id="3644-api">36.4.4 委托处理与第三方 API 风险<a class="headerlink" href="#3644-api" title="Permanent link">&para;</a></h3>
+<p>越来越多企业把部分处理能力交给外部云服务、外部模型或第三方 API。风险在于，团队很容易把“调用一个服务”误以为只是技术集成，而忽视其本质上是一次数据外送或委托处理。</p>
+<p>典型风险包括：</p>
+<ul>
+<li>在 Prompt 或请求体中直接带入明文 C2/C3 数据</li>
+<li>供应商把请求内容用于训练或二次处理</li>
+<li>请求日志在第三方平台长期留存</li>
+<li>响应结果包含不应回传的敏感信息</li>
+<li>第三方服务部署地与数据本地化要求冲突</li>
+</ul>
+<p>因此，必须建立边界网关，在请求出域前自动做以下动作：</p>
+<ul>
+<li>字段检测</li>
+<li>明文识别</li>
+<li>脱敏替换</li>
+<li>规则命中阻断</li>
+<li>请求留痕</li>
+<li>高风险调用审批</li>
+</ul>
+<p>图36-7给出了第三方 API 与大模型调用的边界网关结构，展示请求出域前如何统一完成检测、脱敏与阻断。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig07-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-7：第三方 API / 大模型调用边界网关图" src="../../../images/part11/Wang-Chap36-Fig07-EN.svg" /></a>
+<em>图36-7：第三方 API / 大模型调用边界网关图</em></p>
+<h3 id="3645">36.4.5 跨境传输治理<a class="headerlink" href="#3645" title="Permanent link">&para;</a></h3>
+<p>跨境传输的核心难点在于：一份数据一旦离开原有法域，其后续处理、留存、共享与审计都可能变得更复杂。
+因此，跨境治理不应只在合同层解决，而应先完成法域映射与合法传输机制确认，再在系统层落实控制：</p>
+<ul>
+<li>明确数据来源地、接收地与中转地对应的适用法域</li>
+<li>由合规/法务确认合法传输路径、传输依据与保留条件</li>
+<li>按地区规则选择合同条款、标准合同条款、认证、安全评估或监管申报等法律路径</li>
+<li>
+<p>在法律路径未确认前，默认暂停跨境流转并进入人工审批</p>
+</li>
+<li>
+<p>标注跨境流转路径</p>
+</li>
+<li>控制最小字段集</li>
+<li>优先使用脱敏或匿名化结果</li>
+<li>明确接收方角色、用途与保留期限</li>
+<li>为跨境事件保留专项审计记录</li>
+<li>对高敏感数据建立更严格的出境审批流程</li>
+</ul>
+<h3 id="3646-prompt">36.4.6 大模型时代的新风险：Prompt 合规<a class="headerlink" href="#3646-prompt" title="Permanent link">&para;</a></h3>
+<p>在生成式 AI 应用中，新的风险边界来自 Prompt、上下文拼接与外部知识调用。
+很多团队在实现智能客服、检索增强生成、摘要与洞察时，会不经意间把明文手机号、身份证号、病历详情、内部票据或完整交易信息带入模型上下文。已有研究表明，大语言模型可能泄露或记忆训练数据中的个人可识别信息，因此生成式 AI 场景中的输入治理、日志治理和训练数据治理需要被单独强化(Carlini et al. 2021; Lukas et al. 2023)。</p>
+<p>治理重点包括：</p>
+<ul>
+<li>Prompt 输入字段白名单</li>
+<li>高敏感字段自动脱敏</li>
+<li>外部大模型调用的上下文过滤</li>
+<li>模型日志与会话记录的留存控制</li>
+<li>对可复现输出进行审计与抽检</li>
+<li>对含个人信息的知识库建立更高等级访问控制</li>
+</ul>
+<p>在技术路径上，研究者也提出了面向提示调优、文本生成和统一 LLM 服务框架的隐私保护方法，包括输入扰动、隐私保持提示学习、敏感内容过滤和服务端隔离等方向(Plant et al. 2022; Li et al. 2023; Kalodanis et al. 2025)。</p>
+<h3 id="3647">36.4.7 高风险场景治理总表<a class="headerlink" href="#3647" title="Permanent link">&para;</a></h3>
+<p>表36-8列出了相关字段与出版复核口径。</p>
+<p><em>表36-8：风险、控制措施与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">场景</th>
+<th style="text-align: left;">主要风险</th>
+<th style="text-align: left;">核心控制措施</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">医疗</td>
+<td style="text-align: left;">健康数据泄露、用途漂移</td>
+<td style="text-align: left;">独立加密区、细粒度权限、强审计</td>
+</tr>
+<tr>
+<td style="text-align: left;">金融</td>
+<td style="text-align: left;">自动化决策误判、账户信息暴露</td>
+<td style="text-align: left;">特征可追踪、人工复核、导出审计</td>
+</tr>
+<tr>
+<td style="text-align: left;">未成年人</td>
+<td style="text-align: left;">同意不足、商业化过度</td>
+<td style="text-align: left;">监护人机制、用途限制、短保留期</td>
+</tr>
+<tr>
+<td style="text-align: left;">外采数据</td>
+<td style="text-align: left;">来源不合法、责任不清</td>
+<td style="text-align: left;">来源核验、DPA、用途绑定</td>
+</tr>
+<tr>
+<td style="text-align: left;">第三方 API</td>
+<td style="text-align: left;">明文出域、日志残留</td>
+<td style="text-align: left;">边界网关、脱敏、调用留痕</td>
+</tr>
+<tr>
+<td style="text-align: left;">跨境传输</td>
+<td style="text-align: left;">出境后控制力弱</td>
+<td style="text-align: left;">最小字段集、专项审批、专项审计、法域映射与法务复核</td>
+</tr>
+<tr>
+<td style="text-align: left;">大模型 Prompt</td>
+<td style="text-align: left;">敏感信息进入上下文</td>
+<td style="text-align: left;">Prompt 过滤、字段白名单、会话留痕</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="365">36.5 案例与治理模板<a class="headerlink" href="#365" title="Permanent link">&para;</a></h2>
+<p>前面的章节说明了原则、方法和流程，本节则进一步给出可以直接落到工程中的治理模板。模板的价值在于：它把抽象制度变成可维护、可审查、可自动校验的配置对象。</p>
+<h3 id="3651-ropa-yaml">36.5.1 治理工具箱：RoPA 声明配置（YAML 示例）<a class="headerlink" href="#3651-ropa-yaml" title="Permanent link">&para;</a></h3>
+<p>在平台侧，要求每个数据应用上线前，在代码仓中提交类似如下的合规配置文件，由 CI/CD 管道自动拉取并校验：</p>
+<p>代码清单36-2给出了RoPA 声明模板。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># P09-User-Insight-Model RoPA Declaration</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">project_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;P09-001&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">project_name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;P09-User-Insight-Model&quot;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;algo_team_a&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nt">biz_owner</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;growth_recommendation_team&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="nt">legal_owner</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;compliance_office&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">data_usage_purpose</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;User</span><span class="nv"> </span><span class="s">behavioral</span><span class="nv"> </span><span class="s">insight</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">recommendation&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nt">legal_basis</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;User</span><span class="nv"> </span><span class="s">Consent</span><span class="nv"> </span><span class="s">(v2.1</span><span class="nv"> </span><span class="s">Terms</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">Service)&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="nt">processing_activity_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;model_training_and_internal_analysis&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nt">regions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CN&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="nt">contains_sensitive_personal_info</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="nt">requires_dpia</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nt">third_party_processing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nt">cross_border_transfer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nt">retention_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="nt">deletion_sla_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nt">data_categories</span><span class="p">:</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">table</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dwd_user_behavior_log&quot;</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;C1&quot;</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="nt">fields</span><span class="p">:</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;click_event&quot;</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;item_id&quot;</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;timestamp&quot;</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">    </span><span class="nt">purpose</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;recommendation_feature_generation&quot;</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">    </span><span class="nt">retention_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="nt">export_allowed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">table</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dim_user_profile&quot;</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">    </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;C2&quot;</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">    </span><span class="nt">fields</span><span class="p">:</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;hashed_phone&quot;</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;age_band&quot;</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;province&quot;</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="w">    </span><span class="nt">purpose</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;feature_enrichment&quot;</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">    </span><span class="nt">retention_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">365</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="w">    </span><span class="nt">anonymization_strategy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;K-Anonymity&quot;</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a><span class="w">    </span><span class="nt">export_allowed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">table</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;user_precise_location&quot;</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="w">    </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;C3&quot;</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">    </span><span class="nt">fields</span><span class="p">:</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;lng&quot;</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;lat&quot;</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;geo_hash_12&quot;</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a><span class="w">    </span><span class="nt">purpose</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;high_risk_feature_candidate&quot;</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="w">    </span><span class="nt">retention_days</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a><span class="w">    </span><span class="nt">export_allowed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a><span class="w">    </span><span class="nt">legal_manual_approval_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="nt">access_roles</span><span class="p">:</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;algo_reader&quot;</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="w">    </span><span class="nt">datasets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;dwd_user_behavior_log&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;dim_user_profile&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="w">    </span><span class="nt">action_scope</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;read_masked&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;feature_compute&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform_admin&quot;</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="w">    </span><span class="nt">datasets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;*&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="w">    </span><span class="nt">action_scope</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;policy_admin&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;audit_read&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;security_auditor&quot;</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">    </span><span class="nt">datasets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;audit_log&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">    </span><span class="nt">action_scope</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;read&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="nt">controls</span><span class="p">:</span>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">  </span><span class="nt">audit_log_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">  </span><span class="nt">lineage_tracking_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="w">  </span><span class="nt">pii_scan_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a><span class="w">  </span><span class="nt">test_env_plaintext_forbidden</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a><span class="w">  </span><span class="nt">prompt_plaintext_c2_c3_forbidden</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a><span class="nt">pipeline_gate</span><span class="p">:</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a><span class="w">  </span><span class="nt">block_if_missing_dpia</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a><span class="w">  </span><span class="nt">block_if_unapproved_c3_usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a><span class="w">  </span><span class="nt">block_if_retention_undefined</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a><span class="w">  </span><span class="nt">block_if_deletion_path_missing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p><em>代码清单36-2：RoPA 声明模板</em></p>
+<p>上述配置中声明的 <code>deletion_path</code> 与 <code>deletion_sla_days</code>，对应的是用户删除请求在系统中的全链路传播与清理过程。图36-8展示了一次删除请求如何从源表沿特征仓、训练样本、离线快照到下游画像逐级传播与清理。</p>
+<p><a class="glightbox" href="../../../images/part11/Wang-Chap36-Fig08-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图36-8：用户删除请求的全链路传播与清理示意图" src="../../../images/part11/Wang-Chap36-Fig08-EN.svg" /></a>
+<em>图36-8：用户删除请求的全链路传播与清理示意图</em></p>
+<h3 id="3652-json">36.5.2 数据分类策略（JSON 示例）<a class="headerlink" href="#3652-json" title="Permanent link">&para;</a></h3>
+<p>代码清单36-3给出了JSON 数据示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;p09_classification_policy&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;levels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">&quot;C1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;公开数据或完全匿名化数据&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="nt">&quot;default_controls&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;rbac_basic&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;standard_logging&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nt">&quot;C2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;一般个人信息和内部业务数据&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">      </span><span class="nt">&quot;default_controls&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;rbac_strict&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;masked_display&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;encrypted_storage&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;audit_required&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;C3&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;敏感个人信息和核心商业机密&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">      </span><span class="nt">&quot;default_controls&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;legal_approval&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;strong_encryption&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;isolation_zone&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;full_audit&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;export_block&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">  </span><span class="nt">&quot;field_rules&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">      </span><span class="nt">&quot;match&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;phone&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;mobile&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;email&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;device_id&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">      </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C2&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">      </span><span class="nt">&quot;masking&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;partial_mask&quot;</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">      </span><span class="nt">&quot;match&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;bank_account&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;patient_id&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;biometric&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;precise_location&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="w">      </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C3&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="w">      </span><span class="nt">&quot;masking&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;full_mask&quot;</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="w">  </span><span class="nt">&quot;usage_constraints&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="w">      </span><span class="nt">&quot;level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;C3&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a><span class="w">      </span><span class="nt">&quot;forbid&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;external_prompt_plaintext&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;test_env_plaintext&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;open_export&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单36-3：JSON 数据示例</em></p>
+<h3 id="3653-yaml">36.5.3 访问控制策略（YAML 示例）<a class="headerlink" href="#3653-yaml" title="Permanent link">&para;</a></h3>
+<p>代码清单36-4给出了YAML 配置示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">policy_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;p09_access_policy&quot;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.2.0&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nt">roles</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;algo_reader&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">allowed_levels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;C1&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;C2&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">restrictions</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;cannot_export_raw&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;cannot_access_c3&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;must_use_masked_view&quot;</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;risk_reviewer&quot;</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nt">allowed_levels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;C1&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;C2&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;C3&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="nt">restrictions</span><span class="p">:</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;approval_ticket_required&quot;</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;session_recording_required&quot;</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;security_auditor&quot;</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">    </span><span class="nt">allowed_levels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;audit_only&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">    </span><span class="nt">restrictions</span><span class="p">:</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;read_only&quot;</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="nt">approval_rules</span><span class="p">:</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">if</span><span class="p">:</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">      </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;export&quot;</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;C2&quot;</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">    </span><span class="nt">then</span><span class="p">:</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">      </span><span class="nt">approvals_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="w">      </span><span class="nt">approvers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;data_owner&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;security_owner&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">if</span><span class="p">:</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="w">      </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;read&quot;</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;C3&quot;</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="w">    </span><span class="nt">then</span><span class="p">:</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="w">      </span><span class="nt">approvals_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span class="w">      </span><span class="nt">approvers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;legal_owner&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;platform_owner&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">if</span><span class="p">:</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a><span class="w">      </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;external_api_call&quot;</span>
+<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a><span class="w">      </span><span class="nt">level_includes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;C2&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;C3&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a><span class="w">    </span><span class="nt">then</span><span class="p">:</span>
+<a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a><span class="w">      </span><span class="nt">gateway_scan_required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a><span class="w">      </span><span class="nt">plaintext_forbidden</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p><em>代码清单36-4：YAML 配置示例</em></p>
+<h3 id="3654-dpia-markdown">36.5.4 DPIA 模板（Markdown 表单示例）<a class="headerlink" href="#3654-dpia-markdown" title="Permanent link">&para;</a></h3>
+<p>代码清单36-5给出了DPIA 评估表模板。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="gh"># DPIA Assessment Form</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="gu">## 1. 基本信息</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">-</span><span class="w"> </span>项目名称：
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">-</span><span class="w"> </span>项目编号：
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="k">-</span><span class="w"> </span>业务负责人：
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">-</span><span class="w"> </span>技术负责人：
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">-</span><span class="w"> </span>合规负责人：
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="k">-</span><span class="w"> </span>评估日期：
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="gu">## 2. 处理活动说明</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="k">-</span><span class="w"> </span>涉及数据来源：
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">-</span><span class="w"> </span>涉及数据字段：
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="k">-</span><span class="w"> </span>数据等级：
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="k">-</span><span class="w"> </span>处理目的：
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="k">-</span><span class="w"> </span>输出对象：
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="k">-</span><span class="w"> </span>是否涉及自动化决策：
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="gu">## 3. 必要性与比例性</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="k">-</span><span class="w"> </span>当前字段是否最小必要：
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="k">-</span><span class="w"> </span>是否存在低敏感替代字段：
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="k">-</span><span class="w"> </span>是否存在过度收集风险：
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="k">-</span><span class="w"> </span>是否存在用途漂移风险：
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="gu">## 4. 风险识别</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="k">-</span><span class="w"> </span>泄露风险：
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="k">-</span><span class="w"> </span>越权访问风险：
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="k">-</span><span class="w"> </span>第三方共享风险：
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="k">-</span><span class="w"> </span>模型偏见风险：
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="k">-</span><span class="w"> </span>删除不闭环风险：
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="k">-</span><span class="w"> </span>日志暴露风险：
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="gu">## 5. 控制措施</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="k">-</span><span class="w"> </span>字段裁剪：
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="k">-</span><span class="w"> </span>默认脱敏：
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="k">-</span><span class="w"> </span>审批机制：
+<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="k">-</span><span class="w"> </span>审计留痕：
+<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="k">-</span><span class="w"> </span>测试环境隔离：
+<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="k">-</span><span class="w"> </span>外部调用网关：
+<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a>
+<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="gu">## 6. 评估结论</span>
+<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="k">- [ ]</span> 可上线
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="k">- [ ]</span> 整改后可上线
+<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="k">- [ ]</span> 禁止上线
+<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a>
+<a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="gu">## 7. 整改项与责任人</span>
+<a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a>| 整改项 | 责任人 | 截止日期 | 状态 |
+<a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a>| :--- | :--- | :--- | :--- |
+<a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a>|  |  |  |  |
+</code></pre></div>
+<p><em>代码清单36-5：DPIA 评估表模板</em></p>
+<h3 id="3655-jsonl">36.5.5 审计日志结构（JSONL 示例）<a class="headerlink" href="#3655-jsonl" title="Permanent link">&para;</a></h3>
+<p>代码清单36-6给出了审计日志 JSON 示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>{&quot;event_time&quot;:&quot;2026-03-10T10:15:01Z&quot;,&quot;actor&quot;:&quot;algo_user_a&quot;,&quot;role&quot;:&quot;algo_reader&quot;,&quot;action&quot;:&quot;query&quot;,&quot;dataset&quot;:&quot;dim_user_profile_masked&quot;,&quot;fields&quot;:[&quot;hashed_phone&quot;,&quot;age_band&quot;],&quot;record_count&quot;:200,&quot;purpose&quot;:&quot;feature_validation&quot;,&quot;approval_id&quot;:&quot;APR-1029&quot;,&quot;policy_result&quot;:&quot;allow_masked&quot;,&quot;trace_id&quot;:&quot;trace-001&quot;}
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>{&quot;event_time&quot;:&quot;2026-03-10T10:22:48Z&quot;,&quot;actor&quot;:&quot;platform_job_17&quot;,&quot;role&quot;:&quot;pipeline_runner&quot;,&quot;action&quot;:&quot;preflight_check&quot;,&quot;dataset&quot;:&quot;p09_release_bundle&quot;,&quot;fields&quot;:[],&quot;record_count&quot;:0,&quot;purpose&quot;:&quot;deployment_gate&quot;,&quot;approval_id&quot;:&quot;N/A&quot;,&quot;policy_result&quot;:&quot;pass&quot;,&quot;trace_id&quot;:&quot;trace-002&quot;}
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>{&quot;event_time&quot;:&quot;2026-03-10T10:29:11Z&quot;,&quot;actor&quot;:&quot;external_gateway&quot;,&quot;role&quot;:&quot;api_gateway&quot;,&quot;action&quot;:&quot;external_api_call&quot;,&quot;dataset&quot;:&quot;prompt_payload&quot;,&quot;fields&quot;:[&quot;masked_phone&quot;,&quot;case_summary&quot;],&quot;record_count&quot;:1,&quot;purpose&quot;:&quot;assisted_summary&quot;,&quot;approval_id&quot;:&quot;APR-1081&quot;,&quot;policy_result&quot;:&quot;allow_after_redaction&quot;,&quot;trace_id&quot;:&quot;trace-003&quot;}
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>{&quot;event_time&quot;:&quot;2026-03-10T10:33:56Z&quot;,&quot;actor&quot;:&quot;ops_user_b&quot;,&quot;role&quot;:&quot;ops_admin&quot;,&quot;action&quot;:&quot;export&quot;,&quot;dataset&quot;:&quot;user_precise_location&quot;,&quot;fields&quot;:[&quot;geo_hash_12&quot;],&quot;record_count&quot;:50,&quot;purpose&quot;:&quot;troubleshooting&quot;,&quot;approval_id&quot;:&quot;APR-1099&quot;,&quot;policy_result&quot;:&quot;blocked&quot;,&quot;trace_id&quot;:&quot;trace-004&quot;}
+</code></pre></div>
+<p><em>代码清单36-6：审计日志 JSON 示例</em></p>
+<h3 id="3656-json">36.5.6 预检清单（JSON 示例）<a class="headerlink" href="#3656-json" title="Permanent link">&para;</a></h3>
+<p>代码清单36-7给出了上线前检查清单 JSON 示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;project_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P09-001&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;preflight_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;checks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ropa_exists&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;classification_policy_exists&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;access_policy_exists&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pii_rules_loaded&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;restricted_records_quarantined&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;redacted_records_remove_direct_pii&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;audit_log_enabled&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;incident_simulation_exists&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;postmortem_template_exists&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;deletion_path_declared&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;external_prompt_plaintext_block&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cross_border_flag_reviewed&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">},</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;release_gate&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">}</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">  </span><span class="nt">&quot;overall_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单36-7：上线前检查清单 JSON 示例</em></p>
+<h3 id="3657">36.5.7 事故响应与复盘模板<a class="headerlink" href="#3657" title="Permanent link">&para;</a></h3>
+<p>代码清单36-8给出了隐私事件复盘模板。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="gh"># Privacy Incident Postmortem</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="gu">## 1. 事件概述</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">-</span><span class="w"> </span>事件编号：
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="k">-</span><span class="w"> </span>发现时间：
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">-</span><span class="w"> </span>结束时间：
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="k">-</span><span class="w"> </span>影响范围：
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">-</span><span class="w"> </span>事件等级：
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="gu">## 2. 触发原因</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="k">-</span><span class="w"> </span>直接原因：
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="k">-</span><span class="w"> </span>根本原因：
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="k">-</span><span class="w"> </span>是否涉及流程缺失：
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="k">-</span><span class="w"> </span>是否涉及权限配置错误：
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="gu">## 3. 影响分析</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="k">-</span><span class="w"> </span>涉及数据集：
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="k">-</span><span class="w"> </span>涉及字段：
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="k">-</span><span class="w"> </span>涉及记录数：
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="k">-</span><span class="w"> </span>是否外泄：
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="k">-</span><span class="w"> </span>是否影响用户权益：
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="gu">## 4. 处置过程</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="k">-</span><span class="w"> </span>告警时间线：
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="k">-</span><span class="w"> </span>阻断动作：
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="k">-</span><span class="w"> </span>临时缓解措施：
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="k">-</span><span class="w"> </span>永久修复措施：
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="gu">## 5. 责任与改进</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>| 问题 | 责任团队 | 改进措施 | 完成时间 |
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>| :--- | :--- | :--- | :--- |
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>|  |  |  |  |
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="gu">## 6. 后续检查</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="k">- [ ]</span> 策略已更新
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="k">- [ ]</span> 权限已收敛
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="k">- [ ]</span> 审计规则已补充
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="k">- [ ]</span> 文档已更新
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="k">- [ ]</span> 相关项目已同步排查
+</code></pre></div>
+<p><em>代码清单36-8：隐私事件复盘模板</em></p>
+<h3 id="3658">36.5.8 治理交付物映射（样例）<a class="headerlink" href="#3658" title="Permanent link">&para;</a></h3>
+<p>为了说明治理模板不是纸面设计，表36-9以一条隐私治理流水线的常见产物为例，展示交付物如何映射到对应治理能力：</p>
+<p>表36-9列出了相关字段与出版复核口径。</p>
+<p><em>表36-9：关键要点与工程复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">交付物</th>
+<th style="text-align: left;">治理含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>compliance_scope.json</code></td>
+<td style="text-align: left;">定义合规范围</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>classification_policy.json</code></td>
+<td style="text-align: left;">定义分级策略</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>access_policy.json</code></td>
+<td style="text-align: left;">定义访问与权限边界</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>privacy_tech_options.json</code></td>
+<td style="text-align: left;">定义隐私技术选项</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>raw_sensitive_records.jsonl</code></td>
+<td style="text-align: left;">原始敏感样本</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>classified_records.jsonl</code></td>
+<td style="text-align: left;">分类结果</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>redacted_records.jsonl</code></td>
+<td style="text-align: left;">脱敏结果</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>quarantine_records.jsonl</code></td>
+<td style="text-align: left;">隔离结果</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>audit_log.jsonl</code></td>
+<td style="text-align: left;">审计留痕</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>access_alerts.jsonl</code></td>
+<td style="text-align: left;">异常访问告警</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>isolation_plan.json</code></td>
+<td style="text-align: left;">隔离策略</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>preflight_checklist.json</code></td>
+<td style="text-align: left;">上线前门禁检查</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>incident_simulation.json</code></td>
+<td style="text-align: left;">事件模拟</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>postmortem_report.json</code></td>
+<td style="text-align: left;">事故复盘</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>p9_metrics.json</code></td>
+<td style="text-align: left;">指标汇总</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>p9_test_results.json</code></td>
+<td style="text-align: left;">检查结果</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>p9_test_report.md</code></td>
+<td style="text-align: left;">测试报告</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3659">36.5.9 从模板到平台：治理系统的演进路径<a class="headerlink" href="#3659" title="Permanent link">&para;</a></h3>
+<p>很多组织一开始无法一次性建设完整平台，因此可以按以下节奏演进：</p>
+<p><strong>第一阶段：模板化治理</strong>
+先统一 RoPA 模板、DPIA 模板、分级标准和上线检查单。</p>
+<p><strong>第二阶段：配置化治理</strong>
+把模板转为 YAML/JSON 策略，纳入代码仓和版本管理。</p>
+<p><strong>第三阶段：自动化治理</strong>
+通过 CI/CD、数据网关、日志系统和审计平台实现自动检查、自动阻断与自动告警。</p>
+<p><strong>第四阶段：平台化治理</strong>
+将元数据、权限、策略、审批、留痕和事件响应统一到一个治理平台中，实现全局可见与跨项目复用。</p>
+<hr />
+<h2 id="366">36.6 治理落地的最小链路<a class="headerlink" href="#366" title="Permanent link">&para;</a></h2>
+<p>前文已经展示了治理框架、门禁模板与交付物映射。本节不再展开完整项目细节，而是抽取一条可复用的最小治理链路，说明合规要求如何在系统中串联。</p>
+<h3 id="3661">36.6.1 规格与范围定义<a class="headerlink" href="#3661" title="Permanent link">&para;</a></h3>
+<p>治理链路的起点不是处理脚本，而是范围、分类、访问边界与技术选项的结构化定义。只有先把用途、数据级别、角色边界和可用技术明确下来，后续处理才有可执行依据。</p>
+<p>这一步关注的是：<strong>敏感数据怎样在进入训练或分析系统之前被识别、限制、改写、审计和验证</strong>。它决定了后续流水线究竟是在执行规则，还是只是在事后补救。</p>
+<h3 id="3662">36.6.2 分类、脱敏与隔离<a class="headerlink" href="#3662" title="Permanent link">&para;</a></h3>
+<p>原始敏感记录进入系统后，需要先被分类，再根据策略进行脱敏、隔离或阻断。这里最关键的不是“改写几个字段”，而是把数据从原始可见态转成受控可用态，并保留后续审计所需的判断依据。</p>
+<p>这一阶段至少要回答四个问题：</p>
+<ul>
+<li>系统如何识别直接 PII？</li>
+<li>哪些记录被判定为 restricted？</li>
+<li>哪些字段可保留用于分析，哪些必须去除？</li>
+<li>哪些数据只能进入隔离区，不能进入通用处理区？</li>
+</ul>
+<h3 id="3663">36.6.3 审计、告警与门禁<a class="headerlink" href="#3663" title="Permanent link">&para;</a></h3>
+<p>治理链路不能停在离线处理。系统还需要记录访问、输出告警、执行预检，并把异常纳入事件响应和复盘流程。</p>
+<p>这一阶段补齐的是“系统如何解释自己的行为”：</p>
+<ul>
+<li>审计日志输出</li>
+<li>异常访问告警</li>
+<li>预检结果校验</li>
+<li>事件模拟</li>
+<li>事故复盘</li>
+</ul>
+<p>没有这些能力，治理体系就很难支撑上线审批、异常追踪和事后审计。</p>
+<h3 id="3664">36.6.4 指标与验收<a class="headerlink" href="#3664" title="Permanent link">&para;</a></h3>
+<p>治理指标的作用不是追求大样本，而是确认闭环是否成立。下面这些指标分别对应识别、处理、发布和审计四类能力：</p>
+<ul>
+<li>总检查项 13 项</li>
+<li>全部通过</li>
+<li>覆盖命令级检查与数据/产物级检查</li>
+</ul>
+<p>如果这些指标能够稳定生成并持续通过，说明治理体系已经从文档要求进入可运行的检查逻辑。</p>
+<h3 id="3665">36.6.5 与项目型章节的分工<a class="headerlink" href="#3665" title="Permanent link">&para;</a></h3>
+<p>治理章节的重点是框架、模板、门禁与验收逻辑，项目型章节则更适合展开具体的脚本组织、数据目录、运行接口和扩展路径。这样的分工有两个好处：</p>
+<ul>
+<li>治理章节保持通用性，便于迁移到不同业务系统。</li>
+<li>项目章节保留实现细节，便于单独展开数据产物和工程演进。</li>
+</ul>
+<p>像 P09 这样的项目型流水线，更适合在独立项目章节中完整展开；而在本章中，它更适合作为治理模板落地后的一个轻量样板。</p>
+<hr />
+<h2 id="367">36.7 从合规框架到组织能力：落地建议<a class="headerlink" href="#367" title="Permanent link">&para;</a></h2>
+<p>治理体系的真正难点，不在于写出一套漂亮框架，而在于跨团队协同持续执行。下面给出一组面向组织落地的建议。</p>
+<h3 id="3671">36.7.1 不要试图一次做完所有能力<a class="headerlink" href="#3671" title="Permanent link">&para;</a></h3>
+<p>对大多数团队而言，最现实的路径不是“一步到位平台化”，而是先抓住几个关键控制点：</p>
+<ol>
+<li>先统一分级标准</li>
+<li>再统一 RoPA 和 DPIA 模板</li>
+<li>再把策略文件纳入代码仓</li>
+<li>再把关键检查接入 CI/CD</li>
+<li>最后逐步建设统一审计与元数据平台</li>
+</ol>
+<h3 id="3672">36.7.2 先做“高价值默认项”<a class="headerlink" href="#3672" title="Permanent link">&para;</a></h3>
+<p>如果资源有限，最先上线的应是那些一旦缺失就极易引发事故的默认规则，例如：</p>
+<ul>
+<li>日志禁止打印直接 PII</li>
+<li>测试环境禁止导入生产明文快照</li>
+<li>C3 数据默认不可直接导出</li>
+<li>高风险用途必须先登记再使用</li>
+<li>外部模型调用前必须过脱敏网关</li>
+</ul>
+<p>这些默认规则能立刻形成护栏，显著降低低级风险。</p>
+<h3 id="3673">36.7.3 把合规语言翻译成研发语言<a class="headerlink" href="#3673" title="Permanent link">&para;</a></h3>
+<p>业务、法务、平台和算法团队之间之所以常常沟通失效，是因为他们使用不同语言：</p>
+<ul>
+<li>法务说“合法依据、同意、比例性”</li>
+<li>业务说“目标、转化、效率”</li>
+<li>平台说“权限、表、接口、日志”</li>
+<li>算法说“特征、训练、推理、效果”</li>
+</ul>
+<p>治理体系要做的，是建立翻译层。
+例如把“合法依据”落到 RoPA 字段，把“最小必要”落到字段白名单，把“删除权”落到删除链路，把“审计要求”落到日志 schema，把“高风险处理”落到预检阻断规则。</p>
+<h3 id="3674">36.7.4 让审计与研发共用同一份事实来源<a class="headerlink" href="#3674" title="Permanent link">&para;</a></h3>
+<p>很多组织里，审计看一套台账，研发跑一套系统，最后双方对不上。
+更合理的做法是让审计、合规和研发共享同一份结构化事实来源：同一份元数据、同一套策略版本、同一套审批记录和同一条日志链路。这样才能减少“对外汇报一套、对内运行一套”的断裂。</p>
+<h3 id="3675">36.7.5 指标化治理，而不是口号化治理<a class="headerlink" href="#3675" title="Permanent link">&para;</a></h3>
+<p>治理是否有效，最终要看指标。可以考虑建立如下治理指标体系：</p>
+<ul>
+<li>有效 RoPA 覆盖率</li>
+<li>DPIA 完成率</li>
+<li>敏感字段标注覆盖率</li>
+<li>测试环境脱敏覆盖率</li>
+<li>审计日志完整率</li>
+<li>删除请求按时完成率</li>
+<li>异常导出告警闭环率</li>
+<li>预检阻断命中率</li>
+<li>运行期权限收敛率</li>
+</ul>
+<p>指标一旦建立，治理就从“倡议”变成“管理对象”。</p>
+<hr />
+<h2 id="369">36.9 延伸思考<a class="headerlink" href="#369" title="Permanent link">&para;</a></h2>
+<ol>
+<li>在生成式 AI 应用中，Prompt 合规与传统数据脱敏最大的差异是什么？</li>
+<li>为什么说“删除权”考验的不是单表能力，而是全链路血缘与生命周期治理能力？</li>
+<li>如果你所在组织无法短期内建设完整治理平台，最先应该上线哪些默认护栏？</li>
+<li>当业务目标和合规要求冲突时，怎样通过“最小必要”和“替代字段”思路找到折中方案？</li>
+<li>对跨境、多地区、多产品线业务而言，治理体系如何既保持统一，又允许规则差异化落地？</li>
+</ol>
+<hr />
+<h2 id="_11">本章小结<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>本章论证了数据合规的成本会随项目生命周期推进而快速抬升，因而必须坚持合规左移与 Privacy by Design，将治理约束前置到需求、架构与研发阶段，而非上线前的审批附件。围绕这一主线，章节先建立三层数据分类分级体系，并从字段级、表级到场景级展开多维分级；再以“数据敏感度 × 处理动作强度 × 业务影响范围”构造风险评估矩阵，并通过 RACI 明确法务、业务、平台、算法、安全与审计的责任链。</p>
+<p>在流程层面，本章把 RoPA 处理活动记录、DPIA 影响评估、最小必要原则、同意与用途绑定、审计留痕和 CI/CD 合规预检串成从立项到下线的门禁闭环，并针对医疗、金融、未成年人、外采数据、第三方 API、跨境传输与大模型 Prompt 等高风险场景给出专项控制。最后，章节以 RoPA 声明、分级策略、访问策略、DPIA 模板、审计日志与预检清单等配置化交付物，说明制度文本如何沉淀为可校验、可阻断、可复盘的系统行为，并给出从模板化到平台化的演进路径。</p>
+<h2 id="_12">参考文献<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>Garg S, Goldwasser S, Vasudevan P N (2020) Formalizing Data Deletion in the Context of the Right to Be Forgotten. In Advances in Cryptology - EUROCRYPT 2020, Springer International Publishing, pp 373-402.</p>
+<p>Cavoukian A, others (2009) Privacy by Design: The 7 Foundational Principles. Information and Privacy Commissioner of Ontario, Canada, 5(2009), 12.</p>
+<p>Gürses S F, Troncoso C, Díaz C (2011) Engineering Privacy by Design. Technical report.</p>
+<p>Spiekermann S, Cranor L F (2009) Engineering Privacy. IEEE Transactions on Software Engineering, 35(1), 67-82. https://doi.org/10.1109/tse.2008.88.</p>
+<p>European Union Agency for Cybersecurity (ENISA) (2022) Data Protection Engineering. ENISA Report.</p>
+<p>Zieni B, Spagnuelo D, Heckel R (2021) Transparency by Default: GDPR Patterns for Agile Development. In Electronic Government and the Information Systems Perspective, Springer International Publishing, pp 89-102.</p>
+<p>Kosenkov O, Zabardast E, Fucci D, Mendez D, Unterkalmsteiner M (2026) Privacy by Design: Aligning GDPR and Software Engineering Specifications with a Requirements Engineering Approach. Information and Software Technology, 190, 107946. https://doi.org/10.1016/j.infsof.2025.107946.</p>
+<p>Hoepman J-H (2014) Privacy Design Strategies. In IFIP International Information Security Conference, pp 446-459. https://doi.org/10.1007/978-3-642-55415-5_38.</p>
+<p>Perera C, Liu C, Ranjan R, Wang L, Zomaya A Y (2016) Privacy-Knowledge Modeling for the Internet of Things: A Look Back. Computer, 49(12), 60-68.</p>
+<p>Dwork C (2008) Differential Privacy: A Survey of Results. In Theory and Applications of Models of Computation, Springer Berlin Heidelberg, pp 1-19. https://doi.org/10.1007/978-3-540-79228-4_1.</p>
+<p>Shokri R, Shmatikov V (2015) Privacy-Preserving Deep Learning. In 2015 53rd Annual Allerton Conference on Communication, Control, and Computing (Allerton), pp 909-910.</p>
+<p>Anthonysamy P, Rashid A, Chitchyan R (2017) Privacy Requirements: Present &amp; Future. In 2017 IEEE/ACM 39th International Conference on Software Engineering: Software Engineering in Society Track (ICSE-SEIS), pp 13-22. https://doi.org/10.1109/icse-seis.2017.3.</p>
+<p>Oetzel M C, Spiekermann S (2014) A Systematic Methodology for Privacy Impact Assessments: A Design Science Approach. European Journal of Information Systems, 23(2), 126-150. https://doi.org/10.1057/ejis.2013.18.</p>
+<p>Notario N, Crespo A, Martín Y-S, del Alamo J M, Le Métayer D, Antignac T, Kung A, Kroener I, Wright D (2015) PRIPARE: Integrating Privacy Best Practices into a Privacy Engineering Methodology. In 2015 IEEE Security and Privacy Workshops, pp 151-158.</p>
+<p>Miri M, Foomany F H, Mohammed N (2018) Complying with GDPR: An Agile Case Study. ISACA Journal, 2, 1-7.</p>
+<p>Agarwal V, Butler C, Degenaro L, Kumar A, Sailer A, Steinder G (2022) Compliance-as-Code for Cybersecurity Automation in Hybrid Cloud. In 2022 IEEE 15th International Conference on Cloud Computing (CLOUD), pp 427-437.</p>
+<p>Carlini N, Tramèr F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson Ú, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In 30th USENIX Security Symposium (USENIX Security 21), pp 2633-2650.</p>
+<p>Lukas N, Salem A, Sim R, Tople S, Wutschitz L, Zanella-Béguelin S (2023) Analyzing Leakage of Personally Identifiable Information in Language Models. In 2023 IEEE Symposium on Security and Privacy (SP), pp 346-363.</p>
+<p>Plant R, Giuffrida V, Gkatzia D (2022) You Are What You Write: Preserving Privacy in the Era of Large Language Models. arXiv preprint arXiv:2204.09391.</p>
+<p>Li Y, Tan Z, Liu Y (2023) Privacy-Preserving Prompt Tuning for Large Language Model Services. arXiv preprint arXiv:2305.06212.</p>
+<p>Kalodanis K, Papadopoulos S, Feretzakis G, Rizomiliotis P, Anagnostopoulos D (2025) SecureLLM: A Unified Framework for Privacy-Focused Large Language Models. Applied Sciences, 15(8), 4180.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

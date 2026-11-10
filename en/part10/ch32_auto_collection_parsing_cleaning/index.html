@@ -1,0 +1,4382 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part10/ch32_auto_collection_parsing_cleaning/">
+      
+      
+        <link rel="prev" href="../ch31_agent_architecture/">
+      
+      
+        <link rel="next" href="../ch33_labeling_synthesis_evaluation/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 32: Automated Collection, Parsing, and Cleaning Agents - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-32-automated-collection-parsing-and-cleaning-agents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part10/ch32_auto_collection_parsing_cleaning/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part10/ch32_auto_collection_parsing_cleaning/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-the-nightmare-of-source-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: The Nightmare of Source Drift
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: The Nightmare of Source Drift">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#321-agent-driven-collection-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1 Agent-Driven Collection Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.1 Agent-Driven Collection Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3211-unified-abstraction-for-four-source-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.1 Unified Abstraction for Four Source Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3212-collection-task-generation-and-failure-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.2 Collection Task Generation and Failure Retry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3213-scheduling-and-rate-limiting-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.3 Scheduling and Rate Limiting at Scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3214-special-handling-for-enterprise-documents-and-databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.4 Special Handling for Enterprise Documents and Databases
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#322-parsing-repair-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2 Parsing Repair Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.2 Parsing Repair Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221-detecting-and-attributing-parsing-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.1 Detecting and Attributing Parsing Exceptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-parser-selection-and-repair-rule-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.2 Parser Selection and Repair Rule Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3223-parsing-multimodal-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.3 Parsing Multimodal Content
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3224-systematic-handling-of-multilingual-and-encoding-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.4 Systematic Handling of Multilingual and Encoding Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3225-performance-optimization-for-collection-and-cleaning-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.5 Performance Optimization for Collection and Cleaning Agents
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#323-cleaning-rule-generation-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3 Cleaning Rule Generation Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.3 Cleaning Rule Generation Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3231-from-sampled-defects-to-rule-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.1 From Sampled Defects to Rule Candidates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3232-sandbox-validation-and-diff-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.2 Sandbox Validation and Diff Reports
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#324-quality-filtering-and-human-review-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4 Quality Filtering and Human Review Triggers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.4 Quality Filtering and Human Review Triggers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3241-routing-by-quality-uncertainty" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.1 Routing by Quality Uncertainty
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3242-human-review-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.2 Human Review Triggers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3243-automated-quality-filtering-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.3 Automated Quality Filtering Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3244-priority-and-sla-management-for-human-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.4 Priority and SLA Management for Human Review
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#325-case-review-agentized-multi-source-legal-data-collection-and-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.5 Case Review: Agentized Multi-Source Legal Data Collection and Cleaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.5 Case Review: Agentized Multi-Source Legal Data Collection and Cleaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-metric-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Metric Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-productionizing-multi-source-collection-at-an-ai-company" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: Productionizing Multi-Source Collection at an AI Company
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Lessons
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#326-checklist-collection-and-cleaning-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.6 Checklist: Collection and Cleaning Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#327-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#328-further-reading-engineering-practices-for-collection-and-cleaning-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.8 Further Reading: Engineering Practices for Collection and Cleaning Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.8 Further Reading: Engineering Practices for Collection and Cleaning Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collection-ethics-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collection Ethics and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provenance and Reproducibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioning-and-rollback-for-cleaning-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning and Rollback for Cleaning Rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-the-nightmare-of-source-drift" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: The Nightmare of Source Drift
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: The Nightmare of Source Drift">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#321-agent-driven-collection-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1 Agent-Driven Collection Architecture
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.1 Agent-Driven Collection Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3211-unified-abstraction-for-four-source-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.1 Unified Abstraction for Four Source Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3212-collection-task-generation-and-failure-retry" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.2 Collection Task Generation and Failure Retry
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3213-scheduling-and-rate-limiting-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.3 Scheduling and Rate Limiting at Scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3214-special-handling-for-enterprise-documents-and-databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.4 Special Handling for Enterprise Documents and Databases
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#322-parsing-repair-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2 Parsing Repair Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.2 Parsing Repair Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221-detecting-and-attributing-parsing-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.1 Detecting and Attributing Parsing Exceptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-parser-selection-and-repair-rule-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.2 Parser Selection and Repair Rule Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3223-parsing-multimodal-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.3 Parsing Multimodal Content
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3224-systematic-handling-of-multilingual-and-encoding-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.4 Systematic Handling of Multilingual and Encoding Issues
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3225-performance-optimization-for-collection-and-cleaning-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.5 Performance Optimization for Collection and Cleaning Agents
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#323-cleaning-rule-generation-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3 Cleaning Rule Generation Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.3 Cleaning Rule Generation Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3231-from-sampled-defects-to-rule-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.1 From Sampled Defects to Rule Candidates
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3232-sandbox-validation-and-diff-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.2 Sandbox Validation and Diff Reports
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#324-quality-filtering-and-human-review-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4 Quality Filtering and Human Review Triggers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.4 Quality Filtering and Human Review Triggers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3241-routing-by-quality-uncertainty" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.1 Routing by Quality Uncertainty
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3242-human-review-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.2 Human Review Triggers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3243-automated-quality-filtering-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.3 Automated Quality Filtering Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3244-priority-and-sla-management-for-human-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.4 Priority and SLA Management for Human Review
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#325-case-review-agentized-multi-source-legal-data-collection-and-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.5 Case Review: Agentized Multi-Source Legal Data Collection and Cleaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.5 Case Review: Agentized Multi-Source Legal Data Collection and Cleaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-metric-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Metric Changes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-productionizing-multi-source-collection-at-an-ai-company" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: Productionizing Multi-Source Collection at an AI Company
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Lessons
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#326-checklist-collection-and-cleaning-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.6 Checklist: Collection and Cleaning Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#327-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#328-further-reading-engineering-practices-for-collection-and-cleaning-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.8 Further Reading: Engineering Practices for Collection and Cleaning Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.8 Further Reading: Engineering Practices for Collection and Cleaning Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#collection-ethics-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Collection Ethics and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provenance-and-reproducibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      Provenance and Reproducibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#versioning-and-rollback-for-cleaning-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Versioning and Rollback for Cleaning Rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-32-automated-collection-parsing-and-cleaning-agents">Chapter 32: Automated Collection, Parsing, and Cleaning Agents<a class="headerlink" href="#chapter-32-automated-collection-parsing-and-cleaning-agents" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Zhili Wang; Zhongyi Liu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>The most tedious and time-consuming work in data engineering often happens at the moment data enters the system: how to collect it, how to handle unusual formats during parsing, who maintains cleaning rules, and who decides whether quality is acceptable. When data sources grow from dozens to hundreds, manual collection strategies and cleaning rules collapse. Rule-maintenance backlogs grow without bound, or quality gates become decorative.</p>
+<p>The purpose of collection and cleaning agents is not to replace data engineers. It is to free them from repetitive rule adaptation so they can focus on exception handling, rule improvement, and architecture design.</p>
+<p>This chapter starts from four common source types: web pages, PDFs, APIs, and code repositories. It explains how agents can detect source structure, handle parsing exceptions, generate cleaning rules, run quality filters, and trigger human review when uncertainty is high. The central question is how an agent should decide under uncertainty: skip, repair, or escalate after parsing failure; choose between conflicting cleaning rules; and set quality thresholds that do not destroy either data volume or model quality.</p>
+<p>The chapter builds on Chapter 4's data acquisition, Chapter 5's cleaning and deduplication, Chapter 6's input pipelines, and Chapter 2's quality framework, upgrading traditional practice into agent-driven adaptive pipelines.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Automated collection; data parsing agents; cleaning-rule generation; quality filtering; human review; source-structure drift</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul>
+<li>Design agent-driven collection architecture for heterogeneous multi-source data.</li>
+<li>Apply agentic collection strategies to web pages, PDFs, APIs, and code repositories.</li>
+<li>Build automatic repair and rule generation mechanisms based on parsing exceptions.</li>
+<li>Construct multi-layer quality filtering pipelines and decide when to auto-pass or trigger review.</li>
+<li>Evaluate the cost-benefit ratio and exception-handling efficiency of cleaning agents in different scenarios.</li>
+</ul>
+<h2 id="scenario-the-nightmare-of-source-drift">Scenario: The Nightmare of Source Drift<a class="headerlink" href="#scenario-the-nightmare-of-source-drift" title="Permanent link">&para;</a></h2>
+<p>An AI team needs to build a training dataset for a legal large model. Sources include a court judgment website, regulation PDFs, judicial APIs, and open-source legal knowledge repositories. The team initially assigns five engineers full-time to collection and cleaning. After three months:</p>
+<p><strong>Web collection line.</strong> The target website changes layout three times. Each change breaks more than 70 percent of crawler rules. Engineers spend about two days repairing rules each time while the pipeline sits idle.</p>
+<p><strong>PDF parsing line.</strong> More than 2,000 PDF files come from over 30 courts, each with different layouts. Engineers write special parsing rules for many layouts, but about 15 percent of files still suffer field misalignment.</p>
+<p><strong>API collection line.</strong> The judicial API changes field structure four times in two months. Each change breaks downstream cleaning and takes about one day to fix.</p>
+<p><strong>Code repository line.</strong> Open-source legal knowledge bases have different directory structures, file formats, and encodings. Even after manual adaptation, encoding errors remain common.</p>
+<p>The problem is not that engineers are not working hard enough. The growth rate of rule maintenance has exceeded human processing capacity. As source count grows, maintenance cost is O(N) or even O(N^2), while human capacity is fixed. The team needs an agent system that can adapt to source-structure changes.</p>
+<h3 id="core-engineering-pain-points">Core Engineering Pain Points<a class="headerlink" href="#core-engineering-pain-points" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Source-structure drift.</strong> Web structures, API schemas, and file formats change over time.</li>
+<li><strong>Diverse parsing exceptions.</strong> PDF layout variation, encoding chaos, and special characters cannot all be covered by one generic rule set.</li>
+<li><strong>Cleaning-rule conflicts.</strong> Different sources may define the same field differently, such as <code>yyyy-MM-dd</code> versus <code>dd/MM/yyyy</code>.</li>
+<li><strong>Quality-filtering granularity.</strong> Overly strict filters reduce data volume; loose filters fail training quality requirements.</li>
+</ol>
+<h2 id="321-agent-driven-collection-architecture">32.1 Agent-Driven Collection Architecture<a class="headerlink" href="#321-agent-driven-collection-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="3211-unified-abstraction-for-four-source-types">32.1.1 Unified Abstraction for Four Source Types<a class="headerlink" href="#3211-unified-abstraction-for-four-source-types" title="Permanent link">&para;</a></h3>
+<p>Collection from all sources can be abstracted into three layers: <strong>connection layer -&gt; extraction layer -&gt; structuring layer</strong>. The agent plays different roles at each layer.</p>
+<p>Figure 32-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Unified architecture for four-source collection agents" src="../../../images/part10/Yu-Chap32-Fig01.svg" /></a></p>
+<p><em>Figure 32-1: Unified architecture for four-source collection agents</em></p>
+<p>Although web pages, PDFs, APIs, and repositories use different access methods, agent logic can be unified. The abstraction hides source differences behind adapters in the connection layer. Extraction and structuring share common logic.</p>
+<p><strong>Connection-layer adapters.</strong> Each source type has an adapter responsible for connection setup, authentication, data retrieval, and raw-data caching. The interface is uniform: <code>connect() -&gt; fetch() -&gt; cache_raw()</code>. Upper layers do not need to know whether the source is a web page, PDF, or API.</p>
+<p><strong>Extraction-layer process.</strong> Regardless of source, extraction follows the same sequence: raw data -&gt; format identification -&gt; content extraction -&gt; structure mapping -&gt; intermediate output. Differences appear in format identification and extraction: web pages need DOM parsing, PDFs need layout analysis, and API responses need JSON Schema validation.</p>
+<p><strong>Structuring-layer output.</strong> All sources should emit a unified schema with at least <code>source_id</code>, <code>extraction_timestamp</code>, <code>content_fields</code>, <code>metadata_fields</code>, and <code>quality_score</code>. This allows downstream cleaning and quality agents to handle all sources consistently.</p>
+<h3 id="3212-collection-task-generation-and-failure-retry">32.1.2 Collection Task Generation and Failure Retry<a class="headerlink" href="#3212-collection-task-generation-and-failure-retry" title="Permanent link">&para;</a></h3>
+<p>The first responsibility of a collection agent is <strong>automatic task generation</strong>. In the traditional mode, engineers write collection configs manually for every source. In the agent mode, users describe data needs and the agent performs these steps:</p>
+<ol>
+<li><strong>Source probing.</strong> The agent lightly probes the source, identifies type, estimates volume, and detects access limits.</li>
+<li><strong>Strategy generation.</strong> It generates pagination, frequency control, concurrency, and retry strategy.</li>
+<li><strong>Provenance capture.</strong> Every collection records URL, collection time, HTTP headers, and file hash. This matters for compliance audit and copyright tracing.</li>
+</ol>
+<p>Table 32-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-1: Collection failure categories and retry strategies</em></p>
+<table>
+<thead>
+<tr>
+<th>Failure type</th>
+<th>Detection</th>
+<th>Retry strategy</th>
+<th>Max retries</th>
+<th>After limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Network timeout</td>
+<td>HTTP status or exception</td>
+<td>Exponential backoff: 1s, 2s, 4s, 8s</td>
+<td>5</td>
+<td>Mark temporarily unavailable; retry after 1 hour</td>
+</tr>
+<tr>
+<td>Anti-crawling block</td>
+<td>403 or CAPTCHA page</td>
+<td>Switch User-Agent or IP pool</td>
+<td>3</td>
+<td>Escalate to human</td>
+</tr>
+<tr>
+<td>Structure change</td>
+<td>Missing parsed fields &gt; 50%</td>
+<td>Trigger structure reprobe</td>
+<td>2</td>
+<td>Generate structure-change alert</td>
+</tr>
+<tr>
+<td>Encoding error</td>
+<td>Garbled-text detection</td>
+<td>Detect encoding and transcode</td>
+<td>3</td>
+<td>Keep raw bytes and mark for review</td>
+</tr>
+<tr>
+<td>Abnormal volume</td>
+<td>Collected amount deviates &gt; 3 sigma from history</td>
+<td>Pause collection and report</td>
+<td>1</td>
+<td>Resume after human confirmation</td>
+</tr>
+</tbody>
+</table>
+<p>Retry strategy must be polite. Aggressive retry can worsen access blocks or create legal and operational risk.</p>
+<h3 id="3213-scheduling-and-rate-limiting-at-scale">32.1.3 Scheduling and Rate Limiting at Scale<a class="headerlink" href="#3213-scheduling-and-rate-limiting-at-scale" title="Permanent link">&para;</a></h3>
+<p>When an agent manages hundreds of sources, scheduling is no longer simple cron execution. It becomes a constrained optimization problem: maximize throughput and freshness while respecting access limits.</p>
+<p>Table 32-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-2: Collection scheduling constraints</em></p>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Meaning</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frequency limit</td>
+<td>Request-rate limit of target website or API</td>
+<td>At most 10 requests per second</td>
+</tr>
+<tr>
+<td>Concurrency limit</td>
+<td>Maximum simultaneous collection tasks</td>
+<td>At most 50 concurrent tasks</td>
+</tr>
+<tr>
+<td>Time window</td>
+<td>Accessible time window</td>
+<td>Weekdays 08:00-20:00</td>
+</tr>
+<tr>
+<td>Volume estimate</td>
+<td>Estimated volume and duration per run</td>
+<td>Full collection 2 hours; incremental 10 minutes</td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>Downstream importance</td>
+<td>Training source &gt; evaluation source &gt; experimental source</td>
+</tr>
+</tbody>
+</table>
+<p>The scheduler should support three modes:</p>
+<p><strong>Periodic collection.</strong> For predictable updates, such as daily news or weekly reports. The agent learns update patterns and adjusts when real frequency deviates.</p>
+<p><strong>Event-triggered collection.</strong> For sources requiring fast response, such as API schema change notices or web-structure alerts. The agent subscribes to webhooks, RSS, or monitoring alerts and triggers incremental collection.</p>
+<p><strong>Adaptive collection.</strong> For unpredictable sources. The agent probes at low frequency, such as every six hours, and adjusts based on observed updates. Repeated no-update probes lower frequency; detected updates raise it.</p>
+<h3 id="3214-special-handling-for-enterprise-documents-and-databases">32.1.4 Special Handling for Enterprise Documents and Databases<a class="headerlink" href="#3214-special-handling-for-enterprise-documents-and-databases" title="Permanent link">&para;</a></h3>
+<p>Two enterprise source classes require special strategy.</p>
+<p><strong>Enterprise documents such as SharePoint, Confluence, and DingTalk Docs.</strong> These platforms include versioning, permissions, and rich text. Agents must authenticate through platform APIs, check permissions, decide whether to collect latest or historical versions, parse tables, images, attachments, and embedded content, and follow enterprise classification and access-control policies.</p>
+<p><strong>Direct database collection.</strong> Many core enterprise datasets live in relational databases. Agents should generate extraction queries from schemas, support incremental collection through timestamp or version fields, limit production impact by using read replicas and off-peak windows, and handle cross-database joins when training data requires multiple tables.</p>
+<h2 id="322-parsing-repair-agents">32.2 Parsing Repair Agents<a class="headerlink" href="#322-parsing-repair-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3221-detecting-and-attributing-parsing-exceptions">32.2.1 Detecting and Attributing Parsing Exceptions<a class="headerlink" href="#3221-detecting-and-attributing-parsing-exceptions" title="Permanent link">&para;</a></h3>
+<p>The core ability of a parsing agent is not merely parsing successfully. It is knowing why parsing failed and what to do next.</p>
+<p>Parsing exceptions fall into three types:</p>
+<p><strong>Structural exceptions.</strong> HTML DOM changes break selectors, PDF layout changes break region recognition, or API fields are added or removed.</p>
+<p><strong>Encoding exceptions.</strong> Declared encoding does not match actual encoding, files mix encodings, or special-character escaping fails.</p>
+<p><strong>Semantic exceptions.</strong> Parsed values are syntactically valid but semantically impossible, such as "month 13 day 45" or a negative amount in a business context where negative amounts cannot occur.</p>
+<p>Figure 32-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Parsing exception handling decision flow" src="../../../images/part10/Yu-Chap32-Fig02.svg" /></a></p>
+<p><em>Figure 32-2: Parsing exception handling decision flow</em></p>
+<h3 id="3222-parser-selection-and-repair-rule-generation">32.2.2 Parser Selection and Repair Rule Generation<a class="headerlink" href="#3222-parser-selection-and-repair-rule-generation" title="Permanent link">&para;</a></h3>
+<p>After parsing failure, the agent should choose among several strategies rather than only repair or skip:</p>
+<ol>
+<li><strong>Fallback parser chain.</strong> PDFs may try PyMuPDF -&gt; pdfplumber -&gt; Tesseract OCR. HTML may try lxml -&gt; html5lib -&gt; BeautifulSoup.</li>
+<li><strong>Automatic extraction rule generation.</strong> When fixed selectors fail, the agent can generate rules from semantic features, such as "text that looks like a date" or "line containing the keyword case number."</li>
+<li><strong>Partial repair.</strong> If only some fields fail, the agent should preserve correctly parsed fields and repair only abnormal fields.</li>
+</ol>
+<h3 id="3223-parsing-multimodal-content">32.2.3 Parsing Multimodal Content<a class="headerlink" href="#3223-parsing-multimodal-content" title="Permanent link">&para;</a></h3>
+<p>Modern sources often mix text, images, tables, screenshots, and rich layouts.</p>
+<p><strong>Image-text mixed content.</strong> For images in documents, the agent decides whether to keep references, run OCR, generate descriptions, or ignore images. The decision depends on downstream tasks. Multimodal model training may require preserving images; text-only training may need only extracted text or captions.</p>
+<p><strong>Robust table parsing.</strong> Tables often break parsers because of merged cells, nested headers, cross-page tables, and borderless layouts. A good strategy is multi-parser voting plus human fallback:</p>
+<ol>
+<li>Use two or three parsers based on different signals: borders, whitespace alignment, and semantic rules.</li>
+<li>Compare results. If row/column counts and headers match, accept with high confidence.</li>
+<li>If results conflict, mark parsing as uncertain and submit for review.</li>
+</ol>
+<p><strong>OCR conditions and quality control.</strong> OCR has extra compute and latency cost. The agent should trigger OCR only when direct text extraction has character recognition below 85 percent, the document contains non-copyable text, and estimated OCR time fits the task budget.</p>
+<p>OCR output also needs quality checks. Compare recognized text with known metadata such as title, author, and date. If recognition of these anchor fields is below threshold, mark the document as low-quality OCR and recommend human handling.</p>
+<h3 id="3224-systematic-handling-of-multilingual-and-encoding-issues">32.2.4 Systematic Handling of Multilingual and Encoding Issues<a class="headerlink" href="#3224-systematic-handling-of-multilingual-and-encoding-issues" title="Permanent link">&para;</a></h3>
+<p>Data engineering agents face two language-related challenges.</p>
+<p><strong>Language identification and routing.</strong> The agent must identify document language during parsing to support later cleaning and labeling. This is not a simple Chinese/English decision. A single text may contain Chinese, English, code, and mathematical formulas.</p>
+<p><strong>Encoding detection and repair.</strong> Encoding errors are persistent. A file may declare one encoding while containing another, or mix multiple encodings. The agent should:</p>
+<ol>
+<li>Read raw bytes and detect actual encoding using tools such as chardet or cChardet.</li>
+<li>If detected encoding differs from declared encoding, decode with the detected encoding.</li>
+<li>If some bytes cannot be decoded reliably, preserve raw bytes, mark the location and context as uncertain, and avoid silent replacement.</li>
+<li>Record the entire process in Lineage: declared encoding, detected encoding, transcoding result, and undecodable-byte ratio.</li>
+</ol>
+<h3 id="3225-performance-optimization-for-collection-and-cleaning-agents">32.2.5 Performance Optimization for Collection and Cleaning Agents<a class="headerlink" href="#3225-performance-optimization-for-collection-and-cleaning-agents" title="Permanent link">&para;</a></h3>
+<p>At hundreds of sources and TB-scale daily data, performance is necessary for survival.</p>
+<p><strong>Incremental collection and change detection.</strong> Full collection cost grows linearly with data volume. Agents should prefer incremental collection. APIs can use <code>Last-Modified</code> headers or <code>updated_at</code> fields; web pages can compare page hashes; PDFs can compare file hashes or version numbers.</p>
+<p><strong>Parallelism and resource pools.</strong> Agents should maximize parallelism within resource limits. Each source type can have its own pool so one source type does not starve others. When a pool exceeds 80 percent utilization, low-priority tasks should move to off-peak windows.</p>
+<p><strong>Local cache and deduplication.</strong> Recollecting identical content wastes compute and storage. Before collection, the agent should check content hashes in cache. Cache duration should follow freshness requirements: news may cache for hours, regulations for days.</p>
+<h2 id="323-cleaning-rule-generation-agents">32.3 Cleaning Rule Generation Agents<a class="headerlink" href="#323-cleaning-rule-generation-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3231-from-sampled-defects-to-rule-candidates">32.3.1 From Sampled Defects to Rule Candidates<a class="headerlink" href="#3231-from-sampled-defects-to-rule-candidates" title="Permanent link">&para;</a></h3>
+<p>In traditional cleaning-rule maintenance, humans write rules while data determines when rules are needed. Engineers often learn that a rule is missing only after downstream users report a problem. Agents can reverse this:</p>
+<ol>
+<li><strong>Defect discovery.</strong> Quality scans or downstream feedback identify failing fields and subsets.</li>
+<li><strong>Pattern extraction.</strong> The agent analyzes whether defects come from a source, a format pattern, or a specific transformation path.</li>
+<li><strong>Rule candidate generation.</strong> It proposes scope, transformation logic, and expected effect.</li>
+<li><strong>Sandbox validation.</strong> The rule runs against historical data in an isolated environment and produces a diff report.</li>
+<li><strong>Human approval.</strong> The data owner approves before production release.</li>
+</ol>
+<h3 id="3232-sandbox-validation-and-diff-reports">32.3.2 Sandbox Validation and Diff Reports<a class="headerlink" href="#3232-sandbox-validation-and-diff-reports" title="Permanent link">&para;</a></h3>
+<p>Sandbox validation is the last defense before rule release. The sandbox should satisfy:</p>
+<ul>
+<li><strong>Data isolation.</strong> Use a production snapshot; never affect production data.</li>
+<li><strong>Full validation.</strong> Run against all matching data, not only samples, to catch edge cases.</li>
+<li><strong>Diff visualization.</strong> Show before/after comparisons and highlight modified fields and modification volume.</li>
+</ul>
+<p>Table 32-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-3: Sandbox validation dimensions and pass conditions</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Check</th>
+<th>Pass condition</th>
+<th>If failed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rule match scope</td>
+<td>How many rows are affected</td>
+<td>Affected rows within expected range, deviation &lt; 20%</td>
+<td>Adjust scope</td>
+</tr>
+<tr>
+<td>Modification correctness</td>
+<td>Whether modified values are legal</td>
+<td>100% format pass, &gt; 95% semantic pass</td>
+<td>Fix rule logic</td>
+</tr>
+<tr>
+<td>Side-effect detection</td>
+<td>Whether non-target fields changed</td>
+<td>Non-target modification rate is 0%</td>
+<td>Tighten rule conditions</td>
+</tr>
+<tr>
+<td>Performance evaluation</td>
+<td>Runtime on large data</td>
+<td>Runtime &lt; 150% of estimate</td>
+<td>Optimize or batch execution</td>
+</tr>
+</tbody>
+</table>
+<h2 id="324-quality-filtering-and-human-review-triggers">32.4 Quality Filtering and Human Review Triggers<a class="headerlink" href="#324-quality-filtering-and-human-review-triggers" title="Permanent link">&para;</a></h2>
+<h3 id="3241-routing-by-quality-uncertainty">32.4.1 Routing by Quality Uncertainty<a class="headerlink" href="#3241-routing-by-quality-uncertainty" title="Permanent link">&para;</a></h3>
+<p>The hardest part of quality judgment is not deciding right or wrong. It is knowing how uncertain the agent is. A well-designed agent should request human help under uncertainty rather than forcing a possibly wrong decision.</p>
+<p>Table 32-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-4: Quality uncertainty routing</em></p>
+<table>
+<thead>
+<tr>
+<th>Quality dimension</th>
+<th>High certainty: auto-pass</th>
+<th>Medium certainty: mark and sample review</th>
+<th>Low certainty: human review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Format correctness</td>
+<td>Regex/constraints match 100%</td>
+<td>Match rate 80%-99%</td>
+<td>Match rate &lt; 80%</td>
+</tr>
+<tr>
+<td>Field completeness</td>
+<td>Missing rate &lt; 1%</td>
+<td>Missing rate 1%-5%</td>
+<td>Missing rate &gt; 5%</td>
+</tr>
+<tr>
+<td>Semantic reasonableness</td>
+<td>All business rules pass</td>
+<td>One or two rule warnings</td>
+<td>Three or more warnings or blocking rules</td>
+</tr>
+<tr>
+<td>Cross-source consistency</td>
+<td>Same field values match across sources</td>
+<td>Minor differences, such as formatting</td>
+<td>Substantive differences</td>
+</tr>
+<tr>
+<td>Distribution stability</td>
+<td>Deviation from history &lt; 2 sigma</td>
+<td>Deviation 2-3 sigma</td>
+<td>Deviation &gt; 3 sigma</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3242-human-review-triggers">32.4.2 Human Review Triggers<a class="headerlink" href="#3242-human-review-triggers" title="Permanent link">&para;</a></h3>
+<p>The following conditions must trigger human review:</p>
+<ol>
+<li><strong>Low-confidence quality judgment.</strong> Agent confidence is below threshold.</li>
+<li><strong>High-risk field modification.</strong> Amount, date, primary key, foreign key, and similar critical fields are affected.</li>
+<li><strong>Rule conflict.</strong> Two rules produce different cleaning suggestions for the same data.</li>
+<li><strong>First-time source type.</strong> The first batch from an unseen source type requires sampling review.</li>
+<li><strong>Quality metric shock.</strong> A batch's quality metric drops more than 20 percent versus the previous batch.</li>
+<li><strong>Repeated repair failure.</strong> The agent fails verification three times on the same batch.</li>
+</ol>
+<h3 id="3243-automated-quality-filtering-pipeline">32.4.3 Automated Quality Filtering Pipeline<a class="headerlink" href="#3243-automated-quality-filtering-pipeline" title="Permanent link">&para;</a></h3>
+<p>Quality filtering should follow "wide entry, strict exit, tiered filtering." Each layer handles one quality dimension. Failed data is routed to the appropriate handling path rather than simply discarded.</p>
+<p>Figure 32-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Tiered quality filtering pipeline" src="../../../images/part10/Yu-Chap32-Fig03.svg" /></a></p>
+<p><em>Figure 32-3: Tiered quality filtering pipeline</em></p>
+<p>Thresholds should be configurable by business need and data characteristics:</p>
+<ul>
+<li><strong>Format validation layer:</strong> strict mode. Format mismatch rejects downstream entry.</li>
+<li><strong>Completeness validation layer:</strong> flexible mode. Small missing rates are marked; above-threshold missingness alerts.</li>
+<li><strong>Semantic validation layer:</strong> rule mode. Validate against predefined business rules.</li>
+<li><strong>Consistency validation layer:</strong> comparison mode. Compare across sources, history, and upstream/downstream dependencies.</li>
+</ul>
+<h3 id="3244-priority-and-sla-management-for-human-review">32.4.4 Priority and SLA Management for Human Review<a class="headerlink" href="#3244-priority-and-sla-management-for-human-review" title="Permanent link">&para;</a></h3>
+<p>Table 32-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-5: Human review priority and SLA management</em></p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Trigger</th>
+<th>SLA</th>
+<th>Timeout action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>Affects key downstream pipeline, such as model training export</td>
+<td>Within 1 hour</td>
+<td>Escalate and pause related pipelines</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Low certainty plus high-risk field</td>
+<td>Within 4 hours</td>
+<td>Escalate</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>First-time source type</td>
+<td>Within 24 hours</td>
+<td>Mark as pending confirmation, allow with traceability</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>Minor quality metric fluctuation</td>
+<td>Within 72 hours</td>
+<td>Add to next quality review</td>
+</tr>
+</tbody>
+</table>
+<h2 id="325-case-review-agentized-multi-source-legal-data-collection-and-cleaning">32.5 Case Review: Agentized Multi-Source Legal Data Collection and Cleaning<a class="headerlink" href="#325-case-review-agentized-multi-source-legal-data-collection-and-cleaning" title="Permanent link">&para;</a></h2>
+<p>A legal AI team transforms its manual collection process into an agent-driven adaptive pipeline.</p>
+<p><strong>Stage 1: collection agent launch.</strong> The agent probes more than 50 source structures, generates collection strategies, and executes. In the first month, recovery time after web rule failure drops from two days to four hours. PDF parsing accuracy improves only from 85 percent to 90 percent.</p>
+<p><strong>Stage 2: parsing repair agent.</strong> The team configures a three-layer PDF parser fallback chain: PyMuPDF -&gt; pdfplumber -&gt; OCR, and trains layout recognition for 30 court formats. Parsing accuracy rises to 96 percent, but OCR fallback takes 20 times longer than normal parsing and creates batch timeouts.</p>
+<p><strong>Stage 3: cleaning-rule generation and quality routing.</strong> The agent generates over 40 cleaning-rule candidates from sampled defects; 35 pass sandbox validation and are released. Quality uncertainty routing reduces daily human review from over 500 documents to 80, focusing review on genuinely disputed cases.</p>
+<h3 id="key-metric-changes">Key Metric Changes<a class="headerlink" href="#key-metric-changes" title="Permanent link">&para;</a></h3>
+<p>Table 32-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 32-6: Key Metric Changes</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Before: manual</th>
+<th>After: agent-assisted</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New source onboarding time</td>
+<td>3-5 days</td>
+<td>4-8 hours</td>
+<td>-80%</td>
+</tr>
+<tr>
+<td>Parsing accuracy</td>
+<td>85%</td>
+<td>96%</td>
+<td>+11%</td>
+</tr>
+<tr>
+<td>Rule maintenance staffing</td>
+<td>5 full-time engineers</td>
+<td>1.5 full-time engineers</td>
+<td>-70%</td>
+</tr>
+<tr>
+<td>Human review volume</td>
+<td>100% full review</td>
+<td>15% after routing</td>
+<td>-85%</td>
+</tr>
+<tr>
+<td>Data release cycle</td>
+<td>2 weeks</td>
+<td>3 days</td>
+<td>-78%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="extended-case-productionizing-multi-source-collection-at-an-ai-company">Extended Case: Productionizing Multi-Source Collection at an AI Company<a class="headerlink" href="#extended-case-productionizing-multi-source-collection-at-an-ai-company" title="Permanent link">&para;</a></h3>
+<p>Another AI company collects training data from more than 200 sources, including news, papers, technical blogs, government open data, and social media. Its production agent faces three typical problems.</p>
+<p><strong>Escalating anti-crawling defenses.</strong> Two months after launch, about 30 percent of news sites update anti-crawling policies. The agent's automatic retry triggers stricter blocking, and some high-frequency retry IPs are blacklisted. Lesson: retry must include polite backoff. Aggressive retry can make the relationship worse.</p>
+<p><strong>Hidden data drift.</strong> An academic paper site redesigns its frontend. The visual page looks similar, but HTML changes completely. The agent monitors missing parsed fields, yet still extracts text. It accidentally mixes main content with sidebar recommendations, so missingness does not spike, but semantic quality silently falls.</p>
+<p><strong>Cost runaway.</strong> OCR calls triple in the third month because the agent sends every uncertain PDF to OCR. Cloud cost grows from $2,000 to $6,000 per month. High-cost operations need budgets and quotas.</p>
+<p>Countermeasures:</p>
+<ul>
+<li>Maintain an anti-crawling friendliness score for each source and prefer official APIs or partnerships for difficult sources.</li>
+<li>Add content drift detection beyond missingness, monitoring semantic distribution changes in extracted text.</li>
+<li>Add operation cost quotas for OCR and model calls, escalating to human approval when quotas are exceeded.</li>
+</ul>
+<h3 id="case-lessons">Case Lessons<a class="headerlink" href="#case-lessons" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Collection agents must be polite.</strong> Respect target access limits and avoid legal or IP-block risk.</li>
+<li><strong>Quality monitoring cannot rely only on missingness.</strong> Semantic drift is harder to detect and more damaging.</li>
+<li><strong>Automation is not free.</strong> Every operation has compute cost; budget controls belong in the design.</li>
+<li><strong>Provenance is not only compliance.</strong> Complete source records make debugging and trust-building possible.</li>
+</ol>
+<h2 id="326-checklist-collection-and-cleaning-agent-deployment">32.6 Checklist: Collection and Cleaning Agent Deployment<a class="headerlink" href="#326-checklist-collection-and-cleaning-agent-deployment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Does the system support a unified abstraction for web, PDF, API, and repository collection?</li>
+<li>[ ] Does retry strategy distinguish network, anti-crawling, structure, and encoding failures?</li>
+<li>[ ] Does each source type have a parser fallback chain?</li>
+<li>[ ] Does parsing exception detection cover structural, encoding, and semantic dimensions?</li>
+<li>[ ] Are cleaning rules sandbox-validated with diff reports before production release?</li>
+<li>[ ] Does sandbox validation check match scope, correctness, side effects, and performance?</li>
+<li>[ ] Is there a three-tier quality uncertainty model: auto-pass, mark, human review?</li>
+<li>[ ] Do low-certainty cases, high-risk fields, rule conflicts, and first-time source types trigger review?</li>
+<li>[ ] Is provenance recorded for every collection event: URL, time, and hash?</li>
+<li>[ ] Does abnormal quality movement automatically pause collection?</li>
+</ul>
+<h2 id="327-chapter-links">32.7 Chapter Links<a class="headerlink" href="#327-chapter-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Chapter 2:</strong> data quality framework for filtering and uncertainty routing.</li>
+<li><strong>Chapter 4:</strong> data collection foundation extended here with agent-driven adaptive collection.</li>
+<li><strong>Chapter 5:</strong> cleaning and deduplication upgraded here into agent-generated cleaning rules.</li>
+<li><strong>Chapter 6:</strong> input pipelines downstream of collection.</li>
+<li><strong>Chapter 31:</strong> six-layer architecture applied to collection and cleaning.</li>
+<li><strong>Chapter 33:</strong> labeling, synthesis, and evaluation agents consume cleaned outputs.</li>
+</ul>
+<h2 id="328-further-reading-engineering-practices-for-collection-and-cleaning-agents">32.8 Further Reading: Engineering Practices for Collection and Cleaning Agents<a class="headerlink" href="#328-further-reading-engineering-practices-for-collection-and-cleaning-agents" title="Permanent link">&para;</a></h2>
+<h3 id="collection-ethics-and-compliance-boundaries">Collection Ethics and Compliance Boundaries<a class="headerlink" href="#collection-ethics-and-compliance-boundaries" title="Permanent link">&para;</a></h3>
+<p>Agent-driven collection amplifies traditional compliance issues. If speed and coverage increase by 10x, previously small risks become large.</p>
+<p><strong>Automatic robots.txt compliance.</strong> Before web collection, the agent must check <code>robots.txt</code> and respect crawling rules. Exceptions require explicit approval records.</p>
+<p><strong>Copyright and usage-right detection.</strong> The agent should collect not only data but also usage conditions: Terms of Service, API terms, and repository licenses. Unclear permissions should be marked for legal review.</p>
+<p><strong>Load control on target servers.</strong> The agent should monitor response time and lower collection speed if its own traffic appears to harm service.</p>
+<h3 id="provenance-and-reproducibility">Provenance and Reproducibility<a class="headerlink" href="#provenance-and-reproducibility" title="Permanent link">&para;</a></h3>
+<p>Any training data batch should be regenerable. This requires:</p>
+<ol>
+<li><strong>Collection configuration snapshot.</strong> Save source URLs, parser rule versions, and cleaning rule versions for every run.</li>
+<li><strong>Data fingerprint.</strong> Compute content hashes for each batch.</li>
+<li><strong>Version linkage.</strong> Store data batches together with configuration snapshots and fingerprints so every batch can be traced to its production process.</li>
+</ol>
+<h3 id="versioning-and-rollback-for-cleaning-rules">Versioning and Rollback for Cleaning Rules<a class="headerlink" href="#versioning-and-rollback-for-cleaning-rules" title="Permanent link">&para;</a></h3>
+<p>Agent-generated cleaning rules need version management:</p>
+<ul>
+<li>Assign semantic versions to rules on release.</li>
+<li>Keep complete change records: editor, time, content, and reason.</li>
+<li>On rollback, roll back the rule and mark affected data batches for reprocessing.</li>
+</ul>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter treated data-source drift as the central threat in automated collection and cleaning, and designed agents along a four-stage flow: collection, parsing, cleaning, and filtering. In collection, it abstracted web pages, APIs, documents, and databases into connection, extraction, and structuring layers, using adapters to encapsulate source differences while discussing task generation, failure retry, large-scale scheduling, and rate limiting. In parsing, the focus was exception detection and attribution, parser selection and repair-rule generation, and systematic handling of multimodal, multilingual, and encoding issues.</p>
+<p>The cleaning stage emphasized generating rule candidates from sampled defects, validating them in a sandbox, and producing diff reports before human-approved release, rather than allowing agents to rewrite production data directly. The quality-filtering stage routed data by quality uncertainty, defining human-review triggers, priorities, and timing requirements. The chapter also defined collection ethics and compliance boundaries, provenance and reproducibility requirements, and versioning and rollback for cleaning rules, so collection and cleaning agents can improve throughput while remaining auditable and reversible.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131. https://doi.org/10.18653/v1/2021.acl-demo.15.</p>
+<p>Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.</p>
+<p>Carlini N, Tramer F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson U, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In: Proceedings of the 30th USENIX Security Symposium, pp 2633-2650.</p>
+<p>Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449. https://doi.org/10.1145/3626246.3653385.</p>
+<p>Chowdhery A, Narang S, Devlin J, Bosma M, Mishra G, Roberts A, Barham P, Chung H W, Sutton C, Gehrmann S, Schuh P, Shi K, Tsvyashchenko S, Maynez J, Rao A, Barnes P, Tay Y, Shazeer N, Prabhakaran V, Reif E, Du N, Hutchinson B, Pope R, Bradbury J, Austin J, Isard M, Gur-Ari G, Yin P, Duke T, Levskaya A, Ghemawat S, Dev S, Michalewski H, Garcia X, Misra V, Robinson K, Fedus L, Zhou D, Ippolito D, Luan D, Lim H, Zoph B, Spiridonov A, Sepassi R, Dohan D, Agrawal S, Omernick M, Dai A M, Pillai T S, Pellat M, Lewkowycz A, Moreira E, Child R, Polozov O, Lee K, Zhou Z, Wang X, Saeta B, Diaz M, Firat O, Catasta M, Wei J, Meier-Hellstern K, Eck D, Dean J, Petrov S, Fiedel N (2022) PaLM: Scaling Language Modeling with Pathways. Journal of Machine Learning Research 24(240):1-113.</p>
+<p>Dodge J, Sap M, Marasovic A, Agnew W, Ilharco G, Groeneveld D, Mitchell M, Gardner M (2021) Documenting Large Webtext Corpora: A Case Study on the Colossal Clean Crawled Corpus. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pp 1286-1305.</p>
+<p>Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.</p>
+<p>Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091. https://doi.org/10.1145/3503161.3548112.</p>
+<p>Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision, pp 498-517. https://doi.org/10.1007/978-3-031-19815-1_29.</p>
+<p>Laurencon H, Saulnier L, Wang T, Akiki C, del Moral A V, Le Scao T, Von Werra L, Mou C, Gonzalez Ponferrada E, Nguyen H, Frohberg J, Sasko M, Lhoest Q, McMillan-Major A, Dupont G, Biderman S, Rogers A, Allal L B, De Toni F, Pistilli G, Nguyen O, Nikpoor S, Masoud M, Labbe S, Vial T, Reusch A, Yogatama D, Raffel C, Wolf T, BigScience Workshop (2022) The BigScience ROOTS Corpus: A 1.6TB Composite Multilingual Dataset. In: Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track. https://doi.org/10.52202/068431-2306.</p>
+<p>Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics, pp 8424-8445.</p>
+<p>Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.</p>
+<p>Nguyen T, et al. (2024) CulturaX: A Cleaned, Enormous, and Multilingual Dataset for Large Language Models in 167 Languages. In: Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation. https://doi.org/10.63317/5iz6z5g7eit3.</p>
+<p>Ortiz Suarez P J, Sagot B, Romary L (2020) A Monolingual Approach to Contextualized Word Embeddings for Mid-Resource Languages. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 1703-1714.</p>
+<p>Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.</p>
+<p>Penedo G, Kydlicek H, Allal L B, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. In: Advances in Neural Information Processing Systems 37, Datasets and Benchmarks Track. arXiv:2406.17557.</p>
+<p>Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.</p>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. Journal of Machine Learning Research 21(140):1-67.</p>
+<p>Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.</p>
+<p>Wenzek G, Lachaux M-A, Conneau A, Chaudhary V, Guzman F, Joulin A, Grave E (2020) CCNet: Extracting High Quality Monolingual Datasets from Web Crawl Data. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 4003-4012.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch31_agent_architecture/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 31: Architecture and Task Boundaries for Data Engineering Agents">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch33_labeling_synthesis_evaluation/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 33: Labeling, Synthesis, and Evaluation Agents">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 33: Labeling, Synthesis, and Evaluation Agents
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

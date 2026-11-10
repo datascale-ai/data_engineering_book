@@ -1,0 +1,2408 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p01_mini_c4/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目一：基于 Ray 构建分布式 Mini-C4 数据流水线 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ray-mini-c4" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目一：基于 Ray 构建分布式 Mini-C4 数据流水线
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p01_mini_c4/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p01_mini_c4/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-mini-c4" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：Mini-C4 的工程定位
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界设定的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目整体架构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. 项目整体架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 流程总览
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 三段式理解方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 三段式理解方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      第一阶段：从网页世界到文本世界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      第二阶段：从文本世界到语料世界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      第三阶段：从语料世界到训练接口
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-common-crawl" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 数据获取：Common Crawl 的工程选择
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-warc" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. WARC 解析与正文抽取
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. WARC 解析与正文抽取">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 正文抽取作为首道关键门槛
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 核心组件选型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 流式处理的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 核心实现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 本阶段的结果含义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 启发式清洗：首轮噪声筛除
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 启发式清洗：首轮噪声筛除">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 启发式清洗的必要性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 本项目采用的主要清洗规则
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 本项目采用的主要清洗规则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）长度规则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）平均词长规则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）符号密度规则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）黑名单短语规则
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 启发式清洗的特点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 本阶段结果解读
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 去重：网页语料中的近重复处理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 去重：网页语料中的近重复处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 重复问题有多严重
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 避免两两比较的原因
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-minhash-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 MinHash 与 LSH 的工程直觉
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-ray" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4 采用 Ray 的工程考虑
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5 这里最容易踩的坑
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6 本阶段结果解读
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 语种拆分：按语言处理的必要性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 语种拆分：按语言处理的必要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 不同语言不能共用同一套质量门
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 本项目的做法
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 语种拆分作为必要中间层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 质量过滤：从“看起来像文本”到“适合训练”
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 质量过滤：从“看起来像文本”到“适合训练”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 为什么质量过滤是最关键的一道门
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-kenlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 英文质量门：KenLM 困惑度
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 本项目观察到的主要拦截原因
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 中英文保留率差异说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 三轮实验复盘：流水线的迭代形成过程
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 三轮实验复盘：流水线的迭代形成过程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 实验一：只做正文抽取
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 实验二：加入启发式清洗与去重
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 实验三：加入语言拆分与质量过滤
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 三轮实验的工程意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 训练数据封装：从清洗结果到训练接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 训练数据封装：从清洗结果到训练接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 数据清洗不等于训练可用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 确定性切分的重要性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-smoke-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 Smoke Test 的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 Manifest 的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 数据评估：流水线价值判断
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 数据评估：流水线价值判断">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 数据留存漏斗
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 这些数字真正说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 数据画像
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 成本分析：资源核算与瓶颈
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 成本分析：资源核算与瓶颈">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 存储成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 计算瓶颈
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 验证闭环：项目一致性检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 验证闭环：项目一致性检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 项目检查的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 检查结果
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 检查覆盖范围
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14.3 检查覆盖范围">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      命令级检查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据/产物级检查
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 验证闭环的工程意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 主要局限与风险
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 主要局限与风险">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 保留率低
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 中文保留率偏低
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 去重扩展性有限
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 后续扩展方向
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 后续扩展方向">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 去重后端升级
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 中文质量模型升级
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 前置域名过滤
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.4 可观测性增强
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-mini-c4" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 工程实践总结：Mini-C4 的方法价值
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 主要交付物清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 主要交付物清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 中间数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 训练数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 报告与检查产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 结语
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mini-c4" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：Mini-C4 流水线的验收基线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：Mini-C4 流水线的验收基线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、抓取与解析基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、清洗与去重基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、语言切分与质量打分基线
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：从教学型原型到大规模预训练工厂
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：从教学型原型到大规模预训练工厂">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、先扩控制面，再扩数据量
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、预训练语料工厂需要“入口治理”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、预训练项目最终比拼的是持续生产能力
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：语料配比与训练混合策略的前置思考
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：语料配比与训练混合策略的前置思考">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、数据准备阶段就该保留混合所需信息
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、训练混合策略本质上是质量控制的延续
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="ray-mini-c4">项目一：基于 Ray 构建分布式 Mini-C4 数据流水线<a class="headerlink" href="#ray-mini-c4" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">徐鑫；张然；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>P01 聚焦从 Common Crawl shard 构建 Mini-C4 训练数据集的工程过程。章节重点不在单次抓取结果，而在把网页归档、正文抽取、去重过滤、训练封装和结果验证组织成一条可复现的数据生产线。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>数据收集与正文抽取：从网页归档中提取可用于训练的正文文本。</li>
+<li>清洗去重与质量控制：处理模板噪声、近重复内容、语种混杂和低质量页面。</li>
+<li>训练封装与数据切分：把处理结果整理成标准化 JSONL 与训练清单。</li>
+<li>评估验证与成本边界：通过检查脚本、统计指标和资源消耗评估流水线状态。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>网页归档 -&gt; 正文抽取 -&gt; 基础清洗 -&gt; 近重复去重 -&gt; 语种拆分 -&gt; 质量过滤 -&gt; 训练封装 -&gt; 评估验证</strong></p>
+<p>这一结构对应的核心目标，是在单机 CPU 与 Ray Data 条件下复现一条可解释、可复用的网页预训练数据流水线。</p>
+<hr />
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>Mini-C4；Ray Data；分布式清洗；语料打包；质量验收</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“Mini-C4 分布式网页语料流水线”为核心案例，目标是从 Common Crawl shard 构建可检查的预训练语料样本。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>单 shard、单机 CPU 与 Ray Data 环境，重点验证网页正文抽取、清洗去重、语种拆分和训练封装。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“WARC 流式解析、启发式清洗、MinHash 去重、语言拆分、质量过滤和 manifest 验收”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P01-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Common Crawl WARC -&gt; HTML 响应 -&gt; 正文文本 -&gt; 去重语料 -&gt; 语种子集 -&gt; train/val JSONL -&gt; manifest 与评估报告
+</code></pre></div></p>
+<p><em>代码清单P01-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括抽取成功率、重复率、语言分布、质量过滤保留率、train/val 完整性、smoke test 通过率和处理成本。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>计算成本主要来自 WARC 解析、去重和质量过滤；风险集中在网页版权、模板噪声、低质文本保留和语言识别误差。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。数据读取与分片管理可参考 Hugging Face Datasets (Hugging Face 2026) 和 Ray Data (Ray Project 2026)，实验记录与质量检查可分别参考 MLflow (MLflow Authors 2026) 和 Great Expectations (Great Expectations Contributors 2026) 的工程范式。</p>
+<h2 id="1-mini-c4">1. 项目背景：Mini-C4 的工程定位<a class="headerlink" href="#1-mini-c4" title="Permanent link">&para;</a></h2>
+<p>在大模型预训练中，网页语料一直是最重要的数据来源之一。网页规模足够大、覆盖面足够广、更新频率也高，因此天然适合用来构建通用预训练语料库。<br />
+但网页数据也有三个典型的问题：</p>
+<ol>
+<li><strong>信噪比极低</strong>：HTML 页面里包含大量导航栏、广告位、脚本、页脚、版权声明、Cookie 提示、评论区、目录页等非正文内容。</li>
+<li><strong>重复度极高</strong>：转载、镜像站、聚合页、模板页、页面局部复制较为普遍。</li>
+<li><strong>分布难以控制</strong>：不同网站、不同语种、不同文本质量混杂在一起，容易把训练语料拉向噪声分布。</li>
+</ol>
+<p>因此，预训练数据工程的核心不是“拿到更多文本”，而是建立一条<strong>可解释、可复现、可验证的数据生产流水线</strong>，把原始网页逐步收敛成可以交给训练系统的文本样本。</p>
+<p>Mini-C4 的意义就在这里。它不是工业级完整 C4 的替代品，而是一个<strong>最小可复现、可运行、可讲清楚原理的缩微版本</strong>。<br />
+通过它，读者可以把大规模网页预训练数据处理中的关键问题，在单 shard、单机 CPU 的条件下端到端复现一遍，从而为后续更大规模的数据工程打下方法底座。
+Mini-C4 的设计参考了 C4/T5 中“从网页语料构建可训练文本数据”的基本思路 (Raffel et al. 2020)，但本项目强调的是小规模工程复现，而不是复刻完整 C4 数据集。</p>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目的目标不是简单下载 Common Crawl 数据，而是在受控边界内，完成下面这条链路的端到端验证：</p>
+<blockquote>
+<p><strong>网页归档 -&gt; 正文抽取 -&gt; 基础清洗 -&gt; 近重复去重 -&gt; 语种拆分 -&gt; 质量过滤 -&gt; 训练封装 -&gt; 评估验证</strong></p>
+</blockquote>
+<p>最终输出包括：</p>
+<ul>
+<li><code>train.jsonl</code></li>
+<li><code>val.jsonl</code></li>
+<li><code>smoke_test.jsonl</code></li>
+<li><code>training_manifest.json</code></li>
+<li>评估报告与检查报告</li>
+</ul>
+<p>这个项目关注的是<strong>把网页变成训练数据</strong>，而不是停留在“把网页变成文本”这一步。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了让项目保持最小可复现和可控，本项目显式设定了以下边界：</p>
+<ul>
+<li><strong>数据规模边界</strong>：只处理 Common Crawl 的一个 shard，不追求工业级全量规模。</li>
+<li><strong>硬件边界</strong>：默认在单机 CPU 环境运行，不依赖 GPU。</li>
+<li><strong>并行边界</strong>：去重阶段借助 Ray 做单机多核并行。</li>
+<li><strong>语种边界</strong>：当前主要覆盖英文与中文，英文质量过滤更完整，中文质量门相对较弱。</li>
+<li><strong>目标定位边界</strong>：这是一个面向工程实践的案例，不是追求 SOTA 指标的研究项目。</li>
+</ul>
+<h3 id="23">2.3 边界设定的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>这一边界设置有两个好处。</p>
+<p>第一，它保证了项目在有限资源条件下仍然可复现。<br />
+如果一开始就以多机、海量分片、复杂调度为目标，项目会迅速被基础设施问题主导，反而掩盖数据工程本身的关键逻辑。</p>
+<p>第二，它能让团队更清楚地观察每一步过滤的效果。<br />
+当数据规模较小时，更容易做中间产物检查、人工抽样和阈值调整，从而真正理解为什么数据会被留下或删掉。</p>
+<hr />
+<h2 id="3">3. 项目整体架构<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<p>图P01-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-1：Mini-C4 数据流水线总览" src="../../../images/part14/p01/Xu-Project01-Fig01.svg" /></a>
+<em>图 P01-1：Mini-C4 数据流水线总览</em></p>
+<h3 id="31">3.1 流程总览<a class="headerlink" href="#31" title="Permanent link">&para;</a></h3>
+<p>项目整体流程可以概括为 10 个步骤：</p>
+<ol>
+<li><code>src/1_download_data.py</code>：下载 Common Crawl 数据</li>
+<li><code>src/2_process_warc.py</code>：解析 WARC 并抽取正文</li>
+<li><code>src/3_clean_data.py</code>：启发式清洗</li>
+<li><code>src/4_deduplicate.py</code>：MinHash 去重</li>
+<li><code>src/5_split_lang.py</code>：按语种拆分</li>
+<li><code>src/6_quality_filter.py</code>：质量过滤</li>
+<li><code>src/7_prepare_training_data.py</code>：训练数据封装</li>
+<li><code>src/8_evaluate_dataset.py</code>：数据集评估</li>
+<li><code>src/9_training_smoke_test.py</code>：训练烟雾测试</li>
+<li><code>src/10_run_p1_checks.py</code>：项目检查与一致性验证</li>
+</ol>
+<h3 id="32">3.2 三段式理解方式<a class="headerlink" href="#32" title="Permanent link">&para;</a></h3>
+<p>如果把上面的流程进一步归类，可以分成三大阶段：</p>
+<h4 id="_11">第一阶段：从网页世界到文本世界<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h4>
+<p>这一阶段主要解决“有没有文本”的问题，核心任务是：</p>
+<ul>
+<li>下载 WARC</li>
+<li>读取网页响应</li>
+<li>过滤非 HTML 内容</li>
+<li>从 HTML 中提取正文</li>
+</ul>
+<p>这一步的重点是把网页归档中的复杂内容尽可能稳定地转成文本。</p>
+<h4 id="_12">第二阶段：从文本世界到语料世界<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h4>
+<p>这一阶段解决“文本能不能作为语料”的问题，主要包括：</p>
+<ul>
+<li>基础清洗</li>
+<li>去重</li>
+<li>语言拆分</li>
+<li>质量过滤</li>
+</ul>
+<p>也就是主动控制噪声、重复和分布，让文本更接近训练语料的形态。</p>
+<h4 id="_13">第三阶段：从语料世界到训练接口<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h4>
+<p>这一阶段解决“语料能不能稳定送入训练系统”的问题，包括：</p>
+<ul>
+<li>确定性 train/val 切分</li>
+<li>manifest 构建</li>
+<li>smoke test 构建</li>
+<li>评估与检查</li>
+</ul>
+<p>做到这一步，数据工程才真正闭环。</p>
+<hr />
+<h2 id="4-common-crawl">4. 数据获取：Common Crawl 的工程选择<a class="headerlink" href="#4-common-crawl" title="Permanent link">&para;</a></h2>
+<p>Common Crawl 是构建网页类预训练数据集最常用的公开来源之一。它以 WARC（Web ARChive）格式存储网页抓取结果，保留了 HTTP 响应、头信息和原始网页内容。</p>
+<p>选择 Common Crawl 的原因主要有三点：</p>
+<ol>
+<li><strong>规模大</strong>：可以覆盖大量真实网页场景。</li>
+<li><strong>格式标准化</strong>：WARC 是成熟的网页归档格式，适合流式处理。</li>
+<li><strong>贴近真实工业问题</strong>：网页噪声、模板、重复、语种混杂等问题都会真实出现。</li>
+</ol>
+<p>但也正因为如此，Common Crawl 并不能被直接拿去训练。<br />
+如果不经过严格的抽取和过滤，模型会学到大量 HTML 碎片、版权页、目录页和模板垃圾文本。</p>
+<p>因此，选择 Common Crawl，实际上就是选择了一组更接近真实工业生产环境的问题。</p>
+<hr />
+<h2 id="5-warc">5. WARC 解析与正文抽取<a class="headerlink" href="#5-warc" title="Permanent link">&para;</a></h2>
+<h3 id="51">5.1 正文抽取作为首道关键门槛<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>网页页面并不天然等于自然语言文本。一个 HTML 页面中通常会混有：</p>
+<ul>
+<li>导航栏</li>
+<li>面包屑</li>
+<li>推荐位</li>
+<li>JavaScript</li>
+<li>CSS</li>
+<li>页脚链接</li>
+<li>广告</li>
+<li>版权说明</li>
+<li>评论区域</li>
+<li>表格布局碎片</li>
+</ul>
+<p>如果直接读取 HTML 并做简单剥标签，模型看到的往往是一堆结构残片，而不是连贯的语义正文。</p>
+<p>因此，正文抽取阶段的目标不是“尽可能多拿字符”，而是<strong>尽可能准确地提取主内容区域</strong>。</p>
+<h3 id="52">5.2 核心组件选型<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>图P01-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-2：WARC 到正文文本的解析路径" src="../../../images/part14/p01/Xu-Project01-Fig02.svg" /></a>
+<em>图 P01-2：WARC 到正文文本的解析路径</em></p>
+<p>表P01-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P01-1：组件与选择原因对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>选型</th>
+<th>选择原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WARC 读取</td>
+<td><code>warcio</code></td>
+<td>标准 WARC 读取库，支持流式处理，避免一次性加载大文件导致内存压力</td>
+</tr>
+<tr>
+<td>正文提取</td>
+<td><code>trafilatura</code></td>
+<td>对主内容区域提取更稳定，相比简单 HTML 解析方式，对导航栏、页脚、模板区清理效果更好</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53">5.3 流式处理的工程价值<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>WARC 文件通常较大，且内部包含大量并不需要的响应。<br />
+如果将整个文件一次性读入内存，既浪费资源，也不利于长流程稳定运行。</p>
+<p>因此，本项目采用<strong>流式遍历</strong>的方式逐条读取 WARC 记录，只对符合条件的 HTML 响应继续处理。<br />
+这种设计既降低了峰值内存消耗，也更符合后续向多 shard 扩展时的工程习惯。</p>
+<h3 id="54">5.4 核心实现<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>代码清单P01-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">warcio.archiveiterator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArchiveIterator</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_text_from_warc</span><span class="p">(</span><span class="n">warc_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">):</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">warc_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">ArchiveIterator</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>            <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_type</span> <span class="o">!=</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="n">content_type</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">http_headers</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">content_type</span> <span class="ow">or</span> <span class="s2">&quot;text/html&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="n">text</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                <span class="n">record</span><span class="o">.</span><span class="n">content_stream</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>                <span class="n">include_comments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                <span class="n">include_tables</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>                <span class="n">no_fallback</span><span class="o">=</span><span class="kc">False</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>            <span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P01-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这里有几个参数是有意为之的：</p>
+<ul>
+<li><code>include_comments=False</code>：避免把评论区这种噪声很大的区域收进正文。</li>
+<li><code>include_tables=False</code>：减少表格布局带来的结构噪声。</li>
+<li><code>no_fallback=False</code>：允许抽取组件在必要时做补救式提取，提高召回。</li>
+</ul>
+<h3 id="55">5.5 本阶段的结果含义<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>在单 shard 测试中，最终成功抽取出 <strong>3028</strong> 条候选正文。<br />
+这个数字说明两件事：</p>
+<p>第一，不是所有网页响应都能转成可用正文。<br />
+第二，正文抽取已经是一次明显的数据压缩，因为大量原始响应会在“非 HTML”“空内容”“抽取失败”等环节被拦掉。</p>
+<p>从工程角度讲，这一阶段回答的是：</p>
+<blockquote>
+<p>在真实网页数据中，系统能稳定获得多少“看起来像正文”的候选文本？</p>
+</blockquote>
+<hr />
+<h2 id="6">6. 启发式清洗：首轮噪声筛除<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>图P01-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-3：启发式清洗规则示意" src="../../../images/part14/p01/Xu-Project01-Fig03.svg" /></a>
+<em>图 P01-3：启发式清洗规则示意</em></p>
+<h3 id="61">6.1 启发式清洗的必要性<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p>即使正文抽取成功，得到的文本也远不等于高质量语料。<br />
+一个页面可能提取出了“正文”，但这段正文仍然可能是：</p>
+<ul>
+<li>极短文本</li>
+<li>目录页</li>
+<li>标签云</li>
+<li>SEO 拼接文本</li>
+<li>代码片段</li>
+<li>系统错误页</li>
+<li>隐私与 Cookie 提示</li>
+</ul>
+<p>这类样本如果直接送入训练集，既污染模型，也浪费后续计算资源。</p>
+<p>因此，流水线中通常会先设计一层<strong>廉价、快速、可解释的启发式清洗</strong>，用来拦截最明显的低质量文本。</p>
+<h3 id="62">6.2 本项目采用的主要清洗规则<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<h4 id="1">1）长度规则<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<ul>
+<li>过短文本丢弃，例如少于 100 字符</li>
+<li>过长文本丢弃，例如超过 2M 字符</li>
+</ul>
+<p>原因很直接：<br />
+过短文本往往缺乏足够语义信息，过长文本则可能是异常拼接、页面拼接或结构损坏导致的产物。</p>
+<h4 id="2_1">2）平均词长规则<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>如果平均词长明显偏高，比如超过 15 个字符，那么文本很可能并不是自然语言，而是：</p>
+<ul>
+<li>代码压缩结果</li>
+<li>URL 串</li>
+<li>混杂标识符</li>
+<li>样式残片</li>
+</ul>
+<h4 id="3_1">3）符号密度规则<a class="headerlink" href="#3_1" title="Permanent link">&para;</a></h4>
+<p>统计如下符号的比例：</p>
+<p>代码清单P01-3 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>{ } [ ] &lt; &gt; \
+</code></pre></div></p>
+<p><em>代码清单P01-3：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>当这些符号占比过高时，文本通常更像结构片段，而不像自然语言段落。</p>
+<h4 id="4">4）黑名单短语规则<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>例如拦截：</p>
+<ul>
+<li><code>lorem ipsum</code></li>
+<li><code>enable cookies</code></li>
+<li><code>403 forbidden</code></li>
+</ul>
+<p>这些文本要么是占位符，要么是系统提示页，对训练没有实际价值。</p>
+<h3 id="63">6.3 启发式清洗的特点<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<p>这一层规则不是为了追求“最高准确率”，而是为了低成本地去掉最明显的问题。
+它的优势包括：</p>
+<ul>
+<li>速度快</li>
+<li>成本低</li>
+<li>易解释</li>
+<li>容易调参</li>
+<li>适合作为漏斗前端</li>
+</ul>
+<p>也就是说，这一阶段并不负责解决所有质量问题，而是优先把那些“几乎肯定不该留下”的样本清出去。</p>
+<h3 id="64">6.4 本阶段结果解读<a class="headerlink" href="#64" title="Permanent link">&para;</a></h3>
+<p>经过启发式清洗后，样本数从 <strong>3028</strong> 降到 <strong>2425</strong>。<br />
+这说明大约五分之一的候选正文，在最基本的文本规则下已经可以判定为低质量。</p>
+<p>这个阶段的意义在于：</p>
+<blockquote>
+<p>在不依赖昂贵模型打分的前提下，先把最粗的噪声压下去，为后续更细的处理节省资源。</p>
+</blockquote>
+<hr />
+<h2 id="7">7. 去重：网页语料中的近重复处理<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>图P01-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-4：MinHash + LSH 去重思路" src="../../../images/part14/p01/Xu-Project01-Fig04.svg" /></a>
+<em>图 P01-4：MinHash + LSH 去重思路</em></p>
+<h3 id="71">7.1 重复问题有多严重<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>互联网文本中存在大量重复，包括但不限于：</p>
+<ul>
+<li>转载文章</li>
+<li>聚合页</li>
+<li>镜像站</li>
+<li>模板页</li>
+<li>页面局部重合</li>
+<li>同一内容的不同排版版本</li>
+</ul>
+<p>如果不做去重，训练语料会出现几个问题：</p>
+<ol>
+<li>某些内容被过度重复，导致分布失衡。</li>
+<li>模型可能对特定模板或站点记忆过强。</li>
+<li>后续评估时可能发生数据泄漏。</li>
+<li>存储和训练资源被重复内容无谓消耗。</li>
+</ol>
+<p>因此，去重并不是锦上添花，而是网页预训练数据工程的必经步骤。</p>
+<h3 id="72">7.2 避免两两比较的原因<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>假设有 <span class="arithmatex">\(N\)</span> 条文本，如果直接做两两相似度比较，复杂度接近 <span class="arithmatex">\(O(N^2)\)</span>。<br />
+在真实数据规模下，这种做法很快就会变得不可接受。</p>
+<p>因此，本项目采用 <strong>MinHash + LSH</strong> 的思路，把“找相似文本”的问题转换为“找相似签名”，从而把处理复杂度降到更可落地的范围。</p>
+<h3 id="73-minhash-lsh">7.3 MinHash 与 LSH 的工程直觉<a class="headerlink" href="#73-minhash-lsh" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>MinHash</strong>：把一段文本映射成一个较短的签名，签名近似反映文本的集合相似性。</li>
+<li><strong>LSH（局部敏感哈希）</strong>：让相似文本更容易落入同一个候选桶中，减少全局比较次数。</li>
+</ul>
+<p>这样做的结果是，系统不需要让每条文本和所有文本都进行全量比较，而是只在更可能相似的候选集合里做判定。</p>
+<h3 id="74-ray">7.4 采用 Ray 的工程考虑<a class="headerlink" href="#74-ray" title="Permanent link">&para;</a></h3>
+<p>即使使用 MinHash，生成签名本身依然是计算密集型操作。<br />
+尤其当文本条数增大时，单线程处理会明显拖慢整个流水线。</p>
+<p>Ray 在这里扮演的角色较为明确：<br />
+它不是为了展示“分布式”概念，而是为了让单机多核 CPU 能把批处理任务并行运行起来。</p>
+<p>对应实现如下：</p>
+<p>代码清单P01-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasketch</span><span class="w"> </span><span class="kn">import</span> <span class="n">MinHash</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nd">@ray</span><span class="o">.</span><span class="n">remote</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_batch</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">batch_id</span><span class="p">):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">item</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">m</span> <span class="o">=</span> <span class="n">MinHash</span><span class="p">(</span><span class="n">num_perm</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>            <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">))</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="n">m</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]))</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">return</span> <span class="n">results</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">process_batch</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batches</span><span class="p">)]</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="n">processed_batches</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P01-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="75">7.5 这里最容易踩的坑<a class="headerlink" href="#75" title="Permanent link">&para;</a></h3>
+<p>Ray 并行处理最大的一个常见误区是：<br />
+<strong>不要把单条文本当成一个独立 task 派发。</strong></p>
+<p>这样会带来大量小对象序列化与进程间通信开销，最终反而让性能变差。<br />
+正确方式是：</p>
+<ul>
+<li>先把文本打包成 batch</li>
+<li>再按 batch 派发给 worker</li>
+</ul>
+<p>例如每 1000 条一批，就是一个更稳妥的工程选择。</p>
+<h3 id="76">7.6 本阶段结果解读<a class="headerlink" href="#76" title="Permanent link">&para;</a></h3>
+<p>去重后，样本数从 <strong>2425</strong> 降到 <strong>2305</strong>。<br />
+这说明虽然重复问题存在，但在这个最小实验规模里，去重带来的收缩没有质量过滤那么剧烈。</p>
+<p>不过这并不意味着去重不重要。<br />
+相反，去重的重要性体现在它能显著改善训练分布的健康度，而不仅仅是减少条数。</p>
+<hr />
+<h2 id="8">8. 语种拆分：按语言处理的必要性<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>图P01-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-5：语种拆分与分支处理" src="../../../images/part14/p01/Xu-Project01-Fig05.svg" /></a>
+<em>图 P01-5：语种拆分与分支处理</em></p>
+<h3 id="81">8.1 不同语言不能共用同一套质量门<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>网页文本的质量判断高度依赖语言本身。<br />
+例如英文里某些困惑度阈值、词长统计或语法自然度规则，对中文并不适用。<br />
+反过来，中文网页常见的问题也和英文网页并不完全相同。</p>
+<p>因此，在去重之后，项目进一步将文本按语种拆分，是为了让质量控制更精准，而不是把所有语言统一放进同一个过滤器里。</p>
+<h3 id="82">8.2 本项目的做法<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>项目使用 FastText 的语言识别模型 <code>lid.176.ftz</code> 对文本进行语种预测，并将文本拆分为：</p>
+<ul>
+<li><code>en</code></li>
+<li><code>zh</code></li>
+<li><code>others</code></li>
+</ul>
+<p>这样做以后，后续质量过滤就可以根据语言采用不同策略。</p>
+<h3 id="83">8.3 语种拆分作为必要中间层<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>语种拆分的价值主要体现在三个方面：</p>
+<ol>
+<li><strong>避免误判</strong>：不同语言的文本统计特征差异很大。</li>
+<li><strong>便于分析</strong>：可以单独观察每种语言的保留率和拦截原因。</li>
+<li><strong>便于扩展</strong>：未来如果接入更多语言，只需在该层增加语言分支，而不必推倒重来。</li>
+</ol>
+<p>从工程组织角度看，语种拆分让流水线从“统一处理”升级为“可插拔处理”。</p>
+<hr />
+<h2 id="9">9. 质量过滤：从“看起来像文本”到“适合训练”<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p>图P01-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-6：质量过滤决策示意" src="../../../images/part14/p01/Xu-Project01-Fig06.svg" /></a>
+<em>图 P01-6：质量过滤决策示意</em></p>
+<h3 id="91">9.1 为什么质量过滤是最关键的一道门<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>启发式清洗和去重解决了很多显性问题，但仍然不能保证文本真的适合训练。<br />
+因为很多页面表面上符合文本规则，实际上却可能仍然是：</p>
+<ul>
+<li>目录页</li>
+<li>低信息密度页面</li>
+<li>重复句堆叠页</li>
+<li>语言破碎页面</li>
+<li>机器翻译残片</li>
+<li>语法自然度很差的网页噪声</li>
+</ul>
+<p>这时就需要一层更接近“语言质量”的过滤。</p>
+<h3 id="92-kenlm">9.2 英文质量门：KenLM 困惑度<a class="headerlink" href="#92-kenlm" title="Permanent link">&para;</a></h3>
+<p>本项目在英文侧引入 KenLM 语言模型进行质量过滤。<br />
+核心思路是：</p>
+<ul>
+<li>使用语言模型给文本打分</li>
+<li>用单位词数归一化后的得分衡量文本自然度</li>
+<li>通过阈值过滤掉明显不自然的文本</li>
+</ul>
+<p>经验上可以这样理解：</p>
+<ul>
+<li><code>&gt; -5.0</code>：通常更接近高质量文本</li>
+<li><code>&lt; -6.0</code>：往往更接近破碎句子、乱码或低质量生成物</li>
+</ul>
+<p>这并不意味着困惑度越低越好，而是说明语言模型可以作为一种<strong>比纯规则更接近“自然语言质量”的信号</strong>。</p>
+<h3 id="93">9.3 本项目观察到的主要拦截原因<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>在质量过滤阶段，常见的拦截原因包括：</p>
+<ul>
+<li><code>directory_like</code>：目录型网页，信息密度低</li>
+<li><code>duplicate_lines</code>：页内重复行过多</li>
+<li><code>too_few_tokens</code>：有效 token 太少</li>
+</ul>
+<p>这些规则和 KenLM 一起构成了“启发式 + 语言自然度”的联合过滤策略。</p>
+<h3 id="94">9.4 中英文保留率差异说明了什么<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>最终结果显示：</p>
+<ul>
+<li>英文候选集 <strong>846</strong> 条，保留 <strong>502</strong> 条</li>
+<li>中文候选集 <strong>201</strong> 条，保留 <strong>24</strong> 条</li>
+</ul>
+<p>这个差异非常有代表性。<br />
+它不是简单说明“中文数据差”，而是暴露出两个更现实的问题：</p>
+<ol>
+<li>当前中文质量过滤能力明显弱于英文。</li>
+<li>中文网页的结构和噪声模式可能与英文网页不同，不能直接套用英文规则。</li>
+</ol>
+<p>这也意味着，在工业级多语言数据工程中，语言质量模型必须做更细粒度的本地化设计。</p>
+<hr />
+<h2 id="10">10. 三轮实验复盘：流水线的迭代形成过程<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>图P01-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-7：三轮实验迭代路径" src="../../../images/part14/p01/Xu-Project01-Fig07.svg" /></a>
+<em>图 P01-7：三轮实验迭代路径</em></p>
+<p>如果只把项目理解为一串脚本调用，就不容易看清这些设计背后的取舍。
+更贴近真实工程过程的写法，是把它还原成若干轮逐步收紧的实验。</p>
+<h3 id="101">10.1 实验一：只做正文抽取<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>第一轮实验的目标朴素：<br />
+先验证“WARC -&gt; HTML -&gt; 正文文本”这条链路能否稳定完成。</p>
+<p>这个阶段解决的是：</p>
+<ul>
+<li>能不能正确遍历 WARC</li>
+<li>能不能过滤掉明显无关响应</li>
+<li>能不能把网页正文抽出来</li>
+</ul>
+<p>这一轮通常能很快产出一批候选文本，但问题也较为明显：<br />
+噪声高、目录页多、模板内容多、代码碎片和页尾文本混入严重。</p>
+<p>所以第一轮回答的是“有没有文本”，而不是“这些文本能不能训练”。</p>
+<h3 id="102">10.2 实验二：加入启发式清洗与去重<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>第二轮开始，项目从“抽出正文”升级为“初步变成语料”。</p>
+<p>这一轮补上了：</p>
+<ul>
+<li>长度过滤</li>
+<li>符号密度过滤</li>
+<li>黑名单短语过滤</li>
+<li>MinHash 去重</li>
+</ul>
+<p>结果是，最粗糙的垃圾样本和近重复页面被明显压下去。<br />
+但在抽检时，仍然能看到很多看似正文、实际信息密度不高的页面。</p>
+<p>因此，第二轮让数据从“能看”变成“更像语料”，但还不到可直接训练的程度。</p>
+<h3 id="103">10.3 实验三：加入语言拆分与质量过滤<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>第三轮引入：</p>
+<ul>
+<li>FastText 语种拆分</li>
+<li>英文 KenLM 质量打分</li>
+<li>目录页、重复行、短 token 等更严格的过滤逻辑</li>
+</ul>
+<p>这一轮的直接效果是：<br />
+样本数进一步大幅下降，但训练可用性显著提升。</p>
+<p>最终样本数从 <strong>3028</strong> 收缩到 <strong>526</strong>，看上去损失很大，但这恰恰反映了项目对质量的主动收紧。<br />
+它说明项目追求的不是“多保留”，而是“保留下来的尽量更值得训练”。</p>
+<h3 id="104">10.4 三轮实验的工程意义<a class="headerlink" href="#104" title="Permanent link">&para;</a></h3>
+<p>这三轮实验其实对应了一个很典型的数据工程推进方式：</p>
+<ol>
+<li><strong>先完成链路验证</strong></li>
+<li><strong>再压制显性噪声</strong></li>
+<li><strong>最后做语言感知和质量收敛</strong></li>
+</ol>
+<hr />
+<h2 id="11">11. 训练数据封装：从清洗结果到训练接口<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<h3 id="111">11.1 数据清洗不等于训练可用<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>即使最终保留下来的文本已经比较干净，仍然不能直接说“可以训练了”。<br />
+因为训练系统通常还需要以下能力：</p>
+<ul>
+<li>稳定的 train/val 切分</li>
+<li>元数据索引</li>
+<li>token 估算</li>
+<li>小样本烟雾测试</li>
+<li>文件级组织方式</li>
+</ul>
+<p>如果这一步做不好，后续训练和评估很容易出现不一致或泄漏问题。</p>
+<h3 id="112">11.2 确定性切分的重要性<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>项目没有采用随机切分，而是根据 <code>text_sha1</code> 等确定性标识做取模切分。<br />
+这样做的好处是：</p>
+<ul>
+<li>多次重复运行时，train/val 集合稳定不变</li>
+<li>方便排查训练结果差异</li>
+<li>方便做数据集版本管理</li>
+<li>有利于工程可复现</li>
+</ul>
+<p>这里需要强调的是：<br />
+<strong>可复现性是数据工程质量的一部分，而不是额外附加项。</strong></p>
+<h3 id="113-smoke-test">11.3 Smoke Test 的作用<a class="headerlink" href="#113-smoke-test" title="Permanent link">&para;</a></h3>
+<p>项目额外构建了 <code>smoke_test.jsonl</code>。<br />
+它不是正式训练集的一部分，而是一个极小规模、可快速加载的样本集合，用来：</p>
+<ul>
+<li>验证训练脚本</li>
+<li>检查 tokenizer 与数据接口是否正常</li>
+<li>提前发现格式错误、编码问题或字段缺失</li>
+</ul>
+<p>在实际工程中，这种烟雾测试集往往能节省大量调试时间。</p>
+<h3 id="114-manifest">11.4 Manifest 的工程价值<a class="headerlink" href="#114-manifest" title="Permanent link">&para;</a></h3>
+<p><code>training_manifest.json</code> 记录了数据集的重要元信息，例如：</p>
+<ul>
+<li>样本数量</li>
+<li>切分情况</li>
+<li>估算 token 数</li>
+<li>文件路径</li>
+<li>overlap 检查结果</li>
+</ul>
+<p>它的意义在于让数据集不再只是若干散乱 JSONL 文件，而是一个可被系统读取、被评估和被检查的“正式产物”。</p>
+<hr />
+<h2 id="12">12. 数据评估：流水线价值判断<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>图P01-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-8：数据留存漏斗" src="../../../images/part14/p01/Xu-Project01-Fig08.svg" /></a>
+<em>图 P01-8：数据留存漏斗</em></p>
+<h3 id="121">12.1 数据留存漏斗<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>本项目最终得到的留存漏斗如下：</p>
+<p>表P01-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P01-2：阶段与典型拦截原因对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th style="text-align: right;">记录数</th>
+<th style="text-align: right;">留存率（基于 extracted）</th>
+<th>典型拦截原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Extracted</td>
+<td style="text-align: right;">3028</td>
+<td style="text-align: right;">100.0%</td>
+<td>HTML 解析失败、空内容</td>
+</tr>
+<tr>
+<td>Cleaned</td>
+<td style="text-align: right;">2425</td>
+<td style="text-align: right;">80.08%</td>
+<td>短文本、代码符号超标、黑名单</td>
+</tr>
+<tr>
+<td>Dedup</td>
+<td style="text-align: right;">2305</td>
+<td style="text-align: right;">76.12%</td>
+<td>镜像站、模板页、转载</td>
+</tr>
+<tr>
+<td>Final</td>
+<td style="text-align: right;">526</td>
+<td style="text-align: right;">17.37%</td>
+<td>目录页、困惑度高、语言混杂</td>
+</tr>
+</tbody>
+</table>
+<h3 id="122">12.2 这些数字真正说明了什么<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>如果只看最终结果，526 条样本似乎不多。<br />
+但对于数据工程而言，更重要的不是“剩下多少”，而是<strong>每一层删掉了什么、为什么删、删到什么程度</strong>。</p>
+<p>这些数字至少说明：</p>
+<ol>
+<li>原始网页噪声较大。</li>
+<li>启发式清洗能快速去掉最粗的噪声。</li>
+<li>去重改善了训练分布。</li>
+<li>质量过滤是真正决定最终数据可用性的关键阶段。</li>
+</ol>
+<p>从工程可解释性的角度看，这比单纯汇报“最终多少条”更能说明问题。</p>
+<h3 id="123">12.3 数据画像<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>最终结果还包括：</p>
+<ul>
+<li>最终样本数：<strong>526</strong></li>
+<li>训练集：<strong>468</strong></li>
+<li>验证集：<strong>58</strong></li>
+<li>Train/Val overlap：<strong>0</strong></li>
+<li>总估算 token：<strong>321430</strong></li>
+<li>平均每条样本 token：<strong>611.08</strong></li>
+</ul>
+<p>这说明最终数据集已经不仅仅是一批文本，而是一个具备训练接口属性和基本统计画像的标准化语料产物。</p>
+<hr />
+<h2 id="13">13. 成本分析：资源核算与瓶颈<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>图P01-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-9：资源与成本构成" src="../../../images/part14/p01/Xu-Project01-Fig09.svg" /></a>
+<em>图 P01-9：资源与成本构成</em></p>
+<p>在很多初学项目中，开发者更关注“链路是否能够完成”，而不太关注“代价是什么”。
+但在真实生产环境里，成本意识和工程意识是绑定在一起的。</p>
+<h3 id="131">13.1 存储成本<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>项目统计显示：</p>
+<ul>
+<li>总磁盘占用约 <strong>5.31 GB</strong></li>
+<li>月度存储成本估算约 <strong>$0.12 USD</strong></li>
+</ul>
+<p>对于单 shard 实验来说，这个成本并不高。<br />
+但它提醒读者：当流程扩展到更多 shard、更多中间产物时，存储成本会成倍增加。</p>
+<h3 id="132">13.2 计算瓶颈<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>本项目的主要计算瓶颈包括：</p>
+<ul>
+<li>下载带宽</li>
+<li>CPU 文本处理</li>
+<li>KenLM 加载与打分</li>
+<li>去重阶段签名计算</li>
+</ul>
+<p>也就是说，即使没有引入 GPU，数据工程仍然不是“轻量活”。<br />
+如果流程设计不合理，CPU 和 I/O 很快就会成为真正的瓶颈。</p>
+<h2 id="14">14. 验证闭环：项目一致性检查<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>图P01-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-10：项目验证闭环" src="../../../images/part14/p01/Xu-Project01-Fig10.svg" /></a>
+<em>图 P01-10：项目验证闭环</em></p>
+<h3 id="141">14.1 项目检查的作用<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>如果一个数据工程项目只有输出文件，没有检查机制，那么它是否真的正确，其实很难说。<br />
+因为错误可能来自很多地方：</p>
+<ul>
+<li>脚本能运行但产物缺失</li>
+<li>train/val 切分有泄漏</li>
+<li>report 与 metrics 不一致</li>
+<li>smoke test 不属于训练集</li>
+<li>最终数据里仍然存在重复样本</li>
+</ul>
+<p>因此，项目专门设计了检查脚本来做一致性验证。</p>
+<h3 id="142">14.2 检查结果<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>项目检查结果为：</p>
+<ul>
+<li>总检查项：<strong>14</strong></li>
+<li>通过：<strong>14</strong></li>
+<li>总体状态：<strong>PASS</strong></li>
+</ul>
+<h3 id="143">14.3 检查覆盖范围<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<h4 id="_14">命令级检查<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h4>
+<ul>
+<li><code>py_compile</code></li>
+<li><code>dedup_unit_check</code></li>
+<li><code>training_smoke_test</code></li>
+<li><code>dataset_evaluation</code></li>
+</ul>
+<h4 id="_15">数据/产物级检查<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h4>
+<ul>
+<li>必需文件存在</li>
+<li>最终文件数量与语言拆分结果一致</li>
+<li>training manifest 与训练文件数量一致</li>
+<li>train/val 无 overlap</li>
+<li>smoke test 属于 train</li>
+<li>final dataset 无 exact duplicates</li>
+<li>报告与指标文件一致</li>
+</ul>
+<h3 id="144">14.4 验证闭环的工程意义<a class="headerlink" href="#144" title="Permanent link">&para;</a></h3>
+<p>这一层检查关键。<br />
+它意味着项目不是“肉眼看起来差不多”，而是在代码、产物、评估和报告之间建立了一个闭环。</p>
+<h2 id="15">15. 主要局限与风险<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>任何最小可复现项目都不是最终形态。<br />
+Mini-C4 的价值在于说明方法，但它也有较为明确的局限。</p>
+<h3 id="151">15.1 保留率低<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>最终保留率只有 <strong>17.37%</strong>。<br />
+这说明网页原始噪声确实很重，也说明当前质量门比较严格。</p>
+<p>这不是坏事，但意味着如果目标转向“尽量扩大规模”，就必须进一步优化规则和模型，以免把过多潜在有效数据一起删掉。</p>
+<h3 id="152">15.2 中文保留率偏低<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>中文最终只保留 <strong>24</strong> 条，这暴露出中文质量打分能力不足的问题。<br />
+它不是简单靠调阈值就能彻底解决，更可能需要：</p>
+<ul>
+<li>更适配中文网页的数据质量规则</li>
+<li>更适合中文的语言模型或打分模型</li>
+<li>更细粒度的中文网页样本分析</li>
+</ul>
+<h3 id="153">15.3 去重扩展性有限<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>当前去重仍以内存索引为主。<br />
+当 shard 数量变多时，会首先遇到：</p>
+<ul>
+<li>内存压力</li>
+<li>运行时间上升</li>
+<li>全局索引管理困难</li>
+</ul>
+<p>因此，当前方案更适合最小实验和中小规模数据处理，而不是直接平移到超大规模生产环境。</p>
+<hr />
+<h2 id="16">16. 后续扩展方向<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<h3 id="161">16.1 去重后端升级<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>将当前内存中的 LSH 索引升级为外部存储，例如：</p>
+<ul>
+<li>Redis</li>
+<li>Cassandra</li>
+<li>其他分布式 KV/索引系统</li>
+</ul>
+<p>这样可以支撑更多 shard 的去重需求。</p>
+<h3 id="162">16.2 中文质量模型升级<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>针对中文网页数据引入更稳定的质量建模方式，例如：</p>
+<ul>
+<li>更合适的中文语言模型</li>
+<li>中文网页质量特征工程</li>
+<li>轻量级质量分类器</li>
+</ul>
+<h3 id="163">16.3 前置域名过滤<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>在 HTML 解析之前就做 domain 级白名单/黑名单过滤，可以显著减少后续无效计算。<br />
+这是从“文本侧清洗”往“抓取入口控制”迈出的关键一步。</p>
+<h3 id="164">16.4 可观测性增强<a class="headerlink" href="#164" title="Permanent link">&para;</a></h3>
+<p>为每一阶段增加：</p>
+<ul>
+<li>耗时日志</li>
+<li>吞吐统计</li>
+<li>样本抽检面板</li>
+<li>阈值命中统计</li>
+</ul>
+<p>这样在调参时，开发者不只知道“结果变了”，还能知道“为什么变”。</p>
+<hr />
+<h2 id="17-mini-c4">17. 工程实践总结：Mini-C4 的方法价值<a class="headerlink" href="#17-mini-c4" title="Permanent link">&para;</a></h2>
+<p>图P01-11展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p01/Xu-Project01-Fig11.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P01-11：Mini-C4 工程方法论总结" src="../../../images/part14/p01/Xu-Project01-Fig11.svg" /></a>
+<em>图 P01-11：Mini-C4 工程方法论总结</em></p>
+<p>本项目真正想传达的，不是某个库的用法，而是一种更普遍的数据工程方法论：</p>
+<ol>
+<li><strong>先在可控边界内完成全链路验证</strong></li>
+<li><strong>把每一步做成可解释的阶段</strong></li>
+<li><strong>优先建立结果验证闭环</strong></li>
+<li><strong>通过漏斗和中间指标观察系统行为</strong></li>
+<li><strong>在规模扩展之前先确保方法站得住</strong></li>
+</ol>
+<p>Mini-C4 的价值，不在于它只处理了一个 shard，而在于它把网页预训练数据工程中最核心的问题都浓缩进了一条可以复现的流水线中。</p>
+<p>这条流水线也具备完整工程闭环所需的几个要素：</p>
+<ul>
+<li>有明确目标</li>
+<li>有完整流程</li>
+<li>有真实指标</li>
+<li>有中间取舍</li>
+<li>有局限与扩展</li>
+<li>有工程闭环</li>
+</ul>
+<hr />
+<h2 id="18">18. 主要交付物清单<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<h3 id="181">18.1 中间数据产物<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/extracted_data.jsonl</code></li>
+<li><code>data/processed/clean_data.jsonl</code></li>
+<li><code>data/processed/deduplicated_data.jsonl</code></li>
+<li><code>data/processed/data_en.jsonl</code></li>
+<li><code>data/processed/data_zh.jsonl</code></li>
+<li><code>data/processed/final_data_en.jsonl</code></li>
+<li><code>data/processed/final_data_zh.jsonl</code></li>
+<li><code>data/processed/final_data.jsonl</code></li>
+</ul>
+<h3 id="182">18.2 训练数据产物<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/training/serialized_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<h3 id="183">18.3 报告与检查产物<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/reports/p1_metrics.json</code></li>
+<li><code>data/reports/p1_report.md</code></li>
+<li><code>data/reports/p1_test_results.json</code></li>
+<li><code>data/reports/p1_test_report.md</code></li>
+</ul>
+<hr />
+<h2 id="19">19. 结语<a class="headerlink" href="#19" title="Permanent link">&para;</a></h2>
+<p>对于大模型训练来说，数据往往比模型更难“做干净”。<br />
+因为模型架构可以复用，训练框架可以迁移，但高质量语料生产始终依赖一整套扎实的数据工程能力。</p>
+<p>Mini-C4 这个案例证明了一件事：<br />
+即使在有限的边界下，项目依然可以把预训练数据工程中的关键问题讲清楚、做完整，并把它沉淀成能够复用的方法论。</p>
+<p>这也是这类工程流水线可复用性的核心所在。</p>
+<hr />
+<h2 id="mini-c4">专题：Mini-C4 流水线的验收基线<a class="headerlink" href="#mini-c4" title="Permanent link">&para;</a></h2>
+<p>Mini-C4 这样的项目很容易被误读成“把 Common Crawl 缩小做一遍”。但从工程角度看，它真正值得复用的，是把预训练数据处理写成了可验收的阶段链。所谓可验收，不是最终产出一个 <code>final_data.jsonl</code> 就结束，而是每一层都要有能判断“该不该继续往下走”的基线。</p>
+<h3 id="_16">一、抓取与解析基线<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>在最前面的抓取与解析阶段，最关键的不是多抓到多少页面，而是抓下来的页面能否被稳定解析。这里至少要关注：</p>
+<ul>
+<li>WARC 样本是否能被正确展开；</li>
+<li>HTML 解析后是否保留主体内容而不是广告和导航噪声；</li>
+<li>解析字段是否完整，例如 URL、语言、正文长度和元信息是否齐全；</li>
+<li>解析失败样本是否被记录，而不是悄悄丢掉。</li>
+</ul>
+<p>这一步的价值，在于尽早把“原料层的问题”暴露出来。因为如果原料层已经严重失真，后面的清洗、去重和打分很可能都只是在噪声上继续做更昂贵的计算。</p>
+<h3 id="_17">二、清洗与去重基线<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>清洗与去重阶段最容易让团队陷入“指标看起来很强，但不知道清掉了什么”。更稳妥的做法，是同时保留量化指标和样本抽检。</p>
+<p>这一层比较关键的基线包括：</p>
+<ul>
+<li>清洗后正文长度分布是否仍然合理；</li>
+<li>明显模板页、导航页、脚本残留页是否显著下降；</li>
+<li>去重后是否仍保留足够的主题多样性；</li>
+<li>不同 shard 之间的重复是否被有效处理；</li>
+<li>高价值长文本是否没有被规则误伤太多。</li>
+</ul>
+<p>对预训练语料来说，去重的难点从来不只是“有没有重复”，而是“去重以后还剩下什么”。如果最终留下的都是结构相似的短页面，那么即使保留率看起来不错，训练价值也不一定高。</p>
+<h3 id="_18">三、语言切分与质量打分基线<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>Mini-C4 当前已经把英文和中文拆开处理，这一步关键，因为不同语言在网页结构、噪声类型和质量信号上差异很大。语言切分之后，质量打分就不应再只看统一阈值，而应结合语言特征判断。</p>
+<p>在这一层，比较重要的基线包括：</p>
+<ul>
+<li>语言识别是否稳定，避免中英混杂页被错误归类；</li>
+<li>每种语言的保留率是否与样本质量直觉一致；</li>
+<li>质量阈值变化后，保留语料的主题和长度分布会不会剧烈波动；</li>
+<li>最终保留语料中，是否仍存在明显的低价值站点聚集。</li>
+</ul>
+<p>这些基线共同决定了一件事：最后留下来的语料，究竟是“更干净了”，还是只是“更少了”。这两者在工程上不是同一件事。</p>
+<hr />
+<h2 id="_19">专题：从教学型原型到大规模预训练工厂<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h2>
+<p>P01 当前的形态更适合作为教学型最小闭环，但它已经清楚展示了未来走向大规模工厂的几条关键路径。这里最值得强调的是，扩规模不能只理解为“把脚本跑在更多机器上”，而是要同步扩展控制面、可观测性和错误处理能力。</p>
+<h3 id="_20">一、先扩控制面，再扩数据量<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>很多团队一上来就想扩大数据量，但如果控制面太弱，规模越大问题越难定位。更合理的顺序通常是：</p>
+<ul>
+<li>先补齐阶段级日志和统计；</li>
+<li>再补齐样本抽检与规则命中分布；</li>
+<li>然后再扩 shard 数和并行度；</li>
+<li>最后才去追求更高吞吐和更大覆盖。</li>
+</ul>
+<p>因为只有控制面足够强，团队才能在规模上升时仍然知道哪里出问题、为什么出问题、该先修哪一段。</p>
+<h3 id="_21">二、预训练语料工厂需要“入口治理”<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>P01 当前已经谈到前置域名过滤，这一点其实需要重点关注。因为预训练数据的很多成本，不是花在高价值内容上，而是花在海量低价值页面的下载、解析、清洗和去重上。未来如果要走向更真实的工厂形态，入口治理会变得越来越重要，包括：</p>
+<ul>
+<li>域名白名单和黑名单；</li>
+<li>站点质量画像；</li>
+<li>更新频率与抓取优先级；</li>
+<li>不同语言和不同地区站点的差异化策略。</li>
+</ul>
+<p>只要入口治理做得足够好，后面的清洗压力和计算成本都会显著下降。</p>
+<h3 id="_22">三、预训练项目最终比拼的是持续生产能力<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>从长期看，预训练语料工程真正要竞争的，并不是某一次把数据洗得多漂亮，而是能不能持续、稳定、可复盘地产出下一版语料。要做到这一点，至少需要：</p>
+<ul>
+<li>有明确版本；</li>
+<li>有阶段基线；</li>
+<li>有异常样本留存；</li>
+<li>有质量变化的原因解释；</li>
+<li>有训练侧可消费的稳定接口。</li>
+</ul>
+<p>这也是 Mini-C4 作为项目原型最有价值的地方。它没有假装自己已经是完整工业系统，但它把工业系统最关键的骨架先搭出来了。后续无论团队要扩多大规模、接多少语言、加入多少新规则，只要这个骨架还在，方法就有继续生长的空间。</p>
+<hr />
+<h2 id="_23">专题：语料配比与训练混合策略的前置思考<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h2>
+<p>Mini-C4 这一章虽然重点放在数据清洗与质量控制，但从预训练工程的完整视角看，语料配比同样是一个值得前置思考的问题。因为“洗干净”只解决了能不能用的问题，而“怎么混”决定了这些语料进入训练后会产生什么样的分布影响。</p>
+<h3 id="_24">一、数据准备阶段就该保留混合所需信息<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p>如果团队打算后续按语言、来源、长度或质量分层混合数据，那么在数据准备阶段就应保留相关字段，而不是到训练前再临时猜测。最常见的可保留信息包括：</p>
+<ul>
+<li>语言标签；</li>
+<li>来源域名或来源类型；</li>
+<li>文本长度区间；</li>
+<li>质量分数或质量桶；</li>
+<li>去重前后状态。</li>
+</ul>
+<p>这些字段在当前最小项目里看起来像“以后再说”的附加信息，但一旦进入训练配比阶段，它们会立刻变成最有价值的控制手柄。</p>
+<h3 id="_25">二、训练混合策略本质上是质量控制的延续<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<p>很多人把清洗看成数据工程，把混合看成训练工程，但在预训练项目里，这两者其实是一条连续链。因为如果高质量长文本在清洗后被保留，却在训练混合时被过度稀释，前面的清洗收益就很难真正传到模型上。反过来，如果某类低质量但高频的网页被大量保留并在训练中占比过高，模型仍然会受到明显干扰。</p>
+<p>从这个角度看，Mini-C4 当前保留下来的结构化字段和中间产物，不只是在服务清洗流程，也是在为后续更精细的训练混合策略预留接口。</p>
+<h2 id="_26">本章小结<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h2>
+<p>本章以“Mini-C4 分布式网页语料流水线”为案例，展示了从 Common Crawl shard 构建可检查的预训练语料样本的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。单 shard、单机 CPU 与 Ray Data 环境，重点验证网页正文抽取、清洗去重、语种拆分和训练封装。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_27">参考文献<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h2>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.</p>
+<p>Hugging Face (2026) Datasets Documentation. https://huggingface.co/docs/datasets/.</p>
+<p>Ray Project (2026) Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.</p>
+<p>MLflow Authors (2026) MLflow Documentation. https://mlflow.org/docs/latest/.</p>
+<p>Great Expectations Contributors (2026) Great Expectations Documentation. https://docs.greatexpectations.io/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,4042 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part3/ch08_multimodal_image/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../ch09_recaptioning_ocr/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 8: Image-Text Pair Data Engineering - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-8-image-text-pair-data-engineering" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 8: Image-Text Pair Data Engineering
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part3/ch08_multimodal_image/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part3/ch08_multimodal_image/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#81-why-multimodal-data-is-harder-than-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 Why Multimodal Data Is Harder Than Text
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.1 Why Multimodal Data Is Harder Than Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#811-the-hidden-and-uncertain-nature-of-visual-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.1 The Hidden and Uncertain Nature of Visual Noise
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#812-semantic-absence-and-cross-modal-polysemy-webtox" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.2 Semantic Absence and Cross-Modal Polysemy: WebTox
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#813-the-cost-tradeoff-between-image-resolution-and-gpu-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.3 The Cost Tradeoff Between Image Resolution and GPU Memory
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#82-image-text-sample-paradigms-from-pairs-to-interleaving" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 Image-Text Sample Paradigms: From Pairs to Interleaving
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.2 Image-Text Sample Paradigms: From Pairs to Interleaving">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#821-image-caption-pairs" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.1 Image-Caption Pairs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-interleaved-image-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.2 Interleaved Image-Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#823-long-document-understanding-and-screenshot-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.3 Long-Document Understanding and Screenshot Grounding
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#83-cleaning-filtering-and-semantic-alignment-part-i-basic-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 Cleaning, Filtering, and Semantic Alignment, Part I: Basic Cleaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.3 Cleaning, Filtering, and Semantic Alignment, Part I: Basic Cleaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#831-image-decoding-and-gpu-side-preprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.1 Image Decoding and GPU-Side Preprocessing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#832-resolution-and-aspect-ratio-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.2 Resolution and Aspect-Ratio Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#833-targeted-blocking-of-nsfw-content-face-privacy-and-watermarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.3 Targeted Blocking of NSFW Content, Face Privacy, and Watermarks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#84-cleaning-filtering-and-semantic-alignment-part-ii-deep-semantic-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 Cleaning, Filtering, and Semantic Alignment, Part II: Deep Semantic Filtering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.4 Cleaning, Filtering, and Semantic Alignment, Part II: Deep Semantic Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#841-clip-score-and-siglip-the-quantitative-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.1 CLIP Score and SigLIP: The Quantitative Philosophy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#842-saving-valuable-images-multi-granularity-synthetic-recaptioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.2 Saving Valuable Images: Multi-Granularity Synthetic Recaptioning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#85-sampling-mixes-representations-and-training-adaptation" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 Sampling Mixes, Representations, and Training Adaptation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.5 Sampling Mixes, Representations, and Training Adaptation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#851-image-token-occupancy-and-anyres-dynamic-patching" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.1 Image Token Occupancy and AnyRes Dynamic Patching
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#852-tuning-the-three-way-data-mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.2 Tuning the Three-Way Data Mix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#86-anonymized-composite-case-and-long-term-commercial-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6 Anonymized Composite Case and Long-Term Commercial Guidance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.6 Anonymized Composite Case and Long-Term Commercial Guidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#861-reverse-learning-hijacked-by-stock-photo-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.1 Reverse Learning Hijacked by Stock-Photo Libraries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#862-long-term-maintenance-of-multimodal-data-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.2 Long-Term Maintenance of Multimodal Data Assets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#81-why-multimodal-data-is-harder-than-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 Why Multimodal Data Is Harder Than Text
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.1 Why Multimodal Data Is Harder Than Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#811-the-hidden-and-uncertain-nature-of-visual-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.1 The Hidden and Uncertain Nature of Visual Noise
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#812-semantic-absence-and-cross-modal-polysemy-webtox" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.2 Semantic Absence and Cross-Modal Polysemy: WebTox
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#813-the-cost-tradeoff-between-image-resolution-and-gpu-memory" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.3 The Cost Tradeoff Between Image Resolution and GPU Memory
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#82-image-text-sample-paradigms-from-pairs-to-interleaving" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 Image-Text Sample Paradigms: From Pairs to Interleaving
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.2 Image-Text Sample Paradigms: From Pairs to Interleaving">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#821-image-caption-pairs" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.1 Image-Caption Pairs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-interleaved-image-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.2 Interleaved Image-Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#823-long-document-understanding-and-screenshot-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.3 Long-Document Understanding and Screenshot Grounding
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#83-cleaning-filtering-and-semantic-alignment-part-i-basic-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 Cleaning, Filtering, and Semantic Alignment, Part I: Basic Cleaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.3 Cleaning, Filtering, and Semantic Alignment, Part I: Basic Cleaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#831-image-decoding-and-gpu-side-preprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.1 Image Decoding and GPU-Side Preprocessing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#832-resolution-and-aspect-ratio-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.2 Resolution and Aspect-Ratio Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#833-targeted-blocking-of-nsfw-content-face-privacy-and-watermarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.3 Targeted Blocking of NSFW Content, Face Privacy, and Watermarks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#84-cleaning-filtering-and-semantic-alignment-part-ii-deep-semantic-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 Cleaning, Filtering, and Semantic Alignment, Part II: Deep Semantic Filtering
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.4 Cleaning, Filtering, and Semantic Alignment, Part II: Deep Semantic Filtering">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#841-clip-score-and-siglip-the-quantitative-philosophy" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.1 CLIP Score and SigLIP: The Quantitative Philosophy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#842-saving-valuable-images-multi-granularity-synthetic-recaptioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4.2 Saving Valuable Images: Multi-Granularity Synthetic Recaptioning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#85-sampling-mixes-representations-and-training-adaptation" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5 Sampling Mixes, Representations, and Training Adaptation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.5 Sampling Mixes, Representations, and Training Adaptation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#851-image-token-occupancy-and-anyres-dynamic-patching" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.1 Image Token Occupancy and AnyRes Dynamic Patching
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#852-tuning-the-three-way-data-mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.5.2 Tuning the Three-Way Data Mix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#86-anonymized-composite-case-and-long-term-commercial-guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6 Anonymized Composite Case and Long-Term Commercial Guidance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.6 Anonymized Composite Case and Long-Term Commercial Guidance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#861-reverse-learning-hijacked-by-stock-photo-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.1 Reverse Learning Hijacked by Stock-Photo Libraries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#862-long-term-maintenance-of-multimodal-data-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.6.2 Long-Term Maintenance of Multimodal Data Assets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-8-image-text-pair-data-engineering">Chapter 8: Image-Text Pair Data Engineering<a class="headerlink" href="#chapter-8-image-text-pair-data-engineering" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Ke Wang; Cong Wang</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter discusses the fundamental engineering problems behind image-text pairs and interleaved image-text data, with a particular focus on why visual data cannot simply reuse the cleaning paradigm of pure text. It first explains the engineering challenges created by visual noise, semantic mismatch, resolution cost, and image representation. It then compares three sample paradigms: image-caption pairs, interleaved image-text documents, and document-grounded screenshots. The cleaning section begins with image decoding, resolution and aspect-ratio filtering, and not-safe-for-work (NSFW) content, watermark, and privacy blocking, then introduces Contrastive Language-Image Pretraining (CLIP) / Sigmoid Language-Image Pretraining (SigLIP)-based semantic matching and multi-granularity recaptioning. The second half of the chapter discusses any-resolution (AnyRes) dynamic patching, aspect-ratio grouping, multimodal data mixing, and quality risks. An anonymized composite case illustrates why stock-photo watermark contamination and secondary cleaning are necessary. By the end, readers should be able to design a traceable, measurable, and cost-controlled image-text preprocessing pipeline.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Image-text pairs; interleaved image-text; CLIP Score; SigLIP; AnyRes; image cleaning; recaptioning; multimodal data</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Explain the distinctive noise types, semantic alignment issues, resolution costs, and quality-evaluation challenges of image-text data.</li>
+<li>Distinguish image-caption pairs, interleaved image-text samples, and document-grounded samples.</li>
+<li>Design a multi-stage cleaning workflow for image decoding, size filtering, watermark and privacy blocking, and semantic matching.</li>
+<li>Explain the appropriate boundaries of CLIP/SigLIP filtering, recaptioning, and AnyRes dynamic patching.</li>
+<li>Identify how stock-photo contamination, image-text mismatch, and unbalanced data mixing affect model training.</li>
+</ul>
+<h2 id="81-why-multimodal-data-is-harder-than-text">8.1 Why Multimodal Data Is Harder Than Text<a class="headerlink" href="#81-why-multimodal-data-is-harder-than-text" title="Permanent link">&para;</a></h2>
+<p>When a natural language processing (NLP) data engineer first takes over a data-cleaning task for a vision-language model (VLM), the most immediate change is this: many deterministic rules that work well for pure text cover only a small fraction of problems in images.</p>
+<h3 id="811-the-hidden-and-uncertain-nature-of-visual-noise">8.1.1 The Hidden and Uncertain Nature of Visual Noise<a class="headerlink" href="#811-the-hidden-and-uncertain-nature-of-visual-noise" title="Permanent link">&para;</a></h3>
+<p>In a pure-text data factory, "dirty data" or corrupted text can often be detected at low cost: write regular expressions, run MinHash, calculate perplexity (PPL), and sometimes filter without touching a GPU. In image data, however, noise often depends on semantics, spatial location, and visual context:</p>
+<ul>
+<li><strong>Concept-isolation noise</strong>: a 4K landscape photo may be sharp, colorful, and visually beautiful, but an adversarial edit may place a semi-transparent NSFW watermark in one corner occupying only 15 x 15 pixels. Such an image creates high compliance risk for multimodal systems.</li>
+<li><strong>Spatial-distortion noise</strong>: a cluttered street-market photo may be captioned as "a comb on the stall." The key comb may occupy only three pixels, making it hard for humans to see and likely to vanish after convolutional downsampling.</li>
+<li><strong>Frequency-domain compression noise</strong>: a screenshot containing a detailed financial statement or medical ECG may have passed through repeated JPEG recompression. Severe ringing artifacts appear around high-frequency details. Humans may still infer the text, but OCR systems that rely on edge features are heavily damaged.</li>
+</ul>
+<p>These forms of hidden visual noise cannot be removed through ordinary hash fingerprints or MD5 file comparisons. In multimodal data streams, teams usually need to deploy and maintain several pretrained visual classifiers, such as a ResNet-50-based binary watermark detector or an LAION Aesthetics-style scorer, for dense inference. Image cleaning itself therefore consumes meaningful GPU compute.</p>
+<h3 id="812-semantic-absence-and-cross-modal-polysemy-webtox">8.1.2 Semantic Absence and Cross-Modal Polysemy: WebTox<a class="headerlink" href="#812-semantic-absence-and-cross-modal-polysemy-webtox" title="Permanent link">&para;</a></h3>
+<p>Multimodal alignment learning relies on a premise: the crawled <code>(Image, Text)</code> pair should describe the same thing. Yet massive quantities of web images and alt text are not naturally aligned.</p>
+<p>Because web crawling and SEO practices have evolved in complex ways over more than a decade, crawler engineers frequently encounter high-risk pairs such as:</p>
+<ul>
+<li><strong>What the human eye sees</strong>: a golden retriever happily running on grass.</li>
+<li><strong>The alt text extracted from HTML</strong>: "2023 free shipping genuine premium discount full-site promotion buy one get one pet supplies."</li>
+</ul>
+<p>If this commercially motivated inducement text is fed into a model without causal separation, back-propagation forces the model to establish false associations. It may learn unreasonable bindings such as "golden retriever fur texture equals free-shipping discount," a form of cross-modal semantic mismatch. Dataset papers such as LAION-5B, DataComp, and OBELICS all list image-text matching, deduplication, and safety filtering as key steps (Schuhmann et al. 2022; Gadre et al. 2023; Laurençon et al. 2023), precisely because web alt text is not naturally equivalent to visual semantic supervision. To mitigate this problem systematically, academia and industry have gradually developed cross-modal semantic filtering techniques that combine CLIP Score, SigLIP, and manual spot-checks.</p>
+<h3 id="813-the-cost-tradeoff-between-image-resolution-and-gpu-memory">8.1.3 The Cost Tradeoff Between Image Resolution and GPU Memory<a class="headerlink" href="#813-the-cost-tradeoff-between-image-resolution-and-gpu-memory" title="Permanent link">&para;</a></h3>
+<p>In pure language modeling, the cost of processing either a report or a short poem mainly scales linearly with token length. In multimodal modeling, <strong>image resolution significantly amplifies compute cost</strong>.</p>
+<p>Consider a mainstream visual encoder based on ViT (Vision Transformer) (Dosovitskiy et al. 2020). Suppose the patch size is fixed at <span class="arithmatex">\(14 \times 14\)</span> pixels:</p>
+<ul>
+<li>A <span class="arithmatex">\(224 \times 224\)</span> image is cut into <span class="arithmatex">\((224/14) \times (224/14) = 256\)</span> patch tokens. The self-attention cost is roughly <span class="arithmatex">\(256^2 = 65,536\)</span> operations.</li>
+<li>If we raise the input resolution to <span class="arithmatex">\(1008 \times 1008\)</span> so that the model can read small digits on a scanned invoice, the visual-token length becomes <span class="arithmatex">\((1008/14) \times (1008/14) = 5184\)</span>.</li>
+<li>Since standard Transformer attention has quadratic complexity with sequence length, the attention cost in a single layer rises to <span class="arithmatex">\(5184^2 \approx 26,873,856\)</span> operations.</li>
+</ul>
+<p>Increasing the image side length by only 4.5x can therefore increase <strong>attention-layer compute</strong> by nearly <strong>410x</strong>. This refers to the quadratic self-attention portion, not the full model FLOPs; FFN layers scale linearly with sequence length, so the actual total training-compute increase is still substantial but somewhat lower than 410x. One core task in image-text data engineering is therefore to balance local-detail preservation against training cost through dynamic cropping, dimensionality reduction, and multi-scale patching.</p>
+<p>Figure 8-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 8-1: Overview of image-text data engineering" src="../../../images/part3/Yu-Chap08-Fig01.svg" /></a></p>
+<p><em>Figure 8-1: Overview of multimodal image-text data engineering</em></p>
+<hr />
+<h2 id="82-image-text-sample-paradigms-from-pairs-to-interleaving">8.2 Image-Text Sample Paradigms: From Pairs to Interleaving<a class="headerlink" href="#82-image-text-sample-paradigms-from-pairs-to-interleaving" title="Permanent link">&para;</a></h2>
+<p>Different training objectives require different data formats. Based on recent frontier architectures such as Flamingo (Alayrac et al. 2022), LLaVA (Liu et al. 2023), and GPT-4V, typical multimodal text data includes three major paradigms.</p>
+<h3 id="821-image-caption-pairs">8.2.1 Image-Caption Pairs<a class="headerlink" href="#821-image-caption-pairs" title="Permanent link">&para;</a></h3>
+<p>This is the most basic and scalable paradigm.</p>
+<ul>
+<li><strong>Format</strong>: exactly one image mapped to one independent descriptive text, such as <code>{ "image": "dog.jpg", "text": "A golden retriever playing fetch in the park." }</code>.</li>
+<li><strong>Representative open datasets</strong>: LAION-5B (Schuhmann et al. 2022), COYO-700M.</li>
+<li><strong>Applicable stage</strong>: mainly used during cold-start <strong>contrastive pretraining</strong>, such as training a CLIP precursor model or building a baseline visual-perception capability for a newly connected vision encoder.</li>
+<li><strong>Main limitation</strong>: it is difficult to teach reasoning through image-caption pairs alone; they are better at building basic object recognition and cross-modal retrieval.</li>
+</ul>
+<h3 id="822-interleaved-image-text">8.2.2 Interleaved Image-Text<a class="headerlink" href="#822-interleaved-image-text" title="Permanent link">&para;</a></h3>
+<p>To give a model the ability to reason across multiple images in complex contexts, the data engine must extract and restore the native interleaved layout from web pages.</p>
+<ul>
+<li><strong>Format</strong>: similar to Wikipedia articles or long-form posts: a setup paragraph + <code>&lt;img_1&gt;</code> + development text + <code>&lt;img_2&gt;</code> + final summary. Image tokens are treated as special vocabulary items embedded inside a long text sequence.</li>
+<li><strong>Representative open datasets</strong>: OBELICS (Laurençon et al. 2023), MMC4 (Zhu W et al. 2023).</li>
+<li><strong>Applicable stage</strong>: an important data form for modern <strong>generative VLM pretraining</strong>. It teaches the model to infer what later text or a later image should be given previous text and image 1.</li>
+<li><strong>Collection challenge and DOM parsing engineering</strong>: interleaved data is much harder to build. A traditional text crawler skips <code>&lt;img&gt;</code> tags, but an interleaved-data crawler must parse a large and messy HTML DOM tree and compute <strong>relative distances based on rendered coordinates</strong>.</li>
+</ul>
+<p>In many modern pages with complex CSS, the order in the document tree is not the order a user sees visually. Extracting only by HTML tag order can incorrectly bind a bottom-page disclaimer to a top-page illustration.</p>
+<p>For this reason, engineering teams usually use a headless browser with a rendering engine, such as Playwright, to run JavaScript, generate a page snapshot, and extract elements using rules similar to the following.</p>
+<p>Listing 8-1 shows simplified logic for extracting interleaved DOM nodes.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Simplified pseudocode for extracting interleaved DOM nodes</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">text_nodes</span><span class="p">,</span> <span class="n">img_nodes</span> <span class="o">=</span> <span class="n">get_rendered_nodes</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">interleaved_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">all_nodes_sorted_by_y_axis</span><span class="p">():</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;TEXT&#39;</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">5</span><span class="p">:</span>  <span class="c1"># discard short text such as navigation</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>            <span class="n">interleaved_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">elif</span> <span class="n">node</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;IMAGE&#39;</span><span class="p">:</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">width</span> <span class="o">&gt;</span> <span class="mi">200</span> <span class="ow">and</span> <span class="n">node</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>            <span class="c1"># Convert a valid image into a placeholder token and store its URL in a side channel</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>            <span class="n">interleaved_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;img_</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&gt;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>            <span class="n">save_to_image_db</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 8-1: Example code for DOM interleaved-node extraction</em></p>
+<p>Production environments should add DOM cleaning, image-download validation, retention of alt/title fields, and failed-sample isolation.</p>
+<p>If the DOM structure is extracted out of order, the model learns the wrong image-text correspondence.</p>
+<h3 id="823-long-document-understanding-and-screenshot-grounding">8.2.3 Long-Document Understanding and Screenshot Grounding<a class="headerlink" href="#823-long-document-understanding-and-screenshot-grounding" title="Permanent link">&para;</a></h3>
+<p>For real business use cases such as reading financial reports or invoices, natural-image training is not enough. High-resolution document data must be introduced.</p>
+<ul>
+<li><strong>Format</strong>: the input is a rendered high-frequency, high-resolution document screenshot, such as an arXiv paper page or a dense Excel screenshot. The output is a structured JSON value sequence or bounding-box coordinates marked with <code>&lt;box&gt;</code>.</li>
+<li><strong>Applicable stage</strong>: depends on high-resolution patching and OCR assistance. It is mainly used in SFT to teach precise value extraction and logical-structure understanding, such as formula and chart references in page layouts.</li>
+<li><strong>Coordinate normalization</strong>: in grounding tasks, the model must output concrete pixel coordinates. Because training images have very different resolutions, the original absolute pixel coordinate <code>(X, Y)</code> is usually mapped into a discrete token bucket in <code>[0, 1000]</code>, such as <code>[&lt;loc_255&gt;, &lt;loc_899&gt;]</code>. This discretization turns continuous spatial coordinates into a vocabulary-like form that an LLM can process.</li>
+</ul>
+<p>Table 8-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 8-1: Image-text sample types and applicable tasks</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Sample type</th>
+<th style="text-align: left;">Data characteristics</th>
+<th style="text-align: left;">Core acquisition method</th>
+<th style="text-align: left;">Best-fit stage</th>
+<th style="text-align: left;">Key capability gained</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Pure image-caption</strong></td>
+<td style="text-align: left;">One-to-one text/image pairs, high noise</td>
+<td style="text-align: left;">Web <code>&lt;img alt&gt;</code>, public-cloud OSS crawling</td>
+<td style="text-align: left;">Alignment pretraining</td>
+<td style="text-align: left;">Basic feature perception and cross-modal retrieval</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Interleaved image-text</strong></td>
+<td style="text-align: left;">Many-to-many text/image mapping, long sequences</td>
+<td style="text-align: left;">DOM rendering and parsing, PDF linearization</td>
+<td style="text-align: left;">Main generative pretraining</td>
+<td style="text-align: left;">Multi-step reasoning and few-shot contextual perception</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Long-document screenshot</strong></td>
+<td style="text-align: left;">Very high resolution, text-dense</td>
+<td style="text-align: left;">PDF rendering, automated headless-browser screenshots</td>
+<td style="text-align: left;">Deep SFT / reinforcement learning</td>
+<td style="text-align: left;">Layout understanding and form, paper, or invoice extraction</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Grounded caption</strong></td>
+<td style="text-align: left;">Long text with bounding boxes <code>&lt;box&gt;</code></td>
+<td style="text-align: left;">Annotator box selection or rewriting by a closed-source large model</td>
+<td style="text-align: left;">Advanced SFT / RAG alignment</td>
+<td style="text-align: left;">Fine-grained spatial perception and hallucination resistance</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="83-cleaning-filtering-and-semantic-alignment-part-i-basic-cleaning">8.3 Cleaning, Filtering, and Semantic Alignment, Part I: Basic Cleaning<a class="headerlink" href="#83-cleaning-filtering-and-semantic-alignment-part-i-basic-cleaning" title="Permanent link">&para;</a></h2>
+<p>Raw data crawled from the web has highly uneven quality. It must pass through at least three filtering funnels at different levels. We call this stage the pre-cleaning phase; it involves heavy I/O, image decoding, and hardware-accelerated classifiers.</p>
+<h3 id="831-image-decoding-and-gpu-side-preprocessing">8.3.1 Image Decoding and GPU-Side Preprocessing<a class="headerlink" href="#831-image-decoding-and-gpu-side-preprocessing" title="Permanent link">&para;</a></h3>
+<p>In text cleaning, <code>JSON.loads</code> or <code>open()</code> is almost free. For image archives at tens of TB or even PB scale, <strong>decoding</strong> can become the biggest throughput bottleneck in the entire training cluster. Web images may be old JPEGs, large PNGs, corrupted files, or WebP variants with malformed headers or embedded ICC profile errors.</p>
+<p>If the pipeline uses CPU <code>Pillow</code> or <code>OpenCV-Python</code> to resize and normalize images on high-concurrency multi-GPU nodes, dense CPU image resizing may quickly saturate physical cores. More seriously, interprocess communication must move large uncompressed RGB tensors into GPU memory, so PCIe bandwidth may also become a bottleneck and produce GPU starvation. Whether a bottleneck has been reached must be verified on the target cluster through profiler output and DataLoader wait time.</p>
+<p><strong>Engineering solution: an end-to-end NVIDIA DALI pipeline</strong></p>
+<p>Large enterprise image-text processing arrays often force the pipeline onto <strong>NVIDIA DALI (Data Loading Library)</strong> (NVIDIA 2023), an accelerated GPU-memory-level workflow. The core idea is <strong>push bits into the GPU as early as possible and decompress inside GPU memory</strong>:</p>
+<ol>
+<li><strong>CPU only moves bytes</strong>: the CPU reads undecoded JPEG byte streams and does not decode them.</li>
+<li><strong>NVJPEG hardware decoding</strong>: after the bytes are sent through PCIe to the GPU, the GPU's dedicated JPEG decoder (NVJPEG) decompresses them directly in GPU memory.</li>
+<li><strong>Fused operator transforms</strong>: cropping, resizing, mean-variance normalization, and related operations are compiled into a CUDA graph and run directly on tensors.</li>
+</ol>
+<p>With GPU-side decoding and fused preprocessing, image decoding, resizing, and normalization can be pushed into the GPU-side pipeline, reducing waits caused by CPU decoding and host-to-device copies. DALI's official documentation and examples emphasize end-to-end pipeline-throughput optimization rather than universal per-image latency numbers across all hardware; production environments should re-benchmark under the target GPU, image format, batch size, DALI version, and object-storage access pattern.</p>
+<h3 id="832-resolution-and-aspect-ratio-control">8.3.2 Resolution and Aspect-Ratio Control<a class="headerlink" href="#832-resolution-and-aspect-ratio-control" title="Permanent link">&para;</a></h3>
+<p>One of the fastest ways to improve the raw-cleaning stage is to define size-filtering rules:</p>
+<ul>
+<li><strong>Reject pixel islands</strong>: images with an extremely short shorter side or very small file size should be discarded directly or isolated for review. These are usually UI icons, such as like buttons or arrows, and provide little semantic signal for large models. Concrete thresholds should be calibrated according to the target vision encoder's input size and the characteristics of the data source.</li>
+<li><strong>Identify extreme aspect ratios</strong>: web long images, such as full-length e-commerce promotional posters, can be extreme, for example width 500 and height 9000. If such an image is forced into a fixed square for a normal ViT encoder, the content is severely compressed and shape features are lost. Pipelines therefore usually need aspect-ratio thresholds; images outside the threshold should be flagged and routed to a targeted dynamic-slicing bypass; see Section 8.4.</li>
+</ul>
+<h3 id="833-targeted-blocking-of-nsfw-content-face-privacy-and-watermarks">8.3.3 Targeted Blocking of NSFW Content, Face Privacy, and Watermarks<a class="headerlink" href="#833-targeted-blocking-of-nsfw-content-face-privacy-and-watermarks" title="Permanent link">&para;</a></h3>
+<p>Image-text engineering faces stricter ethics and compliance concerns than pure-text engineering: multimodal models should not learn private faces of ordinary people, sensitive content, or copyrighted watermark templates.</p>
+<p>At this stage, the pipeline usually chains three or four small visual classifiers:</p>
+<ol>
+<li><strong>NSFW classifier</strong>: images whose probability exceeds a threshold, such as 0.4, are deleted or isolated for review.</li>
+<li><strong>Watermark detector</strong>: many web images come from stock-photo sites such as Getty Images or Shutterstock. If a model absorbs image-text pairs with watermarks or template promotional copy, it may reproduce watermark text or promotional phrasing in generated responses and create copyright and commercial compliance risk. High-risk watermark samples should be filtered, isolated for review, or downweighted.</li>
+<li><strong>Blur/aesthetic threshold</strong>: an aesthetic predictor similar to the LAION team's AES model can remove heavily defocused, extremely dark, or color-noisy low-quality images.</li>
+</ol>
+<p><strong>Multimodal sensitive-data filtering checklist, industrial version:</strong></p>
+<ul>
+<li>[ ] Has a text-side blocklist been integrated to filter or isolate violent, sexual, or otherwise sensitive text in <code>&lt;alt&gt;</code> tags?</li>
+<li>[ ] Has the visual NSFW classifier been supplemented with training for anime and illustration models to reduce misses?</li>
+<li>[ ] For portrait privacy, has a face-blurring algorithm been applied to high-resolution ordinary-person faces, excluding public figures where policy allows?</li>
+<li>[ ] Is the commercial-watermark blocking library updated weekly to prevent new image-host contamination?</li>
+</ul>
+<p>After these three types of basic cleaning, the usable sample scale of a crawled library usually shrinks substantially. The concrete retention rate depends on source licensing, image resolution, NSFW/watermark thresholds, and manual spot-check standards. The remaining images are visually cleaner, but they still have not proven semantic correspondence with text. CLIP Score and related cross-modal matching metrics are needed next.</p>
+<hr />
+<h2 id="84-cleaning-filtering-and-semantic-alignment-part-ii-deep-semantic-filtering">8.4 Cleaning, Filtering, and Semantic Alignment, Part II: Deep Semantic Filtering<a class="headerlink" href="#84-cleaning-filtering-and-semantic-alignment-part-ii-deep-semantic-filtering" title="Permanent link">&para;</a></h2>
+<p>After low-level visual errors are removed, multimodal data engineering reaches its hardest stage: quantitatively measuring the match between an image and a sentence.</p>
+<h3 id="841-clip-score-and-siglip-the-quantitative-philosophy">8.4.1 CLIP Score and SigLIP: The Quantitative Philosophy<a class="headerlink" href="#841-clip-score-and-siglip-the-quantitative-philosophy" title="Permanent link">&para;</a></h3>
+<p>Before CLIP (Contrastive Language-Image Pre-training) (Radford et al. 2021), image-text matching depended mainly on human rules or weakly supervised heuristics. CLIP uses large-scale contrastive learning to map image embeddings and text embeddings into the same high-dimensional vector space.</p>
+<p><strong>1. Basic filtering and the legacy of InfoNCE Loss</strong></p>
+<p>We usually run a stable pretrained CLIP, such as open-source <code>OpenCLIP ViT-L/14</code>, on both the image and its caption, then calculate the <strong>cosine similarity</strong>, also called CLIP Score.</p>
+<ul>
+<li><strong>High match</strong>: the image and text are highly consistent, for example the image is a cat and the text says "an orange cat sunbathing." These samples can enter a high-confidence training pool, while still requiring spot-checks to guard against model-score bias.</li>
+<li><strong>Low match</strong>: severe mismatch, for example the image is a cat and the text says "follow my account." These samples are usually discarded or isolated for review because they contribute reverse gradient noise.</li>
+<li><strong>Medium match</strong>: a gray zone. Instead of discarding expensive collected data immediately, the pipeline triggers the recaptioning process described in the next section.</li>
+</ul>
+<blockquote>
+<p><strong>Note</strong>: CLIP/SigLIP thresholds are not universal across models. If a different vision encoder, text encoder, or language data mix is used, the score distribution for the same batch of samples can change significantly. Thresholds must be recalibrated on the target data and should not be reused blindly.</p>
+</blockquote>
+<p><strong>2. From CLIP to SigLIP: abandoning global Softmax</strong></p>
+<p>In large enterprise data pipelines, traditional CLIP models are increasingly replaced by <strong>SigLIP (Sigmoid Loss for Language Image Pre-Training)</strong> (Zhai et al. 2023). Traditional CLIP computes a global Softmax probability over all image-text pairs inside the batch. This creates an engineering issue: with a very large distributed batch size, the model must distinguish many fine-grained pair differences and may become overly sensitive to certain hard negatives, making inference-time CLIP Scores unstable. Figure 8-2 illustrates the image semantic alignment and filtering flow.</p>
+<p>SigLIP converts this global multi-class problem into <strong>pairwise binary sigmoid prediction</strong>. This gives SigLIP better tolerance for partial matches and complex-background image-text pairs, and a more stable score distribution. Engineering teams can set more consistent cutoffs, while still calibrating them on the target data.</p>
+<p>Listing 8-2 shows a simplified SigLIP/CLIP image-text alignment filter.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Pseudocode for SigLIP/CLIP image-text alignment filtering</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoProcessor</span><span class="p">,</span> <span class="n">AutoModel</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Use SigLIP weights that do not require an extremely large batch size</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;google/siglip-base-patch16-224&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="s2">&quot;google/siglip-base-patch16-224&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_by_semantic_score</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">text_caption</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">):</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">inputs</span> <span class="o">=</span> <span class="n">processor</span><span class="p">(</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">text_caption</span><span class="p">],</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="n">images</span><span class="o">=</span><span class="n">image</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="c1"># Extract features and compute dot-product similarity</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">image_embeds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">image_embeds</span> <span class="o">/</span> <span class="n">outputs</span><span class="o">.</span><span class="n">image_embeds</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">text_embeds</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">text_embeds</span> <span class="o">/</span> <span class="n">outputs</span><span class="o">.</span><span class="n">text_embeds</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        <span class="c1"># Obtain logits scaled by the model&#39;s temperature factor</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="n">logits_per_image</span> <span class="o">=</span> <span class="n">image_embeds</span> <span class="o">@</span> <span class="n">text_embeds</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">model</span><span class="o">.</span><span class="n">logit_scale</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        <span class="n">similarity</span> <span class="o">=</span> <span class="n">logits_per_image</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="k">return</span> <span class="n">similarity</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">similarity</span>
+</code></pre></div>
+<p><em>Listing 8-2: Example code for SigLIP/CLIP image-text alignment filtering</em></p>
+<p>The threshold is illustrative; production environments should calibrate it by model version, data domain, and manual spot-check results.</p>
+<h3 id="842-saving-valuable-images-multi-granularity-synthetic-recaptioning">8.4.2 Saving Valuable Images: Multi-Granularity Synthetic Recaptioning<a class="headerlink" href="#842-saving-valuable-images-multi-granularity-synthetic-recaptioning" title="Permanent link">&para;</a></h3>
+<p>When an image has high resolution, good composition, and rare entities, but its original web text is only a label such as "IMG_20230401.jpg," discarding it wastes a data asset. If compute allows, using expert VLMs such as LLaVA-1.5 (Liu et al. 2024), Qwen2.5-VL (Bai et al. 2025), InternVL3 (Zhu et al. 2025), or GPT-4V to regenerate descriptions is an important way to improve image-text training quality. Recaptioning is not an unconditional gain: generated captions can introduce hallucinations, stylistic bias, and safety-policy refusals, so the generation model, prompt version, temperature parameter, and spot-check conclusion must be recorded.</p>
+<p>Modern large-model engineering usually applies a <strong>multi-granularity recaptioning array</strong> to this image batch so that both early cold-start alignment and later long-text generation are supported:</p>
+<ol>
+<li><strong>Short caption extraction</strong></li>
+<li><strong>Prompt</strong>: "In one sentence only, identify the main subject in the center of the image and its core action. No more than 15 Chinese characters."</li>
+<li><strong>Output</strong>: "An Asian woman playing violin."</li>
+<li>
+<p><strong>Engineering value</strong>: a short sentence with concentrated information and no complicated modifiers is well suited to early pretraining, where it establishes the basic attention binding between the vision encoder and text LLM. Feeding long descriptions too early can disperse alignment focus and increase hallucination.</p>
+</li>
+<li>
+<p><strong>Detailed dense-caption rendering</strong></p>
+</li>
+<li><strong>Prompt</strong>: "Objectively describe the composition, lighting, character features, clothing colors, background elements, and possible emotional atmosphere in about 150 Chinese characters."</li>
+<li><strong>Output</strong>: "At dusk in Times Square, the sky shows deep purple-orange clouds. In the center of the image, an Asian woman wearing distressed jeans and a white sweater plays a reddish-brown wooden violin with her eyes closed. The depth of field is shallow; behind her are blurred yellow taxis and glowing neon signs. The overall mood is melancholic and focused."</li>
+<li>
+<p><strong>Engineering value</strong>: high-density information helps train detail recognition and more stable image description. Using such data in SFT improves observing, describing, and referring capabilities.</p>
+</li>
+<li>
+<p><strong>Structured bounding boxes and OCR injection</strong></p>
+</li>
+<li><strong>Parallel-flow merge</strong>: observing the image with a large model is still not accurate enough, especially when dense numbers appear. A side-car recaptioning workflow calls PaddleOCR at the same time. If the long description finds a billboard in the background, the merge script converts its coordinates into special tokens and inserts them into text: <code>... the background contains a billboard reading "&lt;box_45_120_350_200&gt; Broadway 5th Ave. &lt;/box&gt;".</code> This converts visual signs into locatable strings and coordinate information inside the training sample.</li>
+</ol>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 8-2: Image semantic alignment and filtering flow" src="../../../images/part3/Yu-Chap08-Fig02.svg" /></a></p>
+<p><em>Figure 8-2: Image semantic alignment and filtering flow</em></p>
+<hr />
+<h2 id="85-sampling-mixes-representations-and-training-adaptation">8.5 Sampling Mixes, Representations, and Training Adaptation<a class="headerlink" href="#85-sampling-mixes-representations-and-training-adaptation" title="Permanent link">&para;</a></h2>
+<p>After cleaning, image-text samples still need slicing, packing, and ratio mixing before training. This step directly affects memory use, effective-token ratio, and capability distribution.</p>
+<h3 id="851-image-token-occupancy-and-anyres-dynamic-patching">8.5.1 Image Token Occupancy and AnyRes Dynamic Patching<a class="headerlink" href="#851-image-token-occupancy-and-anyres-dynamic-patching" title="Permanent link">&para;</a></h3>
+<p>In common pure-text packing, 1,000 written characters may require only 300 tokens. In multimodal training, images consume many sequence positions. For example, a normal <span class="arithmatex">\(336 \times 336\)</span> image processed by ViT-L/14 occupies 576 token slots.</p>
+<p>Early VLMs, including CLIP-era models, usually resized all input images to a fixed square size: a landscape photo and a vertical long document were both compressed to <span class="arithmatex">\(224 \times 224\)</span>, causing severe aspect-ratio distortion. To solve this, modern data factories widely introduce <strong>AnyRes</strong>, or dynamic high-resolution preservation, in preprocessing.</p>
+<p>Figure 8-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 8-3: AnyRes dynamic multi-resolution patching" src="../../../images/part3/Yu-Chap08-Fig03.svg" /></a></p>
+<p><em>Figure 8-3: AnyRes dynamic multi-resolution patching</em></p>
+<p><strong>AnyRes principles and core strategies:</strong></p>
+<ol>
+<li><strong>Zero-padding / letterboxing</strong>: for images whose original aspect ratio should be preserved and whose resolution does not overflow, add black or mean-color borders around the image to form a square, allowing the model to learn undistorted geometry.</li>
+<li><strong>Multi-patch splitting / grid cropping</strong>: dynamically match a <span class="arithmatex">\(336 \times 1008\)</span> vertical image to a <span class="arithmatex">\(1 \times 3\)</span> grid and cut it into three <span class="arithmatex">\(336 \times 336\)</span> local sub-patches. To preserve global context, add a heavily downsampled <strong>global context patch</strong>. One original image is therefore input as four matrices of 576 tokens each, consuming 2,304 tokens in total.</li>
+<li><strong>Positional embedding injection</strong>: sub-patches cannot be passed to the model arbitrarily. During DataLoader assembly, each patch must receive relative two-dimensional position codes such as <code>[&lt;row_1&gt;, &lt;col_1&gt;]</code>, so that the model knows which patch is on the left or right.</li>
+</ol>
+<p>If interleaved image-text data is not tightly controlled, GPU memory is consumed by image tokens and text-logic learning becomes inefficient. Pipelines therefore need <strong>aspect-ratio grouping-based sequence packing</strong>: place image-text pairs of similar shape into the same 4096-token sequence window, insert special boundary markers <code>&lt;image&gt;</code> and <code>&lt;/image&gt;</code> between images and image patches, and use an attention mask to block cross-document contamination, reducing memory waste.</p>
+<h3 id="852-tuning-the-three-way-data-mix">8.5.2 Tuning the Three-Way Data Mix<a class="headerlink" href="#852-tuning-the-three-way-data-mix" title="Permanent link">&para;</a></h3>
+<p>A balanced MLLM pretraining mix must allocate weights to different sources carefully. Public technical reports usually disclose data types and training phases, but rarely provide complete reusable recipes; therefore, the following items describe capability dimensions rather than fixed percentages:</p>
+<ol>
+<li><strong>General natural images</strong>: provide basic world-object knowledge, such as cats and dogs, cars, landscapes, color calibration, and human expressions. This portion is usually handled by strictly CLIP/SigLIP-filtered open datasets, such as the core filtered subset of DataComp-1B (Gadre et al. 2023), or licensed stock-image sources.</li>
+<li><strong>Charts, plots, and mathematical or code diagrams</strong>: provide abstract mathematical reasoning capability. Without this portion, the model may misinterpret line charts, stock candlestick charts, or complex mind maps.</li>
+<li><strong>High-density OCR document screenshots</strong>: scanned white papers, single-page PDFs, receipt and invoice images. This data is crucial for models that act as contract-review assistants or invoice helpers because it trains the rare "fine-grained text focus" capability that natural images almost never contain. The Qwen-VL and Qwen2.5-VL technical reports both list OCR, document understanding, grounding, and multi-resolution processing as core capability sources (Bai et al. 2023, 2025).</li>
+</ol>
+<p>Table 8-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 8-2: Image-cleaning strategies and cost comparison</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Cleaning strategy</th>
+<th style="text-align: left;">Compute cost</th>
+<th style="text-align: left;">Core function and benefit</th>
+<th style="text-align: left;">Residual risks and side effects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Basic resolution cutoff</strong></td>
+<td style="text-align: left;">Very low, I/O intensive</td>
+<td style="text-align: left;">Remove meaningless color blocks and reduce storage and downstream decoding overhead</td>
+<td style="text-align: left;">May wrongly remove historically meaningful documentary images that only survived in low resolution</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>DALI hardware-accelerated decoding</strong></td>
+<td style="text-align: left;">Low to medium, GPU intensive</td>
+<td style="text-align: left;">Relieve DataLoader bottlenecks and improve decoding by an order of magnitude</td>
+<td style="text-align: left;">High business integration cost; malformed JPEG files can trigger low-level library exceptions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>NSFW / watermark detection</strong></td>
+<td style="text-align: left;">Medium, CNN forward pass</td>
+<td style="text-align: left;">Enforce commercial compliance boundaries and prevent safety risk</td>
+<td style="text-align: left;">Adversarial tiny watermarks are hard to eliminate; detectors need continuous evolution</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SigLIP/CLIP alignment</strong></td>
+<td style="text-align: left;">High, dual-tower features</td>
+<td style="text-align: left;">Directly reduce semantic mismatch and form the basis of cognitive quality</td>
+<td style="text-align: left;">High-score regions may become semantically over-smoothed and may wrongly reject metaphorical or ironic images</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>VLM synthetic recaptioning</strong></td>
+<td style="text-align: left;">Very high, LLM generation</td>
+<td style="text-align: left;">Add details to low-information original captions</td>
+<td style="text-align: left;">Expensive and may introduce hallucinations or repetitive style from the previous model</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="86-anonymized-composite-case-and-long-term-commercial-guidance">8.6 Anonymized Composite Case and Long-Term Commercial Guidance<a class="headerlink" href="#86-anonymized-composite-case-and-long-term-commercial-guidance" title="Permanent link">&para;</a></h2>
+<p>The following case is an anonymized composite. Data scale and cost are used only to explain risk types. Real projects must evaluate GPU cost, sample size, and quality gains according to their specific hardware, data licenses, and evaluation criteria.</p>
+<h3 id="861-reverse-learning-hijacked-by-stock-photo-libraries">8.6.1 Reverse Learning Hijacked by Stock-Photo Libraries<a class="headerlink" href="#861-reverse-learning-hijacked-by-stock-photo-libraries" title="Permanent link">&para;</a></h3>
+<p>In an early R&amp;D stage, one team directly downloaded a subset of a cleaned open image-text dataset for alignment training. During staged blind interaction review, evaluators found a systematic problem: regardless of what landscape photo was shown, the model frequently ended with promotional text similar to "download high-definition watermark-free images from a certain stock site."</p>
+<p><strong>Lessons and remediation</strong>: this is a stock-photo contamination phenomenon. Even when a dataset has been filtered by a relatively high CLIP Score threshold, if OCR or feature classifiers were not used during initial collection to remove anti-theft watermarks and template promotional text, large image-hosting promotional templates can seep into the model's conditional probability distribution. For commercial large models, teams should establish negative hash lists for high-risk commercial image hosts and perform secondary cleaning on external data.</p>
+<h3 id="862-long-term-maintenance-of-multimodal-data-assets">8.6.2 Long-Term Maintenance of Multimodal Data Assets<a class="headerlink" href="#862-long-term-maintenance-of-multimodal-data-assets" title="Permanent link">&para;</a></h3>
+<p>Looking across the image-text data-engineering framework, the key to competitive image-text models is not only the vision encoder or training script. It is also the quality of data preparation before the model receives its first multimodal tensor token.</p>
+<p>Only after DOM structure parsing, image-download verification, hardware decoding, aspect-ratio cropping, safety scanning, SigLIP quantitative evaluation, and high-resolution recaptioning can raw web images and weak text be converted into multimodal paired samples with bilingual descriptions, location anchors, and quality metadata.</p>
+<p>This data asset is not just a JSON file on disk. It is a long-term engineering capability composed of source records, filtering rules, recaptioning models, sampling records, and evaluation feedback.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>As the opening chapter of Part III, this chapter systematically described four types of challenges that distinguish multimodal data from pure text, then introduced three major structural paradigms for image-text engineering. To reduce the throughput pressure caused by image archives, it discussed GPU-side decoding and preprocessing with DALI.</p>
+<p>For complex semantic alignment, the chapter used a diagram to explain the combined workflow of CLIP Score filtering and VLM recaptioning (see Figure 8-2). Finally, through data-mix tuning and an anonymized composite case, it described the quality boundaries that enterprise-grade vision-language model training must maintain.</p>
+<p>Although interleaved image-text data is an important modern multimodal training form, complex B-side industrial applications, such as financial-report parsing, complex invoice verification, and handwritten medical-form recognition, cannot be handled by natural-scene images alone. The next chapter enters <strong>Chapter 9: Recaptioning and Document Understanding</strong>, which discusses OCR, layout parsing, and long-document-understanding data engineering.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Alayrac J B, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Millican K, Reynolds M, others (2022) Flamingo: A Visual Language Model for Few-Shot Learning. Advances in Neural Information Processing Systems 35:23716-23736. https://doi.org/10.52202/068431-1723.</p>
+<p>Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model's Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966.</p>
+<p>Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, Zhong H, Zhu Y, Yang M, Li Z, Wan J, Wang P, Ding W, Fu Z, Xu Y, Ye J, Zhang X, Xie T, Cheng Z, Zhang H, Yang Z, Xu H, Lin J (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.</p>
+<p>Dosovitskiy A, Beyer L, Kolesnikov A, Weissenborn D, Zhai X, Unterthiner T, Dehghani M, Minderer M, Heigold G, Gelly S, Uszkoreit J, Houlsby N (2020) An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT). In: International Conference on Learning Representations 2021.</p>
+<p>Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh S, Zhang G, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36. Available at: https://arxiv.org/abs/2304.14108.</p>
+<p>Laurençon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36. arXiv:2306.16527.</p>
+<p>Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning (LLaVA). Advances in Neural Information Processing Systems 36:34892-34916.</p>
+<p>Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tuning (LLaVA-1.5). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 26296-26306. https://doi.org/10.1109/cvpr52733.2024.02484.</p>
+<p>NVIDIA (2023) NVIDIA Data Loading Library (DALI). https://github.com/NVIDIA/DALI.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294. Available at: https://arxiv.org/abs/2210.08402.</p>
+<p>Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. Advances in Neural Information Processing Systems 36. arXiv:2304.06939.</p>
+<p>Zhai X, Mustafa B, Kolesnikov A, Beyer L (2023) Sigmoid Loss for Language Image Pre-Training (SigLIP). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 11975-11986. https://doi.org/10.1109/iccv51070.2023.01100.</p>
+<p>Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, Gao Z, Cui E, Cao Y, Liu Y, Xu W, Li H, Wang J, Lv H, Chen D, Li S, He Y, Jiang T, Luo J, Wang Y, He C, Shi B, Zhang X, Shao W, He J, Xiong Y, Qu W, Sun P, Jiao P, Wu L, Zhang K, Deng H, Ge J, Chen K, Wang L, Dou M, Lu L, Zhu X, Lu T, Lin D, Qiao Y, Dai J, Wang W (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. arXiv preprint arXiv:2304.10592.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch09_recaptioning_ocr/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 9: Recaptioning and Document Understanding">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 9: Recaptioning and Document Understanding
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

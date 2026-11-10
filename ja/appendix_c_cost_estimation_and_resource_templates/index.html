@@ -1,0 +1,1402 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/appendix_c_cost_estimation_and_resource_templates/">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>附录C：成本估算与资源模板 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#c" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录C：成本估算与资源模板
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_c_cost_estimation_and_resource_templates/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/appendix_c_cost_estimation_and_resource_templates/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#c1" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.1 附录定位
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c2" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.2 成本为什么要按生命周期拆开
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c3" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.3 总体估算公式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c4" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4 数据接入与清洗成本模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.4 数据接入与清洗成本模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c41" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.1 接入成本不应只看“抓回来多少”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c42" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.2 清洗成本最容易低估返工
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c5" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5 标注、审阅与合成数据成本模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.5 标注、审阅与合成数据成本模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c51" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.1 标注成本一定要区分“首标”和“复核”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c52" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.2 合成数据不是“零人工成本”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c6" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6 训练与推理资源估算模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.6 训练与推理资源估算模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c61" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.1 训练资源估算不要只看卡数
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c62" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.2 推理成本要按场景拆分
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c7" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7 评测、榜单与公开维护成本模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.7 评测、榜单与公开维护成本模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c71" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.1 公开基准的长期成本往往高于首发成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c72" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.2 评测成本为什么常常在后期突然上升
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c8" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8 存储、网络与归档成本模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.8 存储、网络与归档成本模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c81" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.1 多模态项目中，存储成本必须单列
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c82" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.2 归档策略会直接影响未来三年的可维护性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c83" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.3 网络回源与外部调用成本不能被混入“其他”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c9" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9 三套可直接使用的资源模板
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.9 三套可直接使用的资源模板">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c91" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.1 小型研究/课程模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c92" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.2 中型团队项目模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c93" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.3 开放基准/高校合作模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c94" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.4 以一轮高校合作数据集发布为例的估算顺序
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c95" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.5 建议保留的预算台账字段
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c10" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10 季度复盘时最该看的不是“超没超预算”
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.10 季度复盘时最该看的不是“超没超预算”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c101" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10.1 适合写进季度复盘的三张图
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c11" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.11 本附录小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="c">附录C：成本估算与资源模板<a class="headerlink" href="#c" title="Permanent link">&para;</a></h1>
+<h2 id="c1">C.1 附录定位<a class="headerlink" href="#c1" title="Permanent link">&para;</a></h2>
+<p>数据工程项目最容易被低估的，不是技术复杂度，而是成本结构。很多团队在立项时只问“训练要几张卡”，却没有系统回答以下问题：样本采集与清洗谁来做，标注复核要花多少人天，评测与排行榜维护需要多少长期预算，多模态文件存储和回源流量要花多少钱，教学镜像是否需要固定一整学期的资源。大规模训练的资源消耗和碳排放已经被多项研究专门讨论，说明训练预算不能只被当成临时工程开销处理（Patterson et al. 2021）。</p>
+<p>因此，本附录的目标不是给出一个放之四海而皆准的价格表，而是建立<strong>成本估算的方法、表格和复盘模板</strong>。只要方法稳定，具体单价即使随时间变化，团队仍可以快速重新估算；如果方法本身缺失，即使掌握了某个时点的单价，也无法做出可靠预算。</p>
+<h2 id="c2">C.2 成本为什么要按生命周期拆开<a class="headerlink" href="#c2" title="Permanent link">&para;</a></h2>
+<p>很多预算争议的根源，不是总额高低，而是不同角色关注的成本对象不同。研究人员可能只关注训练 GPU，平台工程师更关心存储和回流，课程负责人更关心镜像和助教工时，管理层则关心季度投入与交付节奏。若没有统一拆分，讨论会不断失焦。</p>
+<p>一个更适合数据工程项目的拆法，是按生命周期拆成六类成本：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">成本类目</th>
+<th style="text-align: left;">核心问题</th>
+<th style="text-align: left;">典型单位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据接入成本</td>
+<td style="text-align: left;">拿到样本要花什么</td>
+<td style="text-align: left;">人天、API 调用、抓取任务</td>
+</tr>
+<tr>
+<td style="text-align: left;">清洗与加工成本</td>
+<td style="text-align: left;">把样本做成可用资产要花什么</td>
+<td style="text-align: left;">CPU/GPU 时长、人天</td>
+</tr>
+<tr>
+<td style="text-align: left;">标注与复核成本</td>
+<td style="text-align: left;">监督信号如何形成</td>
+<td style="text-align: left;">每样本、每小时、每轮 QA</td>
+</tr>
+<tr>
+<td style="text-align: left;">训练与推理成本</td>
+<td style="text-align: left;">模型消费数据要花什么</td>
+<td style="text-align: left;">GPU 小时、tokens、吞吐</td>
+</tr>
+<tr>
+<td style="text-align: left;">评测与发布成本</td>
+<td style="text-align: left;">比较、榜单和开放维护要花什么</td>
+<td style="text-align: left;">任务批次、人工复核、人天</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学与运维成本</td>
+<td style="text-align: left;">让他人长期可复现要花什么</td>
+<td style="text-align: left;">镜像、账号、课程助教工时</td>
+</tr>
+</tbody>
+</table>
+<p>这种拆法的价值，在于它逼着团队承认一个现实：<strong>真正长期昂贵的，往往不是首发训练，而是后续治理与维护。</strong></p>
+<h2 id="c3">C.3 总体估算公式<a class="headerlink" href="#c3" title="Permanent link">&para;</a></h2>
+<p>一个足够实用的总体估算公式可以写成：</p>
+<div class="arithmatex">\[
+\text{Total Cost} =
+C_{\text{ingest}} +
+C_{\text{clean}} +
+C_{\text{annotate}} +
+C_{\text{train/infer}} +
+C_{\text{evaluate}} +
+C_{\text{release/teach}}
+\]</div>
+<p>为了便于执行，可以把每一项都拆成“固定成本 + 规模成本 + 返工风险储备”：</p>
+<div class="arithmatex">\[
+C_i = C_i^{fixed} + C_i^{variable} + C_i^{risk}
+\]</div>
+<p>很多团队预算失控，并不是 variable 项看错了，而是完全没预留 risk 项。例如，重复标注、脱敏返工、榜单复核、样本下线和学期中镜像修复，几乎都会在真实项目中出现。</p>
+<h2 id="c4">C.4 数据接入与清洗成本模板<a class="headerlink" href="#c4" title="Permanent link">&para;</a></h2>
+<h3 id="c41">C.4.1 接入成本不应只看“抓回来多少”<a class="headerlink" href="#c41" title="Permanent link">&para;</a></h3>
+<p>接入阶段至少要估三种成本：接入脚本开发、数据拉取运行、来源核验与授权确认。一个简单模板如表 C-1。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">项目</th>
+<th style="text-align: left;">单位</th>
+<th style="text-align: left;">数量</th>
+<th style="text-align: left;">单价/工时</th>
+<th style="text-align: left;">小计</th>
+<th style="text-align: left;">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">接入脚本开发</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">抓取/API/解析适配</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据拉取任务</td>
+<td style="text-align: left;">批次</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">含失败重试</td>
+</tr>
+<tr>
+<td style="text-align: left;">来源与许可核验</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">合作方、协议、日志整理</td>
+</tr>
+<tr>
+<td style="text-align: left;">存储入湖</td>
+<td style="text-align: left;">TB/月</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">原始层存储</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据抽检</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">首轮质量基线</td>
+</tr>
+</tbody>
+</table>
+<p>如果项目源头较多，建议把来源核验成本单独拉出来，而不是混进脚本开发。因为它往往是影响上线节奏的隐性关键路径。</p>
+<h3 id="c42">C.4.2 清洗成本最容易低估返工<a class="headerlink" href="#c42" title="Permanent link">&para;</a></h3>
+<p>清洗成本通常包含规则开发、批处理资源、异常样本复核和重新运行成本。推荐使用下面的拆法：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">成本项</th>
+<th style="text-align: left;">估算方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">规则开发成本</td>
+<td style="text-align: left;">规则数量 × 平均设计与测试工时</td>
+</tr>
+<tr>
+<td style="text-align: left;">批处理成本</td>
+<td style="text-align: left;">数据量 × 单位处理资源消耗</td>
+</tr>
+<tr>
+<td style="text-align: left;">失败样本复核成本</td>
+<td style="text-align: left;">异常样本数 × 单样本复核时间</td>
+</tr>
+<tr>
+<td style="text-align: left;">重跑成本</td>
+<td style="text-align: left;">主流程每次重跑资源 × 预计重跑次数</td>
+</tr>
+</tbody>
+</table>
+<p>特别是在文档、多模态和语音项目里，重跑成本经常被忽略。比如 OCR 策略、去重阈值、音频切片规则一旦调整，后续常常需要重新生成一整层中间产物。</p>
+<h2 id="c5">C.5 标注、审阅与合成数据成本模板<a class="headerlink" href="#c5" title="Permanent link">&para;</a></h2>
+<h3 id="c51">C.5.1 标注成本一定要区分“首标”和“复核”<a class="headerlink" href="#c51" title="Permanent link">&para;</a></h3>
+<p>只按每条样本标一个单价来估算，几乎一定会低估预算。更合理的方式是把标注拆为：</p>
+<ul>
+<li>首标成本</li>
+<li>复核成本</li>
+<li>仲裁成本</li>
+<li>标注说明迭代成本</li>
+<li>平台与管理成本</li>
+</ul>
+<p>表 C-2 可作为通用模板。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">项目</th>
+<th style="text-align: left;">单位</th>
+<th style="text-align: left;">数量</th>
+<th style="text-align: left;">单价/工时</th>
+<th style="text-align: left;">小计</th>
+<th style="text-align: left;">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">首标</td>
+<td style="text-align: left;">条/页/分钟</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">与任务粒度相关</td>
+</tr>
+<tr>
+<td style="text-align: left;">复核</td>
+<td style="text-align: left;">条/页/分钟</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">建议按抽样率估算</td>
+</tr>
+<tr>
+<td style="text-align: left;">仲裁</td>
+<td style="text-align: left;">条/页/分钟</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">高争议样本专项预算</td>
+</tr>
+<tr>
+<td style="text-align: left;">说明迭代</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">指南与 QA 会议</td>
+</tr>
+<tr>
+<td style="text-align: left;">平台维护</td>
+<td style="text-align: left;">月</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">账号、权限、导出</td>
+</tr>
+</tbody>
+</table>
+<p>如果任务属于偏好对齐、多模态区域标注或语音情绪控制，仲裁和说明迭代成本往往比首标更容易成为瓶颈。</p>
+<h3 id="c52">C.5.2 合成数据不是“零人工成本”<a class="headerlink" href="#c52" title="Permanent link">&para;</a></h3>
+<p>很多项目听到“用大模型生成合成数据”后，会天然以为成本能显著下降。但真实情况通常是：首轮生成成本下降了，验证和筛选成本未必下降，甚至更高。合成数据成本至少应包含：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">成本项</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">prompt/template 设计</td>
+<td style="text-align: left;">谁来定义生成协议</td>
+</tr>
+<tr>
+<td style="text-align: left;">API 或推理成本</td>
+<td style="text-align: left;">生成本身的 tokens 或 GPU</td>
+</tr>
+<tr>
+<td style="text-align: left;">过滤与打分</td>
+<td style="text-align: left;">自动 judge、规则筛选</td>
+</tr>
+<tr>
+<td style="text-align: left;">人工抽检</td>
+<td style="text-align: left;">验证是否真的可用</td>
+</tr>
+<tr>
+<td style="text-align: left;">回炉重生成</td>
+<td style="text-align: left;">对失败样本再处理</td>
+</tr>
+</tbody>
+</table>
+<p>也就是说，合成数据最稳妥的预算方法不是“生成 10 万条的 API 账单”，而是“生成、过滤、抽检和返工的全链成本”。</p>
+<h2 id="c6">C.6 训练与推理资源估算模板<a class="headerlink" href="#c6" title="Permanent link">&para;</a></h2>
+<h3 id="c61">C.6.1 训练资源估算不要只看卡数<a class="headerlink" href="#c61" title="Permanent link">&para;</a></h3>
+<p>训练预算最容易被简化成“几张卡、跑几天”，但真正决定成本的至少还有三件事：有效吞吐、失败重跑概率和调参轮次。以 Megatron-LM 为代表的大规模训练系统表明，模型并行、数据并行和流水并行策略会显著影响吞吐、显存占用和失败恢复成本（Narayanan et al. 2021）。一个更稳妥的表格如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">项目</th>
+<th style="text-align: left;">单位</th>
+<th style="text-align: left;">数量</th>
+<th style="text-align: left;">单价/工时</th>
+<th style="text-align: left;">小计</th>
+<th style="text-align: left;">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">训练 GPU</td>
+<td style="text-align: left;">GPU 小时</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">正式训练</td>
+</tr>
+<tr>
+<td style="text-align: left;">调参 GPU</td>
+<td style="text-align: left;">GPU 小时</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">小规模试验</td>
+</tr>
+<tr>
+<td style="text-align: left;">评测推理</td>
+<td style="text-align: left;">GPU 小时 / tokens</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">含切片评测</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据准备 CPU</td>
+<td style="text-align: left;">核时</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">分词、打包、校验</td>
+</tr>
+<tr>
+<td style="text-align: left;">失败重跑储备</td>
+<td style="text-align: left;">百分比</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">建议单列</td>
+</tr>
+</tbody>
+</table>
+<p>如果团队完全不估失败重跑储备，预算表很容易在第二轮实验后失真。对工程项目而言，预留 10% 到 30% 的风险资源通常比“第一次估得极准”更有价值。</p>
+<h3 id="c62">C.6.2 推理成本要按场景拆分<a class="headerlink" href="#c62" title="Permanent link">&para;</a></h3>
+<p>推理成本至少应分为三类。对于长上下文和高并发服务，PagedAttention 等内存管理机制已经成为推理服务成本估算的重要参照，vLLM 的工程文档也提供了部署和调优层面的实践入口（Kwon et al. 2023; vLLM Project 2026）。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">场景</th>
+<th style="text-align: left;">特点</th>
+<th style="text-align: left;">估算重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">离线批评测</td>
+<td style="text-align: left;">批量、可排队</td>
+<td style="text-align: left;">吞吐、并发、结果缓存</td>
+</tr>
+<tr>
+<td style="text-align: left;">在线服务</td>
+<td style="text-align: left;">延迟敏感</td>
+<td style="text-align: left;">峰值并发、上下文长度、回退策略</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学实验</td>
+<td style="text-align: left;">时段集中</td>
+<td style="text-align: left;">学期镜像、账号上限、失败重试</td>
+</tr>
+</tbody>
+</table>
+<p>把这三类推理成本混在一起，会让团队既解释不清为什么线上预算高，也解释不清为什么课程周会出现资源峰值。</p>
+<h2 id="c7">C.7 评测、榜单与公开维护成本模板<a class="headerlink" href="#c7" title="Permanent link">&para;</a></h2>
+<h3 id="c71">C.7.1 公开基准的长期成本往往高于首发成本<a class="headerlink" href="#c71" title="Permanent link">&para;</a></h3>
+<p>一个公开 benchmark 的成本不止是“首发一次”。真正持续发生的支出包括：</p>
+<ul>
+<li>baseline 复现和升级</li>
+<li>提交结果校验</li>
+<li>可疑结果人工复核</li>
+<li>样本争议处理</li>
+<li>文档与镜像维护</li>
+<li>教学版本锁定</li>
+</ul>
+<p>表 C-3 可以帮助团队单独估这个部分。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">项目</th>
+<th style="text-align: left;">周期</th>
+<th style="text-align: left;">单位</th>
+<th style="text-align: left;">估算方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">baseline 重跑</td>
+<td style="text-align: left;">季度/半年</td>
+<td style="text-align: left;">GPU 小时</td>
+<td style="text-align: left;">基线数量 × 单次评测成本</td>
+</tr>
+<tr>
+<td style="text-align: left;">提交审查</td>
+<td style="text-align: left;">月</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;">提交量 × 单次核验工时</td>
+</tr>
+<tr>
+<td style="text-align: left;">issue 处理</td>
+<td style="text-align: left;">月</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;">历史平均工单量</td>
+</tr>
+<tr>
+<td style="text-align: left;">文档更新</td>
+<td style="text-align: left;">版本发布时</td>
+<td style="text-align: left;">人天</td>
+<td style="text-align: left;">Card、FAQ、release note</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学镜像维护</td>
+<td style="text-align: left;">学期</td>
+<td style="text-align: left;">人天/实例</td>
+<td style="text-align: left;">开课前冻结与学期内补丁</td>
+</tr>
+</tbody>
+</table>
+<p>如果这一层成本没有被预算，公开基准很容易首发时热闹、半年后失真。</p>
+<h3 id="c72">C.7.2 评测成本为什么常常在后期突然上升<a class="headerlink" href="#c72" title="Permanent link">&para;</a></h3>
+<p>不少团队在项目初期会觉得评测成本很低，因为早期只是在小范围内跑几个基线。可一旦数据集进入公开发布、课程实验或多团队协作阶段，评测成本往往会迅速上升，原因通常包括：</p>
+<ul>
+<li>切片数量增加，单次评测不再只算总分。</li>
+<li>baseline 数量增加，需要保留历史可比性。</li>
+<li>可疑结果需要人工复核，而不只是自动脚本判定。</li>
+<li>课程实验需要锁定一套稳定评测环境，不能跟随主线频繁变动。</li>
+</ul>
+<p>因此，评测预算最好分成“内部研发评测”和“公开维护评测”两本账。前者服务快速迭代，后者服务稳定比较。把两者混在一起，会让团队在项目成熟期突然觉得“为什么评测开始变贵了”，其实只是此前没有把公开维护成本正式看见。</p>
+<h2 id="c8">C.8 存储、网络与归档成本模板<a class="headerlink" href="#c8" title="Permanent link">&para;</a></h2>
+<h3 id="c81">C.8.1 多模态项目中，存储成本必须单列<a class="headerlink" href="#c81" title="Permanent link">&para;</a></h3>
+<p>文本项目很多时候还能容忍“粗略估一下磁盘”，但文档、图像、音频、视频和 Agent 轨迹一旦进入项目，存储和回源流量就必须显式进入预算。建议至少区分：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">类目</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Raw 原始文件</td>
+<td style="text-align: left;">最大但访问频率未必高</td>
+</tr>
+<tr>
+<td style="text-align: left;">中间产物</td>
+<td style="text-align: left;">OCR、特征、转码、索引</td>
+</tr>
+<tr>
+<td style="text-align: left;">Curated 正式版本</td>
+<td style="text-align: left;">训练与评测正式输入</td>
+</tr>
+<tr>
+<td style="text-align: left;">Release 镜像</td>
+<td style="text-align: left;">对外发布和课程复现版本</td>
+</tr>
+<tr>
+<td style="text-align: left;">归档层</td>
+<td style="text-align: left;">冷存储与长期保存</td>
+</tr>
+</tbody>
+</table>
+<p>如果没有这种分层，团队很容易在项目中后期发现：真正昂贵的不是训练，而是所有中间产物都被默认永久保留。若项目使用 Kubernetes 承载训练、评测或教学环境，资源配额、存储卷、命名空间和作业生命周期也应纳入预算表，具体资源对象和调度语义可参见 Kubernetes 官方文档（Kubernetes Authors 2026）。</p>
+<h3 id="c82">C.8.2 归档策略会直接影响未来三年的可维护性<a class="headerlink" href="#c82" title="Permanent link">&para;</a></h3>
+<p>归档不是简单地把旧版本压缩起来，而是决定未来还能不能复盘和复现。一个好的归档预算至少应回答：</p>
+<ol>
+<li>哪些版本必须长期保留。</li>
+<li>哪些版本只保留元数据与指针。</li>
+<li>哪些课程镜像需要按学期冻结。</li>
+<li>哪些公开版本需要可回滚。</li>
+</ol>
+<p>没有归档策略的项目，后续最常见的问题是“省下了一点存储费，却失去了复盘能力”。</p>
+<h3 id="c83">C.8.3 网络回源与外部调用成本不能被混入“其他”<a class="headerlink" href="#c83" title="Permanent link">&para;</a></h3>
+<p>在多模态项目、RAG 项目和开放榜单场景里，网络与外部调用开销经常被写进一个模糊的“其他成本”，这会直接削弱预算判断能力。建议至少单列三类：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">类别</th>
+<th style="text-align: left;">常见来源</th>
+<th style="text-align: left;">为什么必须单列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">回源流量</td>
+<td style="text-align: left;">对象存储下载、课程镜像拉取</td>
+<td style="text-align: left;">访问峰值常与课程节点重合</td>
+</tr>
+<tr>
+<td style="text-align: left;">外部 API</td>
+<td style="text-align: left;">judge、OCR、翻译、脱敏</td>
+<td style="text-align: left;">计费逻辑常按调用量快速放大</td>
+</tr>
+<tr>
+<td style="text-align: left;">外发同步</td>
+<td style="text-align: left;">公开发布、镜像复制、跨区备份</td>
+<td style="text-align: left;">与合规和可用性策略强绑定</td>
+</tr>
+</tbody>
+</table>
+<p>只要这些费用被单列，团队就更容易回答一个关键问题：成本上升到底是因为项目规模真的变大了，还是因为发布方式、课程使用方式或外部服务依赖方式发生了变化。</p>
+<h2 id="c9">C.9 三套可直接使用的资源模板<a class="headerlink" href="#c9" title="Permanent link">&para;</a></h2>
+<h3 id="c91">C.9.1 小型研究/课程模板<a class="headerlink" href="#c91" title="Permanent link">&para;</a></h3>
+<p>适用对象：实验室、单课程、原型项目。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模块</th>
+<th style="text-align: left;">建议预算思路</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据处理</td>
+<td style="text-align: left;">以人天为主，资源为辅</td>
+</tr>
+<tr>
+<td style="text-align: left;">标注</td>
+<td style="text-align: left;">小样本高质量，复核比例适当提高</td>
+</tr>
+<tr>
+<td style="text-align: left;">训练</td>
+<td style="text-align: left;">先估试验轮次，再估正式轮次</td>
+</tr>
+<tr>
+<td style="text-align: left;">评测</td>
+<td style="text-align: left;">强调切片与复盘，不盲目扩榜单</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学</td>
+<td style="text-align: left;">必须单列镜像与助教支持工时</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c92">C.9.2 中型团队项目模板<a class="headerlink" href="#c92" title="Permanent link">&para;</a></h3>
+<p>适用对象：多成员协作、季度交付、有内外部使用方。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模块</th>
+<th style="text-align: left;">建议预算思路</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据接入</td>
+<td style="text-align: left;">建立固定入口与版本策略</td>
+</tr>
+<tr>
+<td style="text-align: left;">清洗治理</td>
+<td style="text-align: left;">单列重跑成本与异常复核成本</td>
+</tr>
+<tr>
+<td style="text-align: left;">训练推理</td>
+<td style="text-align: left;">用正式训练、调参、评测三账分开</td>
+</tr>
+<tr>
+<td style="text-align: left;">发布维护</td>
+<td style="text-align: left;">把 benchmark 和 issue 运维作为长期项</td>
+</tr>
+<tr>
+<td style="text-align: left;">合规</td>
+<td style="text-align: left;">审批、脱敏、撤回流程计入管理成本</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c93">C.9.3 开放基准/高校合作模板<a class="headerlink" href="#c93" title="Permanent link">&para;</a></h3>
+<p>适用对象：要做对外发布、课程复现和长期维护的资产。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模块</th>
+<th style="text-align: left;">建议预算思路</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据版本</td>
+<td style="text-align: left;">至少保留 raw、curated、release 三层</td>
+</tr>
+<tr>
+<td style="text-align: left;">文档</td>
+<td style="text-align: left;">Card、FAQ、release note 不得省略</td>
+</tr>
+<tr>
+<td style="text-align: left;">榜单</td>
+<td style="text-align: left;">审查、复核、撤榜机制必须计成本</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学</td>
+<td style="text-align: left;">学期冻结版本与实验脚本必须单列</td>
+</tr>
+<tr>
+<td style="text-align: left;">交接</td>
+<td style="text-align: left;">每学期或每版本预留移交整理工时</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c94">C.9.4 以一轮高校合作数据集发布为例的估算顺序<a class="headerlink" href="#c94" title="Permanent link">&para;</a></h3>
+<p>如果团队要完成一轮高校合作数据集从整理、评测到公开发布的流程，估算时建议采用下面的顺序，而不要一上来只问训练预算：</p>
+<ol>
+<li>先估接入与许可核验成本，因为这是能否对外发布的前提。</li>
+<li>再估清洗、脱敏和版本打包成本，因为这决定是否能形成稳定 release。</li>
+<li>再估 baseline 和评测脚本成本，因为没有它们就没有可比较发布。</li>
+<li>最后再估教学镜像、榜单运维和 issue 处理成本，因为这些决定资产能否长期维护。</li>
+</ol>
+<p>这种顺序和很多团队的直觉相反，但它更符合第十二篇的中心思想：数据集不是“一次训练前的原料”，而是会持续消耗维护资源的工程资产。</p>
+<h3 id="c95">C.9.5 建议保留的预算台账字段<a class="headerlink" href="#c95" title="Permanent link">&para;</a></h3>
+<p>预算模板真正想长期发挥作用，最好不是每次另起一张 Excel，而是沉淀为一份持续更新的预算台账。建议至少保留以下字段：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">字段</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">budget_cycle</td>
+<td style="text-align: left;">对应季度、学期或版本周期</td>
+</tr>
+<tr>
+<td style="text-align: left;">asset_scope</td>
+<td style="text-align: left;">涉及的数据集、benchmark 或课程</td>
+</tr>
+<tr>
+<td style="text-align: left;">planned_cost</td>
+<td style="text-align: left;">预算值</td>
+</tr>
+<tr>
+<td style="text-align: left;">actual_cost</td>
+<td style="text-align: left;">实际值</td>
+</tr>
+<tr>
+<td style="text-align: left;">variance_reason</td>
+<td style="text-align: left;">偏差原因</td>
+</tr>
+<tr>
+<td style="text-align: left;">reusable_asset_output</td>
+<td style="text-align: left;">本轮形成的长期资产</td>
+</tr>
+<tr>
+<td style="text-align: left;">one_off_cost</td>
+<td style="text-align: left;">一次性开销</td>
+</tr>
+<tr>
+<td style="text-align: left;">maintenance_cost</td>
+<td style="text-align: left;">后续维护开销</td>
+</tr>
+</tbody>
+</table>
+<p>一旦这些字段被持续保留，团队就能逐渐回答一个有价值的问题：哪类投入最容易沉淀成长线资产，哪类投入虽然昂贵却只是在被动补洞。</p>
+<h2 id="c10">C.10 季度复盘时最该看的不是“超没超预算”<a class="headerlink" href="#c10" title="Permanent link">&para;</a></h2>
+<p>预算复盘最容易犯的错误，是只看是否超支，而不看为什么超支。真正对下一轮项目有用的问题通常包括：</p>
+<ol>
+<li>超支主要来自训练、返工、标注还是维护？</li>
+<li>哪一项成本原本没被看见，现在必须正式入表？</li>
+<li>哪些开销换来了可持续资产，哪些只是补洞？</li>
+<li>教学、公开基准和生产版本是否被不当地混算？</li>
+<li>下一季度最值得控制的是哪一层，而不是哪一个数字？</li>
+</ol>
+<p>也就是说，预算表不是为了把项目变成财务游戏，而是为了把“资源到底投在了哪种数据价值上”说清楚。</p>
+<h3 id="c101">C.10.1 适合写进季度复盘的三张图<a class="headerlink" href="#c101" title="Permanent link">&para;</a></h3>
+<p>如果项目需要把预算复盘写成更可沟通的报告，最值得保留的通常不是几十行细碎账目，而是三张总结图：</p>
+<ol>
+<li>生命周期成本分布图：展示接入、清洗、标注、训练、评测、维护各自占比。</li>
+<li>预算偏差来源图：展示超支来自返工、调用量增长、镜像维护还是人工复核。</li>
+<li>资产沉淀对照图：展示本季度花出去的钱，形成了哪些可复用版本、模板或公开资产。</li>
+</ol>
+<p>这三张图的意义，在于它们把财务语言重新翻译回工程语言。对于需要在书稿、课程、开源基准或生产项目之间共享资源模板的团队来说，这种翻译尤其重要，因为它能帮助不同角色对“投入换来了什么”形成一致认知。</p>
+<h2 id="c11">C.11 本附录小结<a class="headerlink" href="#c11" title="Permanent link">&para;</a></h2>
+<p>本附录建立了数据工程项目的成本估算方法和资源模板。核心结论有三条。</p>
+<p>第一，成本必须按生命周期拆解，否则团队只会看到训练成本而忽略治理成本。<br />
+第二，最容易失真的不是单价，而是返工、复核、维护和教学复现这些风险项。<br />
+第三，真正成熟的成本管理，不只是为了省钱，而是为了让资源投入和数据资产价值之间形成可解释的对应关系。</p>
+<h2 id="_1">参考文献<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>Patterson D, Gonzalez J, Le Q, Liang C, Munguia L, Rothchild D, So D, Texier M, Dean J (2021) Carbon Emissions and Large Neural Network Training. arXiv preprint arXiv:2104.10350.</p>
+<p>Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM. In: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. arXiv:2104.04473.</p>
+<p>Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626. https://doi.org/10.1145/3600006.3613165.</p>
+<p>Kubernetes Authors (2026) Kubernetes Documentation. https://kubernetes.io/docs/.</p>
+<p>vLLM Project (2026) vLLM Documentation. https://docs.vllm.ai/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

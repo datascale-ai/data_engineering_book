@@ -1,0 +1,1151 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part1/ch02_quality_framework/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第2章：LLM数据生命周期与质量评估框架 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#2llm" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第2章：LLM数据生命周期与质量评估框架
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part1/ch02_quality_framework/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part1/ch02_quality_framework/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 为什么需要统一质量语言
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.1 为什么需要统一质量语言">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.1 团队对"高质量数据"的误解来源
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.2 生命周期视角下质量目标为何会动态变迁
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.3 没有统一框架时的治理失效现象
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 生命周期视角下的质量目标分层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 生命周期视角下的质量目标分层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1 各阶段的目标差异
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2 离线、在线与业务质量的三角映射
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3 切面分层：样本级到系统级
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 缺陷分类与指标矩阵
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.3 缺陷分类与指标矩阵">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-six-core-defect-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.1 六类核心数据缺陷 (Six Core Defect Classes)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.2 建立核心指标矩阵
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.3 指标间的博弈与冲突关系
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4 从评分卡到治理动作：自动洗筛闭环
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.4 从评分卡到治理动作：自动洗筛闭环">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.1 数据评分卡的设计与落地
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.2 质量阈值、阻断闸门设计与回退 (Rollback)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#243" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.3 将告警转化为修复动作
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5 跨阶段传导放大案例
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.5 跨阶段传导放大案例">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.1 案例回放一：预训练语料的“隐性语法漂移”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.2 案例回放二：RAG 场景下的“离线高分，线上失效”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.6 本章如何成为后续工程的“公共契约”
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="2llm">第2章：LLM数据生命周期与质量评估框架<a class="headerlink" href="#2llm" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；陈长汶；王柯</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章建立贯穿全书的数据质量评估框架。大模型项目中的“高质量数据”并不是单一指标，而是随训练阶段、任务目标和业务场景动态变化的多维约束。章节首先说明算法、数据、标注和产品团队为何会在质量定义上产生分歧，并提出以数据质量术语契约统一沟通。随后，本章按照预训练、指令微调、偏好对齐和 RAG 应用四个阶段，拆解质量目标、检测指标和典型风险；再从样本级、批次级、数据集级和系统平台级建立分层评估视角。最后，本章给出六类核心数据缺陷、数据发布评分卡、持续集成/持续部署（Continuous Integration/Continuous Deployment，CI/CD）质量闸门和匿名化复合案例，说明如何把质量评估转化为可执行的治理动作、告警策略和回滚机制。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>数据质量评估；数据生命周期；数据评分卡；基准污染；数据治理；RAG 评估；DataOps</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>建立跨团队一致的数据质量术语和指标语言。</li>
+<li>区分不同训练阶段的数据质量目标和评估方法。</li>
+<li>将常见数据缺陷映射为可检测、可阻断、可复盘的工程指标。</li>
+<li>设计数据发布评分卡、质量闸门和回滚流程。</li>
+</ul>
+<h2 id="21">2.1 为什么需要统一质量语言<a class="headerlink" href="#21" title="Permanent link">&para;</a></h2>
+<p>在大模型开发过程中，不同专业背景的团队往往在“什么是好数据”上存在显著认知差异。这种缺少统一“质量语言”的情况，是造成许多 LLM 项目延期、返工或模型效果不稳定的重要原因。</p>
+<h3 id="211">2.1.1 团队对"高质量数据"的误解来源<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>在一个典型的大模型研发团队里，"高质量数据"对不同角色意味着截然不同的东西。以下三个匿名化复合场景综合了一线项目中常见的联合评审会分歧，用来说明这种认知断层的风险。</p>
+<p><strong>场景一：算法研究员 vs 数据工程师</strong></p>
+<blockquote>
+<p><strong>算法研究员</strong>（看着 Loss 曲线）："你们的新批次数据有问题，明显感觉训练步骤 8000 之后 Loss 上不去了，代码生成能力下降了。"
+<strong>数据工程师</strong>（指着质量报告）："不对！这批数据的清洁度评分是 0.91，比上一版高了 5 分，我们专门加了更严格的长度过滤，质量是最好的一版。"</p>
+</blockquote>
+<p>问题根因：两人说的"质量"根本不是同一个维度。严格的长度过滤把那些包含边界情况的长代码片段全部过滤掉了——提升了"噪声维度"的质量，却降低了"覆盖度维度"的质量。</p>
+<p><strong>场景二：标注专家 vs 数据工程师</strong></p>
+<blockquote>
+<p><strong>标注专家</strong>："你们给我这批 SFT 原始数据太差了，里面一半答案在事实上是错的，有的把 2023 年的事件说在 2021 年。"
+<strong>数据工程师</strong>："这批数据我专门用 KenLM 跑过困惑度过滤，PPL 分布较好，语言流畅度很高啊。"</p>
+</blockquote>
+<p>问题根因：PPL 衡量的是"语言分布合理性"——一个语言流畅但事实全错的段落，PPL 可以非常低（看起来很"好"）。标注专家需要的"事实准确性"是 PPL 过滤完全覆盖不到的维度。</p>
+<p><strong>场景三：产品经理 vs 算法研究员</strong></p>
+<blockquote>
+<p><strong>产品经理</strong>："模型在线上对用户的金融问题频繁幻觉，昨天一个用户问某股票今年的分红，模型一本正经地给出了去年的错误数据。"
+<strong>算法研究员</strong>："在我们的基准评测集上，这个模型的金融知识问答准确率超过上一版本。"</p>
+</blockquote>
+<p>问题根因：内部评测集的金融知识截止时间是上一年，而用户在线上问的是实时信息，<strong>时效性（Staleness）</strong>这个质量维度在内部评测中根本没被设计进去。</p>
+<p>三个场景的共同点是：每一方都基于自身职责理解“质量”，但这些局部定义没有形成共同指标体系，最终造成模型表现的系统性偏差。</p>
+<p><strong>落地方案：建立统一质量语言的 Workshop</strong></p>
+<p>在大多数一线大模型团队中，解决这一问题的有效方法是，在项目启动阶段强制召开一次<strong>数据质量定义对齐 Workshop</strong>（关于数据选择方法论的系统综述见 Albalak et al. 2024; Longpre et al. 2023; Nait Saada et al. 2025），输出一份团队内部的《数据质量术语与指标契约》文档。这份文档首先要完成的，是为本项目的"质量"定义完整的维度清单——准确性、多样性、重复率、时效性、安全性——并为每个维度给定可量化的计算方式，而非停留在定性描述层面。</p>
+<p>其次，文档必须为不同训练阶段分别定义各自的合格线阈值：Pre-training 数据的合格线与 SFT 数据的合格线在量级和维度上都存在根本性差异，永远不能混用。更重要的是，文档应当建立起术语到代码的精确映射。例如当某一方说"重复率过高"时，全组所有人对这五个字的理解必须统一：它在工程上的含义应写成可执行口径，如"使用某个 MinHash 配置计算出的 Jaccard 相似度超过项目阈值的样本对比例"，而不是各自凭感觉的"这批数据看起来好像有点重复"。</p>
+<p>这份契约文档不是静态文件，而是随项目进展持续演进的版本化文档。在每一个重要的 milestone（例如新模型版本发布后）必须组织一次回顾，检查已有指标定义在新阶段是否仍然适用，是否需要随业务场景变化而扩展或调整。</p>
+<h3 id="212">2.1.2 生命周期视角下质量目标为何会动态变迁<a class="headerlink" href="#212" title="Permanent link">&para;</a></h3>
+<p>质量绝非一个静态标准，它随着数据生命周期的推进，在不同阶段呈现出完全不同的核心诉求。如果用一个固定的标准去衡量整个生命周期的数据，必然会有严重的误判。</p>
+<p>表2-1汇总了相应的对比和工程要点。</p>
+<p><em>表2-1：四阶段质量目标演变矩阵</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">训练阶段</th>
+<th style="text-align: left;">典型数据规模</th>
+<th style="text-align: left;">最核心的质量诉求</th>
+<th style="text-align: left;">主要检测指标</th>
+<th style="text-align: left;">典型缺陷与风险</th>
+<th style="text-align: left;">主要处理工具</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>预训练 (Pre-training)</strong></td>
+<td style="text-align: left;">数百 B ~ 数十 T Tokens</td>
+<td style="text-align: left;">高多样性、低重复率、广泛知识覆盖</td>
+<td style="text-align: left;">N-gram 重复率、PPL 分布、领域比例、语言分布</td>
+<td style="text-align: left;">文本去重不彻底（"复读机"）；基准题库混入（评测分数虚高）；垃圾 SEO 占比过高</td>
+<td style="text-align: left;">MinHash / SimHash；fastText 语言识别；KenLM；Quality Classifier</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>指令微调 (SFT)</strong></td>
+<td style="text-align: left;">数万 ~ 数百万条指令对</td>
+<td style="text-align: left;">指令多样性、格式合规性、逻辑链条完整</td>
+<td style="text-align: left;">指令困难度分布、格式合规率、事实准确率</td>
+<td style="text-align: left;">指令语义近似重复（"近似克隆"）；答案格式混乱；答案事实错误</td>
+<td style="text-align: left;">Rouge-L 去重；GPT-4 事实审计；格式正则校验</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>偏好对齐（RLHF/直接偏好优化，Direct Preference Optimization，DPO）</strong></td>
+<td style="text-align: left;">数万 ~ 数十万条偏好对</td>
+<td style="text-align: left;">偏好差异显著性、价值观贴合度、无害性</td>
+<td style="text-align: left;">标注一致性 Cohen's κ (Cohen 1960)；chosen/rejected 质量差距；毒性评分</td>
+<td style="text-align: left;">标注员偏好不一致（κ &lt; 0.6）；chosen/rejected 差距不够大（信号弱）；存在文化偏见</td>
+<td style="text-align: left;">多轮 calibration；奖励模型（Reward Model，RM）预筛；Perspective API (Lees et al. 2022)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>RAG 应用落地</strong></td>
+<td style="text-align: left;">数千 ~ 数万篇文档</td>
+<td style="text-align: left;">时效性、业务覆盖率、检索召回精度</td>
+<td style="text-align: left;">知识截止时间分布；场景覆盖召回率；Faithfulness 评分</td>
+<td style="text-align: left;">知识库陈旧（6个月未更新）；切片粒度太大导致召回噪声过高；PDF 解析乱码</td>
+<td style="text-align: left;">LlamaIndex / LangChain；RAGAs 评估框架；Embedding 质量评估</td>
+</tr>
+</tbody>
+</table>
+<p>从表格中可以看到：同样是"质量评估"，从预训练阶段的"去重率与 PPL 分布"到 RLHF 阶段的"标注一致性与偏好差距"，主要指标已经发生切换。一个在预训练阶段合格的数据集，放到 SFT 阶段可能因为事实精度、格式合规或任务覆盖不足而不合格。这种阶段性的质量目标迁移，要求数据工程团队建立<strong>分阶段的质量合同（Phase-Specific Quality Contract）</strong>，而不是使用单一通用标准衡量所有阶段。</p>
+<h3 id="213">2.1.3 没有统一框架时的治理失效现象<a class="headerlink" href="#213" title="Permanent link">&para;</a></h3>
+<p>当缺乏统一的数据质量评估框架时，项目必然会出现“治理失效”。典型症状包括：</p>
+<ol>
+<li>
+<p><strong>指标孤岛（Metric Silos）</strong>：预训练团队用 PPL 为核心脚本；微调团队用基于最长公共子序列的文本相似度指标（Recall-Oriented Understudy for Gisting Evaluation - Longest Common Subsequence，ROUGE-L）衡量回复质量；安全团队用 Perspective API 的毒性分数作为合规指标。三套系统之间缺少公共语言。当某批数据同时触发多个团队的告警时，团队很难判断由谁主导修复，也难以确定哪个指标具有发布否决权。</p>
+</li>
+<li>
+<p><strong>噪声传导放大（Noise Propagation Amplification）</strong>：没有统一框架时，上游数据管线的小噪声往往无法被早期拦截，沿着管线扩散放大，在下游形成更高的排查与修复代价：</p>
+</li>
+</ol>
+<p>代码清单2-1给出了噪声传导放大的流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>【爬取/存储层】  少量 base64 编码图片混入文本流
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>      ↓  未被及时拦截（无统一缺陷标准）
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>【清洗/训练层】  这些乱码使特定字符 Token 频率异常升高
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>      ↓  噪声在 Gradient 累积中被反复强化
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>【推理/对齐层】  模型在生成特定类型内容时更容易出现乱码或格式异常
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      ↓  表现为线上体验下降，触发用户反馈与版本复核
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>【最终代价】    模型版本被迫回滚，损失训练算力与市场窗口期
+</code></pre></div>
+<p><em>代码清单2-1：流程示例</em></p>
+<p>这种"少量上游错误 → 中游分布异常 → 下游体验损失"的放大效应，可以理解为数据管线中的跨阶段误差传导。它的治理方案，是本章将要建立的统一质量闸门体系。</p>
+<ol>
+<li><strong>经验无法沉淀（Experience Loss）</strong>：由于没有统一的缺陷分类标准，每次模型出问题后的复盘结论往往停留在"数据太差了，下次要注意"。"太差"到底是因为重复率过高、领域配比失衡，还是基准污染？由于分类不清，这些教训无法转化为下一版清洗 pipeline 的具体规则修改。引入统一质量框架后，每次数据问题都能归类到明确缺陷类型（见 2.3 节），并对应修复算子和量化改进目标。复盘文档应从"数据太差了"变为"本次事故根因：重复率超过项目阈值；修复方案：按领域重新校准去重阈值，下一版增量验证去重率复测"。</li>
+</ol>
+<hr />
+<h2 id="22">2.2 生命周期视角下的质量目标分层<a class="headerlink" href="#22" title="Permanent link">&para;</a></h2>
+<p>要解决语言不统一的问题，我们必须在生命周期的各个阶段建立明确的“质量目标层级”（见图2-1）。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图2-1：生命周期视角下的多维度质量分层架构，展示不同阶段质量指标权重从规模、多样性转向真实性、帮助性" src="../../../images/part1/Yu-Chap02-Fig01.svg" /></a></p>
+<p><em>图2-1：生命周期视角下的多维度质量分层架构</em></p>
+<h3 id="221">2.2.1 各阶段的目标差异<a class="headerlink" href="#221" title="Permanent link">&para;</a></h3>
+<p>大模型训练链路中的每个阶段都有不同质量目标。预训练关注语料规模、多样性和低重复率；SFT 关注指令覆盖、格式合规和事实准确；偏好对齐关注对比信号和标注一致性；RAG 应用则关注知识时效、检索召回和证据可追溯性。</p>
+<p><strong>预训练（Pre-training）阶段</strong>是第一阶段，目标是建立广泛的语言、代码和知识表示。此时对语料的要求并不是每一句话绝对正确，而是规模足、多样性高、重复率低。这一阶段模型以无监督方式接触不同领域、语言风格和知识边界，构建基础表示能力。在这一阶段，一篇事实略有过时的科普文章通常不是主要风险，但同一篇 SEO 广告文如果在语料库里重复出现数千次，就会显著增加生成退化和记忆性过拟合风险。</p>
+<p><strong>指令微调（SFT）阶段</strong>是第二阶段，质量目标从"广度"收窄至"精度"：指令的多样性、回复格式的合规性以及推理链条的完整性，缺一不可。SFT 阶段对污染的敏感度通常高于预训练阶段，因为此时模型学习的是任务格式和交互行为；少量格式混乱或逻辑错误的样本，也可能在对应任务上造成可观测的退化。</p>
+<p><strong>偏好对齐（RLHF/DPO）阶段</strong>是第三阶段，核心质量目标是对比数据的有效性与价值观贴合度：chosen 答案必须和 rejected 答案之间有足够可分辨的质量差距 (Ouyang et al. 2022; Rafailov et al. 2023; Bai et al. 2022)，否则奖励信号过弱，模型难以学习稳定的人类偏好方向。</p>
+<p><strong>RAG 应用落地阶段</strong>是第四阶段，也是最贴近用户的一环。这里的质量指标转向时效性与检索精度：知识库中超过业务更新周期的文档比例、检索到的 Chunk 是否准确覆盖用户问题意图，以及 PDF 与表格解析是否存在字段错位。这些问题在前三个阶段并不总是显性出现，但在 RAG 场景中会直接影响最终回答质量。</p>
+<h3 id="222">2.2.2 离线、在线与业务质量的三角映射<a class="headerlink" href="#222" title="Permanent link">&para;</a></h3>
+<p>然而，仅仅在各阶段分别定义质量目标还不够——一个成熟的数据工程框架必须进一步打通从数据到模型、再到真实业务的完整"指标链"，而不是让"数据质量好"和"线上效果好"成为两个彼此割裂的评价体系。</p>
+<p>在工业界实践中，这条指标链被描述为一个<strong>三角映射结构</strong>。第一个顶角是<strong>离线数据质量指标</strong>，即在数据存储和处理阶段就能计算出的静态分数，包括去重率、PPL 分布均值、基准污染率等；这些指标不需要运行模型就能高效计算，适合在 CI/CD 流水线中自动触发检查。第二个顶角是<strong>代理模型评测质量</strong>，即将处理后的数据注入一个小规模代理模型（通常是 1B 级别）进行快速训练并测试，以基准测试得分衡量数据的实际训练价值——这一步是离线数据指标与最终模型效果之间不可缺少的"桥梁验证"。第三个顶角是<strong>真实业务在线系统质量</strong>，即模型上线后用户的真实留存率、满意度评分和转化指标。</p>
+<p>理想状态下，三者应当呈现稳定的正相关关系。一旦这个三角形的某条边出现断裂——例如离线数据评分很高但代理模型分数没有提升，或代理模型分数很高但线上用户反馈很差——就是一个强烈的信号，说明当前评估框架在某个环节存在系统性设计缺陷，需要立刻剖析哪个指标与哪个指标之间发生了脱钩，并溯源至数据层的根因。</p>
+<h3 id="223">2.2.3 切面分层：样本级到系统级<a class="headerlink" href="#223" title="Permanent link">&para;</a></h3>
+<p>质量评估还需要在"颗粒度"这个维度上做切面分层。不同粒度的质量问题，发现时机、修复成本和修复手段都截然不同。若混为一谈，容易出现修复手段与问题层级不匹配的情况。</p>
+<p>最细粒度的是<strong>样本级（Sample-level）</strong>。这是数据管线中最早能检测的层级——这一条长文本是否包含 HTML 标签残余？这张图片与对应文字描述是否语义对齐？这个问答对中的答案是否与问题方向严重偏离？样本级问题量大但单条修复成本低，适合用自动化规则批量处理。</p>
+<p>往上一级是<strong>批次级（Batch-level）</strong>。这一粒度关注的是一批次数据的整体统计分布特征：这个批次的领域采样配比是否与预设基线产生明显偏移？代码语料与自然语言的比例是否因为某个爬虫配额失效而发生骤变？批次级问题不会在单条样本上显现，只有在批次整体的统计画像上才能被发现，因此需要专门的滚动分布监控。</p>
+<p>再往上是<strong>数据集级（Dataset-level）</strong>，关注的是整张训练集的宏观健康度：整个语料库的知识时间分布是否严重集中在某几年？有多大比例的内容在基准测试污染检测中被标记为高风险？各语种的比例是否符合多语言能力的训练需求？这一层级的问题是战略性的，通常由数据工程负责人在版本发布前以人工审查和报表复核的方式完成，而非依赖自动化流水线。</p>
+<p>最后是<strong>系统平台级（System-level）</strong>，即数据管线这个工程实体本身的运行健康状态：某条 Kafka 消费队列是否出现了积压？某个版本的 MinHash 去重任务是否因为内存溢出（Out of Memory，OOM）而静默地提前退出，留下了大量未处理的重复数据？这一层的问题不在数据内容本身，而在于数据管线的工程质量监控，属于 DataOps 可观测性的核心关注点（第八篇将深入展开）。</p>
+<hr />
+<h2 id="23">2.3 缺陷分类与指标矩阵<a class="headerlink" href="#23" title="Permanent link">&para;</a></h2>
+<p>要建立公共的治理动作，必须将那些模糊的“数据不好”翻译为具体、可测量的缺陷指标矩阵（见图2-2）。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图2-2：大模型数据缺陷与质量指标交叉映射图，展示六类缺陷与准确度、一致性、多样性、覆盖度和可追溯性之间的关系" src="../../../images/part1/Yu-Chap02-Fig02.svg" /></a></p>
+<p><em>图2-2：大模型数据缺陷与质量指标交叉映射图</em></p>
+<p>该图展示六类缺陷与准确度、一致性、多样性、覆盖度和可追溯性之间的关系。</p>
+<h3 id="231-six-core-defect-classes">2.3.1 六类核心数据缺陷 (Six Core Defect Classes)<a class="headerlink" href="#231-six-core-defect-classes" title="Permanent link">&para;</a></h3>
+<p>针对大模型训练，我们建立了如下六大核心缺陷维度，每种缺陷均配有自动化检测方案：</p>
+<p><strong>1. 庞杂噪声 (Noise)</strong></p>
+<p>定义：包含 HTML 残余标签、乱码字符、无意义符号序列、base64 编码残片等，会对 Tokenizer 产生异常输入，严重时导致梯度 NaN。</p>
+<p>代码清单2-2给出一个最小化的文本噪声比例检测示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">noise_score</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;返回噪声比例；阈值需按语种、来源和抽检样本校准。&quot;&quot;&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="c1"># 检测 HTML 标签残余</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">html_tags</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;[^&gt;]+&gt;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># 检测高比例非打印字符</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">non_printable</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">text</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">isprintable</span><span class="p">())</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="c1"># 检测连续重复符号 (如 !!!!!!!)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">repeat_symbols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]{5,}&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="k">if</span> <span class="n">text</span> <span class="k">else</span> <span class="mi">1</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="k">return</span> <span class="p">(</span><span class="n">html_tags</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">non_printable</span> <span class="o">+</span> <span class="n">repeat_symbols</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># 示例：当 noise_score 超过项目校准阈值时，进入隔离或人工复核。</span>
+</code></pre></div>
+<p><em>代码清单2-2：文本噪声比例检测示例。生产环境中应补充语言、编码、HTML 解析器版本和异常样本抽检日志</em></p>
+<p><strong>2. 恶性重复 (Repetition)</strong></p>
+<p>定义：同一内容（精确或近似）在训练集重复出现大量次数，模型被迫"背诵"这些片段，引起记忆性过拟合，推理时变成"复读机"。工业界一般用 MinHash LSH 进行近似去重。</p>
+<p>代码清单2-3给出基于 MinHash LSH 的近似重复检测示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasketch</span><span class="w"> </span><span class="kn">import</span> <span class="n">MinHash</span><span class="p">,</span> <span class="n">MinHashLSH</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_minhash</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">num_perm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MinHash</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">m</span> <span class="o">=</span> <span class="n">MinHash</span><span class="p">(</span><span class="n">num_perm</span><span class="o">=</span><span class="n">num_perm</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">tokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u4e00-\u9fff]|[A-Za-z0-9_]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="n">m</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="k">return</span> <span class="n">m</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># 示例阈值仅用于演示；生产阈值需依据语种、任务和误杀成本校准。</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">calibrated_threshold</span> <span class="o">=</span> <span class="mf">0.8</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">lsh</span> <span class="o">=</span> <span class="n">MinHashLSH</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">calibrated_threshold</span><span class="p">,</span> <span class="n">num_perm</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单2-3：MinHash LSH 近似重复检测示例</em></p>
+<p><strong>3. 基准污染 (Benchmark Contamination)</strong></p>
+<p>定义：爬虫不加筛选地将各类公开 AI 评测题库（GSM8K (Cobbe et al. 2021)、HumanEval (Chen et al. 2021)、MMLU (Hendrycks et al. 2021) 等）的原题及解答一并抓入预训练集，模型在基准测试上得分虚高（机械背诵而非推理）。针对该问题的自动化检测方案已有系统综述 (Shi et al. 2023; Golchin and Surdeanu 2024)。</p>
+<p>代码清单2-4给出基准污染风险的 N-gram 重叠检测示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 基准污染检测: 计算 N-gram 重叠率</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">ngram_overlap</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">benchmark_ngrams</span><span class="p">:</span> <span class="nb">set</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;返回与基准题库的 13-gram 重叠比例&quot;&quot;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">words</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u4e00-\u9fff]|[A-Za-z0-9_]+&quot;</span><span class="p">,</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">text_ngrams</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">n</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">overlap</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_ngrams</span> <span class="o">&amp;</span> <span class="n">benchmark_ngrams</span><span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">return</span> <span class="n">overlap</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text_ngrams</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="c1"># 示例：当重叠率超过项目污染风险阈值时，标记为疑似污染并复核。</span>
+</code></pre></div>
+<p><em>代码清单2-4：基准污染 N-gram 重叠检测示例。生产环境中应维护独立的评测集指纹库和人工复核流程</em></p>
+<p><strong>4. 系统偏差 (Bias)</strong></p>
+<p>定义：由于数据抓取站点地域、语言或话题侧重，导致数据存在国别、性别、种族、意识形态等系统性知识偏见，模型在特定群体相关任务上表现失衡。</p>
+<p>检测方案：使用 StereoSet (Nadeem et al. 2021) 或 WinoBias (Zhao et al. 2018) 评估集评测模型的偏见程度；同时统计训练集中涉及敏感群体（性别/民族/宗教）的词频分布，检查是否存在严重的词频失衡（某群体出现频率超过另一群体 10 倍以上）。</p>
+<p><strong>5. 结构缺失 (Incompleteness)</strong></p>
+<p>定义：长文本被截断（只有文章的前半段）、问答对中只有答案没有问题、多模态数据中图片缺少配套文字描述等。</p>
+<p>代码清单2-5给出 SFT 样本结构完整性的基础检查示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">check_completeness</span><span class="p">(</span><span class="n">sample</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;检查 SFT 样本的结构完整性&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">issues</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">if</span> <span class="s1">&#39;instruction&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sample</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sample</span><span class="p">[</span><span class="s1">&#39;instruction&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;missing_instruction&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">if</span> <span class="s1">&#39;response&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sample</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">[</span><span class="s1">&#39;response&#39;</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;response_too_short&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="c1"># 检查截断: 文本以中途句子结束（无标点结尾）</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">resp</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;response&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">if</span> <span class="n">resp</span> <span class="ow">and</span> <span class="n">resp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s1">&#39;.!?。！？…&quot;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="n">issues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;possibly_truncated&#39;</span><span class="p">)</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="k">return</span> <span class="n">issues</span>
+</code></pre></div>
+<p><em>代码清单2-5：SFT 样本结构完整性检测示例</em></p>
+<p>生产环境中应按任务类型补充 schema 校验、字段长度分布和抽样复核规则。</p>
+<p><strong>6. 时效衰败 (Staleness)</strong></p>
+<p>定义：知识库或预训练语料停留在某一时间截止点，无法回应截止日期之后发生的事实性变化。这在 RAG 应用场景中尤为高风险。</p>
+<p>检测方案：为语料库中的每篇文档记录 <code>crawl_timestamp</code> 元信息，定期统计知识库中超过 N 个月未更新文档的占比。数据集文档化标准（如 Datasheets for Datasets）对元信息字段规范有详细指引 (Gebru et al. 2021)。当过期文档比例超过项目阈值时，发出时效衰败告警。</p>
+<p>代码清单2-6给出基于文档时间戳计算时效衰减比例的示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">staleness_ratio</span><span class="p">(</span><span class="n">docs</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">threshold_days</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">180</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;返回超期文档比例&quot;&quot;&quot;</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">stale</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="mi">1</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">docs</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="k">if</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromisoformat</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;crawl_timestamp&#39;</span><span class="p">]))</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;</span> <span class="n">threshold_days</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">return</span> <span class="n">stale</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span> <span class="k">if</span> <span class="n">docs</span> <span class="k">else</span> <span class="mf">0.0</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># 示例：当 staleness_ratio 超过业务设定水位时触发知识库更新任务。</span>
+</code></pre></div>
+<p><em>代码清单2-6：知识库时效衰败检测示例。生产环境中应按领域、数据源和业务优先级设置不同阈值</em></p>
+<h3 id="232">2.3.2 建立核心指标矩阵<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<p>为了将缺陷定量化，书中统一采用五大考核指标：
+1. <strong>准确度 (Accuracy)</strong>：数据包含正确知识的比率，是微调数据的最高优指标。
+2. <strong>一致性 (Consistency)</strong>：数据上下游、各模态组合是否存在矛盾（逻辑一致性）。
+3. <strong>多样性 (Diversity) / 熵值</strong>：涵盖不同话题的离散程度分布。
+4. <strong>覆盖度 (Coverage)</strong>：业务场景在数据流中的命中率及召回。
+5. <strong>可追溯性 (Traceability)</strong>：出现错误时，能否顺着血缘将低质量数据溯源定位到某个网页或原始桶（严重影响排错效率）。</p>
+<h3 id="233">2.3.3 指标间的博弈与冲突关系<a class="headerlink" href="#233" title="Permanent link">&para;</a></h3>
+<p>没有完美的指标组合。强行提升某一指标，往往以另一指标下降为代价。例如：
+*   <strong>去重（提升精确性/避免过拟合） vs 多样性</strong>：过于严苛的 MinHash 去重阈值（如超过0.7相似度就丢弃）会消除很多在细微边缘处不同（例如模板代码）的高质量特征学习，导致代码能力受损。
+*   <strong>准确度 vs 时效性</strong>：要求极高的人工专家级验证会大幅拉长生产周期，此时高质量语料产生时，可能对应的事实已经变更。</p>
+<hr />
+<h2 id="24">2.4 从评分卡到治理动作：自动洗筛闭环<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
+<p>质量评估框架最终必须落地为具体的工程化自动闸门（见图2-3）。我们通过设立“数据发布评分卡（Data Release Scorecard）”建立闭环。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap02-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图2-3：数据评分卡驱动的自动截断与治理流，展示硬闸门、软闸门、人工复核和回滚动作" src="../../../images/part1/Yu-Chap02-Fig03.svg" /></a></p>
+<p><em>图2-3：数据评分卡驱动的自动截断与治理流，展示硬闸门、软闸门、人工复核和回滚动作</em></p>
+<h3 id="241">2.4.1 数据评分卡的设计与落地<a class="headerlink" href="#241" title="Permanent link">&para;</a></h3>
+<p>评分卡是由一套规则脚本和校验模型综合得出的"数据体检报告"。其核心设计原则是：<strong>客观可重复计算、阈值基线配置化、面向动作拦截</strong>。在正式发布任意版本的训练数据集之前，评分卡脚本必须被强制触发，并将评估结果序列化为标准 JSON 格式存档。代码清单2-7给出一个发布评分卡 schema 示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;dataset_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sft_zhcn_legal_v2.3&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;evaluation_timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-11-15T10:23:45Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;evaluator_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;scorecard-v1.4.2&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;sample_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">84721</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">&quot;dedup_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.023</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;MinHash LSH (threshold=0.7, num_perm=128)&quot;</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="nt">&quot;noise_score_p95&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.067</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.10</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;HTML tag density + non-printable char ratio&quot;</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">    </span><span class="nt">&quot;benchmark_contamination&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0031</span><span class="p">,</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.005</span><span class="p">,</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;13-gram overlap against GSM8K/MMLU/HumanEval&quot;</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="nt">&quot;format_compliance_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9712</span><span class="p">,</span>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.95</span><span class="p">,</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Regex schema validator (instruction+response fields)&quot;</span>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a><span class="w">    </span><span class="nt">&quot;staleness_ratio&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-32" name="__codelineno-6-32" href="#__codelineno-6-32"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.12</span><span class="p">,</span>
+<a id="__codelineno-6-33" name="__codelineno-6-33" href="#__codelineno-6-33"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.30</span><span class="p">,</span>
+<a id="__codelineno-6-34" name="__codelineno-6-34" href="#__codelineno-6-34"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-35" name="__codelineno-6-35" href="#__codelineno-6-35"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;crawl_timestamp &gt; 180 days&quot;</span>
+<a id="__codelineno-6-36" name="__codelineno-6-36" href="#__codelineno-6-36"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-6-37" name="__codelineno-6-37" href="#__codelineno-6-37"></a><span class="w">    </span><span class="nt">&quot;toxicity_p99&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-38" name="__codelineno-6-38" href="#__codelineno-6-38"></a><span class="w">      </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.041</span><span class="p">,</span>
+<a id="__codelineno-6-39" name="__codelineno-6-39" href="#__codelineno-6-39"></a><span class="w">      </span><span class="nt">&quot;threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.05</span><span class="p">,</span>
+<a id="__codelineno-6-40" name="__codelineno-6-40" href="#__codelineno-6-40"></a><span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-41" name="__codelineno-6-41" href="#__codelineno-6-41"></a><span class="w">      </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Perspective API (TOXICITY attribute)&quot;</span>
+<a id="__codelineno-6-42" name="__codelineno-6-42" href="#__codelineno-6-42"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-6-43" name="__codelineno-6-43" href="#__codelineno-6-43"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-6-44" name="__codelineno-6-44" href="#__codelineno-6-44"></a><span class="w">  </span><span class="nt">&quot;overall_status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PASS&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-45" name="__codelineno-6-45" href="#__codelineno-6-45"></a><span class="w">  </span><span class="nt">&quot;gate_decision&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;APPROVED_FOR_TRAINING&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-46" name="__codelineno-6-46" href="#__codelineno-6-46"></a><span class="w">  </span><span class="nt">&quot;reviewer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ci-bot@dataops.internal&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-47" name="__codelineno-6-47" href="#__codelineno-6-47"></a><span class="w">  </span><span class="nt">&quot;comments&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;All hard gates passed. Soft gate: staleness_ratio=0.12 within safe range.&quot;</span>
+<a id="__codelineno-6-48" name="__codelineno-6-48" href="#__codelineno-6-48"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单2-7：SFT 数据集发布评分卡 JSON 示例</em></p>
+<p>字段、阈值和状态均为说明性样例，生产环境应按数据集类型、业务风险和历史分布校准。</p>
+<p>代码清单2-8展示了在 CI/CD 中触发评分卡的 GitHub Actions 工作流。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># .github/workflows/data_quality_gate.yml</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Data Quality Gate</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nt">on</span><span class="p">:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">paths</span><span class="p">:</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&#39;datasets/sft/**&#39;</span><span class="w">   </span><span class="c1"># 每次 SFT 数据集更新时触发</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nt">jobs</span><span class="p">:</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">quality_check</span><span class="p">:</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v3</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run Data Scorecard</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">          </span><span class="no">python scripts/run_scorecard.py \</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">            </span><span class="no">--dataset datasets/sft/latest/ \</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">            </span><span class="no">--config configs/scorecard_sft.yaml \</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">            </span><span class="no">--output reports/scorecard_$(date +%Y%m%d).json</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check Gate Decision</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">          </span><span class="no">DECISION=$(python -c &quot;</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">          </span><span class="no">import json</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">          </span><span class="no">with open(&#39;reports/scorecard_$(date +%Y%m%d).json&#39;) as f:</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">              </span><span class="no">d = json.load(f)</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">          </span><span class="no">print(d[&#39;gate_decision&#39;])</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">          </span><span class="no">&quot;)</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">          </span><span class="no">if [ &quot;$DECISION&quot; != &quot;APPROVED_FOR_TRAINING&quot; ]; then</span>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">            </span><span class="no">echo &quot;Data quality gate FAILED: $DECISION&quot;</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">            </span><span class="no">exit 1</span>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">          </span><span class="no">fi</span>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">          </span><span class="no">echo &quot;Data quality gate PASSED&quot;</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Upload Scorecard Report</span>
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/upload-artifact@v3</span>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="w">          </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scorecard-report</span>
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reports/scorecard_*.json</span>
+</code></pre></div>
+<p><em>代码清单2-8：与 CI/CD 流水线集成的 GitHub Actions 示例</em></p>
+<p>该片段用于展示质量闸门触发方式，生产环境应补充凭证管理、日志留存和失败回滚策略。</p>
+<p>通过以上集成，每次数据工程师合并新批次数据时，CI 流水线会自动运行评分卡检查。若任何硬闸门指标超出阈值，PR Merge 会被自动阻断，直至问题修复后重新提交。</p>
+<h3 id="242-rollback">2.4.2 质量阈值、阻断闸门设计与回退 (Rollback)<a class="headerlink" href="#242-rollback" title="Permanent link">&para;</a></h3>
+<p>当新爬取的一批 100G 增量数据到达流水线时：
+*   <strong>硬闸门（Hard Gates）</strong>：如果发现基准污染率大幅上升、或命中安全黑名单字典，立刻在此阶段（Stage）进行阻断，禁止流入下一级并自动触发告警（PagerDuty）。
+*   <strong>软闸门（Soft Gates）</strong>：如果文本复杂度、长度分布或领域比例相对上一版本出现明显偏移，暂时封存待人工确认，这被称为“灰度冻结”。
+一旦事后监控发现线上模型退化严重（由于数据引发），DataOps 平台应该支持<strong>快速回退到上一个“清洁”的数据指针组合</strong>。</p>
+<h3 id="243">2.4.3 将告警转化为修复动作<a class="headerlink" href="#243" title="Permanent link">&para;</a></h3>
+<p>发现分数异常后，需要将告警映射为标准化修复动作。若是污染率告警，则启动 N-gram 反向过滤剔除作业；若是格式校验失败（如某批次数据缺失字段），则阻断导入并定位到原始爬虫解析脚本节点，重新抽取 ETL 字段。只有让告警直接驱动对应的清洗算子，治理才能形成闭环体系。</p>
+<hr />
+<h2 id="25">2.5 跨阶段传导放大案例<a class="headerlink" href="#25" title="Permanent link">&para;</a></h2>
+<p>为了加深理解这种“牵一发而动全身”的数据质量传导机制，本节复盘两个匿名化复合案例。案例中的时间线和指标用于说明排障逻辑，不代表某一公开项目的完整事件记录。</p>
+<h3 id="251">2.5.1 案例回放一：预训练语料的“隐性语法漂移”<a class="headerlink" href="#251" title="Permanent link">&para;</a></h3>
+<p>2023年某开源模型发布后，发现随着步数增长，生成代码的能力不仅没有提升，反而开始退化甚至带入罕见的奇怪空白符。
+<strong>溯源分析</strong>：团队追溯上一批数据接入，发现在进行语言识别清洗时，某些 HTML 格式过滤器的包被升级了，原本正常跳过的 <code>&lt;pre&gt;</code> 代码标签引发了解析失效，导致大量带特殊空格缩进的网页源码在最后 1T 数据中占比突然升高了 4倍（这是质量指标中“一致性”未设置基线检查导致的失重）。模型在长期训练中无声无息地发生了“分布漂移”。
+<strong>教训与复盘</strong>：在批次级（Batch-level）中，缺乏长周期的静态分布平稳性监控，这迫使该团队后来搭建了一套滚动 N-gram 分布雷达。</p>
+<h3 id="252-rag">2.5.2 案例回放二：RAG 场景下的“离线高分，线上失效”<a class="headerlink" href="#252-rag" title="Permanent link">&para;</a></h3>
+<p>金融知识问答模型在使用某批次私有研报 SFT 训练后，在离线评估集上的 Rouge/Bleu 得分远超基线模型。然而业务部门上线后反馈，模型在遇到长尾公司研报时，频繁编造数据（严重幻觉）。
+<strong>溯源分析</strong>：SFT 训练时使用的研报问答对由弱模型生成，格式较整齐，但抽检发现由于表格拆分解析错误，大量财务数字错位。离线评估集也由同一流程生成，因此评估数据与训练数据共享同一类解析错误，导致 Rouge/Bleu 得分高估了真实能力。
+<strong>教训与复盘</strong>：这个案例说明，自引用评估和离线上线指标割裂会显著放大风险。在这一版后，团队引入了<strong>独立金标准评估集（Gold Standard Set）</strong>，由人类专家独立编写，不参与任何模型合成或生成链路，并作为上线前的否决性评估集。</p>
+<p><strong>完整排障时间线（案例一）</strong></p>
+<p>以下时间线为匿名化复合案例，用于说明批次漂移如何被定位；其中版本号、比例和评测数值均为教学性示例，不应作为公开项目结果引用。</p>
+<ul>
+<li><strong>T+0 天</strong>：内测用户反馈 Python 代码生成出现诡异缩进，运行后立即报 <code>IndentationError</code></li>
+<li><strong>T+1 天</strong>：算法团队推测是温度参数（Temperature）问题，调整后无效</li>
+<li><strong>T+2 天</strong>：数据团队被拉入，调取最近 3 个 Checkpoint 的数据批次 diff</li>
+<li><strong>T+3 天</strong>：发现第 6 批次（约 1.2T Tokens）接入时，HTML 过滤器依赖包从 v2.3.1 升级至 v2.4.0，新版本改变了<code>&lt;pre&gt;</code> 标签的处理逻辑，原本应保留的代码缩进被误转换为非标准空格</li>
+<li><strong>T+3 天</strong>：定量验证：新批次中 <code>\t</code>、连续空格和不可见 Unicode 空白符的比例显著偏离历史基线，触发批次漂移告警</li>
+<li><strong>T+5 天</strong>：锁定依赖版本，重处理第 6 批次数据，从受污染前的 Checkpoint 重启训练（损失约 4 天算力）</li>
+<li><strong>T+12 天</strong>：修复后，代码类冻结评测集恢复到污染前基线区间</li>
+</ul>
+<p>根本原因：批次级缺乏滚动分布平稳性监控。如果在每批数据接入时都能自动对比关键字符频率的 Z-score 变化，并将超过项目水位线的异常波动触发告警，这次事故在 T+0 就有机会被拦截。代码清单2-9给出一个批次级缩进字符漂移检测示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_tab_drift</span><span class="p">(</span><span class="n">prev_texts</span><span class="p">,</span> <span class="n">curr_texts</span><span class="p">,</span> <span class="n">z_threshold</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">batch_stats</span><span class="p">(</span><span class="n">texts</span><span class="p">):</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span class="n">ratios</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>        <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>            <span class="n">tabs</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>            <span class="n">spaces</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>            <span class="n">unicode_spaces</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[\u00a0\u2000-\u200b\u3000]&quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span class="n">whitespace</span> <span class="o">=</span> <span class="n">tabs</span> <span class="o">+</span> <span class="n">spaces</span> <span class="o">+</span> <span class="n">unicode_spaces</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span class="n">ratios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tabs</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">whitespace</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">mean</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="n">var</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">r</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ratios</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">var</span> <span class="o">**</span> <span class="mf">0.5</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>    <span class="n">prev_mean</span><span class="p">,</span> <span class="n">prev_std</span> <span class="o">=</span> <span class="n">batch_stats</span><span class="p">(</span><span class="n">prev_texts</span><span class="p">)</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="n">curr_mean</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">batch_stats</span><span class="p">(</span><span class="n">curr_texts</span><span class="p">)</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="n">z_score</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">curr_mean</span> <span class="o">-</span> <span class="n">prev_mean</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">prev_std</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="s2">&quot;prev_tab_ratio&quot;</span><span class="p">:</span> <span class="n">prev_mean</span><span class="p">,</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="s2">&quot;curr_tab_ratio&quot;</span><span class="p">:</span> <span class="n">curr_mean</span><span class="p">,</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="s2">&quot;z_score&quot;</span><span class="p">:</span> <span class="n">z_score</span><span class="p">,</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>        <span class="s2">&quot;alert&quot;</span><span class="p">:</span> <span class="n">z_score</span> <span class="o">&gt;</span> <span class="n">z_threshold</span><span class="p">,</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单2-9：批次级缩进字符漂移检测示例。生产环境中应将告警阈值改为基于历史分布的统计阈值</em></p>
+<p><strong>完整排障时间线（案例二）</strong></p>
+<p>以下时间线同样为匿名化复合案例。财务表格错位、评测集自引用和人工金标准隔离是真实工程风险类型；具体比例和样本量不对应任何公开项目。</p>
+<ul>
+<li><strong>T+0 天</strong>：上线后，多位用户反映财报数据与官网披露不符</li>
+<li><strong>T+1 天</strong>：运营团队复核问题样本，发现大部分涉及表格数据（营收、EPS 等）</li>
+<li><strong>T+2 天</strong>：数据团队抽检含财务表格样本，发现多列 PDF 表格存在行列错位。根因是弱模型解析表格时，列与列之间数字发生错误行对齐。</li>
+<li><strong>T+3 天</strong>：进一步发现离线评估集也是由同一套弱模型生成的，自动指标高估了系统真实能力。</li>
+<li><strong>T+5 天</strong>：应急处理：停止弱模型自动生成财务类 QA，改为人工标注；对含财务数字的 RAG Chunk 增加人工复核标记</li>
+<li><strong>T+14 天</strong>：引入与训练链路物理隔离的独立金标准评估集。修复后，自动指标不再单独作为上线依据，含数字问答的人工事实性评测成为否决性指标。</li>
+</ul>
+<p><strong>核心教训</strong>：<strong>自引用评估（Self-referential Evaluation）</strong> 是 RAG 与合成数据场景中的高风险问题。独立金标准评估集应满足三项要求：(1) 人类专家独立编写；(2) 与训练数据管线物理隔离；(3) 每次数据集迭代发布后，金标准集结果必须列入评分卡，作为上线否决指标。</p>
+<hr />
+<h2 id="26">2.6 本章如何成为后续工程的“公共契约”<a class="headerlink" href="#26" title="Permanent link">&para;</a></h2>
+<p>本书从本章节起，正式确立了适用于贯穿数百页的各种工程化手段的“公共契约”。</p>
+<ul>
+<li><strong>对于第二篇（文本预训练）和第三篇（多模态）</strong>：清洗、去重、解析和对齐中的阈值与过滤基线，正是来源于本章定下的“信噪比与一致性”底线原则组合。</li>
+<li><strong>对于第四篇（指令微调与偏好数据）和第五篇（合成数据）</strong>：这里的指标矩阵将在 SFT 数据设计、偏好数据构造和合成数据审计中转化为 Reward 模型打分、规则验证和人工复核依据。</li>
+<li><strong>为了支撑第八篇（DataOps 平台）</strong>：平台上的告警大屏和质量看板，其核心图表展现的正是本章探讨的指标库、闸门状态和可回滚数据版本。</li>
+</ul>
+<p>所以，这是一本"全书通用"的 Checklist。在推进到每一个特定阶段的执行动作前，首先确保整个团队已经在这些术语上完成了"认知对齐"。基于本章建立的质量评估框架，第3章将进一步讨论真正能支撑这些度量动作的基础工程——<strong>AI 原生的现代数据基础设施</strong>。</p>
+<hr />
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本章围绕“LLM数据生命周期与质量评估框架”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。</p>
+<p>本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。</p>
+<p>在全书结构中，本章位于基础框架层，承担承接前文基础概念并导向文本与多模态数据处理的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Cohen J (1960) A Coefficient of Agreement for Nominal Scales. Educational and Psychological Measurement 20(1):37-46. https://doi.org/10.1177/001316446002000104.</p>
+<p>Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207. https://doi.org/10.1145/3534678.3539147.</p>
+<p>Nadeem M, Bethke A, Reddy S (2021) StereoSet: Measuring Stereotypical Bias in Pretrained Language Models. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 5356-5371. https://doi.org/10.18653/v1/2021.acl-long.416.</p>
+<p>Zhao J, Wang T, Yatskar M, Ordonez V, Chang K W (2018) Gender Bias in Coreference Resolution: Evaluation and Debiasing Methods (WinoBias). In: Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics, pp 15-20.</p>
+<p>Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744. arXiv:2203.02155.</p>
+<p>Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741. arXiv:2305.18290.</p>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, Ray A, Puri R, Krueger G, Petrov M, Khlaaf H, Sastry G, Mishkin P, Chan B, Gray S, Ryder N, Pavlov M, Power A, Kaiser L, Bavarian M, Winter C, Tillet P, Such F P, Cummings D, Plappert M, Chantzis F, Barnes E, Herbert-Voss A, Guss W H, Nichol A, Paino A, Tezak N, Tang J, Babuschkin I, Balaji S, Jain S, Saunders W, Hesse C, Carr A N, Leike J, Achiam J, Misra V, Morikawa E, Radford A, Knight M, Brundage M, Murati M, Mayer K, Welinder P, McGrew B, Amodei D, Sutskever I, Zaremba W (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.</p>
+<p>Albalak A, Elazar Y, Xie S M, Longpre S, Lambert N, Wang X, Muennighoff N, Hou B, Pan L, Jeong H, Raffel C, Chang S, Hashimoto T, Wang W Y (2024) A Survey on Data Selection for Language Models. arXiv preprint arXiv:2402.16827.</p>
+<p>Longpre S, Yauney G, Reif E, Lee K, Roberts A, Zoph B, Zhou D, Wei J, Robinson K, Mimno D M, Ippolito D (2023) A Pretrainer's Guide to Training Data: Measuring the Effects of Data Age, Domain Coverage, Quality, and Toxicity. arXiv preprint arXiv:2305.13169.</p>
+<p>Shi W, Ajith A, Xia M, Huang Y, Liu D, Blevins T, Chen D, Zettlemoyer L (2023) Detecting Pretraining Data from Large Language Models. arXiv preprint arXiv:2310.16789.</p>
+<p>Golchin S, Surdeanu M (2024) Time Travel in LLMs: Tracing Data Contamination in Large Language Models. In: International Conference on Learning Representations.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Bai Y, Kadavath S, Kundu S, Askell A, Kernion J, Jones A, Chen A, Goldie A, Mirhoseini A, McKinnon C, Chen C, Olsson C, Olah C, Hernandez D, Drain D, Ganguli D, Li D, Tran-Johnson E, Perez E, Kerr J, Mueller J, Ladish J, Landau J, Ndousse K, Lukosuite K, Lovitt L, Sellitto M, Elhage N, Schiefer N, Mercado N, DasSarma N, Lasenby R, Larson R, Ringer S, Johnston S, Kravec S, El Showk S, Fort S, Lanham T, Telleen-Lawton T, Conerly T, Henighan T, Hume T, Bowman S R, Hatfield-Dodds Z, Mann B, Amodei D, Joseph N, McCandlish S, Brown T, Kaplan J (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.</p>
+<p>Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

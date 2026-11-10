@@ -1,0 +1,4270 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part3/ch11_cross_modal_alignment/">
+      
+      
+        <link rel="prev" href="../ch10_video_audio/">
+      
+      
+        <link rel="next" href="../../part4/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 11: Cross-Modal Alignment and Fusion - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-11-cross-modal-alignment-and-fusion" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 11: Cross-Modal Alignment and Fusion
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part3/ch11_cross_modal_alignment/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part3/ch11_cross_modal_alignment/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111-problem-scenario-alignment-failure-and-physical-meaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 Problem Scenario: Alignment Failure and Physical Meaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.1 Problem Scenario: Alignment Failure and Physical Meaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1111-when-expensive-training-produces-visual-and-auditory-hallucination" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.1 When Expensive Training Produces Visual and Auditory Hallucination
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1112-the-modality-gap-and-heterogeneous-spaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.2 The Modality Gap and Heterogeneous Spaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1113-why-separately-cleaning-image-text-and-audio-video-data-is-not-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.3 Why Separately Cleaning Image-Text and Audio-Video Data Is Not Enough
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#112-method-framework-alignment-boundaries-and-a-three-level-pyramid" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 Method Framework: Alignment Boundaries and a Three-Level Pyramid
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2 Method Framework: Alignment Boundaries and a Three-Level Pyramid">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1121-matrix-of-alignment-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2.1 Matrix of Alignment Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1122-industrial-three-level-pyramid-object-segment-and-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2.2 Industrial Three-Level Pyramid: Object, Segment, and Document
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2.2 Industrial Three-Level Pyramid: Object, Segment, and Document">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-object-level-micro-alignment-anchoring-boxes-to-words" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Object-level / micro-alignment: anchoring boxes to words
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-segment-level-meso-alignment-mapping-continuous-time-sequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Segment-level / meso-alignment: mapping continuous time sequences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-document-level-macro-alignment-long-context-interleaved-fusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Document-level / macro-alignment: long-context interleaved fusion
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#113-cross-modal-fusion-pipeline-representation-mixing-and-hard-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 Cross-Modal Fusion Pipeline: Representation, Mixing, and Hard Negatives
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.3 Cross-Modal Fusion Pipeline: Representation, Mixing, and Hard Negatives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1131-unified-representation-and-placeholder-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.1 Unified Representation and Placeholder Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1132-multimodal-data-mixing-controlling-capability-forgetting" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.2 Multimodal Data Mixing: Controlling Capability Forgetting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1133-hard-negative-mining-and-quality-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.3 Hard-Negative Mining and Quality Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#114-quality-evaluation-cross-modal-metrics-and-feedback-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 Quality Evaluation: Cross-Modal Metrics and Feedback Loops
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.4 Quality Evaluation: Cross-Modal Metrics and Feedback Loops">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1141-cross-modal-evaluation-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4.1 Cross-Modal Evaluation Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1142-cost-constraints-and-alignment-budget-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4.2 Cost Constraints and Alignment Budget Governance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#115-anonymized-composite-cases-and-transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5 Anonymized Composite Cases and Transition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.5 Anonymized Composite Cases and Transition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1151-case-1-body-side-mismatch-in-medical-multimodal-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.1 Case 1: Body-Side Mismatch in Medical Multimodal QA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1152-case-2-segment-offset-in-long-video-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.2 Case 2: Segment Offset in Long-Video Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1153-case-3-semantic-mismatch-in-autonomous-driving-intersection-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.3 Case 3: Semantic Mismatch in Autonomous-Driving Intersection Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1154-cross-modal-fusion-and-alignment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.4 Cross-Modal Fusion and Alignment Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1155-part-iii-summary-and-bridge-to-part-iv" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.5 Part III Summary and Bridge to Part IV
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#116-appendix-frequent-cross-modal-alignment-error-logs-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6 Appendix: Frequent Cross-Modal Alignment Error Logs and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.6 Appendix: Frequent Cross-Modal Alignment Error Logs and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1161-contrastive-loss-suddenly-diverges-to-nan-err_cross_mdl_fusion_7x001" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.1 Contrastive Loss Suddenly Diverges to NaN [ERR_CROSS_MDL_FUSION_7X001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1162-bbox-coordinate-flip-causes-object-level-alignment-failure-err_cross_mdl_obj_flip_002" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.2 BBox Coordinate Flip Causes Object-Level Alignment Failure [ERR_CROSS_MDL_OBJ_FLIP_002]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1163-hard-negative-mining-kills-true-positives-err_cross_mdl_hard_neg_003" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.3 Hard-Negative Mining Kills True Positives [ERR_CROSS_MDL_HARD_NEG_003]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1164-dtw-memory-overflow-stops-segment-level-alignment-err_cross_mdl_dtw_oom_004" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.4 DTW Memory Overflow Stops Segment-Level Alignment [ERR_CROSS_MDL_DTW_OOM_004]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1165-multimodal-token-format-error-causes-placeholder-parsing-failure-err_cross_mdl_token_fmt_005" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.5 Multimodal Token Format Error Causes Placeholder Parsing Failure [ERR_CROSS_MDL_TOKEN_FMT_005]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1166-frequent-error-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.6 Frequent Error Quick Reference
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111-problem-scenario-alignment-failure-and-physical-meaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 Problem Scenario: Alignment Failure and Physical Meaning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.1 Problem Scenario: Alignment Failure and Physical Meaning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1111-when-expensive-training-produces-visual-and-auditory-hallucination" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.1 When Expensive Training Produces Visual and Auditory Hallucination
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1112-the-modality-gap-and-heterogeneous-spaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.2 The Modality Gap and Heterogeneous Spaces
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1113-why-separately-cleaning-image-text-and-audio-video-data-is-not-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1.3 Why Separately Cleaning Image-Text and Audio-Video Data Is Not Enough
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#112-method-framework-alignment-boundaries-and-a-three-level-pyramid" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 Method Framework: Alignment Boundaries and a Three-Level Pyramid
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2 Method Framework: Alignment Boundaries and a Three-Level Pyramid">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1121-matrix-of-alignment-objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2.1 Matrix of Alignment Objects
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1122-industrial-three-level-pyramid-object-segment-and-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2.2 Industrial Three-Level Pyramid: Object, Segment, and Document
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.2.2 Industrial Three-Level Pyramid: Object, Segment, and Document">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-object-level-micro-alignment-anchoring-boxes-to-words" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Object-level / micro-alignment: anchoring boxes to words
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-segment-level-meso-alignment-mapping-continuous-time-sequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Segment-level / meso-alignment: mapping continuous time sequences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-document-level-macro-alignment-long-context-interleaved-fusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Document-level / macro-alignment: long-context interleaved fusion
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#113-cross-modal-fusion-pipeline-representation-mixing-and-hard-negatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 Cross-Modal Fusion Pipeline: Representation, Mixing, and Hard Negatives
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.3 Cross-Modal Fusion Pipeline: Representation, Mixing, and Hard Negatives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1131-unified-representation-and-placeholder-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.1 Unified Representation and Placeholder Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1132-multimodal-data-mixing-controlling-capability-forgetting" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.2 Multimodal Data Mixing: Controlling Capability Forgetting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1133-hard-negative-mining-and-quality-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3.3 Hard-Negative Mining and Quality Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#114-quality-evaluation-cross-modal-metrics-and-feedback-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 Quality Evaluation: Cross-Modal Metrics and Feedback Loops
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.4 Quality Evaluation: Cross-Modal Metrics and Feedback Loops">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1141-cross-modal-evaluation-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4.1 Cross-Modal Evaluation Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1142-cost-constraints-and-alignment-budget-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4.2 Cost Constraints and Alignment Budget Governance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#115-anonymized-composite-cases-and-transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5 Anonymized Composite Cases and Transition
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.5 Anonymized Composite Cases and Transition">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1151-case-1-body-side-mismatch-in-medical-multimodal-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.1 Case 1: Body-Side Mismatch in Medical Multimodal QA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1152-case-2-segment-offset-in-long-video-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.2 Case 2: Segment Offset in Long-Video Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1153-case-3-semantic-mismatch-in-autonomous-driving-intersection-samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.3 Case 3: Semantic Mismatch in Autonomous-Driving Intersection Samples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1154-cross-modal-fusion-and-alignment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.4 Cross-Modal Fusion and Alignment Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1155-part-iii-summary-and-bridge-to-part-iv" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5.5 Part III Summary and Bridge to Part IV
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#116-appendix-frequent-cross-modal-alignment-error-logs-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6 Appendix: Frequent Cross-Modal Alignment Error Logs and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11.6 Appendix: Frequent Cross-Modal Alignment Error Logs and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1161-contrastive-loss-suddenly-diverges-to-nan-err_cross_mdl_fusion_7x001" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.1 Contrastive Loss Suddenly Diverges to NaN [ERR_CROSS_MDL_FUSION_7X001]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1162-bbox-coordinate-flip-causes-object-level-alignment-failure-err_cross_mdl_obj_flip_002" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.2 BBox Coordinate Flip Causes Object-Level Alignment Failure [ERR_CROSS_MDL_OBJ_FLIP_002]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1163-hard-negative-mining-kills-true-positives-err_cross_mdl_hard_neg_003" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.3 Hard-Negative Mining Kills True Positives [ERR_CROSS_MDL_HARD_NEG_003]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1164-dtw-memory-overflow-stops-segment-level-alignment-err_cross_mdl_dtw_oom_004" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.4 DTW Memory Overflow Stops Segment-Level Alignment [ERR_CROSS_MDL_DTW_OOM_004]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1165-multimodal-token-format-error-causes-placeholder-parsing-failure-err_cross_mdl_token_fmt_005" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.5 Multimodal Token Format Error Causes Placeholder Parsing Failure [ERR_CROSS_MDL_TOKEN_FMT_005]
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1166-frequent-error-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.6.6 Frequent Error Quick Reference
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-11-cross-modal-alignment-and-fusion">Chapter 11: Cross-Modal Alignment and Fusion<a class="headerlink" href="#chapter-11-cross-modal-alignment-and-fusion" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Ke Wang; Cong Wang; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>As the closing chapter of Part III, this chapter discusses how to build cross-modal alignment and fusion training samples after image, text, audio, and video have each gone through single-modality cleaning. It first explains why independent cleaning does not automatically create cross-modal reasoning ability: without semantic, spatial, or temporal binding, a model may still learn false correspondences. The chapter then establishes a three-level alignment framework across object-level, segment-level, and document-level data, covering bounding box (BBox)-word anchoring, audio-video timeline synchronization, and long-document interleaved ordering. The engineering section introduces placeholder design, feature-path decoupling, multimodal sample mixing, and hard-negative mining. It then defines quality metrics such as cross-modal recall, temporal continuity, hallucination rate, and entailment conflict. Finally, anonymized composite cases illustrate risks from object misalignment, segment misalignment, and semantic mismatch before the book transitions to Part IV on instruction alignment and preference data systems.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Cross-modal alignment; multimodal fusion; BBox; temporal alignment; hard negatives; placeholder; multimodal hallucination; data mixing</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Explain why separately cleaning image-text and audio-video data does not automatically create cross-modal reasoning ability.</li>
+<li>Distinguish object-level, segment-level, and document-level cross-modal alignment samples.</li>
+<li>Design multimodal placeholders, feature paths, and JSONL schemas for fusion training.</li>
+<li>Construct hard negatives while controlling cross-modal forgetting and false-negative contamination.</li>
+<li>Build quality evaluation mechanisms for cross-modal recall, temporal continuity, hallucination rate, and human sampling checks.</li>
+</ul>
+<p>After single-modality cleaning in Chapters 8 and 9 for image-text data and Chapter 10 for audio-video data, we can remove image watermarks, correct OCR errors, and slice long videos into key frames, subtitles, and audio segments.</p>
+<p>However, mechanically stacking cleaned images, waveforms, and text tokens into a model context window does not make the model learn <strong>cross-modal reasoning</strong>. Missing correspondences between modalities make training signals interfere with one another and can trigger cross-modal hallucination.</p>
+<p>As the closing chapter of <strong>Part III: High-Quality Multimodal Data Engineering</strong>, this chapter focuses on the core problem of multimodal data engineering: how to create <strong>cross-modal fusion and alignment supervision samples</strong> so that encoders from different modalities can form effective correspondences in the same semantic space.</p>
+<h2 id="111-problem-scenario-alignment-failure-and-physical-meaning">11.1 Problem Scenario: Alignment Failure and Physical Meaning<a class="headerlink" href="#111-problem-scenario-alignment-failure-and-physical-meaning" title="Permanent link">&para;</a></h2>
+<h3 id="1111-when-expensive-training-produces-visual-and-auditory-hallucination">11.1.1 When Expensive Training Produces Visual and Auditory Hallucination<a class="headerlink" href="#1111-when-expensive-training-produces-visual-and-auditory-hallucination" title="Permanent link">&para;</a></h3>
+<p>The following is an anonymized composite case. Cost, cycle, and symptoms are used to illustrate risk types. As of 2026-06, real training cost depends on model size, GPU price, training duration, and data weight. During early pretraining of a multimodal large model, the model watched a silent video of steak frying in a kitchen and generated the text "the pan is sizzling." It even produced unrelated animal sounds through the audio encoder. After three weeks of investigation, the team found that the data pipeline had only roughly aligned timelines when assembling "video + text + audio." It had not bound semantic features, so the "kitchen scene" was randomly coupled with irrelevant sounds from an environmental-audio library.</p>
+<h3 id="1112-the-modality-gap-and-heterogeneous-spaces">11.1.2 The Modality Gap and Heterogeneous Spaces<a class="headerlink" href="#1112-the-modality-gap-and-heterogeneous-spaces" title="Permanent link">&para;</a></h3>
+<p>"Alignment" has broad meanings in AI. In Part IV, it will refer more to human preferences and value alignment. In this chapter's low-level data preparation, alignment means solving the <strong>heterogeneity gap</strong> between modalities.</p>
+<p>Text in embedding space is a highly abstract vector representing semantics. An image pixel matrix encoded by a vision encoder often represents a collection of edges, colors, and texture features. A waveform maps to high- and low-frequency amplitude space.</p>
+<p>These vectors not only differ in dimension; their mathematical manifolds do not naturally overlap. Cross-modal alignment engineering builds high-quality samples so that when different encoders observe the same physical concept, such as an orange cat meowing, their outputs become close in a shared representation space.</p>
+<h3 id="1113-why-separately-cleaning-image-text-and-audio-video-data-is-not-enough">11.1.3 Why Separately Cleaning Image-Text and Audio-Video Data Is Not Enough<a class="headerlink" href="#1113-why-separately-cleaning-image-text-and-audio-video-data-is-not-enough" title="Permanent link">&para;</a></h3>
+<p>In front-end preprocessing, such as the image cleaning discussed in Chapter 8, we remove blurry images or delete videos without audio. But basic cleaning alone misses the true cross-modal correspondence.</p>
+<p><strong>Independent cleaning does not create correspondence.</strong> Even with one million high-definition cat images and one million high-quality cat descriptions, the model still does not know which specific text should be rigidly linked to which specific image unless a <strong>hard link</strong> is established. It does not know which image region corresponds to the token "orange fur."</p>
+<p>When the loss of a large VLM jitters or the model answers off-topic when shown an image, algorithm teams often check learning rates and attention architecture first. Data engineers must also check whether weakly related annotations or high-artifact samples are injecting false supervision.</p>
+<p>For example, if the training data contains a picture of a huge Eiffel Tower and a nearby caption says "I happily ate a croissant in Paris today," this is a high-risk weakly related or even mutually conflicting sample. Contrastive loss reinforces the false association and creates unstable mapping between visual entities and text semantics.</p>
+<hr />
+<h2 id="112-method-framework-alignment-boundaries-and-a-three-level-pyramid">11.2 Method Framework: Alignment Boundaries and a Three-Level Pyramid<a class="headerlink" href="#112-method-framework-alignment-boundaries-and-a-three-level-pyramid" title="Permanent link">&para;</a></h2>
+<p>Effective alignment requires first clarifying what the aligned "object" is and then building a layered structure.</p>
+<h3 id="1121-matrix-of-alignment-objects">11.2.1 Matrix of Alignment Objects<a class="headerlink" href="#1121-matrix-of-alignment-objects" title="Permanent link">&para;</a></h3>
+<p>Cross-modal alignment in multimodal model training is not limited to image-text pairs. It covers multiple modality combinations, each requiring a different data pipeline:</p>
+<ol>
+<li><strong>Image-text alignment</strong>: the most basic alignment. Visual features must map precisely to textual semantics such as nouns, entities, colors, spatial relations, and actions.</li>
+<li><strong>Audio-text alignment</strong>: ASR and captioning bind voiceprint features to text. This includes not only "what is said," but also "who says it" and "with what emotion."</li>
+<li><strong>Video-audio alignment</strong>: absolute synchronization between actions and environmental sounds, such as the instant a hammer hits a nail and the metallic impact sound. This is central to eliminating auditory hallucination.</li>
+<li><strong>Video-audio-text tri-modal alignment</strong>: the most complex alignment type. It requires audio-video synchronization and text that accurately describes the key event in that time slice.</li>
+</ol>
+<h3 id="1122-industrial-three-level-pyramid-object-segment-and-document">11.2.2 Industrial Three-Level Pyramid: Object, Segment, and Document<a class="headerlink" href="#1122-industrial-three-level-pyramid-object-segment-and-document" title="Permanent link">&para;</a></h3>
+<p>Production data platforms usually divide these alignment objects by granularity into three levels, forming a cross-modal alignment pyramid.</p>
+<p>Figure 11-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap11-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 11-1: Three-level cross-modal alignment pyramid" src="../../../images/part3/Wang-Chap11-Fig01.svg" /></a></p>
+<p><em>Figure 11-1: Three-level cross-modal alignment pyramid</em></p>
+<h4 id="1-object-level-micro-alignment-anchoring-boxes-to-words">1. Object-level / micro-alignment: anchoring boxes to words<a class="headerlink" href="#1-object-level-micro-alignment-anchoring-boxes-to-words" title="Permanent link">&para;</a></h4>
+<p>Object-level alignment is the foundation for building visual-vocabulary mapping in a multimodal base model. The key is precise geometric coordinate mapping. If a cat appears in an image, a bounding box such as <code>[x1:100, y1:200, x2:350, y2:450]</code> should mark the region, and the corresponding text JSON should include <code>&lt;box&gt; cat &lt;/box&gt;</code>.</p>
+<p>The purpose is to establish a stable correspondence between visual regions and text vocabulary during early projection-layer training. The image feature inside the box should be close to the token representing <code>Cat</code> in the text vocabulary. If this layer is severely distorted, for example the coordinate offset puts a dog in the box while the label says cat, the local response mapping of the vision encoder is directly damaged.</p>
+<h4 id="2-segment-level-meso-alignment-mapping-continuous-time-sequences">2. Segment-level / meso-alignment: mapping continuous time sequences<a class="headerlink" href="#2-segment-level-meso-alignment-mapping-continuous-time-sequences" title="Permanent link">&para;</a></h4>
+<p>This is the level emphasized in Chapter 10. It introduces <strong>unequal-length cross-modal conversion</strong>: a 3.5-second video segment may contain 105 frames and 3.5 seconds of audio, but correspond to only one short sentence such as <code>"The white car drives down the street."</code></p>
+<p>How do 105 visual frames correspond to 7 English words? Data engineers often use compute-intensive DTW (Dynamic Time Warping) or complex attention-map-based soft association to cut the sequence. Standard DTW (Sakoe and Chiba 1978) has time and space complexity of O(N x M): when both the frame sequence and word sequence are long, matrix memory grows rapidly with their product. Production systems therefore commonly use <strong>FastDTW</strong> (Salvador and Chan 2007), a linear-complexity approximation, and limit segment length or downsample according to memory budget; see the OOM case in Section 11.6.4. This alignment layer allows small temporal tolerance, but the tolerance window must be calibrated by task type and manual playback, and it must not tolerate causal reversal or time-order confusion.</p>
+<h4 id="3-document-level-macro-alignment-long-context-interleaved-fusion">3. Document-level / macro-alignment: long-context interleaved fusion<a class="headerlink" href="#3-document-level-macro-alignment-long-context-interleaved-fusion" title="Permanent link">&para;</a></h4>
+<p>After a model can handle short image-text pairs and short video segments, it still needs to handle long contexts, multi-page documents, and multi-round image-text reference.</p>
+<p>Here the object is no longer an isolated segment, but a manual, paper, research report, webpage archive, or continuous frame sequence from a long video. The data-production focus shifts from local coordinates to <strong>interleaved ordering</strong> across a 100K or even 1M-token training window. Images, text, and audio signals must be ordered by interpretable rules so the model can use earlier figures, table structures, or audio-video clues for reference and reasoning later in the context.</p>
+<p>Table 11-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 11-1: Heterogeneous alignment strategies and applicable tasks</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Alignment granularity</th>
+<th style="text-align: left;">Main method and feature expression</th>
+<th style="text-align: left;">Data construction cost</th>
+<th style="text-align: left;">Typical tasks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Object-level</strong></td>
+<td style="text-align: left;">Human or model-assisted BBox labeling with region-word coordinate mapping.</td>
+<td style="text-align: left;">High; depends on fine-grained annotation, review, and local visual reasoning.</td>
+<td style="text-align: left;">Region grounding, medical-image localization, industrial defect detection.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Segment-level</strong></td>
+<td style="text-align: left;">Timeline alignment algorithms; segment-level filtering through dual-tower scoring such as CLIP Score or CLAP Score.</td>
+<td style="text-align: left;">Medium to high; depends on decoding, feature extraction, matrix matching, and sampling review.</td>
+<td style="text-align: left;">Action recognition, video captioning, voice translation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Document-level</strong></td>
+<td style="text-align: left;">Layout extraction engines such as Nougat and long-context interleaved ordering streams.</td>
+<td style="text-align: left;">High; depends on long-context scheduling, layout reconstruction, and cross-page consistency checks.</td>
+<td style="text-align: left;">Multi-page financial-report QA, research-report review, long-document multimodal retrieval.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="113-cross-modal-fusion-pipeline-representation-mixing-and-hard-negatives">11.3 Cross-Modal Fusion Pipeline: Representation, Mixing, and Hard Negatives<a class="headerlink" href="#113-cross-modal-fusion-pipeline-representation-mixing-and-hard-negatives" title="Permanent link">&para;</a></h2>
+<p>After alignment levels are clear, the next step is to package signals into data structures that training frameworks can read reliably. A standard multimodal data-engineering pipeline usually includes unified representation, data mixing, negative-sample mining, and quality validation.</p>
+<h3 id="1131-unified-representation-and-placeholder-engineering">11.3.1 Unified Representation and Placeholder Engineering<a class="headerlink" href="#1131-unified-representation-and-placeholder-engineering" title="Permanent link">&para;</a></h3>
+<p>The LLM backbone usually interfaces through discrete token sequences, so image, audio, and video features must enter the training stream through placeholder engineering and quantization. After features are extracted by VQ-VAE (van den Oord et al. 2017) or a discrete autoencoder, continuous visual or acoustic tensors can be represented as discrete IDs, such as mapping image patches to <code>&lt;IMG_TK_451&gt;</code>.</p>
+<p>In synthetic training streams, JSON samples usually do not directly store massive floating-point matrices. Instead, they use explicit placeholders. Listing 11-1 shows a multimodal JSONL schema fragment.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mm_00483921&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;modalities&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;image&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;text&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;|image_start|&gt; &lt;IMG_TK_451&gt; &lt;IMG_TK_882&gt; &lt;|image_end|&gt; This is a cute cat.&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;visual_features_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://multimodal-bucket/features/cat_001.pt&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 11-1: Multimodal fusion sample JSON record schema example</em></p>
+<p>Fields are illustrative; production environments should add source, license, modality validation, placeholder version, and review status.</p>
+<p>This JSONL schema is a foundation for fusion training data. It decouples text and visual pipelines: data engineers maintain metadata and placeholder logic in JSON, while the deep-learning framework's DataLoader reads the dense tensor from <code>visual_features_path</code> only at the final step and injects it into the computation graph.</p>
+<p>Figure 11-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap11-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 11-2: Multimodal fusion and hard-negative mining pipeline" src="../../../images/part3/Wang-Chap11-Fig02.svg" /></a></p>
+<p><em>Figure 11-2: Multimodal fusion sample design</em></p>
+<h3 id="1132-multimodal-data-mixing-controlling-capability-forgetting">11.3.2 Multimodal Data Mixing: Controlling Capability Forgetting<a class="headerlink" href="#1132-multimodal-data-mixing-controlling-capability-forgetting" title="Permanent link">&para;</a></h3>
+<p>If training data is dominated by a single modality or task type for too long, the model may degrade on other capabilities. For example, overemphasizing image-text alignment while lacking high-quality pure-text and complex instruction data may weaken language reasoning, code, and mathematical ability. This can be viewed as capability forgetting risk in cross-modal training. Data mixing is therefore a key engineering decision.</p>
+<p>In production, the mix should be determined through ablation studies. Public technical reports usually do not disclose complete reusable recipes, so a more robust approach is to design mixtures by capability dimension and continuously calibrate them:</p>
+<ul>
+<li><strong>Pure-text retention pool</strong>: retain high-quality mathematical, code, and logical-reasoning text to reduce erosion of language reasoning by multimodal training.</li>
+<li><strong>Coarse image-text alignment</strong>: use broad image-text samples, such as LAION-5B, DataComp refined subsets, or licensed image libraries, to build a basic world-entity vocabulary.</li>
+<li><strong>Fine-grained and interleaved data</strong>: add BBox-corresponding images, multi-image interleaved long documents, and OCR structure trees to improve spatial localization, document understanding, and complex image-text reasoning.</li>
+<li><strong>Synthetic finetuning dialogue</strong>: use quality-checked multi-turn multimodal dialogue to convert basic alignment ability into a human-friendly QA format; the generation model, prompts, and human spot-check results must be logged.</li>
+</ul>
+<h3 id="1133-hard-negative-mining-and-quality-control">11.3.3 Hard-Negative Mining and Quality Control<a class="headerlink" href="#1133-hard-negative-mining-and-quality-control" title="Permanent link">&para;</a></h3>
+<p>In contrastive alignment (Dufumier et al. 2025 (ICLR) argue that effective multimodal contrastive learning should align shared features, modality-specific features, and synergistic features rather than optimizing shared information alone), if a model only distinguishes easy pairs such as "cat" and "dog," progress quickly reaches diminishing returns. Hard negatives provide semantically similar samples with key differences, forcing the model to learn fine-grained visual, textual, and temporal distinctions.</p>
+<p><strong>Five core hard-negative mining methods</strong></p>
+<ol>
+<li><strong>Subtle replacement mining</strong>: keep the positive image "a blue cup on a wooden table," then find a text from the corpus that changes one key modifier: "a <strong>black</strong> cup on a wooden table." This negative pair makes the vision encoder attend to color details.</li>
+<li><strong>Cross-modal attribute swap</strong>: locally rewrite image semantics. For example, use an inpainting model to change a red apple into a green apple while keeping the original positive text. This mismatch teaches cross-attention to bind visual regions to text descriptions.</li>
+<li><strong>In-batch online hard negative mining (OHNM)</strong> (Chen et al. 2020): dynamically compute pairwise similarities within each training batch and choose pairs with high similarity but mismatched semantics. OHNM does not need a static database; the model decides in real time which difficult samples are most valuable.</li>
+<li><strong>Temporal perturbation for video-text</strong>: misalign video subtitles with adjacent time windows, such as pairing the positive text <code>&lt;00:03-00:06&gt; the athlete starts running</code> with the video window <code>&lt;00:10-00:13&gt; the athlete crosses the finish line.</code> This strengthens the model's ability to distinguish temporal causality.</li>
+<li><strong>LLM-generated synthetic hard negatives</strong>: provide a positive description to an LLM and ask it to generate adversarial text that is semantically similar but contains key factual errors. Compared with dictionary replacement, this approach is more diverse and is a common scalable production method.</li>
+</ol>
+<p>Table 11-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 11-2: Comparison of hard-negative mining strategies</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Strategy</th>
+<th style="text-align: left;">Generation method</th>
+<th style="text-align: left;">Granularity</th>
+<th style="text-align: left;">Main advantage</th>
+<th style="text-align: left;">Main risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Subtle replacement</td>
+<td style="text-align: left;">Dictionary or attribute replacement</td>
+<td style="text-align: left;">Word/attribute</td>
+<td style="text-align: left;">Precise control of replacement position</td>
+<td style="text-align: left;">Requires fine-grained dictionaries</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cross-modal attribute swap</td>
+<td style="text-align: left;">Inpainting / text rewriting</td>
+<td style="text-align: left;">Region/relation</td>
+<td style="text-align: left;">Creates difficult image-text mismatches</td>
+<td style="text-align: left;">Inpainting quality is unstable</td>
+</tr>
+<tr>
+<td style="text-align: left;">In-batch online mining</td>
+<td style="text-align: left;">Dynamic similarity matrix</td>
+<td style="text-align: left;">Sample pair</td>
+<td style="text-align: left;">Adaptive difficulty; no prebuilt database</td>
+<td style="text-align: left;">Higher risk of false negatives within a batch</td>
+</tr>
+<tr>
+<td style="text-align: left;">Temporal perturbation</td>
+<td style="text-align: left;">Timeline-shifted pairing</td>
+<td style="text-align: left;">Segment-level video</td>
+<td style="text-align: left;">Reinforces temporal-causal learning</td>
+<td style="text-align: left;">Requires precise timestamps</td>
+</tr>
+<tr>
+<td style="text-align: left;">LLM synthetic generation</td>
+<td style="text-align: left;">Instruction-based LLM generation</td>
+<td style="text-align: left;">Multi-granularity</td>
+<td style="text-align: left;">Large-scale and diverse</td>
+<td style="text-align: left;">May create false negatives; requires filtering</td>
+</tr>
+</tbody>
+</table>
+<h2 id="114-quality-evaluation-cross-modal-metrics-and-feedback-loops">11.4 Quality Evaluation: Cross-Modal Metrics and Feedback Loops<a class="headerlink" href="#114-quality-evaluation-cross-modal-metrics-and-feedback-loops" title="Permanent link">&para;</a></h2>
+<p>Cross-modal fusion data is expensive to build and should not enter training without quality metrics. Evaluation must cover inter-modality mapping, temporal consistency, spatial localization, hallucination risk, and human sampling, with special attention to traceable <strong>hallucination</strong> detection.</p>
+<h3 id="1141-cross-modal-evaluation-metrics">11.4.1 Cross-Modal Evaluation Metrics<a class="headerlink" href="#1141-cross-modal-evaluation-metrics" title="Permanent link">&para;</a></h3>
+<p>Cross-modal evaluation must look beyond single-modality quality and measure whether mappings between modalities are stable. Table 11-3 lists common metrics and governance actions.</p>
+<p><em>Table 11-3: Evaluation metrics and governance-action mapping</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Metric</th>
+<th style="text-align: left;">Physical meaning and business mapping</th>
+<th style="text-align: left;">Risk threshold and error source</th>
+<th style="text-align: left;">Governance action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Cross-modal recall (R@1 / R@5)</strong></td>
+<td style="text-align: left;">Given an image or video, retrieve the corresponding text description.</td>
+<td style="text-align: left;">A significant drop usually indicates systematic mismatch in object coordinates or dictionary mapping.</td>
+<td style="text-align: left;">Pause the problematic batch; resample-check BBox, captions, and assembly links.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Temporal continuity score</strong></td>
+<td style="text-align: left;">Whether audio tracks, subtitles, and video segments match the real event order.</td>
+<td style="text-align: left;">Reversed order often comes from frame extraction, subtitle alignment, or lost global timestamps.</td>
+<td style="text-align: left;">Add global timestamp constraints and replay-based sampling checks.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MM-hallucination rate / CHAIR</strong></td>
+<td style="text-align: left;">Probability that the model describes nonexistent objects or actions.</td>
+<td style="text-align: left;">A high rate indicates weakly related text or recaptioning drift in training data.</td>
+<td style="text-align: left;">Adjust CLIP/SigLIP thresholds and add human review or text rewriting.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Entailment conflict rate</strong></td>
+<td style="text-align: left;">Whether multiple descriptions of the same image contradict one another.</td>
+<td style="text-align: left;">High conflict usually means inconsistent annotation guidelines or insufficient vendor QA.</td>
+<td style="text-align: left;">Update annotation standards, sample by source and annotator, and write back bad samples.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1142-cost-constraints-and-alignment-budget-governance">11.4.2 Cost Constraints and Alignment Budget Governance<a class="headerlink" href="#1142-cost-constraints-and-alignment-budget-governance" title="Permanent link">&para;</a></h3>
+<p>Cross-modal alignment is expensive. Real cost depends on hardware price, video length, resolution, feature model, concurrency strategy, cache hit rate, and failed-retry count. Data engineers must build a <strong>cost accounting model</strong>: in object-level alignment, use low-cost heuristics first, and reserve strong VLMs or high-dimensional matrix computation such as CLIP/SigLIP for high-value candidates. Blind full computation quickly loses budget control.</p>
+<h2 id="115-anonymized-composite-cases-and-transition">11.5 Anonymized Composite Cases and Transition<a class="headerlink" href="#115-anonymized-composite-cases-and-transition" title="Permanent link">&para;</a></h2>
+<p>The following three anonymized composite cases illustrate common failure modes in cross-modal alignment engineering. Organizations, scale, cost, and results are generalized only to present risk types and investigation paths.</p>
+<h3 id="1151-case-1-body-side-mismatch-in-medical-multimodal-qa">11.5.1 Case 1: Body-Side Mismatch in Medical Multimodal QA<a class="headerlink" href="#1151-case-1-body-side-mismatch-in-medical-multimodal-qa" title="Permanent link">&para;</a></h3>
+<p>A medical-image QA project aligned chest X-rays with physician-order text. Offline metrics looked good at first, but pre-launch sampling found that the model interpreted a normal shadow in the left lung region as a right-lung lesion.</p>
+<p><strong>Root cause and postmortem</strong>: the data-augmentation pipeline allowed horizontal flipping of X-rays but did not synchronize BBox, left/right text, or medical orientation metadata. Object-level spatial relations were systematically polluted. The remediation included disabling high-risk mirror augmentation, adding <code>orientation</code> metadata checks, and creating a specialized sampling set for left/right orientation cases.</p>
+<h3 id="1152-case-2-segment-offset-in-long-video-retrieval">11.5.2 Case 2: Segment Offset in Long-Video Retrieval<a class="headerlink" href="#1152-case-2-segment-offset-in-long-video-retrieval" title="Permanent link">&para;</a></h3>
+<p>A long-video retrieval system developed audio-video mismatches after training: the image showed a person climbing over a fence, but the model associated it with indoor conversation audio from hours later.</p>
+<p><strong>Root cause and postmortem</strong>: during segment-level alignment in Section 11.2, the distributed workflow used weakly consistent metadata storage, causing audio pointers for a batch of video segments to suffer an offset-by-one bug. A tiny index shift attached subsequent audio segments to the wrong video clips. The fix was to write key timestamps into strongly consistent storage and run audio-video similarity sampling before segment ingestion.</p>
+<h3 id="1153-case-3-semantic-mismatch-in-autonomous-driving-intersection-samples">11.5.3 Case 3: Semantic Mismatch in Autonomous-Driving Intersection Samples<a class="headerlink" href="#1153-case-3-semantic-mismatch-in-autonomous-driving-intersection-samples" title="Permanent link">&para;</a></h3>
+<p>An autonomous-driving vision-language model developed a fixed template output during road-video evaluation: whenever a traffic light appeared, it tended to generate "green light, vehicles pass normally."</p>
+<p><strong>Root cause and postmortem</strong>: tracing the training data found a large number of copied intersection-description templates in a purchased dataset. Red-light, yellow-light, and green-light samples were all labeled "vehicles driving normally through a green-light intersection." The model learned a shortcut. Remediation introduced a cross-modal hallucination detector and rebuilt hard-negative pairs for the same intersection under red, yellow, and green lights.</p>
+<h3 id="1154-cross-modal-fusion-and-alignment-checklist">11.5.4 Cross-Modal Fusion and Alignment Checklist<a class="headerlink" href="#1154-cross-modal-fusion-and-alignment-checklist" title="Permanent link">&para;</a></h3>
+<p>Before sending a multimodal dataset to the training cluster, review the following:</p>
+<ul>
+<li>[ ] <strong>Alignment leakage prevention</strong>: when augmentations such as flipping or cropping are applied, are text descriptions such as left/right relations and BBox coordinates updated at the same time?</li>
+<li>[ ] <strong>Temporal-anchor validation</strong>: after audio-video segmentation, have global timestamps been sampled to ensure there is no offset or reversal?</li>
+<li>[ ] <strong>Negative-sample difficulty distribution</strong>: has the similarity distribution of in-batch negatives been checked? Is the threshold so high that true positives are killed as false negatives?</li>
+<li>[ ] <strong>Format sentinel integrity</strong>: are placeholders such as <code>&lt;IMG_TK&gt;</code> in JSONL accidentally HTML-escaped? Does every segment contain <code>&lt;|image_start|&gt;</code>?</li>
+<li>[ ] <strong>Data-mix safety net</strong>: does the training package retain high-quality pure-text, code, or mathematical corpora to monitor and mitigate cross-modal forgetting?</li>
+</ul>
+<h3 id="1155-part-iii-summary-and-bridge-to-part-iv">11.5.5 Part III Summary and Bridge to Part IV<a class="headerlink" href="#1155-part-iii-summary-and-bridge-to-part-iv" title="Permanent link">&para;</a></h3>
+<p>Part III began with image cleaning, image-text semantic filtering, and recaptioning; then it discussed OCR and document structuring, audio-video slicing and temporal alignment; finally, this chapter consolidated the material into a three-level cross-modal alignment framework across object, segment, and document levels. Multimodal data engineering has now moved from "are samples clean" to "is there verifiable supervision between modalities."</p>
+<p>Perception is only the first step. A pretrained model still needs explicit instruction guidance, preference feedback, and value alignment before it can serve real user tasks. This is the focus of <strong>Part IV: Alignment and Instruction Data</strong>, from SFT data design in Chapter 12 to RLAIF, PPO, and end-to-end human-feedback systems.</p>
+<hr />
+<h2 id="116-appendix-frequent-cross-modal-alignment-error-logs-and-troubleshooting">11.6 Appendix: Frequent Cross-Modal Alignment Error Logs and Troubleshooting<a class="headerlink" href="#116-appendix-frequent-cross-modal-alignment-error-logs-and-troubleshooting" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>The following anonymized logs cover five core links: alignment loss divergence, BBox coordinate mismatch, negative-sample contamination, DTW memory overflow, and multimodal token-format errors. Host names, paths, batch IDs, and metrics are illustrative and do not point to public reproducible incidents.</p>
+</blockquote>
+<h3 id="1161-contrastive-loss-suddenly-diverges-to-nan-err_cross_mdl_fusion_7x001">11.6.1 Contrastive Loss Suddenly Diverges to NaN [ERR_CROSS_MDL_FUSION_7X001]<a class="headerlink" href="#1161-contrastive-loss-suddenly-diverges-to-nan-err_cross_mdl_fusion_7x001" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: after several stable epochs, importing a low-quality video batch causes contrastive loss to rise quickly and training nodes abort because of NaN.</p>
+<p>Listing 11-2 shows an anonymized alignment-loss divergence log.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>[WARNING] node-001.storage-backend.local:
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Infinity detected in temporal grounding cross-attention matrix!
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Attention weights collapsing due to zero-division in normalization.
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Traceback Exception raised in /transformers_mod/alignment/fusion_encoder.py line 2001.
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Loss scaled to NaN. Global step 14510 aborted.
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>Cross-Modal Feature Match Score dropped from 0.89 to 0.00000000003.
+</code></pre></div>
+<p><em>Listing 11-2: Alignment loss divergence error log example</em></p>
+<p>The log content is anonymized and is intended to illustrate troubleshooting patterns rather than reproduce a public incident.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: a tiny number of abnormal samples with squealing noise or all-black frames enter the batch, triggering zero-division polarization in cross-attention weights. Noisy negatives also interfere with contrastive loss.</li>
+<li><strong>Fix</strong>: add a high-pass cosine clipping filter before fusion and force L2 norm clipping, for example max norm 10; remove all corrupted samples from the hard-negative pool, such as CLIP-Score &lt; 0.1 or audio SNR &lt; 5 dB; enable gradient clipping with <code>max_norm=1.0</code>.</li>
+</ul>
+<h3 id="1162-bbox-coordinate-flip-causes-object-level-alignment-failure-err_cross_mdl_obj_flip_002">11.6.2 BBox Coordinate Flip Causes Object-Level Alignment Failure [ERR_CROSS_MDL_OBJ_FLIP_002]<a class="headerlink" href="#1162-bbox-coordinate-flip-causes-object-level-alignment-failure-err_cross_mdl_obj_flip_002" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: after one data batch is imported, object-level alignment R@1 drops from 0.82 to 0.31, and inference shows large-scale left/right direction errors, such as "left" becoming "right" or a left-lung lesion being marked on the right lung.</p>
+<p>Listing 11-3 shows an anonymized BBox coordinate flip log.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>[ERROR] grounding_eval_worker_05:
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Region match failure: predicted bbox [x1:680, y1:200, x2:920, y2:450],
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>ground truth bbox [x1:80, y1:200, x2:320, y2:450].
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>IoU score: 0.00. Entire partition eval batch rejected.
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>Suspected data augmentation mirror flip applied AFTER bbox annotation.
+</code></pre></div>
+<p><em>Listing 11-3: BBox coordinate flip error log example</em></p>
+<p>The log content is anonymized; production environments should record coordinate-system conventions and conversion versions.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: random horizontal flip was applied after image transformation but BBox x coordinates were not updated. Correct transformation should replace <code>x1</code> with <code>W - x2</code> and <code>x2</code> with <code>W - x1</code>. Medical X-ray films may also have scanner-generated physical mirror output.</li>
+<li><strong>Fix</strong>: bind every geometric augmentation to BBox transformation, for example with Albumentations <code>BboxParams</code>; add physical-orientation metadata checks such as <code>metadata.orientation</code> for medical images; run BBox-text consistency checks before training, comparing CLIP vectors inside the box with label text.</li>
+</ul>
+<h3 id="1163-hard-negative-mining-kills-true-positives-err_cross_mdl_hard_neg_003">11.6.3 Hard-Negative Mining Kills True Positives [ERR_CROSS_MDL_HARD_NEG_003]<a class="headerlink" href="#1163-hard-negative-mining-kills-true-positives-err_cross_mdl_hard_neg_003" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: after introducing hard-negative mining, Recall@5 falls instead of rising. Loss variance becomes abnormal, and the model loses the ability to distinguish near-synonyms and semantically similar sentences.</p>
+<p>Listing 11-4 shows an anonymized hard-negative contamination log.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[WARN] hard_negative_miner_worker_2:
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>False negative rate in batch 3421: 38.7% (threshold: &lt; 5%).
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>Positive pairs incorrectly tagged as hard negatives: 8,240 / 21,300.
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>CLIP cross-modal similarity threshold set too aggressively: 0.92, too many true positives excluded.
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>Contrastive loss variance: 4.82 (expected &lt; 0.8). Training instability detected.
+</code></pre></div>
+<p><em>Listing 11-4: Hard-negative contamination error log example</em></p>
+<p>The log content is anonymized; negative-sample strategies should be calibrated through manual review and downstream evaluation.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: the hard-negative similarity threshold, 0.92, is too aggressive. Many true positive pairs are incorrectly classified as hard negatives, creating false-negative contamination.</li>
+<li><strong>Fix</strong>: lower the threshold from 0.92 to 0.75 and introduce two-stage judgment: first use CLIP for coarse filtering, then use human rules such as word-level co-occurrence for refinement; cap hard negatives per batch at no more than twice the number of positives; deploy an independent false-negative detector with regular human sampling.</li>
+</ul>
+<h3 id="1164-dtw-memory-overflow-stops-segment-level-alignment-err_cross_mdl_dtw_oom_004">11.6.4 DTW Memory Overflow Stops Segment-Level Alignment [ERR_CROSS_MDL_DTW_OOM_004]<a class="headerlink" href="#1164-dtw-memory-overflow-stops-segment-level-alignment-err_cross_mdl_dtw_oom_004" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: when processing video segments longer than 90 seconds, DTW alignment workers are killed by the OOM killer, the alignment pipeline pauses, and pending tasks accumulate.</p>
+<p>Listing 11-5 shows an anonymized DTW memory overflow log.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>[FATAL] dtw_alignment_worker_08: Killed (signal 9).
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>DTW matrix allocation failed: requested 94.3 GB for sequence lengths (4500, 6200).
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>MemoryError: Cannot allocate ndarray of shape (4500, 6200) dtype float32.
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Queue depth at crash: 14,382 pending segments. Estimated loss: 890h of aligned audio-visual data.
+</code></pre></div>
+<p><em>Listing 11-5: DTW memory overflow error log example</em></p>
+<p>The log content is anonymized; window size and downsampling strategy should be set according to sequence length and memory budget.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: standard DTW has O(N x M) time and space complexity. A matrix for 4500 frames by 6200 words reaches about 94 GB; input length was not capped.</li>
+<li><strong>Fix</strong>: force clips longer than 60 seconds to be cut into 30-second subsegments before DTW; use FastDTW, a linear-complexity approximation; set a maximum memory quota, such as 32 GB, per DTW worker and trigger downsampling rather than direct OOM.</li>
+</ul>
+<h3 id="1165-multimodal-token-format-error-causes-placeholder-parsing-failure-err_cross_mdl_token_fmt_005">11.6.5 Multimodal Token Format Error Causes Placeholder Parsing Failure [ERR_CROSS_MDL_TOKEN_FMT_005]<a class="headerlink" href="#1165-multimodal-token-format-error-causes-placeholder-parsing-failure-err_cross_mdl_token_fmt_005" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: after entering multimodal token-mixed batches, the embedding layer throws an index-out-of-range error. Some image placeholders are parsed as text tokens, interrupting batch training.</p>
+<p>Listing 11-6 shows an anonymized placeholder parsing failure log.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>[ERROR] multimodal_dataloader_worker_3:
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Token index 152104 out of vocabulary range (vocab_size=128256).
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>&lt;IMG_TK_451&gt; placeholder decoded as raw text token, bypassing vision encoder.
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>JSONL sample malformed: missing &lt;|image_start|&gt; sentinel in sample_id: mm_00483921.
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Affected batch: 256 samples. Training step 28,441 aborted.
+</code></pre></div>
+<p><em>Listing 11-6: Placeholder parsing failure error log example</em></p>
+<p>The log content is anonymized; production environments should freeze placeholder syntax and run pre-training parsing validation.</p>
+<p><strong>Root cause and fix</strong></p>
+<ul>
+<li><strong>Root cause</strong>: the JSONL packing script HTML-escaped placeholders containing special characters such as <code>&lt;</code>, <code>&gt;</code>, and <code>|</code>, producing <code>&amp;lt;</code> and similar strings that the tokenizer cannot recognize. Some samples also missed the <code>&lt;|image_start|&gt;</code> prefix.</li>
+<li><strong>Fix</strong>: serialize placeholder fields with <code>ensure_ascii=False</code> and skip HTML escaping; add assertions in DataLoader <code>__getitem__</code> to ensure each multimodal sample contains paired <code>&lt;|image_start|&gt;...&lt;|image_end|&gt;</code> sentinels; build an ingestion linter that scans 100% of JSONL files for placeholder integrity.</li>
+</ul>
+<h3 id="1166-frequent-error-quick-reference">11.6.6 Frequent Error Quick Reference<a class="headerlink" href="#1166-frequent-error-quick-reference" title="Permanent link">&para;</a></h3>
+<p>Table 11-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p>The error types and remediation strategies summarize anonymized engineering patterns.</p>
+<p><em>Table 11-4: Cross-modal alignment error types and remediation strategies</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Error code</th>
+<th style="text-align: left;">Error type</th>
+<th style="text-align: left;">Trigger</th>
+<th style="text-align: left;">One-line fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_FUSION_7XXXX</td>
+<td style="text-align: left;">Contrastive Loss NaN</td>
+<td style="text-align: left;">Noise samples trigger attention zero-division</td>
+<td style="text-align: left;">Feature norm clipping plus gradient clipping</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_OBJ_FLIP</td>
+<td style="text-align: left;">BBox coordinate flip</td>
+<td style="text-align: left;">BBox not updated after geometric augmentation</td>
+<td style="text-align: left;">Bind transforms with Albumentations BboxParams</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_HARD_NEG</td>
+<td style="text-align: left;">False-negative contamination</td>
+<td style="text-align: left;">Hard-negative threshold too aggressive</td>
+<td style="text-align: left;">Two-stage filtering and ratio cap</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_DTW_OOM</td>
+<td style="text-align: left;">DTW OOM</td>
+<td style="text-align: left;">Long segment creates O(N x M) matrix beyond memory</td>
+<td style="text-align: left;">Slice clips and use FastDTW approximation</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_TOKEN_FMT</td>
+<td style="text-align: left;">Placeholder parsing failure</td>
+<td style="text-align: left;">Placeholder was HTML-escaped</td>
+<td style="text-align: left;"><code>ensure_ascii=False</code> plus ingestion linter</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_TEMPORAL</td>
+<td style="text-align: left;">Temporal causal reversal</td>
+<td style="text-align: left;">Offset from eventually consistent database writes</td>
+<td style="text-align: left;">Strongly consistent storage and global timestamp constraints</td>
+</tr>
+<tr>
+<td style="text-align: left;">ERR_CROSS_MDL_MIRROR</td>
+<td style="text-align: left;">Medical-image mirror pollution</td>
+<td style="text-align: left;">Scanner physical output not corrected</td>
+<td style="text-align: left;">Orientation metadata validation and fixed direction</td>
+</tr>
+</tbody>
+</table>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>As the closing chapter of Part III, this chapter argued that cleaning each modality separately does not automatically create cross-modal reasoning ability: if images, text, and audio lack rigid semantic, spatial, or temporal bindings, contrastive learning reinforces false associations and triggers cross-modal hallucination. To address the heterogeneity gap, the chapter established a three-level alignment framework across object, segment, and document levels. Object-level alignment anchors BBox coordinates to words; segment-level alignment uses DTW/FastDTW to map unequal-length frames, waveforms, and text; document-level alignment interleaves image, text, and audio signals within long-context windows. In engineering implementation, placeholders and feature paths decouple representations, ablation studies determine multimodal mixing to suppress cross-modal forgetting, and five hard-negative mining methods expose their false-negative risks.</p>
+<p>On the quality side, this chapter mapped cross-modal recall, temporal continuity, hallucination rate (CHAIR), and entailment conflict rate to governance actions. Through three postmortems, it showed how geometric augmentation, weakly consistent storage, and templated annotations can pollute alignment relationships through body-side mismatch, segment offset, and intersection semantic mismatch. At this point, multimodal data engineering has moved from "are the samples clean" to "do modalities have verifiable supervision relationships"; the next part turns to instruction-alignment data systems such as SFT, preference data, and human feedback.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.</p>
+<p>Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models (Stable Diffusion). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.</p>
+<p>Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.</p>
+<p>Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time and Space (FastDTW). Intelligent Data Analysis 11(5):561-580. https://doi.org/10.3233/ida-2007-11508.</p>
+<p>van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation Learning (VQ-VAE). Advances in Neural Information Processing Systems 30.</p>
+<p>Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5. https://doi.org/10.1109/icassp49357.2023.10095969.</p>
+<p>Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: Proceedings of the 13th International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch10_video_audio/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 10: Video and Audio Data Engineering">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 10: Video and Audio Data Engineering
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../part4/" class="md-footer__link md-footer__link--next" aria-label="Next: Part Overview">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

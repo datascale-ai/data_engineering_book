@@ -1,0 +1,1731 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p11_mini_deepseek/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目十一：Mini-DeepSeek 预训练复现 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mini-deepseek" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目十一：Mini-DeepSeek 预训练复现
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p11_mini_deepseek/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p11_mini_deepseek/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      背景与目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构设计
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      分步实现
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="分步实现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: 多源混合抽取与配比
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-minhash-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: 跨源 MinHash LSH 去重
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-150k-tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: 训练 150K 超大 Tokenizer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-pack-shuffle-arrow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Pack &amp; Shuffle 与 .arrow 分片产出
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      工程运行与最小复现路径
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据质量与配方验收
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tokenizer-packing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tokenizer 与 packing 的细粒度检查
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      测试覆盖与代码隔离
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见故障与排查路径
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      训练烟测与指标记录
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据污染与基准泄漏检查
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      交付物目录与发布包结构
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1b-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      从 1B tokens 扩展到更大规模
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据看板与持续监控
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      删除请求与样本撤回机制
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      领域迁移：从通用配方到行业模型
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p01-mini-c4" class="md-nav__link">
+    <span class="md-ellipsis">
+      与 P01 Mini-C4 的关系
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      结果展示与分析
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="结果展示与分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tokenizer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tokenizer 效率验证
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本与优化
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      扩展思考
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="扩展思考">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据合规与开源许可说明
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="mini-deepseek">项目十一：Mini-DeepSeek 预训练复现<a class="headerlink" href="#mini-deepseek" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；王柯；骆阳</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本项目围绕“Mini-DeepSeek 预训练复现”构建可复现的数据工程案例，重点说明业务目标、数据边界、架构决策、核心实现、验收指标与风险控制。章节将安装命令和脚本细节收敛到工程复盘视角，突出样本 schema、数据流、失败模式和可交付物之间的关系，帮助读者把前文方法转化为可审计、可扩展的项目资产。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>Mini-DeepSeek；项目实战；可复现数据工程；数据流水线；验收指标</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“Mini-DeepSeek 预训练复现”为核心案例，目标是以小规模资源复现开源 LLM 预训练数据配方的关键工程环节。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>定位为缩小版配方验证，不追求完整大模型规模和公开 SOTA 指标。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“语料配比、tokenization、训练样本打包、训练烟测、指标记录和成本分析”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P11-1给出了流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>候选语料 -&gt; 配方采样 -&gt; tokenizer 处理 -&gt; packed dataset -&gt; 训练烟测 -&gt; loss 与样本质量报告
+</code></pre></div>
+<p><em>代码清单P11-1：流程示例</em></p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括token 分布、语料配比偏差、packing 效率、训练 loss 趋势、吞吐、显存/成本和失败样本复查。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表 P11-1 汇总了该复现项目面向出版交付的验收维度。</p>
+<p><em>表 P11-1：Mini-DeepSeek 预训练复现出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>配方复现</td>
+<td>语料配比偏差、跨源去重记录和 tokenizer 训练日志</td>
+<td>缩小版实验必须说明与原始配方的规模差异和不可比边界</td>
+</tr>
+<tr>
+<td>训练烟测</td>
+<td>packing 效率、loss 趋势、吞吐和显存/成本记录</td>
+<td>报告保留随机种子、环境、样本规模和失败样本复查结论</td>
+</tr>
+<tr>
+<td>数据合规</td>
+<td>数据源许可、污染检查和样本删除机制</td>
+<td>外部语料进入公开交付前需确认来源与再分发权限</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自训练算力和数据处理；风险集中在配方误读、样本污染、tokenizer 不一致和小规模结论外推。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="_11">背景与目标<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>在预训练数据工程中，“按比例缩放（Scaling Laws）”(Kaplan et al. 2020) 不仅适用于模型参数，同样适用于数据配方的实验与验证。我们在前作 项目 1（Mini-C4）中，已经走通了单源语料的清洗流水线；但真实的工业级大模型（如 DeepSeek-V3 (DeepSeek-AI et al. 2024)）从来不是在单一语料上训练出来的，而是由网页、代码、数学、学术论文等多种数据源精确混合而成。</p>
+<p>为什么我们需要一个 Mini 版的预训练流水线？</p>
+<ol>
+<li><strong>低成本验证</strong>：在全量 14.8T tokens 的真实数据上做实验，成本极为高昂。通过等比例缩放，我们可以在 1B tokens 的规模上快速验证多源混合策略的有效性。</li>
+<li><strong>揭示数据间的影响</strong>：只有在多源混合的环境下，跨源去重（Cross-source Deduplication）、数据配比调整对 Tokenizer 词表分布的影响等工程问题才会暴露。</li>
+<li><strong>平滑的放缩曲线</strong>：验证通过的 1B tokens 数据流水线，只需要替换底层数据源集群与算力节点，可以直接横向扩展（Scale-out）到 7B、14B 甚至 70B tokens。</li>
+</ol>
+<p>本项目旨在用约 1B tokens（对应单机 8 卡 4090/A100 可在数十小时内处理完毕的数据量），完全复刻 DeepSeek-V3 的数据配方。读者完成本项目后，将获得一套具备工业级标准的多源混合采样器、跨源去重引擎以及面向 150K 超大词表的 Tokenizer 训练代码，为大规模预训练打下坚实基础。</p>
+<h2 id="_12">架构设计<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>为了实现上述目标，我们设计了包含四个核心组件的数据流水线。其整体架构如图 P11-1 所示。</p>
+<p><a class="glightbox" href="../../../images/part14/Yu-Project11-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Mini-DeepSeek Data Pipeline" src="../../../images/part14/Yu-Project11-Fig02-EN.svg" /></a>
+<em>图 P11-1：Mini-DeepSeek 多源预训练数据流水线架构</em></p>
+<p>流水线的四个核心组件包括：</p>
+<ol>
+<li><strong>多源混合采样器 (Multi-source Sampler)</strong>：负责从 Hugging Face 获取多种不同的开源数据集（如 FineWeb-Edu、The Stack v2 等），并根据 DeepSeek-V3 披露的各领域配比进行精确抽样。</li>
+<li><strong>跨源去重引擎 (Cross-source MinHash Deduplication)</strong>：当数据来源不仅有普通网页，还包含 GitHub 代码、arXiv 论文时，数据源之间可能存在隐性重合。该组件基于 MinHash LSH 算法 (Broder 1997)，实现在不同数据源间的高效去重。</li>
+<li><strong>词表训练器 (Tokenizer Training)</strong>：采用 BPE 算法 (Sennrich et al. 2016)，针对混合后的多语种、多代码领域语料，训练并构建一个 150K 容量的超大词表，确保对中英文及专业代码的高效压缩。</li>
+<li><strong>打包与分片 (Pack &amp; Shuffle)</strong>：在经过 Tokenize 后，将变长的序列高效地“打包（Pack）”成定长的训练序列，并全局打乱（Shuffle），最终输出适用于大规模分布式训练的 <code>.arrow</code> 格式文件。</li>
+</ol>
+<p>表 P11-2 将架构组件与代码入口、阶段产物和复核字段对应起来。项目章需要保留这类表格，因为它把“读者看到的工程叙述”和 <code>code/zh/project_11_mini_deepseek</code> 中的脚本连接在一起，避免章节只停留在概念介绍。</p>
+<p><em>表 P11-2：Mini-DeepSeek 数据流水线阶段产物与代码入口</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>代码入口</th>
+<th>主要输入</th>
+<th>主要输出</th>
+<th>复核字段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>多源采样</td>
+<td><code>mix_sampler.py</code></td>
+<td><code>RECIPE</code>、目标文档数、Hugging Face 数据源</td>
+<td><code>./data/mixed_1b_raw</code></td>
+<td><code>source</code>、样本数量、配方权重偏差</td>
+</tr>
+<tr>
+<td>跨源去重</td>
+<td><code>cross_source_dedup.py</code></td>
+<td><code>mixed_1b_raw</code></td>
+<td><code>./data/mixed_1b_dedup</code></td>
+<td>MinHash 参数、重复样本数、保留比例</td>
+</tr>
+<tr>
+<td>Tokenizer 训练</td>
+<td><code>train_tokenizer.py</code></td>
+<td><code>mixed_1b_dedup</code></td>
+<td><code>mini_deepseek_tokenizer.json</code></td>
+<td>vocab size、特殊 token、训练样本比例</td>
+</tr>
+<tr>
+<td>Pack &amp; Shuffle</td>
+<td><code>pack_shuffle.py</code></td>
+<td>去重语料、tokenizer</td>
+<td><code>./data/mixed_1b_final_packed</code></td>
+<td><code>SEQ_LEN</code>、packing 效率、shuffle seed</td>
+</tr>
+<tr>
+<td>端到端运行</td>
+<td><code>run_pipeline.sh</code></td>
+<td>阶段脚本和本地环境</td>
+<td>完整数据目录</td>
+<td>日志、失败阶段、产物完整性</td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td><code>tests/test_pipeline.py</code></td>
+<td>配方、MinHash、packing 常量</td>
+<td>测试报告</td>
+<td>权重和为 1、MinHash 相似度、<code>SEQ_LEN</code></td>
+</tr>
+</tbody>
+</table>
+<p>表 P11-2 中最容易被忽视的是“复核字段”。例如，<code>mixed_1b_raw</code> 本身只是一个 Hugging Face Dataset 目录，不能说明配方是否正确；必须额外检查每个 <code>source</code> 的样本数量与目标权重是否一致。<code>mixed_1b_dedup</code> 也不能只看目录是否存在，还要记录重复样本比例和阈值。对于 tokenizer，文件存在并不代表训练合格，还需要检查特殊 token、词表大小、中文/代码压缩率和异常字符覆盖。</p>
+<h2 id="_13">分步实现<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<h3 id="step-1">Step 1: 多源混合抽取与配比<a class="headerlink" href="#step-1" title="Permanent link">&para;</a></h3>
+<p>根据 DeepSeek-V3 报告，我们需要融合多种数据源。在本实现中，我们选取开源平替数据集：</p>
+<ul>
+<li>英文网页：FineWeb-Edu (Penedo et al. 2024)</li>
+<li>中文网页：Wudao 或是开源的中英文混合数据</li>
+<li>代码：The Stack v2 (Lozhkov et al. 2024)</li>
+<li>数学：OpenWebMath (Paster et al. 2023)</li>
+<li>学术：arXiv</li>
+</ul>
+<p>我们编写 <code>mix_sampler.py</code> 脚本，按设定比例进行抽样。</p>
+<p>代码清单P11-2给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span><span class="p">,</span> <span class="n">concatenate_datasets</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">RECIPE</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="s2">&quot;HuggingFaceFW/fineweb-edu&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mf">0.40</span><span class="p">},</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="s2">&quot;bigcode/the-stack-v2&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">},</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="s2">&quot;open-web-math/open-web-math&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mf">0.15</span><span class="p">},</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s2">&quot;togethercomputer/RedPajama-Data-1T&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;arxiv&quot;</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">},</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="s2">&quot;m-a-p/WanJuan-1.0-Text&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;weight&quot;</span><span class="p">:</span> <span class="mf">0.10</span><span class="p">},</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">sample_multi_source</span><span class="p">(</span><span class="n">recipe</span><span class="p">,</span> <span class="n">target_docs</span><span class="p">):</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">shards</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">for</span> <span class="n">repo_id</span><span class="p">,</span> <span class="n">cfg</span> <span class="ow">in</span> <span class="n">recipe</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_docs</span> <span class="o">*</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">])</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">stream</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">repo_id</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">normalize_text</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">repo_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">take</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">n</span><span class="p">)]</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="n">shards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rows_to_dataset</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="k">return</span> <span class="n">concatenate_datasets</span><span class="p">(</span><span class="n">shards</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="n">mixed</span> <span class="o">=</span> <span class="n">sample_multi_source</span><span class="p">(</span><span class="n">RECIPE</span><span class="p">,</span> <span class="n">target_docs</span><span class="o">=</span><span class="mi">500_000</span><span class="p">)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="n">mixed</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">(</span><span class="s2">&quot;./data/mixed_1b_raw&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单P11-2：Python 实现片段</em></p>
+<h3 id="step-2-minhash-lsh">Step 2: 跨源 MinHash LSH 去重<a class="headerlink" href="#step-2-minhash-lsh" title="Permanent link">&para;</a></h3>
+<p>多源混合后，最大的隐患是不同来源间存在重复（例如 The Stack v2 中的代码片段，与 arXiv 论文中的代码段重复）。在 项目 1（Mini-C4）中，我们仅在单源内进行了 MinHash 去重；在此，我们需要全局去重。</p>
+<p>代码清单P11-3给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasketch</span><span class="w"> </span><span class="kn">import</span> <span class="n">MinHash</span><span class="p">,</span> <span class="n">MinHashLSH</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_minhash</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">num_perm</span><span class="o">=</span><span class="mi">128</span><span class="p">):</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">sig</span> <span class="o">=</span> <span class="n">MinHash</span><span class="p">(</span><span class="n">num_perm</span><span class="o">=</span><span class="n">num_perm</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">char_ngrams</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">sig</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">return</span> <span class="n">sig</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">cross_source_dedup</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">lsh</span> <span class="o">=</span> <span class="n">MinHashLSH</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">num_perm</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">keep</span><span class="p">,</span> <span class="n">duplicates</span> <span class="o">=</span> <span class="p">[],</span> <span class="mi">0</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="k">with</span> <span class="n">lsh</span><span class="o">.</span><span class="n">insertion_session</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="n">sig</span> <span class="o">=</span> <span class="n">get_minhash</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="k">if</span> <span class="n">lsh</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                <span class="n">duplicates</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>                <span class="k">continue</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="n">session</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="n">sig</span><span class="p">)</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            <span class="n">keep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">keep</span><span class="p">),</span> <span class="n">duplicates</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="n">unique</span><span class="p">,</span> <span class="n">dup_count</span> <span class="o">=</span> <span class="n">cross_source_dedup</span><span class="p">(</span><span class="n">load_stage</span><span class="p">(</span><span class="s2">&quot;mixed_1b_raw&quot;</span><span class="p">))</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="n">unique</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">(</span><span class="s2">&quot;./data/mixed_1b_dedup&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单P11-3：Python 实现片段</em></p>
+<h3 id="step-3-150k-tokenizer">Step 3: 训练 150K 超大 Tokenizer<a class="headerlink" href="#step-3-150k-tokenizer" title="Permanent link">&para;</a></h3>
+<p>DeepSeek-V3 (DeepSeek-AI et al. 2024) 采用了一个规模为 150K 左右的超大词表（相较于 Llama-2 的 32K 提升巨大），这使其在处理中文与代码时效率极高。在此步骤，我们将以混合且去重后的数据训练 BPE Tokenizer。</p>
+<p>代码清单P11-4给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tokenizer</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">trainers</span><span class="p">,</span> <span class="n">pre_tokenizers</span><span class="p">,</span> <span class="n">normalizers</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">train_large_tokenizer</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">vocab_size</span><span class="o">=</span><span class="mi">150_000</span><span class="p">):</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">Tokenizer</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">BPE</span><span class="p">())</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">tokenizer</span><span class="o">.</span><span class="n">normalizer</span> <span class="o">=</span> <span class="n">normalizers</span><span class="o">.</span><span class="n">Sequence</span><span class="p">([</span><span class="n">normalizers</span><span class="o">.</span><span class="n">NFKC</span><span class="p">()])</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">tokenizer</span><span class="o">.</span><span class="n">pre_tokenizer</span> <span class="o">=</span> <span class="n">pre_tokenizers</span><span class="o">.</span><span class="n">ByteLevel</span><span class="p">(</span><span class="n">add_prefix_space</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">trainer</span> <span class="o">=</span> <span class="n">trainers</span><span class="o">.</span><span class="n">BpeTrainer</span><span class="p">(</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">vocab_size</span><span class="o">=</span><span class="n">vocab_size</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">special_tokens</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;|endoftext|&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;|pad|&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;|unk|&gt;&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="n">initial_alphabet</span><span class="o">=</span><span class="n">pre_tokenizers</span><span class="o">.</span><span class="n">ByteLevel</span><span class="o">.</span><span class="n">alphabet</span><span class="p">(),</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="p">)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">sample</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span> <span class="mi">10</span><span class="p">))</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">tokenizer</span><span class="o">.</span><span class="n">train_from_iterator</span><span class="p">(</span><span class="n">batch_text</span><span class="p">(</span><span class="n">sample</span><span class="p">),</span> <span class="n">trainer</span><span class="o">=</span><span class="n">trainer</span><span class="p">)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">tokenizer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./data/mini_deepseek_tokenizer.json&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="k">return</span> <span class="n">tokenizer</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="n">train_large_tokenizer</span><span class="p">(</span><span class="n">load_stage</span><span class="p">(</span><span class="s2">&quot;mixed_1b_dedup&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p><em>代码清单P11-4：Python 实现片段</em></p>
+<h3 id="step-4-pack-shuffle-arrow">Step 4: Pack &amp; Shuffle 与 .arrow 分片产出<a class="headerlink" href="#step-4-pack-shuffle-arrow" title="Permanent link">&para;</a></h3>
+<p>为了让 GPU 在训练期间不用处理大量的 Padding，我们将变长的 Token 序列拼接成长度为 <code>4096</code> 或 <code>8192</code> 的连续片段（Pack），并加入特殊分隔符。</p>
+<p>代码清单P11-5给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tokenizer</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">SEQ_LEN</span> <span class="o">=</span> <span class="mi">4096</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">pack_and_shuffle</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">tokenizer_path</span><span class="p">):</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">Tokenizer</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="n">tokenizer_path</span><span class="p">)</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">eot</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">token_to_id</span><span class="p">(</span><span class="s2">&quot;&lt;|endoftext|&gt;&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">encode_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="n">stream</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]:</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>            <span class="n">stream</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">ids</span> <span class="o">+</span> <span class="p">[</span><span class="n">eot</span><span class="p">])</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="n">usable</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span> <span class="o">//</span> <span class="n">SEQ_LEN</span><span class="p">)</span> <span class="o">*</span> <span class="n">SEQ_LEN</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">stream</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">SEQ_LEN</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">usable</span><span class="p">,</span> <span class="n">SEQ_LEN</span><span class="p">)]</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;input_ids&quot;</span><span class="p">:</span> <span class="n">blocks</span><span class="p">}</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">packed</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">encode_batch</span><span class="p">,</span> <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">remove_columns</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="k">return</span> <span class="n">packed</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="n">packed</span> <span class="o">=</span> <span class="n">pack_and_shuffle</span><span class="p">(</span><span class="n">load_stage</span><span class="p">(</span><span class="s2">&quot;mixed_1b_dedup&quot;</span><span class="p">),</span> <span class="s2">&quot;./data/mini_deepseek_tokenizer.json&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="n">packed</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">(</span><span class="s2">&quot;./data/mixed_1b_final_packed&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单P11-5：Python 实现片段</em></p>
+<h2 id="_14">工程运行与最小复现路径<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>本项目的最小运行入口是 <code>run_pipeline.sh</code>。脚本串联四个阶段：多源采样、跨源去重、tokenizer 训练和 packing。它的价值不只是“省去手动执行四条命令”，而是把阶段顺序、产物路径和失败位置固定下来。对于预训练数据工程，顺序错误会直接改变数据分布。例如，如果先训练 tokenizer 再做跨源去重，tokenizer 会看见本应被删除的重复样本；如果先打包再 shuffle，后续再调整配方会变得难以追踪。</p>
+<p>代码清单P11-6 给出本项目的最小运行入口。正式复现实验应在运行前记录 Python、datasets、tokenizers、datasketch、磁盘路径和随机种子。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>code/zh/project_11_mini_deepseek
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>bash<span class="w"> </span>run_pipeline.sh
+</code></pre></div>
+<p><em>代码清单P11-6：最小运行入口</em></p>
+<p>这段命令会依次生成 <code>mixed_1b_raw</code>、<code>mixed_1b_dedup</code>、<code>mini_deepseek_tokenizer.json</code> 和 <code>mixed_1b_final_packed</code>。若某一阶段失败，不建议直接删除整个 <code>data/</code> 目录重跑；更稳妥的做法是先确认失败阶段和上游产物是否完整，再只清理受影响的阶段目录。教学复现可以将 <code>target_docs</code> 从 <code>500000</code> 降到更小规模，先验证契约和测试，再扩大数据量。</p>
+<p>表 P11-3 给出运行前后应记录的最小审计信息。</p>
+<p><em>表 P11-3：Mini-DeepSeek 最小复现实验记录项</em></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>记录项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据版本</td>
+<td>数据源 repo id、split、config name、抽样时间</td>
+<td>解释样本分布变化</td>
+</tr>
+<tr>
+<td>配方参数</td>
+<td><code>RECIPE</code> 权重、目标文档数</td>
+<td>判断是否符合缩小版配方</td>
+</tr>
+<tr>
+<td>去重参数</td>
+<td>n-gram 长度、<code>num_perm</code>、LSH threshold</td>
+<td>复现重复率和误删风险</td>
+</tr>
+<tr>
+<td>tokenizer 参数</td>
+<td>vocab size、normalizer、pre-tokenizer、特殊 token</td>
+<td>复现压缩率和兼容性</td>
+</tr>
+<tr>
+<td>packing 参数</td>
+<td><code>SEQ_LEN=4096</code>、shuffle seed、batch size</td>
+<td>复现训练样本边界</td>
+</tr>
+<tr>
+<td>环境信息</td>
+<td>Python、datasets、tokenizers、datasketch 版本</td>
+<td>排查产物差异</td>
+</tr>
+<tr>
+<td>运行结果</td>
+<td>样本数、token 数、目录大小、失败日志</td>
+<td>判断是否可交付</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_15">数据质量与配方验收<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>Mini-DeepSeek 的验收重点不是最终模型分数，而是配方是否可解释、可复查、可扩展。一个常见误区是只报告“最终得到 1B tokens”，但不说明这些 tokens 来自哪些领域、跨源重复被删除了多少、tokenizer 是否偏向某个语言或代码域。对于预训练数据，数量只是结果，配方才是核心。</p>
+<p>表 P11-4 给出配方级验收口径。</p>
+<p><em>表 P11-4：Mini-DeepSeek 配方级验收清单</em></p>
+<table>
+<thead>
+<tr>
+<th>验收项</th>
+<th>推荐检查</th>
+<th>不合格表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>权重一致性</td>
+<td>各数据源样本数与 <code>RECIPE</code> 权重偏差</td>
+<td>某源过采样或因 streaming 中断被低估</td>
+</tr>
+<tr>
+<td>字段完整性</td>
+<td>每条样本保留 <code>text</code> 和 <code>source</code></td>
+<td>下游无法统计来源或复查样本</td>
+</tr>
+<tr>
+<td>跨源重复</td>
+<td>记录重复数和重复率</td>
+<td>代码、论文、网页之间隐性重复未清理</td>
+</tr>
+<tr>
+<td>文本异常</td>
+<td>空文本、极短文本、乱码和二进制残留比例</td>
+<td>tokenizer 学到无意义 token</td>
+</tr>
+<tr>
+<td>tokenizer 覆盖</td>
+<td>中文、英文、代码、数学样本压缩率</td>
+<td>某类文本 token/char 明显异常</td>
+</tr>
+<tr>
+<td>packing 完整性</td>
+<td><code>input_ids</code> 长度均为 <code>4096</code></td>
+<td>训练时出现 padding 或长度不一致</td>
+</tr>
+<tr>
+<td>随机性</td>
+<td>固定 shuffle seed 和抽样策略</td>
+<td>多次运行样本顺序或分布不可解释</td>
+</tr>
+</tbody>
+</table>
+<p>在实际复核中，可以先从每个 source 抽取 100 条样本，人工检查文本类型是否符合预期；再从 MinHash 删除样本中抽查近重复对，判断阈值是否过严。若重复率异常偏高，可能是数据源之间确实重叠，也可能是 5-gram 对短文本过于敏感。若重复率异常偏低，应检查文本字段是否取错，例如某些数据集使用 <code>content</code> 而不是 <code>text</code>。</p>
+<h2 id="tokenizer-packing">Tokenizer 与 packing 的细粒度检查<a class="headerlink" href="#tokenizer-packing" title="Permanent link">&para;</a></h2>
+<p>Tokenizer 训练阶段最容易产生“文件成功但质量不明”的问题。<code>train_tokenizer.py</code> 采用 BPE、NFKC normalization、ByteLevel pre-tokenizer 和 150K 词表。这个设置适合中英文、代码和数学混合语料，但它也带来两个风险。第一，词表过大时，小规模训练样本可能无法充分覆盖长尾 token；第二，代码和数学符号可能占用较多词表空间，影响普通文本压缩率。</p>
+<p>建议在训练完成后计算表 P11-5 中的指标。</p>
+<p><em>表 P11-5：Tokenizer 与 packing 质量指标</em></p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>计算方式</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中文 tokens/char</td>
+<td>中文网页样本 token 数除以字符数</td>
+<td>判断中文压缩效率</td>
+</tr>
+<tr>
+<td>英文 tokens/word</td>
+<td>英文网页样本 token 数除以词数</td>
+<td>判断普通英文切分是否异常</td>
+</tr>
+<tr>
+<td>代码 tokens/char</td>
+<td>The Stack v2 样本 token 数除以字符数</td>
+<td>判断代码符号覆盖</td>
+</tr>
+<tr>
+<td>数学公式碎片率</td>
+<td>数学样本中短 token 比例</td>
+<td>判断公式和 LaTeX 是否被过度切碎</td>
+</tr>
+<tr>
+<td><code>&lt;|endoftext|&gt;</code> 命中</td>
+<td>packing 后分隔 token 是否存在</td>
+<td>判断样本边界是否被保留</td>
+</tr>
+<tr>
+<td>OOV 行为</td>
+<td><code>&lt;|unk|&gt;</code> 使用率</td>
+<td>判断 ByteLevel 覆盖是否正常</td>
+</tr>
+</tbody>
+</table>
+<p>Packing 阶段同样需要检查。<code>pack_shuffle.py</code> 将样本 token 串接后截断到 <code>SEQ_LEN</code> 的整数倍，并输出定长 <code>input_ids</code>。这会提高训练吞吐，但也意味着原始文档边界不再直接可见。因此，<code>&lt;|endoftext|&gt;</code> 的插入和统计需要重点关注。如果忘记插入分隔符，模型会把相邻文档学习成连续文本；如果分隔符过密，短文档会主导上下文结构。</p>
+<h2 id="_16">测试覆盖与代码隔离<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<p><code>tests/test_pipeline.py</code> 已经覆盖了几个最小契约：<code>RECIPE</code> 权重和为 1、关键数据源存在、MinHash 可创建、相同文本 Jaccard 为 1.0、<code>SEQ_LEN</code> 等于 4096。这些测试不是为了替代完整数据验收，而是为了防止项目章中的示例代码在重构后失去基本契约。</p>
+<p>表 P11-6 给出测试与缺口的对应关系。</p>
+<p><em>表 P11-6：Mini-DeepSeek 测试覆盖与验收缺口</em></p>
+<table>
+<thead>
+<tr>
+<th>测试项</th>
+<th>已覆盖内容</th>
+<th>仍需人工或集成验收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_recipe_weights</code></td>
+<td>配方权重总和</td>
+<td>每个 source 实际抽样数量</td>
+</tr>
+<tr>
+<td><code>test_sampler_keys</code></td>
+<td>关键数据源存在</td>
+<td>数据源许可、字段名和可访问性</td>
+</tr>
+<tr>
+<td><code>test_minhash_creation</code></td>
+<td>MinHash 对象可用</td>
+<td>大规模 LSH 内存占用</td>
+</tr>
+<tr>
+<td><code>test_minhash_similarity</code></td>
+<td>相同文本相似度</td>
+<td>近重复误删/漏删边界</td>
+</tr>
+<tr>
+<td><code>test_tokenizer_pack</code></td>
+<td><code>SEQ_LEN</code> 常量</td>
+<td>每条 packed 样本长度</td>
+</tr>
+<tr>
+<td><code>test_end_to_end_mock</code></td>
+<td>测试入口存在</td>
+<td>真实端到端小样本运行</td>
+</tr>
+</tbody>
+</table>
+<p>出版稿中应明确区分“教学示例代码”和“生产可直接运行代码”。本章代码可以说明多源采样、MinHash、BPE 和 packing 的基本组织方式，但在真实大规模预训练中，还需要补充分布式执行、数据源失败重试、下载缓存、污染检测、敏感内容过滤、许可证白名单和训练框架接入。</p>
+<h2 id="_17">常见故障与排查路径<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h2>
+<p>若采样阶段报错，优先检查数据源名称、config name 和 streaming split。不同 Hugging Face 数据集字段名并不完全一致，有的使用 <code>text</code>，有的使用 <code>content</code>，还有的数据需要额外认证或配置。若某个数据源返回很少样本，不应直接继续训练，而应在报告中记录该 source 的缺口，并重新计算实际配方。</p>
+<p>若去重阶段内存占用过高，说明当前 MinHash LSH 全量驻留内存的方式已经接近单机瓶颈。可以先降低样本量验证流程，再迁移到 Spark、Ray 或外部 key-value 存储。若去重后样本数下降过多，应抽查重复对，判断是否因为短文本、模板文本或许可证头导致过度匹配。</p>
+<p>若 tokenizer 训练时间过长，优先检查训练子样本比例。当前实现使用 <code>ds.select(range(0, len(ds), 10))</code> 抽取十分之一样本训练 tokenizer，这是一种教学化折中。若数据量更大，可以分 source 分层抽样，保证代码、数学、中文和英文都被覆盖。若最终 <code>mini_deepseek_tokenizer.json</code> 无法被 <code>pack_shuffle.py</code> 加载，应检查特殊 token 是否写入，以及文件是否被中断写坏。</p>
+<p>若 packing 后训练烟测 loss 异常，排查顺序应为：首先确认 <code>input_ids</code> 长度是否全为 <code>4096</code>；其次抽样 decode packed 样本，检查文档边界和异常字符；再次检查 shuffle seed 和样本顺序；最后再怀疑训练超参。预训练数据问题常常伪装成训练问题，排查时应先回到数据产物。</p>
+<h2 id="_18">训练烟测与指标记录<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h2>
+<p>P11 的目标不是报告一个完整大模型训练结果，而是证明数据产物能进入训练链路。因此，训练烟测应当保持小规模、短时长和可复现。一个合格的烟测可以只运行几百到几千 step，但必须回答三个问题：数据能否被训练框架稳定读取，loss 是否呈现合理下降趋势，以及吞吐、显存和样本解码是否符合预期。</p>
+<p>表 P11-7 给出训练烟测记录模板。</p>
+<p><em>表 P11-7：Mini-DeepSeek 训练烟测记录模板</em></p>
+<table>
+<thead>
+<tr>
+<th>记录项</th>
+<th>示例</th>
+<th>复核意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据目录</td>
+<td><code>./data/mixed_1b_final_packed</code></td>
+<td>确认训练读取的是最终 packed 数据</td>
+</tr>
+<tr>
+<td>样本长度</td>
+<td><code>4096</code></td>
+<td>确认训练上下文与 packing 配置一致</td>
+</tr>
+<tr>
+<td>batch 配置</td>
+<td>global batch、micro batch、grad accumulation</td>
+<td>解释吞吐与显存差异</td>
+</tr>
+<tr>
+<td>模型规模</td>
+<td>例如 100M、300M、1B 参数教学模型</td>
+<td>明确不与完整 DeepSeek-V3 对比</td>
+</tr>
+<tr>
+<td>tokenizer</td>
+<td><code>mini_deepseek_tokenizer.json</code></td>
+<td>确认训练与 packing 使用同一 tokenizer</td>
+</tr>
+<tr>
+<td>step 范围</td>
+<td>例如 0-1000 step</td>
+<td>说明烟测长度</td>
+</tr>
+<tr>
+<td>loss 曲线</td>
+<td>首尾 loss、异常 spike</td>
+<td>判断数据流是否明显异常</td>
+</tr>
+<tr>
+<td>tokens/s</td>
+<td>每秒 token 数</td>
+<td>估算后续扩容成本</td>
+</tr>
+<tr>
+<td>样本解码</td>
+<td>随机 decode 10 条 packed 样本</td>
+<td>检查乱码、边界和重复</td>
+</tr>
+</tbody>
+</table>
+<p>烟测报告中不要只写“训练可以跑通”。更有用的写法是：给出读取速度、前若干 step 的 loss、若干条 packed 样本解码结果，以及失败样本的处理记录。若 loss 长时间不下降，可能是模型配置问题，也可能是数据中存在大量重复、乱码或无意义 token；若吞吐低于预期，可能是 <code>.arrow</code> 分片过小、数据加载进程不足或磁盘 IO 成为瓶颈。</p>
+<h2 id="_19">数据污染与基准泄漏检查<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h2>
+<p>预训练复现类项目必须注意 benchmark contamination。即使本章只是教学化缩小版，也应说明数据污染检查的方法。多源语料中可能包含 GSM8K、MATH、HumanEval、MMLU 或其他评测集的题面、解析和答案。如果这些内容进入预训练数据，后续 benchmark 分数会被高估。</p>
+<p>表 P11-8 给出污染检查的最小方案。</p>
+<p><em>表 P11-8：预训练数据污染检查方案</em></p>
+<table>
+<thead>
+<tr>
+<th>检查对象</th>
+<th>方法</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>精确重复</td>
+<td>对 benchmark 题面做 hash 或规范化字符串匹配</td>
+<td>命中样本直接剔除</td>
+</tr>
+<tr>
+<td>近重复</td>
+<td>对题面、答案和解析做 MinHash 或 embedding 召回</td>
+<td>人工抽检后删除</td>
+</tr>
+<tr>
+<td>代码评测</td>
+<td>检查 HumanEval 函数名、docstring 和 canonical solution</td>
+<td>删除完整题目和答案</td>
+</tr>
+<tr>
+<td>数学评测</td>
+<td>检查题干、选项、最终答案模式</td>
+<td>删除题解和答案泄漏</td>
+</tr>
+<tr>
+<td>论坛转载</td>
+<td>检查 benchmark 题目在网页/博客中的转载</td>
+<td>删除或标记为污染风险</td>
+</tr>
+<tr>
+<td>训练报告</td>
+<td>保存命中数量、删除策略和样本 id</td>
+<td>支撑后续 benchmark 声明</td>
+</tr>
+</tbody>
+</table>
+<p>污染检查应在 packing 之前完成，因为一旦进入 packed dataset，原始文档边界和来源字段会变得更难追踪。若教学项目没有完整实现污染过滤，也应在报告中明确说明“未用于公开 benchmark 声明”，避免读者把烟测分数误解为可发表结果。</p>
+<h2 id="_20">交付物目录与发布包结构<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
+<p>一个可交付的 P11 项目不应只包含最终数据目录，还应包含配方、日志、测试和审计材料。表 P11-9 给出推荐目录。</p>
+<p><em>表 P11-9：Mini-DeepSeek 项目交付物目录</em></p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>内容</th>
+<th>是否进入公开发布</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/mixed_1b_raw/</code></td>
+<td>按配方抽样的原始混合数据</td>
+<td>视数据许可决定</td>
+</tr>
+<tr>
+<td><code>data/mixed_1b_dedup/</code></td>
+<td>跨源去重后的训练候选语料</td>
+<td>视数据许可决定</td>
+</tr>
+<tr>
+<td><code>data/mini_deepseek_tokenizer.json</code></td>
+<td>BPE tokenizer</td>
+<td>可公开</td>
+</tr>
+<tr>
+<td><code>data/mixed_1b_final_packed/</code></td>
+<td>packed <code>.arrow</code> 数据</td>
+<td>视数据许可决定</td>
+</tr>
+<tr>
+<td><code>reports/source_mix.json</code></td>
+<td>各 source 样本数与比例</td>
+<td>可公开</td>
+</tr>
+<tr>
+<td><code>reports/dedup_report.json</code></td>
+<td>重复数、阈值、抽检样本</td>
+<td>可公开脱敏版本</td>
+</tr>
+<tr>
+<td><code>reports/tokenizer_eval.md</code></td>
+<td>压缩率、异常 token、样本 decode</td>
+<td>可公开</td>
+</tr>
+<tr>
+<td><code>reports/smoke_train.md</code></td>
+<td>训练烟测指标</td>
+<td>可公开</td>
+</tr>
+<tr>
+<td><code>tests/</code></td>
+<td>单元测试与小样本测试</td>
+<td>可公开</td>
+</tr>
+<tr>
+<td><code>LICENSES.md</code></td>
+<td>数据源许可说明</td>
+<td>必须公开</td>
+</tr>
+</tbody>
+</table>
+<p>若数据源不允许再分发，仍然可以发布“配方 + 脚本 + tokenizer + 报告模板”，但不能把原始样本或 packed 样本直接发布。此时应提供可复现说明，让具备授权的读者在本地重建数据。</p>
+<h2 id="1b-tokens">从 1B tokens 扩展到更大规模<a class="headerlink" href="#1b-tokens" title="Permanent link">&para;</a></h2>
+<p>P11 的缩小版链路可以帮助读者理解配方，但扩展到 10B、70B 或更大规模时，需要做系统改造。表 P11-10 给出从教学实现到规模化实现的改造清单。</p>
+<p><em>表 P11-10：Mini-DeepSeek 从教学实现到规模化实现的改造清单</em></p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>教学实现</th>
+<th>规模化改造</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据读取</td>
+<td>Hugging Face streaming + 本地 Dataset</td>
+<td>对接对象存储、数据湖或分布式缓存</td>
+</tr>
+<tr>
+<td>配方采样</td>
+<td>单次按比例抽样</td>
+<td>支持 epoch 级动态配比和 curriculum</td>
+</tr>
+<tr>
+<td>去重</td>
+<td>单机 MinHash LSH</td>
+<td>分布式 MinHash、SimHash 或 embedding 近重复系统</td>
+</tr>
+<tr>
+<td>tokenizer</td>
+<td>单机抽样训练</td>
+<td>分层抽样、版本冻结和兼容性回归</td>
+</tr>
+<tr>
+<td>packing</td>
+<td>单机 map + shuffle</td>
+<td>分布式 packing、固定 shard 大小、训练框架预取</td>
+</tr>
+<tr>
+<td>审计</td>
+<td>手工报告</td>
+<td>元数据服务、 lineage、删除请求回放</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>单元测试 + mock e2e</td>
+<td>小样本真实 e2e、数据差异回归、污染扫描</td>
+</tr>
+</tbody>
+</table>
+<p>扩展时最重要的是不要把“脚本能跑”误认为“系统可扩展”。大规模预训练数据系统需要处理失败重试、断点续跑、版本冻结、样本删除、许可证变更、训练中数据混合策略和多团队协作。P11 的价值在于把这些问题的最小形态展示出来，而不是声称已经替代完整工业系统。</p>
+<h2 id="_21">数据看板与持续监控<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h2>
+<p>预训练数据工程一旦进入持续迭代，就不能只依赖一次性的运行日志。数据源会更新，许可证会变化，字段 schema 会调整，Hugging Face 数据集也可能因为维护原因改变 split 或样本内容。因此，P11 需要建立一个轻量数据看板，用于比较不同运行批次之间的差异。</p>
+<p>表 P11-11 给出推荐看板指标。</p>
+<p><em>表 P11-11：Mini-DeepSeek 数据看板指标</em></p>
+<table>
+<thead>
+<tr>
+<th>看板指标</th>
+<th>统计来源</th>
+<th>观察目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>source 样本数</td>
+<td><code>mixed_1b_raw</code></td>
+<td>检查配方比例是否漂移</td>
+</tr>
+<tr>
+<td>source token 数</td>
+<td>tokenizer 后统计</td>
+<td>检查样本数与 token 数是否一致</td>
+</tr>
+<tr>
+<td>去重率</td>
+<td><code>mixed_1b_raw</code> 与 <code>mixed_1b_dedup</code></td>
+<td>发现重复异常或阈值问题</td>
+</tr>
+<tr>
+<td>文本长度分布</td>
+<td>原始文本字段</td>
+<td>发现过短、过长和模板化样本</td>
+</tr>
+<tr>
+<td>语言比例</td>
+<td>语言识别脚本</td>
+<td>检查中文、英文和其他语言比例</td>
+</tr>
+<tr>
+<td>代码比例</td>
+<td>source 与代码特征检测</td>
+<td>检查代码源是否被过采样</td>
+</tr>
+<tr>
+<td>数学样本比例</td>
+<td>source 与 LaTeX/公式检测</td>
+<td>检查数学数据覆盖</td>
+</tr>
+<tr>
+<td>tokenizer 压缩率</td>
+<td>tokenizer 评估脚本</td>
+<td>发现词表质量变化</td>
+</tr>
+<tr>
+<td>packed shard 大小</td>
+<td><code>mixed_1b_final_packed</code></td>
+<td>检查训练读取均衡性</td>
+</tr>
+<tr>
+<td>污染命中数</td>
+<td>contamination scan</td>
+<td>记录 benchmark 泄漏风险</td>
+</tr>
+</tbody>
+</table>
+<p>看板的核心价值是批次比较。例如，某次运行中 The Stack v2 样本数没有变化，但 token 数显著上升，可能说明代码样本长度变长，或者过滤条件发生变化。某次运行中 OpenWebMath 的去重率突然升高，可能说明数学网页中模板化内容增加。若没有批次看板，这些变化往往要等到训练 loss 或 benchmark 异常时才被发现。</p>
+<h2 id="_22">删除请求与样本撤回机制<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h2>
+<p>多源预训练数据必须具备样本撤回能力。即使项目只是教学化复现，也应说明：如果某个数据源、作者或内容方要求删除样本，系统如何定位、删除并重建下游产物。P11 的当前实现保留了 <code>source</code> 字段，但 packed 数据中原始文档边界会弱化，因此删除请求最好在 packing 前处理。</p>
+<p>表 P11-12 给出删除请求的处理路径。</p>
+<p><em>表 P11-12：预训练样本删除请求处理路径</em></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>产物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>接收请求</td>
+<td>记录请求方、URL、样本特征和时间</td>
+<td>deletion request ticket</td>
+</tr>
+<tr>
+<td>定位样本</td>
+<td>在 raw/dedup 数据中按 URL、hash、文本片段或 source 查找</td>
+<td>affected sample ids</td>
+</tr>
+<tr>
+<td>删除上游</td>
+<td>从 <code>mixed_1b_raw</code> 或 <code>mixed_1b_dedup</code> 中移除命中样本</td>
+<td>revised dataset</td>
+</tr>
+<tr>
+<td>重建 tokenizer 判断</td>
+<td>若删除比例较大，评估是否重训 tokenizer</td>
+<td>tokenizer impact report</td>
+</tr>
+<tr>
+<td>重建 packed 数据</td>
+<td>重新运行 packing 与 shuffle</td>
+<td>revised packed dataset</td>
+</tr>
+<tr>
+<td>更新报告</td>
+<td>更新配方比例、token 数和删除说明</td>
+<td>release note</td>
+</tr>
+</tbody>
+</table>
+<p>真实生产系统通常会保存文档级 hash、URL、source、license 和 packed shard 反向索引。教学实现不一定需要完整索引，但至少要让读者理解：越早丢弃 lineage，后续撤回成本越高。出版文本中保留这一点，能避免读者误以为 <code>.arrow</code> 训练数据可以脱离来源单独流转。</p>
+<h2 id="_23">领域迁移：从通用配方到行业模型<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h2>
+<p>Mini-DeepSeek 的配方以网页、代码、数学、学术和中文语料为主。如果迁移到法律、医疗、金融或工业领域，不能简单把某个行业数据源加入 <code>RECIPE</code>。行业数据通常具有更强的权限、隐私、术语和时效要求，需要单独设计配方和验收。</p>
+<p>表 P11-13 给出领域迁移时的调整方向。</p>
+<p><em>表 P11-13：Mini-DeepSeek 配方的领域迁移注意事项</em></p>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>需要增加的数据</th>
+<th>额外风险</th>
+<th>验收重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>法律</td>
+<td>法规、判例、合同、合规问答</td>
+<td>地区和时效差异</td>
+<td>法条版本、引用准确性</td>
+</tr>
+<tr>
+<td>医疗</td>
+<td>指南、论文、药品说明、病例模板</td>
+<td>隐私和高风险建议</td>
+<td>脱敏、来源等级、专家复核</td>
+</tr>
+<tr>
+<td>金融</td>
+<td>研报、公告、财报、市场规则</td>
+<td>时效和投资建议风险</td>
+<td>日期、市场、口径一致性</td>
+</tr>
+<tr>
+<td>工业</td>
+<td>设备手册、故障记录、工艺文档</td>
+<td>内部机密和术语歧义</td>
+<td>权限、术语表、故障分类</td>
+</tr>
+<tr>
+<td>教育</td>
+<td>教材、习题、解析、课程讲义</td>
+<td>版权和答案泄漏</td>
+<td>版权许可、题库污染</td>
+</tr>
+</tbody>
+</table>
+<p>领域迁移时，建议先保留通用语料作为基础，再逐步提高领域语料比例。若一次性把领域数据比例拉得过高，模型可能获得领域术语能力，但损失通用语言和代码能力。更稳妥的做法是设计多轮 curriculum：前期保持通用语料占主导，中后期提高领域和任务相关数据比例，并用领域验证集监控收益。</p>
+<h2 id="p01-mini-c4">与 P01 Mini-C4 的关系<a class="headerlink" href="#p01-mini-c4" title="Permanent link">&para;</a></h2>
+<p>P01 关注单源网页清洗，P11 关注多源预训练配方。二者不是重复关系，而是从“清洗一类语料”到“组织多类语料”的升级。表 P11-14 总结二者差异。</p>
+<p><em>表 P11-14：P01 Mini-C4 与 P11 Mini-DeepSeek 的差异</em></p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>P01 Mini-C4</th>
+<th>P11 Mini-DeepSeek</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据来源</td>
+<td>单源或少量网页源</td>
+<td>网页、代码、数学、学术、中文</td>
+</tr>
+<tr>
+<td>核心问题</td>
+<td>清洗质量、去噪、基础过滤</td>
+<td>配方比例、跨源去重、tokenizer 和 packing</td>
+</tr>
+<tr>
+<td>去重范围</td>
+<td>单源内近重复</td>
+<td>跨源近重复</td>
+</tr>
+<tr>
+<td>tokenizer</td>
+<td>可沿用现有 tokenizer</td>
+<td>训练 150K 大词表</td>
+</tr>
+<tr>
+<td>训练样本</td>
+<td>清洗后的文档</td>
+<td>定长 packed token blocks</td>
+</tr>
+<tr>
+<td>验收重点</td>
+<td>文本质量和清洗规则</td>
+<td>配方、压缩率、污染、烟测</td>
+</tr>
+<tr>
+<td>扩展方向</td>
+<td>更大网页语料</td>
+<td>更大多源预训练系统</td>
+</tr>
+</tbody>
+</table>
+<p>理解这个关系有助于读者把第十四篇项目串起来。P01 是数据清洗的起点，P11 则把多个清洗后的来源组织成预训练配方。没有 P01 的质量过滤，P11 的多源配方会吸收大量噪声；没有 P11 的配方组织，P01 的单源清洗又难以支撑现代通用模型训练。</p>
+<h2 id="_24">结果展示与分析<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h2>
+<p>教学化示例配置可以设定为单机节点（如 8 张 4090）运行，并记录端到端耗时，用于展示流水线验收报告的组织方式。
+若以 <code>TARGET_TOTAL_DOCS = 500,000</code> 的抽样规模运行，报告中应记录 MinHash 去重率；示例量级可写为约 <strong>4.2%</strong> 的隐性重复被过滤，主要集中在代码源与学术源之间。正式交付时必须以实际运行日志、随机种子和数据 manifest 为准。</p>
+<p>打乱打包后的 <code>mixed_1b_final_packed</code> 数据集应记录存储大小、<code>.arrow</code> 分片数量和 token 统计。示例报告中可使用约 <code>5GB</code>、约 <strong>1.05B Tokens</strong> 的量级说明输出格式，但正式版本必须由脚本输出、样本 manifest 和随机种子共同生成。</p>
+<h3 id="tokenizer">Tokenizer 效率验证<a class="headerlink" href="#tokenizer" title="Permanent link">&para;</a></h3>
+<p>由于词表扩容至 150K，通过抽样验证，该 Tokenizer 对于中文网页平均压缩比（Tokens/Char）达到了 <strong>0.62</strong>，相较于 Llama-2 的 1.1 的表现，显著提升了后续预训练的吞吐效率。</p>
+<h2 id="_25">成本与优化<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h2>
+<p>在 1B tokens 级别的教学化示例中，资源消耗可按以下口径记录：</p>
+<ul>
+<li><strong>存储</strong>：记录原始抓取数据和 Pack 后产物的实际大小；示例量级可写为原始数据约 8GB、Pack 后约 5GB。</li>
+<li><strong>算力与内存</strong>：记录 Streaming 抽取、并行 Map 和跨源 MinHash 去重的内存峰值与耗时；示例量级可写为内存峰值约 32GB、MinHash 去重约 3 小时。正式交付时应以运行日志为准。</li>
+</ul>
+<p><strong>优化点</strong>：
+如果需要横向扩展到 70B Tokens，单节点的 Python 内存处理将成为瓶颈。建议接入 Apache Spark (Zaharia et al. 2016) 或是 Ray (Moritz et al. 2018) 这样的分布式引擎。在 MinHash 去重环节，可通过 Redis 等外部数据库存储 Hash Bucket 来实现内存解耦。</p>
+<h2 id="_26">扩展思考<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h2>
+<p>将 Mini-DeepSeek 项目的配方扩展到百亿级 Tokens，有两点需要格外关注：</p>
+<ol>
+<li><strong>配比的动态衰减（Curriculum）</strong>：在初期训练，基础知识（网页与学术论文）应当占据主导；在中后期，需要拉高代码与数学（OpenWebMath）的采样权重。可将 <code>mix_sampler.py</code> 改造为支持 Epoch 级动态加载的流式模块。</li>
+<li><strong>与前作的升级对比</strong>：相比于第十四篇 P01（Mini-C4），本项目不再依赖单一质量阈值的简单过滤，而是用跨源融合与超大词表的设计，展示了现代工业级模型（如 DeepSeek-V3）面向多任务的基础奠基方式。</li>
+</ol>
+<h3 id="_27">数据合规与开源许可说明<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>在进行多源混合时，必须严格遵守原始数据的开源许可（License）：</p>
+<ul>
+<li><strong>FineWeb-Edu</strong>：采用 CC0 许可（完全开源）。</li>
+<li><strong>The Stack v2</strong>：遵循 SPDX 白名单许可体系，仅使用允许再分发的代码。</li>
+<li><strong>OpenWebMath</strong>：采用 ODC-By 许可。</li>
+<li><strong>arXiv</strong>：遵循各论文作者选择的具体分发 License。</li>
+<li><strong>Project Gutenberg</strong>：公有领域（Public Domain）。
+<em>(注：完整的 1B 数据样本已合规处理，可上传至 HuggingFace Datasets 仓库 <code>dataforge-mini-deepseek-1b</code> 供后续微调直接使用。)</em></li>
+</ul>
+<h2 id="_28">本章小结<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h2>
+<p>本章以“Mini-DeepSeek 预训练复现”为案例，展示了以小规模资源复现开源 LLM 预训练数据配方的关键工程环节的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。定位为缩小版配方验证，不追求完整大模型规模和公开 SOTA 指标。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_29">参考文献<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h2>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.</p>
+<p>Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.</p>
+<p>DeepSeek-AI, Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, et al. (2024) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.</p>
+<p>Lozhkov A, Ben Allal L, von Werra L, Wolf T (2024) StarCoder 2 and The Stack v2: The Next Generation (The Stack v2). arXiv preprint arXiv:2402.19173.</p>
+<p>Moritz P, Nishihara R, Wang S, Tumanov A, Liaw R, Liang E, Elibol M, Yang Z, Paul W, Jordan M I, Stoica I (2018) Ray: A Distributed Framework for Emerging AI Applications. In: Proceedings of the 13th USENIX Symposium on Operating Systems Design and Implementation, pp 561-577.</p>
+<p>Paster K, Santos M D, Azerbayev Z, Ba J (2023) OpenWebMath: An Open Dataset of High-Quality Mathematical Web Text. arXiv preprint arXiv:2310.06786.</p>
+<p>Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.</p>
+<p>Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.</p>
+<p>Zaharia M, Xin R S, Wendell P, Das T, Armbrust M, Dave A, Meng X, Rosen J, Venkataraman S, Franklin M J, Ghodsi A, Gonzalez J, Shenker S, Stoica I (2016) Apache Spark: A Unified Engine for Big Data Processing. Communications of the ACM 59(11):56-65.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

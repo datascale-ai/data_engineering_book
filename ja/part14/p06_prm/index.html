@@ -1,0 +1,2397 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p06_prm/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目六：思维链推理数据集构建与过程奖励模型训练 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目六：思维链推理数据集构建与过程奖励模型训练
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p06_prm/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p06_prm/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-cot-prm" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：CoT 与 PRM 数据工厂的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）任务范围边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）轨迹类型边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）监督粒度边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）规模边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界设定的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p06" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P06 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-prm" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从种子任务到 PRM 训练资产的过程监督流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从种子任务到 PRM 训练资产的过程监督流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：任务与轨迹生成层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：步骤验证与奖励分配层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：训练封装与交付层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 种子任务：任务层作为监督起点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 种子任务：任务层作为监督起点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 为什么种子任务是必要的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 当前项目为什么先选数学与代码
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 为什么种子任务不等于最终训练样本
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 任务采样与规格设计：前置调度层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 任务采样与规格设计：前置调度层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 规格设计解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 为什么采样不能只是“多样化”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-task-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 task spec 的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-positivenegativerepair" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 轨迹生成：positive、negative、repair 的并行构造
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 轨迹生成：positive、negative、repair 的并行构造">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 为什么不能只生成正例轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 negative 轨迹解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-repair" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 repair 轨迹为什么更重要也更危险
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4 当前项目的轨迹结构说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-step-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Step 切分与 schema：过程监督的最小单位
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Step 切分与 schema：过程监督的最小单位">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 为什么 step 是必要单位
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 schema 在这里解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-step-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 为什么 step schema 必须单独保留
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 自动验证：过程监督的结果校验
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 自动验证：过程监督的结果校验">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 为什么验证必须前置到数据生产环节
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 自动验证可以依赖哪些信号
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 为什么验证不是越严越好
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 当前项目的验证结果说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Step 标签设计：过程字段的可操作化
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Step 标签设计：过程字段的可操作化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-step-label" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 step label 的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 为什么标签不能只做二分类
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-process-only-supervision-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 process-only supervision signal 为什么重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-reward-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Reward bucket：分层评分机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Reward bucket：分层评分机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-reward-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 reward bucket 的工程意义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 为什么 bucket 比连续分数更稳
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 当前项目的 bucket 结构说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-prm" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. PRM 数据封装：训练接口层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. PRM 数据封装：训练接口层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 为什么封装层很重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 当前项目输出了哪些关键训练产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-smoke-test-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 为什么 smoke test 和 manifest 也必须存在
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 数据规模与结构：当前工厂的成形信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 数据规模与结构：当前工厂的成形信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 这些数字说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 为什么结构比总量更重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 指标解读：当前验证结果的含义
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 指标解读：当前验证结果的含义">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 当前关键指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-100" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 为什么通过率低于 100% 反而是好事
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-100" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 为什么正例 100% 通过也有双重含义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 评测与项目检查：自检层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 评测与项目检查：自检层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 为什么评测不能只看训练后模型表现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 当前项目的检查覆盖说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 为什么检查脚本值得写进章节主体
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-negative-repair" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 噪声控制：negative 与 repair 轨迹治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 噪声控制：negative 与 repair 轨迹治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 为什么负例天然更脏
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 为什么修复轨迹更容易产生歧义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 当前项目给出的明确信号
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 成本与收益：结构闭环的优先级
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 成本与收益：结构闭环的优先级">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 小规模项目的真实收益
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 为什么本章更强调“结构收益”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 一个更现实的工程判断
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 主要交付物：产物清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 主要交付物：产物清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 中间数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 训练数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 报告与检查产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 局限与风险：当前过程监督约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 局限与风险：当前过程监督约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 当前项目的主要局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 为什么“先扩量”反而可能是错误方向
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 为什么这些风险判断必须保留
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 后续扩展：走向更复杂的过程监督系统
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 后续扩展：走向更复杂的过程监督系统">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 扩展方向一：扩大任务范围
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#202-reward" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.2 扩展方向二：细化 reward 定义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#203-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.3 扩展方向三：迁移到复杂 Agent 任务
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 总结：可信过程信号的价值
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prm-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：PRM 数据的标注一致性与 QA 机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：PRM 数据的标注一致性与 QA 机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、为什么 step 级标注更容易出现歧义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、过程监督更需要分层 QA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qa_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、QA 不只是删错，还要保留“有用的错”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prm" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：PRM 进入训练系统时的策略选择
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：PRM 进入训练系统时的策略选择">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prm_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、PRM 数据不一定一上来就单独训练
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、不同阶段适合不同使用方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prm_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、PRM 项目最终要形成自己的版本语言
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#replay" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：过程监督项目的 replay 集价值
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：过程监督项目的 replay 集价值">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#replay_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、replay 集最适合收集哪些问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replay_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、replay 集能帮助团队建立“问题记忆”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">项目六：思维链推理数据集构建与过程奖励模型训练<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王聪；徐鑫；王柯</div>
+
+<h2 id="_2">摘要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>P06 聚焦把推理过程本身组织成可训练、可验证、可分析、可迭代的过程监督数据资产。章节重点不在单条思维链展示，而在 step 级监督、奖励分配和 PRM 训练接口之间的工程化衔接。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>种子任务与轨迹生成：从任务采样进入 CoT 轨迹构造。</li>
+<li>step 校验与奖励分配：围绕过程标签、reward bucket 和轨迹类型组织监督信号。</li>
+<li>PRM 封装与训练切分：把处理结果整理为可直接训练的过程监督数据。</li>
+<li>评测与项目检查：通过指标、检查脚本和噪声分析验证数据工厂状态。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>任务采样 -&gt; 轨迹生成 -&gt; step 校验 -&gt; reward 分配 -&gt; PRM 封装 -&gt; 训练切分 -&gt; 数据评测 -&gt; 项目检查</strong></p>
+<p>这一结构对应的核心目标，是把 CoT 与 PRM 数据从结果监督扩展为围绕 step 级信号构建的过程监督流水线。</p>
+<hr />
+<h2 id="_3">关键词<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>CoT；PRM；过程监督；推理轨迹；奖励建模</p>
+<h2 id="_4">项目目标与读者收获<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本项目以“CoT 推理数据集与 PRM 训练”为核心案例，目标是构建包含正例、负例和修复路径的过程监督样本，用于训练或评估 PRM。CoT 轨迹设计参考 chain-of-thought prompting 的基本发现 (Wei et al. 2022)，过程监督与 step 级验证的验收口径参考 “Let's Verify Step by Step” (Lightman et al. 2023)。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_5">场景约束与数据边界<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>以可验证推理任务和结构化 step 标签为主，不覆盖所有开放域复杂推理。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_6">架构决策<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本项目采用“种子任务、轨迹生成、step 切分、自动验证、标签设计和 PRM 数据封装”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P06-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>推理任务 -&gt; 多路径 CoT 轨迹 -&gt; step 切分 -&gt; 验证与标签 -&gt; PRM 训练样本 -&gt; 评估报告
+</code></pre></div></p>
+<p><em>代码清单P06-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_7">核心实现片段<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_8">实验或验收指标<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>验收指标包括step 标注一致性、验证通过率、正负样本比例、repair 覆盖、PRM 区分度和抽检错误率。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P06-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P06-1：过程监督数据出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>过程标签</td>
+<td>step 标注一致性、reward bucket 分布和验证通过率</td>
+<td>抽检正例、负例和 repair 轨迹是否各有独立证据</td>
+</tr>
+<tr>
+<td>训练接口</td>
+<td>PRM 样本字段完整率、训练切分记录和 manifest</td>
+<td>每批数据应能回到任务、轨迹、验证器和标签来源</td>
+</tr>
+<tr>
+<td>噪声控制</td>
+<td>负例污染率、修复轨迹歧义样本和人工复核结论</td>
+<td>不把验证器未覆盖的样本直接视作高质量监督信号</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_9">成本、风险与合规边界<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>成本主要来自多路径推理生成和验证；风险集中在错误链路被标成正例、验证器覆盖不足和过程标签噪声。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_10">常见失败模式<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_11">可复现资源说明<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="1-cot-prm">1. 项目背景：CoT 与 PRM 数据工厂的必要性<a class="headerlink" href="#1-cot-prm" title="Permanent link">&para;</a></h2>
+<p>通用大模型在开放域生成任务上已经具备较强能力，但一旦进入数学求解、代码推理、复杂规划或多步判断场景，问题就会迅速暴露出来。</p>
+<p>最常见的问题不是“模型不会说”，而是“模型虽然会说，却不会稳定地按正确过程推理”。</p>
+<p>第一类问题是<strong>结果正确但过程不可用</strong>。模型可能给出正确答案，但中间推理只是模板化铺陈、后验解释甚至随机拼接。这样的轨迹如果直接拿来做监督，模型学到的不是推理能力，而是一种围绕正确答案生成表面合理解释的模式。</p>
+<p>第二类问题是<strong>过程看起来合理，但关键步骤已经错了</strong>。这类样本对结果监督来说只会被归为“答错”，但对过程监督来说，重要的是定位：到底是条件识别错了、公式替换错了、代码执行错了，还是修复路径本身有问题。</p>
+<p>第三类问题是<strong>错误分布并不均匀</strong>。正例轨迹往往更干净，而负例和修复轨迹更容易出现噪声、标注歧义和中间状态不一致。如果项目没有把这些轨迹拆开管理，就会导致 PRM 训练时信号污染。</p>
+<p>因此，P06 的目标不是再做一个“带 CoT 的 SFT 小样本”，而是搭建一个<strong>CoT 与 PRM 数据工厂</strong>，把种子任务、轨迹生成、步骤标签、验证信号、过程奖励与训练接口组织成一条可复用、可检查、可扩展的生产线。</p>
+<p>这条生产线服务的也不是一次性实验，而是一种更普适的方法论：</p>
+<blockquote>
+<p>当团队未来需要把过程监督从数学和代码扩展到表格推理、工具调用、Agent 规划甚至复杂业务流程时，能被复用的不是某条思维链，而是这套“从任务到步骤监督”的工程方法。</p>
+</blockquote>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立从种子任务到 step 级监督的转化链路。</strong>
+也就是说，项目不是停留在题目和答案层，而是把多步推理轨迹显式生成出来，并进一步切解为可供 PRM 训练的 step 记录。</p>
+<p><strong>目标二：建立可区分不同轨迹类型的过程数据体系。</strong>
+项目明确区分 positive、negative、repair 三类轨迹，使过程监督不再只有“对/错”两个粗粒度状态，而能表达更接近真实推理过程的数据分布。</p>
+<p><strong>目标三：建立自动验证与 reward 分配闭环。</strong>
+过程监督的难点不在于生成，而在于筛选。项目通过规则检查、执行验证、结果比对与 reward bucket，将“轨迹质量”从主观判断尽可能转成可复核信号。</p>
+<p><strong>目标四：输出训练侧可直接消费的 PRM 数据资产。</strong>
+最终交付不只是中间脚本，还包括 <code>prm_step_dataset.jsonl</code>、<code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code>、<code>training_manifest.json</code> 等训练接口层产物。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了保持项目可复现性，本项目显式设置了若干边界。</p>
+<h4 id="1">1）任务范围边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>当前项目只覆盖<strong>数学</strong>和<strong>代码</strong>两类推理任务。这两个领域适合先做过程监督示范，因为它们相对容易构造可验证信号，也更便于把错误步骤与最终结果对齐。</p>
+<h4 id="2_1">2）轨迹类型边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>当前轨迹分为三类：</p>
+<ul>
+<li>positive</li>
+<li>negative</li>
+<li>repair</li>
+</ul>
+<p>这样的设计已经足以展示过程监督的基本形态，但尚未覆盖更复杂的轨迹关系，例如多分支搜索、工具调用回退、规划-执行混合链路等。</p>
+<h4 id="3">3）监督粒度边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>本项目强调 step 级 supervision，但主要仍聚焦于<strong>规则校验 + 启发式评分 + 数据封装</strong>，而不是完整展开一个大规模 PRM 模型训练平台。也就是说，它更像一个过程监督数据工厂雏形，而不是终局形态。</p>
+<h4 id="4">4）规模边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>当前种子任务为 36 个，生成轨迹 108 条，总 step 数 534，规模可控，更适合作为方法展示和结构分析，而不是大规模工业训练库。现有数据已经足够说明流程、指标和噪声问题，但不能被夸大为“已经覆盖广泛推理场景”。</p>
+<h3 id="23">2.3 边界设定的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>过程监督项目最容易出现的误判，就是看到有 CoT、有步骤标签、有 reward，就误以为已经做出了成熟的 PRM 数据体系。实际上，可信的数据工厂不是靠术语堆起来的，而是靠边界管理建立的。</p>
+<p>对于 P06 来说，边界写清楚的价值在于：</p>
+<ul>
+<li>让当前结论所依赖的任务域保持清楚；</li>
+<li>避免把小规模验证结果误读为通用结论；</li>
+<li>帮助后续扩展时明确优先级，而不是盲目扩量；</li>
+<li>让项目更像一条可持续迭代的工程能力，而不是一段概念展示。</li>
+</ul>
+<hr />
+<h2 id="3-p06">3. 项目定位：P06 的能力链位置<a class="headerlink" href="#3-p06" title="Permanent link">&para;</a></h2>
+<p>如果把全书视作一条大模型数据工程能力链，那么 P06 位于“结果监督走向过程监督”这一段的核心位置。</p>
+<p>前面的章节已经讨论过 SFT 数据、偏好对、评测与 QA 等通用问题。但一旦进入 reasoning 场景，团队会很快发现：</p>
+<ul>
+<li>单纯结果标签无法表达中间错误；</li>
+<li>单纯偏好比较不足以定位 step 级信号；</li>
+<li>单纯“思维链展示”并不等于过程监督可训练；</li>
+<li>训练前的数据验证，比训练本身更决定最终上限。</li>
+</ul>
+<p>因此，本章的价值不在于重复介绍 PRM 概念，而在于把这些方法落回一个<strong>可执行的工程项目</strong>：CoT 推理数据集构建与 PRM 训练准备。</p>
+<p>也就是说，本章不是在回答“PRM 是什么”，而是在回答更具体的问题：</p>
+<ul>
+<li>过程监督数据到底应该如何被组织？</li>
+<li>为什么 step 标签要早于 PRM 训练被设计？</li>
+<li>为什么 negative 与 repair 轨迹不能混成一类坏样本？</li>
+<li>为什么 reward bucket 不是锦上添花，而是后续训练接口的重要桥梁？</li>
+<li>在有限资源下，怎样先做出一个可运行、可复核、可继续扩张的 PRM 数据闭环？</li>
+</ul>
+<p>从这个意义上说，本章最重要的不是“多训练一个模型”，而是回答一个更大的问题：</p>
+<blockquote>
+<p>当团队想让模型学会更好的过程，而不是只学会更好的结果时，数据工程应该怎样重新设计？</p>
+</blockquote>
+<p>图P06-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-1：CoT 与 PRM 数据工厂总览" src="../../../images/part14/p06/Wang-Project06-Fig01.svg" /></a>
+<em>图 P06-1：CoT 与 PRM 数据工厂总览</em></p>
+<hr />
+<h2 id="4-prm">4. 整体架构：从种子任务到 PRM 训练资产的过程监督流水线<a class="headerlink" href="#4-prm" title="Permanent link">&para;</a></h2>
+<p>从工程视角看，本项目可以拆成三层。</p>
+<h3 id="41">4.1 第一层：任务与轨迹生成层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何稳定获得可分析的推理轨迹”。主要包括：</p>
+<ul>
+<li>任务采样</li>
+<li>规格定义</li>
+<li>多轨迹生成</li>
+<li>轨迹类型控制</li>
+<li>正负修复样本配比</li>
+</ul>
+<p>这一层的目标不是马上输出训练集，而是把原始任务扩展成一组可比较、可分析、可验证的 reasoning traces。</p>
+<h3 id="42">4.2 第二层：步骤验证与奖励分配层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些过程值不值得学”。主要包括：</p>
+<ul>
+<li>step 切分</li>
+<li>规则检查</li>
+<li>结果执行与比对</li>
+<li>step label 生成</li>
+<li>reward bucket 分配</li>
+<li>process-only signal 提取</li>
+</ul>
+<p>这是整个项目最关键的部分，因为它决定系统学到的是“会写思维链”，还是“会积累可靠过程信号”。</p>
+<h3 id="43">4.3 第三层：训练封装与交付层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些过程数据能否被训练和评估系统直接消费”。主要包括：</p>
+<ul>
+<li>PRM step 数据封装</li>
+<li>train/val 切分</li>
+<li>smoke test 构造</li>
+<li>manifest 生成</li>
+<li>数据集评估</li>
+<li>项目检查脚本</li>
+</ul>
+<p>到这一步，项目才从“生成了一些 reasoning traces”变成“建立了一条过程监督数据流水线”。</p>
+<p>图P06-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-2：步骤级验证与训练闭环图" src="../../../images/part14/p06/Wang-Project06-Fig02.svg" /></a>
+<em>图 P06-2：步骤级验证与训练闭环图</em></p>
+<hr />
+<h2 id="5">5. 种子任务：任务层作为监督起点<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>很多人谈 PRM 时，会把注意力全部放在 reward 或打分模型上，却忽略了最上游的任务层设计。</p>
+<p>但在真实工程里，PRM 训练的上限很大程度上取决于：<strong>系统首先接触到什么任务、什么难度、什么类型的过程。</strong></p>
+<h3 id="51">5.1 为什么种子任务是必要的<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>如果没有明确的任务池，项目就容易退化成“随机生成一些 reasoning traces”，看起来很多，实际上分布混乱、难度不均，也无法解释为什么这些 step 值得监督。</p>
+<p>而把任务层显式化之后，项目就可以：</p>
+<ul>
+<li>约束题目来源与规格；</li>
+<li>维持不同任务域的基本均衡；</li>
+<li>追踪某条轨迹来自哪个 seed；</li>
+<li>在训练后反查问题到底出在任务、轨迹还是验证环节。</li>
+</ul>
+<h3 id="52">5.2 当前项目为什么先选数学与代码<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>数学和代码是过程监督里两个很好的起点。</p>
+<p>一方面，它们都有相对明确的正确性标准，便于做结果比对与自动验证；另一方面，它们又具备足够强的多步推理属性，能够真实暴露 step 级错误，而不是简单对错分类。</p>
+<h3 id="53">5.3 为什么种子任务不等于最终训练样本<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>种子任务只是一层“监督来源”，而不是最终监督单位。P06 的价值，在于它把种子任务扩展成多种轨迹，再把轨迹切成 step，最后才导出 PRM 数据。这条链路意味着：</p>
+<blockquote>
+<p>项目关注的不是题目本身，而是围绕题目所产生的过程信号。</p>
+</blockquote>
+<hr />
+<h2 id="6">6. 任务采样与规格设计：前置调度层<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p><code>sampler.py</code> 在这一层负责从 GSM8K、MATH 和 MBPP 构造两类种子：数学任务抽取最终答案并拆成参考步骤，代码任务保留 <code>reference_code</code>、<code>test_setup_code</code> 与 <code>test_list</code>，最后统一落到 <code>seed_pool.jsonl</code> 与 <code>task_spec.json</code>。MATH 数据集的题目结构为多步推理和过程验证提供了典型来源 (Hendrycks et al. 2021)。这样可以在上游阶段就准备好后续 trace 生成和验证所需字段。</p>
+<p>对应实现如下：</p>
+<p>代码清单P06-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">gsm8k</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">final_answer</span> <span class="o">=</span> <span class="n">extract_final_answer</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer&quot;</span><span class="p">])</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">steps</span> <span class="o">=</span> <span class="n">split_reasoning_steps</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;answer&quot;</span><span class="p">])</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">final_answer</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="k">continue</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">seeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="p">{</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>            <span class="s2">&quot;seed_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;math_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;math&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="n">infer_math_topic</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;question&quot;</span><span class="p">]),</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>            <span class="s2">&quot;question&quot;</span><span class="p">:</span> <span class="n">record</span><span class="p">[</span><span class="s2">&quot;question&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            <span class="s2">&quot;reference_steps&quot;</span><span class="p">:</span> <span class="n">steps</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="s2">&quot;final_answer&quot;</span><span class="p">:</span> <span class="n">final_answer</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="s2">&quot;source_dataset&quot;</span><span class="p">:</span> <span class="s2">&quot;gsm8k_train&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="p">}</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P06-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p><code>task_spec</code> 则把项目约束写成结构化配置：</p>
+<p>代码清单P06-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">task_spec</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="s2">&quot;seed_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">seeds</span><span class="p">),</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="s2">&quot;domain_distribution&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">seed</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">)),</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="s2">&quot;trace_targets&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="s2">&quot;positive&quot;</span><span class="p">:</span> <span class="s2">&quot;correct reasoning trace&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="s2">&quot;negative&quot;</span><span class="p">:</span> <span class="s2">&quot;corrupted or wrong reasoning trace&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="s2">&quot;repair&quot;</span><span class="p">:</span> <span class="s2">&quot;wrong step followed by correction&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="p">},</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="s2">&quot;validation_targets&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;final_answer_match&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">&quot;step_level_quality_labels&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="s2">&quot;code_execution_and_unit_tests&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="p">],</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P06-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>项目流程的第一步是 <code>src/sampler.py</code>：先采样任务并生成规格，再进入推理轨迹生成。P06 从一开始就把“数据分布”作为需要显式管理的工程对象，而不是交给模型随机性。</p>
+<h3 id="61">6.1 规格设计解决什么问题<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p>所谓 task spec，本质上是在回答几个问题：</p>
+<ul>
+<li>当前任务属于数学还是代码？</li>
+<li>题目难度大致落在什么区间？</li>
+<li>轨迹生成时是否需要特定结构？</li>
+<li>后续验证优先依赖规则、执行还是结果比对？</li>
+</ul>
+<p>把这些问题前置到规格层，项目后续的生成、验证和分析才有统一边界。</p>
+<h3 id="62">6.2 为什么采样不能只是“多样化”<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>很多项目说自己做了采样，实际只是随机抽题。但对 PRM 来说，随机不等于合理。因为过程监督更在意的不是题目表面多样，而是：</p>
+<ul>
+<li>错误类型是否足够丰富；</li>
+<li>step 粒度是否便于切分；</li>
+<li>验证信号是否可获得；</li>
+<li>正负修复轨迹是否有比较基础。</li>
+</ul>
+<h3 id="63-task-spec">6.3 task spec 的工程价值<a class="headerlink" href="#63-task-spec" title="Permanent link">&para;</a></h3>
+<p>当前项目明确产出 <code>seed_pool.jsonl</code> 与 <code>task_spec.json</code>，这说明它不是把任务定义藏在代码里，而是把上游调度信息显式落盘。这样做的好处在于：</p>
+<ul>
+<li>后续可以比较不同规格对轨迹质量的影响；</li>
+<li>可以在复盘时追踪某类任务是否更容易产生噪声；</li>
+<li>可以把任务层和轨迹层分开迭代，而不是每次全链条重写；</li>
+<li>可以为未来扩展到新任务域保留接口。</li>
+</ul>
+<p>图P06-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-3：任务采样与规格生成流程图" src="../../../images/part14/p06/Wang-Project06-Fig03.svg" /></a>
+<em>图 P06-3：任务采样与规格生成流程图</em></p>
+<hr />
+<h2 id="7-positivenegativerepair">7. 轨迹生成：positive、negative、repair 的并行构造<a class="headerlink" href="#7-positivenegativerepair" title="Permanent link">&para;</a></h2>
+<p>P06 的三类轨迹在 <code>generate_traces.py</code> 中被显式构造：正例直接使用参考步骤；负例通过篡改关键数字或变异参考代码制造错误；修复轨迹则在错误轨迹后追加一条 correction step。这一实现把“过程监督”落实为可操作的数据合成逻辑。</p>
+<p>对应实现如下：</p>
+<p>代码清单P06-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">wrong_steps</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="n">step</span><span class="p">)</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">correct_steps</span><span class="p">]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">wrong_steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">corrupt_numeric_text</span><span class="p">(</span><span class="n">wrong_steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">wrong_steps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">negative_final</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">&quot;step_idx&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">wrong_steps</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Final answer: </span><span class="si">{</span><span class="n">corrupt_numeric_text</span><span class="p">(</span><span class="n">seed</span><span class="p">[</span><span class="s1">&#39;final_answer&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;final&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">repair_steps</span> <span class="o">=</span> <span class="n">wrong_steps</span> <span class="o">+</span> <span class="p">[</span><span class="n">negative_final</span><span class="p">]</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">repair_steps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="p">{</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="s2">&quot;step_idx&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">repair_steps</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Correction: the previous arithmetic was wrong. The correct final answer is </span><span class="si">{</span><span class="n">seed</span><span class="p">[</span><span class="s1">&#39;final_answer&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;repair&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="p">}</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P06-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段实现表明，repair trace 不是单独构造的新题，而是在 negative trace 后显式追加修复步骤。代码任务的实现逻辑也类似，只是错误来自 <code>mutate_python_code</code>，验证则依赖后面的单元测试执行。</p>
+<p>P06 的核心流程之一是 <code>src/generate_traces.py</code>，也就是基于种子任务生成多种推理轨迹，而不是只保留一条标准答案轨迹。</p>
+<h3 id="71">7.1 为什么不能只生成正例轨迹<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>如果过程监督只保留正例轨迹，模型确实能学到“看起来正确的过程长什么样”，但仍然无法有效地区分：</p>
+<ul>
+<li>哪些局部步骤是不可靠的；</li>
+<li>哪些修复方式是有效的；</li>
+<li>哪些错误会在后续步骤被放大。</li>
+</ul>
+<p>这会导致 PRM 容易退化成一个“偏好冗长且格式工整的轨迹”的打分器，而不是一个能识别过程质量的模型。</p>
+<h3 id="72-negative">7.2 negative 轨迹解决什么问题<a class="headerlink" href="#72-negative" title="Permanent link">&para;</a></h3>
+<p>negative 轨迹的价值在于，它提供了“错误过程”的显式参照系。通过它，系统可以学习：</p>
+<ul>
+<li>中间步骤如何偏离正确路径；</li>
+<li>最终失败之前有哪些先兆；</li>
+<li>哪些错误只是局部偏差，哪些错误会导致全链路崩溃。</li>
+</ul>
+<h3 id="73-repair">7.3 repair 轨迹为什么更重要也更危险<a class="headerlink" href="#73-repair" title="Permanent link">&para;</a></h3>
+<p>repair 轨迹比普通负例更接近真实世界中的推理修正过程。它可以帮助系统学习：</p>
+<ul>
+<li>错误发生后如何回到正确路径；</li>
+<li>哪类补救是有效的；</li>
+<li>修复过程应保留哪些上下文。</li>
+</ul>
+<p>但 repair 轨迹也最容易引入噪声。因为如果修复逻辑本身不稳，模型学到的可能不是“如何纠错”，而是“如何把错误重新组织成表面合理的继续推理”。</p>
+<h3 id="74">7.4 当前项目的轨迹结构说明了什么<a class="headerlink" href="#74" title="Permanent link">&para;</a></h3>
+<p>现有指标显示，项目生成了 108 条轨迹，其中三类轨迹完全对称：<code>positive=36</code>、<code>negative=36</code>、<code>repair=36</code>。这说明项目在轨迹结构上不是临时生成若干样本，而是明确把三类过程当作平行监督对象来设计。</p>
+<p>图P06-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-4：三类轨迹关系示意图" src="../../../images/part14/p06/Wang-Project06-Fig04.svg" /></a>
+<em>图 P06-4：三类轨迹关系示意图</em></p>
+<hr />
+<h2 id="8-step-schema">8. Step 切分与 schema：过程监督的最小单位<a class="headerlink" href="#8-step-schema" title="Permanent link">&para;</a></h2>
+<p>完成轨迹生成之后，项目并不会直接把整条 reasoning trace 拿去训练，而是先做 step 级切分。这一步是 P06 与普通 CoT 样本库最本质的区别之一。</p>
+<h3 id="81-step">8.1 为什么 step 是必要单位<a class="headerlink" href="#81-step" title="Permanent link">&para;</a></h3>
+<p>整条轨迹只能表达“总体上好不好”，但无法表达“具体哪一步好、哪一步坏”。</p>
+<p>而 PRM 想学到的恰恰是这种更细粒度的判断能力：</p>
+<ul>
+<li>某一步是否逻辑连贯；</li>
+<li>某一步是否和前一步一致；</li>
+<li>某一步是否引入了错误事实或错误代码；</li>
+<li>某一步即使没有直接导致最终失败，是否已经发出危险信号。</li>
+</ul>
+<h3 id="82-schema">8.2 schema 在这里解决什么问题<a class="headerlink" href="#82-schema" title="Permanent link">&para;</a></h3>
+<p>所谓 step schema，不是为了让字段更齐全，而是为了让验证、统计和训练都能围绕同一单位工作。一个典型的 step 记录，至少应该包含：</p>
+<ul>
+<li><code>trace_id</code></li>
+<li><code>task_id</code></li>
+<li><code>domain</code></li>
+<li><code>trace_type</code></li>
+<li><code>step_index</code></li>
+<li><code>step_text</code></li>
+<li><code>step_label</code></li>
+<li><code>reward_bucket</code></li>
+<li><code>validation_flags</code></li>
+<li><code>final_outcome</code></li>
+<li><code>metadata</code></li>
+</ul>
+<p>有了这层 schema，项目后续才可以：</p>
+<ul>
+<li>分析不同 domain 的步骤质量差异；</li>
+<li>比较不同 trace type 的噪声结构；</li>
+<li>追踪某种 reward bucket 来自什么步骤分布；</li>
+<li>把 step 数据直接封装为 PRM 训练接口。</li>
+</ul>
+<h3 id="83-step-schema">8.3 为什么 step schema 必须单独保留<a class="headerlink" href="#83-step-schema" title="Permanent link">&para;</a></h3>
+<p>因为很多过程监督项目失败，并不是因为模型太差，而是因为一开始就没有把最小监督单位设计清楚，导致：</p>
+<ul>
+<li>训练时只能拿整条回答打分；</li>
+<li>出错时无法回查到具体步骤；</li>
+<li>数据切分只能按样本级粗暴处理；</li>
+<li>噪声分析没有抓手。</li>
+</ul>
+<p>从这个角度看，step schema 不是附属设计，而是 PRM 数据工厂的地基。</p>
+<p>图P06-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-5：PRM step schema 示意图" src="../../../images/part14/p06/Wang-Project06-Fig05.svg" /></a>
+<em>图 P06-5：PRM step schema 示意图</em></p>
+<hr />
+<h2 id="9">9. 自动验证：过程监督的结果校验<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p><code>validate_and_score.py</code> 在这一层负责把 domain 路由、结果验证、<code>trace_score</code> 计算和 reward bucket 映射串起来：数学任务走最终答案匹配，代码任务走代码执行与单元测试。这样可以把自动验证落实为完整的工程闭环。</p>
+<p>对应实现如下：</p>
+<p>代码清单P06-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span> <span class="n">trace</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;math&quot;</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">passed</span><span class="p">,</span> <span class="n">validation</span> <span class="o">=</span> <span class="n">validate_math_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">passed</span><span class="p">,</span> <span class="n">validation</span> <span class="o">=</span> <span class="n">validate_code_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">label_sum</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">step</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">trace</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">])</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">score</span> <span class="o">=</span> <span class="n">label_sum</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">[</span><span class="s2">&quot;steps&quot;</span><span class="p">]))</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">bucket</span> <span class="o">=</span> <span class="n">reward_bucket</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">enriched</span><span class="p">[</span><span class="s2">&quot;validation_passed&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">passed</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">enriched</span><span class="p">[</span><span class="s2">&quot;trace_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">enriched</span><span class="p">[</span><span class="s2">&quot;reward_bucket&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bucket</span>
+</code></pre></div></p>
+<p><em>代码清单P06-5：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>其中，reward bucket 也不是黑盒评分，而是规则可解释的分段函数：</p>
+<p>代码清单P06-6 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">reward_bucket</span><span class="p">(</span><span class="n">score</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mf">0.95</span><span class="p">:</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="k">return</span> <span class="s2">&quot;high&quot;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mf">0.6</span><span class="p">:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="k">return</span> <span class="s2">&quot;medium&quot;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="k">return</span> <span class="s2">&quot;low&quot;</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="k">return</span> <span class="s2">&quot;zero&quot;</span>
+</code></pre></div></p>
+<p><em>代码清单P06-6：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这样写的好处是，验证所依赖的信号、bucket 的来源以及它们之间的关系都变得清楚。</p>
+<p>P06 的中间核心步骤是 <code>src/validate_and_score.py</code>，也就是把生成出来的轨迹做校验、打分与标签分配。这个步骤关键，因为它决定项目到底是在积累监督信号，还是在放大生成噪声。</p>
+<h3 id="91">9.1 为什么验证必须前置到数据生产环节<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>很多团队把验证理解成训练后的评测，但过程监督不是这样。因为一旦脏轨迹进入 PRM 数据，后面训练出的模型很可能会更擅长识别“伪推理模式”，而不是更擅长识别真实过程质量。</p>
+<p>所以，验证在这里不是项目尾声，而是生产线的一部分。</p>
+<h3 id="92">9.2 自动验证可以依赖哪些信号<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<p>从现有流程说明来看，项目会结合<strong>规则检查、执行和结果比对</strong>来为轨迹及 steps 分配标签和奖励。 这说明当前验证不是停留在文本表面，而是尽量把形式正确性、可执行性和结果一致性结合起来。</p>
+<p>在数学任务中，这种验证更容易依赖结果比对；在代码任务中，则更适合结合执行结果、测试样例或语法/行为检查。这样的设计使“step 质量”不再只是主观描述。</p>
+<h3 id="93">9.3 为什么验证不是越严越好<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>直觉上，很多人会觉得只要把规则收紧，就能得到更干净的数据。但过程监督项目里，验证过严也会造成问题：</p>
+<ul>
+<li>有价值的中间错误被过度删除；</li>
+<li>repair 轨迹失去存在意义；</li>
+<li>数据分布被正例主导，PRM 难以学到纠错边界；</li>
+<li>项目变成 outcome-only 的变体。</li>
+</ul>
+<p>因此，更合理的策略不是“一刀切清洗”，而是保留结构化差异：哪些步骤通过、哪些步骤失败、哪些步骤虽然失败但仍值得作为过程信号保留。</p>
+<h3 id="94">9.4 当前项目的验证结果说明了什么<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>现有指标显示，整体轨迹验证通过率为 <code>67.59%</code>，但正例轨迹通过率达到 <code>100.00%</code>，说明当前问题主要集中在 negative 与 repair 轨迹的控制上。这个结果有价值，因为它明确指出项目后续优化不应盲目扩量，而应优先提高清洗和验证质量。</p>
+<p>图P06-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-6：步骤验证与结果比对流程图" src="../../../images/part14/p06/Wang-Project06-Fig06.svg" /></a>
+<em>图 P06-6：步骤验证与结果比对流程图</em></p>
+<hr />
+<h2 id="10-step">10. Step 标签设计：过程字段的可操作化<a class="headerlink" href="#10-step" title="Permanent link">&para;</a></h2>
+<p>很多人在谈过程监督时，会用一些抽象概念，比如“高质量思维链”“可信步骤”“过程一致性”。但工程里能落地的，不是这些抽象词，而是<strong>能进入字段、统计和训练的数据标签</strong>。</p>
+<h3 id="101-step-label">10.1 step label 的作用<a class="headerlink" href="#101-step-label" title="Permanent link">&para;</a></h3>
+<p>step label 的价值在于，它把“过程质量”拆成机器可消费的监督信号。通过标签，项目可以明确：</p>
+<ul>
+<li>哪些步骤应该被强化；</li>
+<li>哪些步骤应该被惩罚；</li>
+<li>哪些步骤是过程独有信号，而不是 outcome 的附属物；</li>
+<li>哪些步骤虽然处在负例轨迹里，但局部仍然有价值。</li>
+</ul>
+<h3 id="102">10.2 为什么标签不能只做二分类<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>简单的正负二分类当然有吸引力，因为它实现简单、训练直观。但对 PRM 来说，这样往往过于粗糙。原因在于：</p>
+<ul>
+<li>一条 repair 轨迹可能前半段错误、后半段修正；</li>
+<li>一条 negative 轨迹可能只有一处关键错误；</li>
+<li>某些步骤虽然不够优，但也不应等同于纯噪声。</li>
+</ul>
+<p>因此，P06 引入 step label 与 reward bucket 的联合结构，本质上就是在避免把所有复杂性粗暴压缩成一个标签位。</p>
+<h3 id="103-process-only-supervision-signal">10.3 process-only supervision signal 为什么重要<a class="headerlink" href="#103-process-only-supervision-signal" title="Permanent link">&para;</a></h3>
+<p>现有指标显示，项目中存在 <code>144</code> 个 process-only supervision signal steps。这个数字的工程意义较为明确：过程监督确实提供了 outcome-only 无法替代的额外信号。如果只看最终结果，这 144 个步骤的价值会被直接忽略掉。</p>
+<p>这恰恰说明 PRM 数据工厂不是“把答案拆开而已”，而是在建设 outcome 之外的新监督层。</p>
+<p>图P06-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-7：step 标签与 process-only signal 示意图" src="../../../images/part14/p06/Wang-Project06-Fig07.svg" /></a>
+<em>图 P06-7：step 标签与 process-only signal 示意图</em></p>
+<hr />
+<h2 id="11-reward-bucket">11. Reward bucket：分层评分机制<a class="headerlink" href="#11-reward-bucket" title="Permanent link">&para;</a></h2>
+<p>很多团队做过程评分时，容易把整个问题简化成“给轨迹打一个分”。这种做法当然可以快速验证，但也会很快碰到问题：分数太稀疏、边界太主观、训练接口不稳定。</p>
+<h3 id="111-reward-bucket">11.1 reward bucket 的工程意义<a class="headerlink" href="#111-reward-bucket" title="Permanent link">&para;</a></h3>
+<p>reward bucket 的价值，不在于它比连续分数更“高级”，而在于它更适合在早期工程阶段表达可解释区间。通过 bucket，团队可以更清楚地区分：</p>
+<ul>
+<li>明显值得强化的高质量过程；</li>
+<li>有一定价值但不够稳的中间过程；</li>
+<li>应当降权甚至剔除的低质量过程。</li>
+</ul>
+<h3 id="112-bucket">11.2 为什么 bucket 比连续分数更稳<a class="headerlink" href="#112-bucket" title="Permanent link">&para;</a></h3>
+<p>在小规模过程监督项目中，连续分数往往会带来两个问题：</p>
+<ul>
+<li>打分口径很难稳定；</li>
+<li>后续很难解释 0.73 和 0.78 的差别到底来自哪里。</li>
+</ul>
+<p>相反，bucket 让项目在初期更容易做到：</p>
+<ul>
+<li>规则定义清晰；</li>
+<li>分布统计直接；</li>
+<li>训练映射简单；</li>
+<li>复盘时更易于定位异常样本。</li>
+</ul>
+<h3 id="113-bucket">11.3 当前项目的 bucket 结构说明了什么<a class="headerlink" href="#113-bucket" title="Permanent link">&para;</a></h3>
+<p>现有 reward bucket 分布为：<code>high=36</code>、<code>medium=45</code>、<code>low=27</code>。这个分布至少说明两件事：</p>
+<p>第一，项目没有让所有轨迹“平均好坏”，而是形成了可区分的质量层次。
+第二，当前数据更偏向中高质量过程，但仍保留了足够低质量样本，能够为 PRM 提供对比学习的基础。</p>
+<hr />
+<h2 id="12-prm">12. PRM 数据封装：训练接口层<a class="headerlink" href="#12-prm" title="Permanent link">&para;</a></h2>
+<p>这一节强调的是 step-level dataset 的真实结构。P06 并不是把整条 trace 直接复制到训练目录，而是把每个 step 重新组织成 PRM 训练记录，再生成 <code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code> 与 <code>training_manifest.json</code>。这说明训练系统消费的最小单位不是题，而是带标签、带 reward 的步骤记录。</p>
+<p>对应封装结构如下：</p>
+<p>代码清单P06-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">trace_id</span><span class="si">}</span><span class="s2">_step_</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="n">domain</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;trace_type&quot;</span><span class="p">:</span> <span class="n">trace_type</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">question</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;step_text&quot;</span><span class="p">:</span> <span class="n">step_text</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">step_label</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="s2">&quot;reward_bucket&quot;</span><span class="p">:</span> <span class="n">reward_bucket</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P06-7：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>有了这段，正文就会更像工程实现，而不是结果总结。</p>
+<p>做完轨迹生成、step 切分、验证和奖励分配之后，项目还需要完成一个经常被忽视的步骤：把这些中间信号重新封装成训练系统可直接消费的数据格式。</p>
+<p>P06 的流程中，这一步由 <code>src/prepare_prm_data.py</code> 负责。它的意义在于：项目最终建设的不是一堆零散中间文件，而是一套可训练的数据资产。</p>
+<h3 id="121">12.1 为什么封装层很重要<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>如果没有封装层，项目会出现一个常见断层：</p>
+<ul>
+<li>研究侧认为“已经有步骤标签”；</li>
+<li>训练侧认为“这些文件无法直接使用”；</li>
+<li>评测侧无法确认 train/val 的切分逻辑。</li>
+</ul>
+<p>封装层的作用，就是把前面复杂的过程监督信号，重新组织成可以进入训练和评测系统的标准资产。</p>
+<h3 id="122">12.2 当前项目输出了哪些关键训练产物<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>现有报告显示，项目已经明确输出：</p>
+<ul>
+<li><code>data/training/prm_step_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<p>这说明项目并没有停留在“分析轨迹”的阶段，而已经完成训练接口层落地。</p>
+<h3 id="123-smoke-test-manifest">12.3 为什么 smoke test 和 manifest 也必须存在<a class="headerlink" href="#123-smoke-test-manifest" title="Permanent link">&para;</a></h3>
+<p>很多数据项目会把注意力放在 train/val 上，却忽略 smoke test 与 manifest。实际上，这两项需要重点关注。</p>
+<ul>
+<li><code>smoke_test.jsonl</code> 说明项目考虑了训练前的快速验证；</li>
+<li><code>training_manifest.json</code> 说明项目考虑了数据版本、规模、切分与元信息管理。</li>
+</ul>
+<p>这类产物不会直接提升模型分数，但会显著提升项目的可维护性与可复现性。</p>
+<p>图P06-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-8：PRM 数据封装与训练接口图" src="../../../images/part14/p06/Wang-Project06-Fig08.svg" /></a>
+<em>图 P06-8：PRM 数据封装与训练接口图</em></p>
+<hr />
+<h2 id="13">13. 数据规模与结构：当前工厂的成形信号<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>在项目评审中，评审者容易先问“做了多少条数据”。但对 PRM 来说，规模固然重要，结构更重要。</p>
+<p>现有项目的几个关键数字如下：</p>
+<ul>
+<li>种子任务 <code>36</code> 个；</li>
+<li>轨迹 <code>108</code> 条；</li>
+<li>step 总数 <code>534</code>；</li>
+<li>process-only supervision signal steps <code>144</code>；</li>
+<li>训练集中 step 级记录 <code>534</code> 条；</li>
+<li>总 token 估算 <code>58381</code>。</li>
+</ul>
+<h3 id="131">13.1 这些数字说明了什么<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>第一，项目已经形成了完整的“任务 -&gt; 轨迹 -&gt; steps -&gt; 训练数据”扩展链路，而不是孤立的 CoT 样本集合。</p>
+<p>第二，step 数量显著高于任务数，说明监督单位已经成功下沉到过程层，而不是仍停留在题目层。</p>
+<p>第三，<code>144</code> 个 process-only signal steps 说明项目引入了 outcome 之外的新信号，而不是仅仅重排答案文本。</p>
+<h3 id="132">13.2 为什么结构比总量更重要<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>如果一个 PRM 数据集只有很多 step，却没有：</p>
+<ul>
+<li>轨迹类型区分；</li>
+<li>reward 分层；</li>
+<li>验证闭环；</li>
+<li>清晰切分；</li>
+</ul>
+<p>那么它的价值仍然有限。</p>
+<p>P06 当前最值得保留的，恰恰是这些结构性设计已经到位。规模虽小，但闭环比较完整。这里最关键的一点是：<strong>过程监督不是靠堆量起步，而是靠结构起步。</strong></p>
+<hr />
+<h2 id="14">14. 指标解读：当前验证结果的含义<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>很多案例在写结果时，喜欢只报一个总量数字，比如“生成了 100 多条轨迹”。但更有价值的是那些能帮助理解系统行为的指标。</p>
+<h3 id="141">14.1 当前关键指标<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>现有项目最关键的结果包括：</p>
+<ul>
+<li>整体验证通过率：<code>67.59%</code></li>
+<li>正例轨迹通过率：<code>100.00%</code></li>
+<li>三类轨迹数量对称：<code>36 / 36 / 36</code></li>
+<li>reward bucket 分布：<code>36 / 45 / 27</code></li>
+</ul>
+<p>这些指标一起看，远比单独报一个“轨迹条数”更有解释力。</p>
+<h3 id="142-100">14.2 为什么通过率低于 100% 反而是好事<a class="headerlink" href="#142-100" title="Permanent link">&para;</a></h3>
+<p>很多项目会把“全部通过”当成成功。但对过程监督而言，如果所有轨迹都被验证为高质量，往往更值得警惕。因为那可能意味着：</p>
+<ul>
+<li>只保留了正例；</li>
+<li>验证规则太松；</li>
+<li>噪声被忽略；</li>
+<li>PRM 学不到边界。</li>
+</ul>
+<p>P06 当前 <code>67.59%</code> 的整体通过率虽然不高，却真实暴露了 negative 与 repair 轨迹的噪声挑战。这种“把问题暴露出来”的工程状态，往往比假装一切完美更有价值。</p>
+<h3 id="143-100">14.3 为什么正例 100% 通过也有双重含义<a class="headerlink" href="#143-100" title="Permanent link">&para;</a></h3>
+<p>正例轨迹通过率达到 <code>100.00%</code> 当然说明正向样本生成质量较好，但它也提示了另一件事：当前项目的主要压力已经不在正例，而在错误轨迹与修复轨迹的清洗与控制上。</p>
+<p>这说明项目的下一步优化方向已经很明确，而不是处于“哪里都可能有问题”的混沌状态。</p>
+<p>图P06-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-9：验证通过率与轨迹类型对照图" src="../../../images/part14/p06/Wang-Project06-Fig09.svg" /></a>
+<em>图 P06-9：验证通过率与轨迹类型对照图</em></p>
+<hr />
+<h2 id="15">15. 评测与项目检查：自检层<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p><code>run_p6_checks.py</code> 把一组具体的工程门禁写成自动检查：先跑 <code>py_compile</code> 和 <code>evaluate_prm.py</code>，再检查必需文件是否存在、math/code 两个 domain 是否都出现、positive/negative/repair 三类轨迹是否都覆盖、step label 是否覆盖正负两类、reward bucket 是否齐全，以及 train/val 是否重叠。</p>
+<p>对应实现如下：</p>
+<p>代码清单P06-8 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">dataset_checks</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;required_files_exist&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>        <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">all</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">REQUIRED_FILES</span><span class="p">),</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="p">},</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="p">{</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;both_domains_present&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;math&quot;</span><span class="p">,</span> <span class="s2">&quot;code&quot;</span><span class="p">}</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="n">trace</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">},</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span class="p">},</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span class="p">{</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;trace_types_present&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;negative&quot;</span><span class="p">,</span> <span class="s2">&quot;repair&quot;</span><span class="p">}</span> <span class="o">&lt;=</span> <span class="p">{</span><span class="n">trace</span><span class="p">[</span><span class="s2">&quot;trace_type&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">trace</span> <span class="ow">in</span> <span class="n">traces</span><span class="p">},</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="p">},</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="p">{</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;train_val_no_overlap&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="ow">not</span> <span class="p">({</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">train</span><span class="p">}</span> <span class="o">&amp;</span> <span class="p">{</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;record_id&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">val</span><span class="p">}),</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="p">},</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P06-8：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这些检查项把“项目检查”落实为可运行的工程约束。</p>
+<p>P06 的流程中，除了 <code>evaluate_prm.py</code> 之外，还有 <code>run_p6_checks.py</code>。这说明项目不仅关注数据能否生成，还关注代码、产物和报告之间是否一致。</p>
+<h3 id="151">15.1 为什么评测不能只看训练后模型表现<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>项目章节最需要展示的是“工程闭环”，而不是最后模型分数。因为在很多真实团队里，最先出问题的不是 PRM 模型本身，而是：</p>
+<ul>
+<li>某个关键产物漏生成；</li>
+<li>train/val 有重叠；</li>
+<li>某类 step label 根本没覆盖；</li>
+<li>reward bucket 缺失；</li>
+<li>代码和报告写的不是同一份数据。</li>
+</ul>
+<h3 id="152">15.2 当前项目的检查覆盖说明了什么<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>现有检查结果显示：</p>
+<ul>
+<li>总检查项：<code>10</code></li>
+<li>通过检查项：<code>10</code></li>
+<li>总体状态：<code>PASS</code></li>
+<li>命令级检查覆盖：<code>py_compile, evaluate_prm</code></li>
+<li>数据级检查覆盖：<code>required_files_exist, both_domains_present, trace_types_present, step_labels_cover_both_classes, reward_buckets_present, train_val_no_overlap ...</code></li>
+</ul>
+<p>这说明当前项目的检查不是流于形式，而是确实覆盖了代码可运行性、文件存在性、数据分布与训练切分等关键环节。</p>
+<h3 id="153">15.3 为什么检查脚本值得写进章节主体<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>一个没有检查层的 PRM 项目，容易在演示阶段看起来正常，在复现阶段却完全失控。把检查脚本写进章节主体，本质上是在强调：</p>
+<blockquote>
+<p>过程监督项目的可信度，不只来自样本本身，也来自它是否能自证没有明显工程错误。</p>
+</blockquote>
+<hr />
+<h2 id="16-negative-repair">16. 噪声控制：negative 与 repair 轨迹治理<a class="headerlink" href="#16-negative-repair" title="Permanent link">&para;</a></h2>
+<p>P06 当前最值得深入讨论的，并不是正例轨迹做得多漂亮，而是为什么负例和修复轨迹会成为主要短板。</p>
+<h3 id="161">16.1 为什么负例天然更脏<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>负例轨迹的问题在于，它们往往混合了两种完全不同的成分：</p>
+<ul>
+<li>有研究价值的“真实错误路径”；</li>
+<li>没有监督价值的“随机胡写噪声”。</li>
+</ul>
+<p>如果项目没有把二者区分开，PRM 很可能学到的是“如何惩罚风格奇怪的文本”，而不是“如何识别错误的推理步骤”。</p>
+<h3 id="162">16.2 为什么修复轨迹更容易产生歧义<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>repair 轨迹看起来很理想，因为它模拟了模型犯错后修复的过程。但难的是：</p>
+<ul>
+<li>修复从哪一步开始算；</li>
+<li>前面错误步骤是否保留；</li>
+<li>修复后的正确步骤是否要降权；</li>
+<li>修复轨迹是否会形成风格性偏差。</li>
+</ul>
+<p>这些问题如果没有在 schema 和验证层写清楚，repair 数据很快就会成为最不稳定的一类资产。</p>
+<h3 id="163">16.3 当前项目给出的明确信号<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>现有报告已经明确指出，整体通过率的短板主要集中在 negative 和 repair 轨迹，后续优化方向应优先放在 trace 校验与修复轨迹质量控制，而不是盲目扩大规模。</p>
+<p>这是一条需要重点关注的工程结论，因为它把“下一步做什么”从泛泛而谈，收敛成了明确的生产线问题。</p>
+<p>图P06-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p06/Wang-Project06-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P06-10：negative / repair 噪声来源图" src="../../../images/part14/p06/Wang-Project06-Fig10.svg" /></a>
+<em>图 P06-10：negative / repair 噪声来源图</em></p>
+<hr />
+<h2 id="17">17. 成本与收益：结构闭环的优先级<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>在很多团队里，一提到过程监督，就会立刻联想到更长的 CoT、更复杂的标注、更高的训练成本。这个判断并不完全错，但也容易误导：</p>
+<p>昂贵的，从来不是“多几个 step”，而是<strong>在没有验证闭环之前盲目扩量</strong>。</p>
+<h3 id="171">17.1 小规模项目的真实收益<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>像 P06 这样的小规模过程监督项目，最大的价值不在于立刻产出一个强 PRM，而在于先把以下问题做实：</p>
+<ul>
+<li>step 是否可切；</li>
+<li>标签是否稳定；</li>
+<li>reward 是否可解释；</li>
+<li>train/val 是否可控；</li>
+<li>噪声是否能被定位。</li>
+</ul>
+<p>一旦这些基础问题没有解决，规模越大，低质量数据扩张得越快。</p>
+<h3 id="172">17.2 为什么本章更强调“结构收益”<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p>P06 当前规模并不大，但它已经具备以下几个关键特征：</p>
+<ul>
+<li>有完整的阶段链路；</li>
+<li>有真实指标；</li>
+<li>有清晰短板；</li>
+<li>有训练接口产物；</li>
+<li>有检查与评测闭环。</li>
+</ul>
+<p>这意味着它的主要价值，在于“把过程监督工程化地讲清楚”，而不是“用海量数据证明 PRM 一定有效”。</p>
+<h3 id="173">17.3 一个更现实的工程判断<a class="headerlink" href="#173" title="Permanent link">&para;</a></h3>
+<p>对多数团队来说，第一版 PRM 项目更适合遵循这样一条原则：</p>
+<blockquote>
+<p>先把过程信号做成可信资产，再讨论如何把资产放大。</p>
+</blockquote>
+<hr />
+<h2 id="18">18. 主要交付物：产物清单<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>项目章节不应该只说明“做了什么”，还应该说明“最后留下了什么”。</p>
+<p>从现有报告来看，P06 已经形成较完整的交付物体系：</p>
+<h3 id="181">18.1 中间数据产物<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/seed_pool.jsonl</code></li>
+<li><code>data/processed/task_spec.json</code></li>
+<li><code>data/processed/cot_traces.jsonl</code></li>
+<li><code>data/processed/trace_summary.json</code></li>
+<li><code>data/processed/validated_traces.jsonl</code></li>
+<li><code>data/processed/step_rewards.jsonl</code></li>
+<li><code>data/processed/validation_summary.json</code></li>
+</ul>
+<h3 id="182">18.2 训练数据产物<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/training/prm_step_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<h3 id="183">18.3 报告与检查产物<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/reports/p6_report.md</code></li>
+<li><code>data/reports/p6_metrics.json</code></li>
+<li><code>data/reports/p6_test_results.json</code></li>
+<li><code>data/reports/p6_test_report.md</code></li>
+</ul>
+<p>这样的交付物结构说明，项目已经不只是一个 notebook 里的演示，而是一套相对完整的数据工程产出。</p>
+<hr />
+<h2 id="19">19. 局限与风险：当前过程监督约束<a class="headerlink" href="#19" title="Permanent link">&para;</a></h2>
+<p>很多工程案例最容易犯的错误，就是只讲自己的结构和结果，不讲自己的脆弱点。</p>
+<p>但对 PRM 项目来说，局限不但不能省略，反而应该被放到靠后的主体章节中，明确写出来。</p>
+<h3 id="191">19.1 当前项目的主要局限<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<p>根据现有报告，P06 的主要局限至少包括：</p>
+<ul>
+<li>整体验证通过率仍只有 <code>67.59%</code>；</li>
+<li>negative 与 repair 轨迹更容易带入噪声与标注歧义；</li>
+<li>当前只覆盖数学和代码两类推理任务；</li>
+<li>数据规模还不适合直接当成大规模 PRM 训练库。</li>
+</ul>
+<p>这些局限并不削弱项目价值，反而让章节更可信，因为它们说明项目不是在回避问题，而是在暴露问题。</p>
+<h3 id="192">19.2 为什么“先扩量”反而可能是错误方向<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<p>现有报告明确指出，如果继续扩量而不先提高清洗和验证，PRM 数据会先变脏，而不是先变强。这个判断关键，因为它把工程优先级拉回到正确顺序：</p>
+<ul>
+<li>先改善 trace 质量；</li>
+<li>再提升 reward 可信度；</li>
+<li>最后再扩大任务覆盖和数据规模。</li>
+</ul>
+<h3 id="193">19.3 为什么这些风险判断必须保留<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>因为会被团队复用的案例，通常都不是“宣称已经做完”的案例，而是“把下一步应该怎么做说明白”的案例。</p>
+<hr />
+<h2 id="20">20. 后续扩展：走向更复杂的过程监督系统<a class="headerlink" href="#20" title="Permanent link">&para;</a></h2>
+<p>P06 当前已经搭好了一个很好的起点，但它更大的价值在于，为后续扩展保留了清晰路径。</p>
+<h3 id="201">20.1 扩展方向一：扩大任务范围<a class="headerlink" href="#201" title="Permanent link">&para;</a></h3>
+<p>现有建议已经指出，可以把任务范围继续扩展到：</p>
+<ul>
+<li>表格推理</li>
+<li>科学推理</li>
+<li>计划推理</li>
+</ul>
+<p>这类任务的共同特点是，过程更复杂、验证更困难，也因此更能体现 step 级监督的必要性。</p>
+<h3 id="202-reward">20.2 扩展方向二：细化 reward 定义<a class="headerlink" href="#202-reward" title="Permanent link">&para;</a></h3>
+<p>当前 reward bucket 已经有了基础层次，但未来还可以继续细化：</p>
+<ul>
+<li>区分局部正确与全局正确；</li>
+<li>区分形式错误与逻辑错误；</li>
+<li>区分可修复错误与不可修复错误。</li>
+</ul>
+<p>这样可以让过程信号更适合下游 PRM 或混合训练范式。</p>
+<h3 id="203-agent">20.3 扩展方向三：迁移到复杂 Agent 任务<a class="headerlink" href="#203-agent" title="Permanent link">&para;</a></h3>
+<p>从方法论上看，P06 当前已经具备迁移潜力。因为很多 Agent 任务本质上也是多步过程：</p>
+<ul>
+<li>先规划；</li>
+<li>再执行；</li>
+<li>再观察；</li>
+<li>再修正。</li>
+</ul>
+<p>只要把“step”的定义从文本推理扩展到动作与状态，PRM 数据工厂的方法就有机会迁移到更复杂场景，相关交互模式可参考 ReAct 的推理-行动协同范式 (Yao et al. 2023)。若继续走向强化学习式推理飞轮，则应明确区分本章的过程监督数据构造与 DeepSeek-R1 所代表的大规模推理强化学习系统 (DeepSeek-AI 2025)。</p>
+<hr />
+<h2 id="21_1">21. 总结：可信过程信号的价值<a class="headerlink" href="#21_1" title="Permanent link">&para;</a></h2>
+<p>P06 最值得保留的，并不是它已经做出了多大规模的 PRM 数据集，而是它清楚展示了一个关键的工程判断：</p>
+<blockquote>
+<p>结果监督关注模型最后有没有答对，而过程监督关注模型到底是怎么走到这个结果的。</p>
+</blockquote>
+<p>从现有项目材料来看，P06 已经具备几个很关键的工程特征：</p>
+<ul>
+<li>有明确的任务边界；</li>
+<li>有从 seed 到 trace 到 step 的结构链路；</li>
+<li>有三类轨迹的显式区分；</li>
+<li>有基于规则、执行和结果比对的自动验证；</li>
+<li>有 reward bucket 与 process-only signal；</li>
+<li>有训练接口产物与检查闭环；</li>
+<li>也有清晰的噪声短板与后续方向。 </li>
+</ul>
+<p>这意味着它已经不再只是一个“带 CoT 的数据原型演示”，而更接近一个可供团队参考的过程监督工程案例。</p>
+<p>可以概括为一句话：</p>
+<blockquote>
+<p>PRM 数据工厂要建设的，不是更长的答案，而是更可信的过程。</p>
+</blockquote>
+<hr />
+<h2 id="prm-qa">专题：PRM 数据的标注一致性与 QA 机制<a class="headerlink" href="#prm-qa" title="Permanent link">&para;</a></h2>
+<p>过程监督项目最容易被低估的部分，不是模型调用本身，而是标注一致性。因为结果监督只需要判断“最后对不对”，过程监督却要判断“中间每一步在不在正确轨道上”。这会显著提高标注和 QA 的复杂度。</p>
+<h3 id="step">一、为什么 step 级标注更容易出现歧义<a class="headerlink" href="#step" title="Permanent link">&para;</a></h3>
+<p>对同一道题，两个评审者通常比较容易对最终答案达成一致，却很可能对中间步骤的质量给出不同判断。例如，一步推导可能结果正确，但跳过了关键解释；又或者局部表达不够严谨，但整体方向没有偏离。类似情况在结果监督里影响较小，在 PRM 里却会直接改变 reward 信号。</p>
+<p>因此，P06 这类项目的 QA 不能只围绕“有没有错”展开，还必须围绕：</p>
+<ul>
+<li>这一步是否可被接受为训练信号；</li>
+<li>这一步的错误属于形式错误、逻辑错误还是可修复错误；</li>
+<li>这一步是否仍然保留了对后续步骤有价值的信息；</li>
+<li>这条轨迹是否应该进入 repair 通道，而不是直接丢弃。</li>
+</ul>
+<p>把这些问题写清楚，团队才能把 step 级监督从“主观印象”推进到“结构化判断”。</p>
+<h3 id="qa">二、过程监督更需要分层 QA<a class="headerlink" href="#qa" title="Permanent link">&para;</a></h3>
+<p>相比传统 SFT，PRM 更适合采用分层 QA 机制。比较实用的一种分法是：</p>
+<ul>
+<li>样本层 QA：检查任务、答案和轨迹三者是否匹配；</li>
+<li>step 层 QA：检查每一步的格式、逻辑连续性和局部正确性；</li>
+<li>轨迹层 QA：检查 success、negative、repair 三类轨迹是否各自成立；</li>
+<li>数据集层 QA：检查 reward bucket、任务分布和 train/val 切分是否稳定。</li>
+</ul>
+<p>这种分层方式的价值，在于它能帮助团队快速定位噪声来源。否则，一旦发现训练效果不好，所有问题都会被粗暴归因成“PRM 数据不够好”，但没人知道究竟是 step 切分、标签分桶、repair 设计，还是轨迹分布出了问题。</p>
+<h3 id="qa_1">三、QA 不只是删错，还要保留“有用的错”<a class="headerlink" href="#qa_1" title="Permanent link">&para;</a></h3>
+<p>PRM 数据和普通高质量问答数据还有一个重要区别，就是它不应把所有错误过程都视为毫无价值。很多 repair 轨迹恰恰依赖“先犯错，再修正”的结构，才能形成对模型有价值的过程信号。</p>
+<p>因此，QA 的目标不应该只是清空错误，而是判断：</p>
+<ul>
+<li>哪些错误会污染监督，应当剔除；</li>
+<li>哪些错误虽不正确，但修复路径清晰，适合作为 repair 资产保留；</li>
+<li>哪些错误可以转化为 failure replay，用于后续规则补强；</li>
+<li>哪些错误说明 step 切分方式本身需要调整。</li>
+</ul>
+<p>一旦团队建立了这种心智，就不会再用“纯净数据集”的思路去误伤 PRM 最有价值的一部分信号。</p>
+<hr />
+<h2 id="prm">专题：PRM 进入训练系统时的策略选择<a class="headerlink" href="#prm" title="Permanent link">&para;</a></h2>
+<p>P06 已经把过程监督数据做成了训练接口，但进入训练时，还会遇到另一个现实问题：这些过程信号究竟应该怎么用。不同团队、不同阶段，对 PRM 数据的使用方式往往差异很大。</p>
+<h3 id="prm_1">一、PRM 数据不一定一上来就单独训练<a class="headerlink" href="#prm_1" title="Permanent link">&para;</a></h3>
+<p>在很多真实项目里，PRM 数据并不会独立承担全部训练任务。更常见的做法，是把它和结果监督数据、SFT 数据或偏好数据一起组成组合式训练策略。原因在于，过程信号擅长塑造推理路径，但未必单独就能覆盖风格、拒答、安全和任务广度。</p>
+<p>因此，一个更现实的训练视角通常是：</p>
+<ul>
+<li>用结果监督保证答案边界；</li>
+<li>用过程监督增强中间推理质量；</li>
+<li>用偏好或规则数据约束输出行为；</li>
+<li>用 smoke 集和 replay 集持续观察回归。</li>
+</ul>
+<p>从系统工程角度看，PRM 不是替代一切，而是补上“模型为什么会这样推理”的这一层能力。</p>
+<h3 id="_12">二、不同阶段适合不同使用方式<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>在项目早期，PRM 数据更适合作为“结构验证资产”。也就是说，先用它验证 step 切分、reward 逻辑和训练模板是否靠谱，而不是一上来追求大规模收益。随着数据质量提升，再逐步把它放到更重要的位置。</p>
+<p>这通常意味着：</p>
+<ul>
+<li>第一阶段先看数据结构和训练可读性；</li>
+<li>第二阶段看少量任务上的过程提升是否清晰；</li>
+<li>第三阶段再考虑扩大任务覆盖和训练占比；</li>
+<li>第四阶段才讨论是否形成稳定 PRM 训练子系统。</li>
+</ul>
+<p>这种渐进方式的价值，在于避免团队在过程信号还不稳定时就做过度投入。</p>
+<h3 id="prm_2">三、PRM 项目最终要形成自己的版本语言<a class="headerlink" href="#prm_2" title="Permanent link">&para;</a></h3>
+<p>当 P06 继续迭代时，团队会越来越需要一套专门描述 PRM 数据版本的语言。例如：</p>
+<ul>
+<li>本版本扩了哪些任务；</li>
+<li>step 切分规则是否变化；</li>
+<li>reward bucket 是否重定义；</li>
+<li>repair 轨迹占比是否上升；</li>
+<li>哪些高噪声样本被移出；</li>
+<li>哪些 replay 问题已被吸收。</li>
+</ul>
+<p>只有这些信息被稳定保留，团队才能评估“这版 PRM 比上一版好在哪里”。否则，即使训练结果变了，也很难判断变化来自哪一种过程信号调整。对于过程监督这种高度结构化的数据类型来说，版本语言本身就是工程能力的一部分。</p>
+<hr />
+<h2 id="replay">专题：过程监督项目的 replay 集价值<a class="headerlink" href="#replay" title="Permanent link">&para;</a></h2>
+<p>P06 这类项目还有一项很值得长期保留的资产，就是 replay 集。因为过程监督的很多问题，并不会在总体指标里立刻显现，却会在某些典型轨迹上反复出现。只要把这些高频问题沉淀成 replay，团队就能在每轮迭代中更快判断：当前改动到底是在改善真实问题，还是只是让指标看起来更顺。</p>
+<h3 id="replay_1">一、replay 集最适合收集哪些问题<a class="headerlink" href="#replay_1" title="Permanent link">&para;</a></h3>
+<p>对 PRM 来说，最值得放进 replay 集的通常不是随机失败，而是那些会持续破坏过程信号可信度的问题，例如：</p>
+<ul>
+<li>step 切分导致上下文断裂；</li>
+<li>repair 轨迹看似修复，实际只是重写答案；</li>
+<li>局部步骤合理，但整体方向早已偏离；</li>
+<li>reward bucket 对同类错误给出了不稳定分配。</li>
+</ul>
+<p>这些问题一旦被固定下来，就能成为后续规则改动、验证改动和训练模板改动的重要回归样本。</p>
+<h3 id="replay_2">二、replay 集能帮助团队建立“问题记忆”<a class="headerlink" href="#replay_2" title="Permanent link">&para;</a></h3>
+<p>许多过程监督项目的主要风险，不是当前存在噪声，而是每次迭代都重复遇到同类噪声。replay 集的作用，就是把这些问题从一次性经验，变成可持续复核的项目记忆。只要这份记忆在，团队就更容易回答一个关键问题：这版 P06 真的是更好了，还是只是换了一种方式重复过去的问题。</p>
+<h2 id="_13">本章小结<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<p>本章以“CoT 推理数据集与 PRM 训练”为案例，展示了构建包含正例、负例和修复路径的过程监督样本，用于训练或评估 PRM的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以可验证推理任务和结构化 step 标签为主，不覆盖所有开放域复杂推理。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_14">参考文献<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>Wei J, Wang X, Schuurmans D, Bosma M, Xia F, Chi E, Le Q V, Zhou D (2022) Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. NeurIPS 2022. arXiv:2201.11903.</p>
+<p>Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2023) Let's Verify Step by Step. arXiv:2305.20050.</p>
+<p>Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.</p>
+<p>DeepSeek-AI (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv:2501.12948.</p>
+<p>Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving With the MATH Dataset. NeurIPS 2021. arXiv:2103.03874.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

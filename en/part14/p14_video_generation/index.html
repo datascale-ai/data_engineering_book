@@ -1,0 +1,4592 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part14/p14_video_generation/">
+      
+      
+        <link rel="prev" href="../p13_multimodal_instruction_factory/">
+      
+      
+        <link rel="next" href="../p15_dataagent_semantic_nl2sql_agent/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Project 14: Video Generation Data Pipeline - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-14-video-generation-data-pipeline" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project 14: Video Generation Data Pipeline
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p14_video_generation/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part14/p14_video_generation/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Background and Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-objectives-and-reader-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Objectives and Reader Outcomes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-excerpts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Excerpts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experimental or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducibility-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducibility Resources
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-design-a-six-component-video-generation-data-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Architecture Design: A Six-Component Video Generation Data Pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-step-by-step-implementation-from-pexels-videos-to-a-trainable-t2v-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Step-by-Step Implementation: From Pexels Videos to a Trainable T2V Dataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Step-by-Step Implementation: From Pexels Videos to a Trainable T2V Dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-load-1000-videos-from-the-pexels-open-source-subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Load 1,000+ Videos from the Pexels Open-Source Subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-shot-segmentation-with-pyscenedetect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Shot Segmentation with PySceneDetect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-motion-detection-to-filter-static-clips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Motion Detection to Filter Static Clips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-clip-aesthetic-scoring-and-laion-aesthetic-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: CLIP Aesthetic Scoring and LAION-Aesthetic Filtering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-multi-frame-sampling-and-caption-generation-with-qwen25-vl-internvl3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Multi-Frame Sampling and Caption Generation with Qwen2.5-VL / InternVL3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-cinematic-language-annotation-camera-movement-composition-and-lighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Cinematic Language Annotation — Camera Movement, Composition, and Lighting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-engineering-execution-resumable-processing-sharding-and-gpu-memory-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Engineering Execution: Resumable Processing, Sharding, and GPU Memory Degradation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-quality-acceptance-and-release-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Quality Acceptance and Release Gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-common-failures-and-localization-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Common Failures and Localization Paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-final-manifest-and-training-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Final Manifest and Training Integration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deliverable-directory-and-version-freezing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Deliverable Directory and Version Freezing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-data-dashboard-and-continuous-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Data Dashboard and Continuous Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sample-retraction-and-copyright-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Sample Retraction and Copyright Response
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-domain-transfer-from-public-video-to-vertical-video-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Domain Transfer: From Public Video to Vertical Video Assets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-integration-with-the-p13-instruction-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Integration with the P13 Instruction Factory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-background-and-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Background and Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-objectives-and-reader-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Objectives and Reader Outcomes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architectural-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architectural Decisions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-excerpts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Excerpts
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experimental-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experimental or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducibility-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducibility Resources
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-design-a-six-component-video-generation-data-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Architecture Design: A Six-Component Video Generation Data Pipeline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-step-by-step-implementation-from-pexels-videos-to-a-trainable-t2v-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Step-by-Step Implementation: From Pexels Videos to a Trainable T2V Dataset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Step-by-Step Implementation: From Pexels Videos to a Trainable T2V Dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-load-1000-videos-from-the-pexels-open-source-subset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Load 1,000+ Videos from the Pexels Open-Source Subset
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-shot-segmentation-with-pyscenedetect" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Shot Segmentation with PySceneDetect
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-motion-detection-to-filter-static-clips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Motion Detection to Filter Static Clips
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-clip-aesthetic-scoring-and-laion-aesthetic-filtering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: CLIP Aesthetic Scoring and LAION-Aesthetic Filtering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-multi-frame-sampling-and-caption-generation-with-qwen25-vl-internvl3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Multi-Frame Sampling and Caption Generation with Qwen2.5-VL / InternVL3
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-cinematic-language-annotation-camera-movement-composition-and-lighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Cinematic Language Annotation — Camera Movement, Composition, and Lighting
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-engineering-execution-resumable-processing-sharding-and-gpu-memory-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Engineering Execution: Resumable Processing, Sharding, and GPU Memory Degradation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-quality-acceptance-and-release-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Quality Acceptance and Release Gates
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-common-failures-and-localization-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Common Failures and Localization Paths
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-final-manifest-and-training-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Final Manifest and Training Integration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deliverable-directory-and-version-freezing" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Deliverable Directory and Version Freezing
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-data-dashboard-and-continuous-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Data Dashboard and Continuous Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-sample-retraction-and-copyright-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Sample Retraction and Copyright Response
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-domain-transfer-from-public-video-to-vertical-video-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Domain Transfer: From Public Video to Vertical Video Assets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-integration-with-the-p13-instruction-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Integration with the P13 Instruction Factory
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-and-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Results and Analysis
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="project-14-video-generation-data-pipeline">Project 14: Video Generation Data Pipeline<a class="headerlink" href="#project-14-video-generation-data-pipeline" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Yang Luo; Ran Zhang; Wenzhuo Du</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This project constructs a reproducible data engineering case study around "Video Generation Dataset: From Video Sources to a T2V-Training-Ready Data Pipeline," with emphasis on business objectives, data boundaries, architectural decisions, core implementation, acceptance metrics, and risk controls. Installation commands and script details are consolidated into an engineering retrospective perspective, highlighting the relationships among sample schemas, data flows, failure modes, and deliverables — helping readers translate the methods presented earlier in this book into auditable, extensible project assets.</p>
+<p>This project builds a production pipeline from public video sources to a trainable T2V dataset, covering six stages: video source loading, shot segmentation, motion filtering, aesthetic filtering, multi-frame captioning, and cinematic language annotation. The project goal is not to train a video generation model directly, but to organize raw video into shot-level samples, retaining for each sample its provenance, temporal boundaries, motion intensity, aesthetic score, structured caption, cinematic language tags, and quality status. Upon completing this project, readers should be able to describe the input, processing, output, and acceptance conditions for a T2V data sample; understand the engineering relationships among text, motion, shots, and licensing information; and evaluate this pipeline's boundaries with respect to scalability, compliance, and training compatibility.</p>
+<p><strong>Keywords</strong>: T2V data engineering; video generation dataset; shot segmentation; motion filtering; multi-frame captioning; cinematic language annotation</p>
+<p><strong>Project Objectives</strong></p>
+<ul>
+<li>Organize public video sources into a traceable <code>source_videos.jsonl</code>.</li>
+<li>Use PySceneDetect to segment long videos into semantically coherent shot-level samples.</li>
+<li>Filter low-value clips via motion intensity, aesthetic scores, and quality labels.</li>
+<li>Use multi-frame sampling to generate captions covering subjects, actions, framing, and atmosphere.</li>
+<li>Output training candidate samples containing provenance, video segments, filter results, captions, and cinematic language tags.</li>
+</ul>
+<h2 id="1-background-and-objectives">1. Background and Objectives<a class="headerlink" href="#1-background-and-objectives" title="Permanent link">&para;</a></h2>
+<p>Data engineering for text-to-video (T2V) generation models is generally more difficult than for text-to-image (T2I) generation. T2I data typically treats "single image — text description" as the basic unit, with data cleaning centered on image quality, text relevance, safety filtering, and resolution bucketing. T2V must deal with continuous frames: in addition to static visual content, training samples must capture motion changes, temporal ordering, camera movement, and scene continuity. Determining whether a video clip is suitable for training requires more than checking whether a single frame is sharp — the entire clip must be examined for valid motion, stable imagery, complete actions, and temporal consistency of subjects.</p>
+<p>Accordingly, video must undergo finer processing before entering a training set. The pipeline first selects usable videos from public sources, proprietary crawled data, or stock footage libraries, then uses shot segmentation to decompose long videos into semantically coherent single-shot clips. Subsequent filtering based on optical flow, motion intensity, blur, jitter, watermarks, and optical character recognition (OCR) coverage removes low-quality clips, reducing the interference of static frames, severe jitter, and invalid motion on training. Video captions also cannot remain at the level of "what is in the frame" — they must clearly describe the sequence of actions, subject position changes, camera movement style, and cinematic language such as push/pull, pan, tilt, overhead, close-up, and wide shot.</p>
+<p>This project covers the process from video sources to a trainable T2V dataset, transforming raw video into training samples with structured captions, spatiotemporal alignment information, and quality labels. Output samples record not only subjects and scenes, but also action sequences, spatial relationships, and cinematic presentation — providing the supervision needed for video generation models to learn "how to move" and "how to shoot."</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Video generation dataset; project practice; reproducible data engineering; data pipeline; acceptance metrics</p>
+<h2 id="project-objectives-and-reader-outcomes">Project Objectives and Reader Outcomes<a class="headerlink" href="#project-objectives-and-reader-outcomes" title="Permanent link">&para;</a></h2>
+<p>This project uses the "video generation data pipeline" as its core case study, with the goal of organizing video sources, clip segmentation, captioning, quality scoring, and training packaging into T2V data assets. After completing this chapter, readers should be able to identify the key data objects in this scenario, decompose the engineering workflow, set acceptance metrics, and transfer the case methodology to similar data engineering tasks.</p>
+<h2 id="scenario-constraints-and-data-boundaries">Scenario Constraints and Data Boundaries<a class="headerlink" href="#scenario-constraints-and-data-boundaries" title="Permanent link">&para;</a></h2>
+<p>The focus is on public video samples and a small-scale pipeline, not covering full commercial copyright management or large-scale video platforms. These boundaries make the case reproducible and auditable; when data scale, data sources, permission scope, or deployment environment change, sampling strategy, quality thresholds, operational cost, and compliance requirements must be reassessed.</p>
+<h2 id="architectural-decisions">Architectural Decisions<a class="headerlink" href="#architectural-decisions" title="Permanent link">&para;</a></h2>
+<p>This project follows an architectural path of "video acquisition, segmentation and frame extraction, subtitle/description generation, quality scoring, deduplication and filtering, and T2V sample packaging." This decision prioritizes well-defined input/output contracts, version traceability, anomaly localization, and result verifiability, rather than compressing all logic into a single one-off script execution.</p>
+<h2 id="sample-schema-data-flow">Sample Schema / Data Flow<a class="headerlink" href="#sample-schema-data-flow" title="Permanent link">&para;</a></h2>
+<p>The core data flow can be summarized as:</p>
+<p>Listing P14-1 provides a video-data pipeline flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Video sources -&gt; Clip segmentation -&gt; Frames/subtitles/motion features -&gt; Caption and quality scoring -&gt; Filtering and deduplication -&gt; T2V training samples
+</code></pre></div>
+<p><em>Listing P14-1: Video-data pipeline flow example</em></p>
+<p>The sample schema should retain at minimum the fields <code>id</code>, <code>source</code>, <code>content_or_payload</code>, <code>metadata</code>, <code>quality_signals</code>, <code>split_or_stage</code>, and <code>audit_trace</code>; specific fields are further refined by the data types, downstream tasks, and acceptance methods of this project.</p>
+<h2 id="core-implementation-excerpts">Core Implementation Excerpts<a class="headerlink" href="#core-implementation-excerpts" title="Permanent link">&para;</a></h2>
+<p>The main text retains only the key implementation excerpts that illustrate design trade-offs. Complete scripts, long configurations, execution logs, and large files should be placed in the companion repository or appendix; code presentation focuses on input/output contracts, quality thresholds, exception handling, and acceptance interfaces.</p>
+<h2 id="experimental-or-acceptance-metrics">Experimental or Acceptance Metrics<a class="headerlink" href="#experimental-or-acceptance-metrics" title="Permanent link">&para;</a></h2>
+<p>Acceptance metrics include clip usability rate, caption consistency, motion/sharpness distribution, deduplication rate, safety filter rate, cost per minute, and training packaging completeness. If the project enters production, a course, or a public reproducibility experiment environment, version numbers, dependency environments, random seeds, sample spot-check results, and failure sample post-mortem records should also be logged.</p>
+<h2 id="cost-risk-and-compliance-boundaries">Cost, Risk, and Compliance Boundaries<a class="headerlink" href="#cost-risk-and-compliance-boundaries" title="Permanent link">&para;</a></h2>
+<p>Costs arise primarily from video downloading, transcoding, visual model inference, and storage; risks center on copyright, portrait rights, sensitive content, and generative model misuse. When external data, personal information, copyrighted content, or third-party services are involved, source documentation, permission status, anonymization strategy, call records, and manual review records must be retained.</p>
+<h2 id="common-failure-modes">Common Failure Modes<a class="headerlink" href="#common-failure-modes" title="Permanent link">&para;</a></h2>
+<p>Common failures include input distribution drift, missing schema fields, quality thresholds that are too loose or too strict, insufficient evaluation sample coverage, unstable model calls, and non-reproducible results. Troubleshooting should prioritize locating data boundaries and intermediate artifacts before examining models, toolchains, and deployment environments.</p>
+<h2 id="reproducibility-resources">Reproducibility Resources<a class="headerlink" href="#reproducibility-resources" title="Permanent link">&para;</a></h2>
+<p>Reproducibility materials should include data source descriptions, minimal samples, configuration files, run commands, metric scripts, inspection reports, and artifact directories. The main text retains necessary excerpts; complete notebooks, long scripts, and large files are maintained separately as companion resources.</p>
+<h2 id="2-architecture-design-a-six-component-video-generation-data-pipeline">2. Architecture Design: A Six-Component Video Generation Data Pipeline<a class="headerlink" href="#2-architecture-design-a-six-component-video-generation-data-pipeline" title="Permanent link">&para;</a></h2>
+<p>This section focuses on how to organize a rerunnable, auditable, and extensible T2V data production pipeline on top of public video. The input side is a batch of Pexels open-license videos; the output side is shot-level samples for video generation training, where each sample simultaneously contains a video clip, provenance information, motion intensity, aesthetic score, multi-frame caption, cinematic language tags, and camera motion information. This data structure is more detailed than a typical video classification dataset, because T2V models learn the joint correspondence among text, frames, motion, and shots — the target is no longer a single category label. This section is based on six processing scripts: video source loading, shot segmentation, motion filtering, aesthetic filtering, multi-frame captioning, and cinematic language annotation.</p>
+<p>Figure P14-1 shows the English-annotated architecture diagram for this project. The upper half of the diagram represents data stages; the lower half represents engineering controls. This layout deliberately places "caption generation" in the later stage rather than treating it as the sole core: the quality of a video generation dataset depends on the collective coordination of source, segmentation, motion, aesthetics, captioning, cinematic language, and release gates.</p>
+<p><a class="glightbox" href="../../../images/part14/Luo-Project14-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="P14 Video Generation Data Pipeline" src="../../../images/part14/Luo-Project14-Fig04-EN.svg" /></a></p>
+<p><em>Figure P14-1: English architecture diagram of the video generation data pipeline</em></p>
+<p>The entire pipeline can be broken down into six components. The first is <strong>video source loading</strong>. It reads a Pexels manifest or local video filenames, re-probes each video for duration, fps, resolution, frame count, and file size, and writes the author, page URL, and license fields into a unified manifest. This component provides the foundational information for subsequent provenance tracing, resolution statistics, duration statistics, and authorization status checks.</p>
+<p>The second is <strong>shot segmentation</strong>. T2V models typically do not train directly on raw long videos, because long videos may contain multiple shots, scene cuts, and semantic discontinuities. The pipeline uses PySceneDetect's ContentDetector to detect shot boundaries, then uses ffmpeg to split videos into single-shot clips; interface and parameter details should follow the official PySceneDetect documentation (PySceneDetect Contributors 2026). Each clip is assigned a <code>shot_id</code> and records its start and end timestamps, parent video, clip index, and local path. All subsequent filtering, captioning, and shot tagging are organized around <code>shot_id</code> as the primary key.</p>
+<p>The third is <strong>motion filtering</strong>. Video generation models need to learn temporal change, so the training set must not contain too many static clips. This component computes the Farneback (Farnebäck 2003) optical flow mean at a proxy resolution, uses <code>motion_strength</code> to measure the motion intensity within a clip, and generates <code>pass_motion</code> via a threshold. This step does not perform action semantic classification; it primarily distinguishes "dynamic clips with training value" from "nearly static image-like clips."</p>
+<p>The fourth is <strong>quality filtering</strong>. Passing motion filtering does not guarantee a clip is suitable for training. Blurry, compressed, exposure-abnormal, or poorly composed video pollutes the visual distribution of a generative model. This project uses CLIP ViT-L/14 (Radford et al. 2021) to extract multi-frame visual features, then feeds them into the LAION-Aesthetic MLP (Schuhmann et al. 2022) to predict aesthetic scores. The clip-level score is obtained by averaging across multiple frames, avoiding single-frame randomness while preserving the overall visual impression of the clip.</p>
+<p>The fifth is <strong>multi-frame captioning</strong>. T2V captions typically need to cover subjects, scenes, actions, camera framing, lighting, and atmosphere. A single-frame description can only state "what is in the frame" and struggles to convey "how the action unfolds." Therefore, the pipeline samples multiple frames in temporal order and passes them to Qwen2.5-VL (Bai et al. 2025) or InternVL3 (Zhu et al. 2025) to generate a video-level caption, with a minimum word count and retry mechanism to reduce excessively short descriptions.</p>
+<p>The sixth is <strong>cinematic language annotation</strong>. A regular caption describes content; a cinematic language tag describes the shooting style. This component uses a controlled vocabulary to annotate shot size, camera angle, composition, lighting, color, and style on one hand; on the other, it uses optical flow to estimate camera motion, such as static, pan, tilt, zoom, jitter, and complex. The final sample retains both "what happens in the video" and "how it was filmed."</p>
+<p>Table P14-1 summarizes the artifacts of each stage. The publication manuscript must retain these filenames, as they serve as the index by which readers map the main text, code, and reproduced artifacts to one another.</p>
+<p><em>Table P14-1: Stage artifacts and field contracts of the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Code Entry Point</th>
+<th>Primary Input</th>
+<th>Primary Output</th>
+<th>Key Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Video source loading</td>
+<td><code>load_pexels.py</code></td>
+<td><code>pexels_manifest.jsonl</code> or <code>pexels_*.mp4</code></td>
+<td><code>source_videos.jsonl</code></td>
+<td><code>video_id</code>, <code>path</code>, <code>license</code>, <code>duration</code>, <code>fps</code>, <code>width</code>, <code>height</code></td>
+</tr>
+<tr>
+<td>Shot segmentation</td>
+<td><code>scene_detect.py</code></td>
+<td><code>source_videos.jsonl</code></td>
+<td><code>stage2_scenes.jsonl</code>, <code>shots/</code></td>
+<td><code>shot_id</code>, <code>start_ts</code>, <code>end_ts</code>, <code>segment_path</code></td>
+</tr>
+<tr>
+<td>Motion filtering</td>
+<td><code>motion_filter.py</code></td>
+<td><code>stage2_scenes.jsonl</code></td>
+<td><code>stage3_motion.jsonl</code></td>
+<td><code>motion_strength</code>, <code>n_pairs</code>, <code>pass_motion</code></td>
+</tr>
+<tr>
+<td>Aesthetic filtering</td>
+<td><code>aesthetic_filter.py</code></td>
+<td><code>stage3_motion.jsonl</code>, <code>stage2_scenes.jsonl</code></td>
+<td><code>stage4_aesthetic.jsonl</code></td>
+<td><code>aesthetic_score</code>, <code>per_frame_scores</code>, <code>pass_aesthetic</code></td>
+</tr>
+<tr>
+<td>Multi-frame captioning</td>
+<td><code>caption_with_vlm.py</code></td>
+<td><code>stage4_aesthetic.jsonl</code>, <code>stage2_scenes.jsonl</code></td>
+<td><code>stage5_captions.jsonl</code>, <code>frames/</code></td>
+<td><code>caption_en</code>, <code>n_words</code>, <code>caption_short</code>, <code>frame_paths</code></td>
+</tr>
+<tr>
+<td>Cinematic language annotation</td>
+<td><code>shot_language_tagger.py</code></td>
+<td><code>stage5_captions.jsonl</code>, <code>stage2_scenes.jsonl</code></td>
+<td><code>stage6_shot_language.jsonl</code></td>
+<td><code>vlm_tags</code>, <code>camera_motion</code>, <code>status</code></td>
+</tr>
+<tr>
+<td>Final manifest construction</td>
+<td><code>utils.build_manifest</code></td>
+<td>Per-stage JSONL</td>
+<td>final manifest</td>
+<td>Provenance, clips, filters, captions, shot tags, and audit information</td>
+</tr>
+</tbody>
+</table>
+<p>An important implication of Table P14-1 is that this project does not store intermediate results temporarily in memory but saves each stage as JSONL or directory assets. This approach consumes somewhat more disk space, but yields three engineering benefits. First, a failure can be resumed from the last completed stage; second, spot-checks can trace back to a specific <code>shot_id</code>, source video, and frame image; third, subsequent safety filtering, deduplication, resampling, and WebDataset packaging can iterate independently without re-running the VLM.</p>
+<hr />
+<h2 id="3-step-by-step-implementation-from-pexels-videos-to-a-trainable-t2v-dataset">3. Step-by-Step Implementation: From Pexels Videos to a Trainable T2V Dataset<a class="headerlink" href="#3-step-by-step-implementation-from-pexels-videos-to-a-trainable-t2v-dataset" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-load-1000-videos-from-the-pexels-open-source-subset">Step 1: Load 1,000+ Videos from the Pexels Open-Source Subset<a class="headerlink" href="#step-1-load-1000-videos-from-the-pexels-open-source-subset" title="Permanent link">&para;</a></h3>
+<p>The video loading stage first establishes a reliable source data manifest, without yet entering training or filtering. Pexels (Pexels 2014) video files are typically already downloaded to a local directory, accompanied by a <code>pexels_manifest.jsonl</code>. The manifest stores video IDs, page URLs, author information, and local save paths; if the manifest is missing, minimal records can also be recovered from <code>pexels_*.mp4</code> filenames. To avoid relying on stale metadata from the download stage, the script re-runs <code>ffprobe</code> on each mp4 to fill in duration, fps, width, height, nb_frames, and file_size. The resulting <code>source_videos.jsonl</code> serves as the stable entry point for the downstream pipeline.</p>
+<p>Listing P14-2 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_source_videos</span><span class="p">(</span><span class="n">src_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">manifest</span> <span class="o">=</span> <span class="n">read_jsonl</span><span class="p">(</span><span class="n">src_dir</span> <span class="o">/</span> <span class="s2">&quot;pexels_manifest.jsonl&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">manifest</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="n">manifest</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;saved_as&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="s2">&quot;video_id&quot;</span><span class="p">:</span> <span class="n">parse_id</span><span class="p">(</span><span class="n">p</span><span class="p">)}</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">src_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;pexels_*.mp4&quot;</span><span class="p">)]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="k">for</span> <span class="n">raw</span> <span class="ow">in</span> <span class="n">manifest</span><span class="p">:</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="n">video_path</span> <span class="o">=</span> <span class="n">resolve_video_path</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">src_dir</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="n">info</span> <span class="o">=</span> <span class="n">ffprobe</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="k">continue</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normalize_video_record</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">video_path</span><span class="p">,</span> <span class="n">info</span><span class="p">))</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="k">return</span> <span class="n">records</span>
+</code></pre></div>
+<p><em>Listing P14-2: Process flow example</em></p>
+<p>Two points deserve attention here. First, all source videos are organized into structurally consistent JSONL rows; subsequent stages no longer scan the mp4 directory directly but instead read from this manifest. Second, the loading process supports checkpoint resumption: <code>video_id</code> entries already written are not reprocessed, and new videos are only appended to the end of the file. At the scale of 1,000+ videos, this approach is more robust than a full rerun and makes it easier to remove corrupted videos mid-process.</p>
+<hr />
+<h3 id="step-2-shot-segmentation-with-pyscenedetect">Step 2: Shot Segmentation with PySceneDetect<a class="headerlink" href="#step-2-shot-segmentation-with-pyscenedetect" title="Permanent link">&para;</a></h3>
+<p>T2V training samples are typically organized by shot rather than by the original video boundaries. A Pexels video may have a single long shot or may contain multiple cut points. Without segmentation, captions easily conflate multiple scenes, causing text-frame mismatches during training. This step uses PySceneDetect's ContentDetector for shot detection (PySceneDetect Contributors 2026) and treats the entire video as a single shot when no boundary is detected. The segmentation stage also filters out excessively short clips — shots shorter than one second are generally discarded.</p>
+<p>Listing P14-3 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scenedetect</span><span class="w"> </span><span class="kn">import</span> <span class="n">open_video</span><span class="p">,</span> <span class="n">SceneManager</span><span class="p">,</span> <span class="n">ContentDetector</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scenedetect.video_splitter</span><span class="w"> </span><span class="kn">import</span> <span class="n">split_video_ffmpeg</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">split_one_video</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">out_root</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">min_shot_len</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">video</span> <span class="o">=</span> <span class="n">open_video</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">])</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">manager</span> <span class="o">=</span> <span class="n">SceneManager</span><span class="p">()</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">manager</span><span class="o">.</span><span class="n">add_detector</span><span class="p">(</span><span class="n">ContentDetector</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mf">27.0</span><span class="p">))</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">manager</span><span class="o">.</span><span class="n">detect_scenes</span><span class="p">(</span><span class="n">video</span><span class="o">=</span><span class="n">video</span><span class="p">,</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">scenes</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_scene_list</span><span class="p">()</span> <span class="ow">or</span> <span class="p">[(</span><span class="n">video</span><span class="o">.</span><span class="n">base_timecode</span><span class="p">,</span> <span class="n">video</span><span class="o">.</span><span class="n">duration</span><span class="p">)]</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">kept</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">scenes</span> <span class="k">if</span> <span class="n">seconds</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">min_shot_len</span><span class="p">]</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">kept</span><span class="p">:</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">shot_dir</span> <span class="o">=</span> <span class="n">out_root</span> <span class="o">/</span> <span class="s2">&quot;shots&quot;</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;pexels_</span><span class="si">{</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;video_id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">split_video_ffmpeg</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span> <span class="n">kept</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">shot_dir</span> <span class="o">/</span> <span class="s2">&quot;shot_$SCENE_NUMBER.mp4&quot;</span><span class="p">))</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">build_shot_record</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">scene</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">kept</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">shot_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*.mp4&quot;</span><span class="p">))))]</span>
+</code></pre></div>
+<p><em>Listing P14-3: Python implementation excerpt</em></p>
+<p>In practice, if 1,000 videos average 8 to 15 shots each, approximately 10,000 clips are produced. This figure is only a reference for experimental scale, not a fixed requirement. Note that PySceneDetect's threshold significantly affects the number of clips: a lower threshold yields finer segmentation; a higher threshold is more conservative. It is advisable to first inspect a sample of segmentation results and then fix the threshold, to avoid producing large numbers of semantically incomplete fragments.</p>
+<hr />
+<h3 id="step-3-motion-detection-to-filter-static-clips">Step 3: Motion Detection to Filter Static Clips<a class="headerlink" href="#step-3-motion-detection-to-filter-static-clips" title="Permanent link">&para;</a></h3>
+<p>After shot segmentation, the resulting clips are still only "candidate training clips" and cannot yet be treated as final training data. Among public videos, many clips are sharp but contain almost no motion — static landscapes, fixed product shots, posed subjects, and slow-motion stills. They offer limited benefit for T2V temporal modeling, and an excess of them will bias the model toward generating static video. Therefore, the third step uses optical flow to estimate clip motion intensity.</p>
+<p>Rather than performing complex action recognition, the script simply computes the average optical flow magnitude between consecutive frames. Videos are scaled to a proxy resolution of 480×270, frames are sampled at a given stride with a cap on the maximum number of frame pairs to avoid slow processing of long videos. The final output is <code>motion_strength</code>, <code>n_pairs</code>, and <code>pass_motion</code>.</p>
+<p>Listing P14-4 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">motion_filter_one</span><span class="p">(</span><span class="n">shot</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="n">motion</span> <span class="o">=</span> <span class="n">compute_motion_magnitude</span><span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>            <span class="n">shot</span><span class="p">[</span><span class="s2">&quot;segment_path&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="n">proxy_wh</span><span class="o">=</span><span class="p">(</span><span class="mi">480</span><span class="p">,</span> <span class="mi">270</span><span class="p">),</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>            <span class="n">max_pairs</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">passed</span> <span class="o">=</span> <span class="n">motion</span><span class="o">.</span><span class="n">motion_strength</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="ow">and</span> <span class="n">motion</span><span class="o">.</span><span class="n">n_pairs</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>            <span class="s2">&quot;shot_id&quot;</span><span class="p">:</span> <span class="n">shot</span><span class="p">[</span><span class="s2">&quot;shot_id&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="s2">&quot;motion_strength&quot;</span><span class="p">:</span> <span class="n">motion</span><span class="o">.</span><span class="n">motion_strength</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>            <span class="s2">&quot;n_pairs&quot;</span><span class="p">:</span> <span class="n">motion</span><span class="o">.</span><span class="n">n_pairs</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>            <span class="s2">&quot;pass_motion&quot;</span><span class="p">:</span> <span class="nb">bool</span><span class="p">(</span><span class="n">passed</span><span class="p">),</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="p">}</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>        <span class="k">return</span> <span class="n">failed_motion_record</span><span class="p">(</span><span class="n">shot</span><span class="p">[</span><span class="s2">&quot;shot_id&quot;</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">))</span>
+</code></pre></div>
+<p><em>Listing P14-4: Process flow example</em></p>
+<p>The motion threshold should not be fixed solely by intuition in a single pass. It is advisable to first compute the <code>motion_strength</code> distribution across all clips, then spot-check low-, mid-, and high-scoring samples. For typical public videos, starting experiments around a threshold of 0.5 is reasonable; if the data contains many slow-motion, natural scenery, or micro-motion clips, the threshold should be lowered to avoid discarding valid samples. At this stage, failed clips need not be immediately deleted — records with <code>pass_motion=False</code> can be retained and the decision deferred to the training stage.</p>
+<hr />
+<h3 id="step-4-clip-aesthetic-scoring-and-laion-aesthetic-filtering">Step 4: CLIP Aesthetic Scoring and LAION-Aesthetic Filtering<a class="headerlink" href="#step-4-clip-aesthetic-scoring-and-laion-aesthetic-filtering" title="Permanent link">&para;</a></h3>
+<p>Motion filtering examines whether temporal change exists in a clip; quality filtering examines whether the visual content is worth retaining. A clip may have strong motion yet suffer from overexposure, blur, severe compression, or disorganized composition. Generative models inherit the visual distribution of their training set, so quality scoring is needed to stratify samples.</p>
+<p>This project uses CLIP ViT-L/14 to extract image features, then feeds them into the LAION-Aesthetic MLP to compute aesthetic scores. Each shot uniformly samples 4 frames, which are individually scored and then averaged. Compared to using only the first or middle frame, multi-frame averaging is more stable, since a video clip may contain brief blurriness, subject occlusion, or exposure variation.</p>
+<p>Listing P14-5 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_aesthetic_mlp</span><span class="p">(</span><span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">768</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">:</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="mi">1024</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">score_shot_aesthetic</span><span class="p">(</span><span class="n">segment_path</span><span class="p">,</span> <span class="n">clip_model</span><span class="p">,</span> <span class="n">clip_processor</span><span class="p">,</span> <span class="n">aesthetic_mlp</span><span class="p">):</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">images</span> <span class="o">=</span> <span class="n">sample_frames_pil</span><span class="p">(</span><span class="n">segment_path</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">images</span><span class="p">:</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;aesthetic_score&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;pass_aesthetic&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;no_frames&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="n">feats</span> <span class="o">=</span> <span class="n">encode_clip_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">clip_model</span><span class="p">,</span> <span class="n">clip_processor</span><span class="p">)</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">scores</span> <span class="o">=</span> <span class="n">aesthetic_mlp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">avg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;aesthetic_score&quot;</span><span class="p">:</span> <span class="n">avg</span><span class="p">,</span> <span class="s2">&quot;pass_aesthetic&quot;</span><span class="p">:</span> <span class="n">avg</span> <span class="o">&gt;=</span> <span class="mf">5.0</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing P14-5: Process flow example</em></p>
+<p>Engineering implementation must also handle multi-GPU sharding and GPU memory degradation. In this project, scripts use deterministic sharding: samples are first sorted by <code>shot_id</code>, then assigned by index modulo <code>num_shards</code>, with each GPU processing only its own shard. This sharding approach avoids redundant computation and facilitates resumption from a specific shard upon failure. Aesthetic thresholds should not be used solely as deletion criteria. Scores can be written into the manifest first, with sampling weights or data buckets set by score at the training stage.</p>
+<hr />
+<h3 id="step-5-multi-frame-sampling-and-caption-generation-with-qwen25-vl-internvl3">Step 5: Multi-Frame Sampling and Caption Generation with Qwen2.5-VL / InternVL3<a class="headerlink" href="#step-5-multi-frame-sampling-and-caption-generation-with-qwen25-vl-internvl3" title="Permanent link">&para;</a></h3>
+<p>After motion and quality filtering, the retained shots require video-level captions. The caption here serves as the language supervision signal in T2V training, not merely a brief title for the video. It should cover subjects, scenes, actions, camera framing, lighting and color, and overall atmosphere. To avoid frame-by-frame enumeration, the prompt explicitly requires a single English paragraph output and disallows enumeration such as "frame 1," "frame 2."</p>
+<p>In implementation, the script samples 8 frames from each shot in temporal order and saves them to <code>frames/pexels_&lt;video_id&gt;/shot_&lt;idx&gt;/</code>. Saving frames allows verification of caption inputs during review, and also allows Step 6's cinematic language annotation to reuse the same frame set, avoiding redundant video decoding.</p>
+<p>Listing P14-6 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">CAPTION_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="s2">Write one English paragraph describing the whole shot: subjects, setting,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="s2">actions, camera framing, lighting, color mood, and atmosphere. Do not enumerate frames.</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nd">@torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">()</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_video_caption</span><span class="p">(</span><span class="n">frame_paths</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">processor</span><span class="p">,</span> <span class="n">frames_n</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">selected</span> <span class="o">=</span> <span class="n">sample_frames_in_time_order</span><span class="p">(</span><span class="n">frame_paths</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">frames_n</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span> <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;file://</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">selected</span><span class="p">]},</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">CAPTION_PROMPT</span><span class="p">},</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="p">]}]</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">inputs</span> <span class="o">=</span> <span class="n">build_vlm_inputs</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">processor</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">gen_ids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">220</span><span class="p">,</span> <span class="n">do_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">caption</span> <span class="o">=</span> <span class="n">decode_new_tokens</span><span class="p">(</span><span class="n">gen_ids</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">processor</span><span class="p">)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;caption_en&quot;</span><span class="p">:</span> <span class="n">caption</span><span class="p">,</span> <span class="s2">&quot;n_words&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">caption</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span> <span class="s2">&quot;caption_short&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">caption</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing P14-6: Python implementation excerpt</em></p>
+<p>If a caption is too short on the first attempt, increasing the temperature and retrying up to twice is acceptable, but unlimited retries are not recommended. Excessive retries may make captions longer without improving accuracy. For training data, it is preferable to retain the <code>caption_short</code> flag and handle it uniformly in a post-processing stage, preventing the model from fabricating details not present in the frame in order to fill word count. InternVL3 integration is similar to Qwen2.5-VL — only the model loading and input organization interfaces need to be replaced; the data-level workflow remains "sample multiple frames in temporal order → generate a single video description."</p>
+<hr />
+<h3 id="step-6-cinematic-language-annotation-camera-movement-composition-and-lighting">Step 6: Cinematic Language Annotation — Camera Movement, Composition, and Lighting<a class="headerlink" href="#step-6-cinematic-language-annotation-camera-movement-composition-and-lighting" title="Permanent link">&para;</a></h3>
+<p>Multi-frame captioning focuses on describing video content; cinematic language annotation supplements the shooting style. This step uses two parallel paths. The first path has the VLM output structured tags from a controlled vocabulary, covering shot size, camera angle, composition, lighting, color, and style. The second path estimates camera motion from optical flow, outputting categories such as static, pan, tilt, zoom, jitter, or complex. After merging both components, the sample carries both a semantic caption and a cinematic language tag set.</p>
+<p>Listing P14-7 provides a process flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">VOCAB</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="s2">&quot;shot_size&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;extreme_wide&quot;</span><span class="p">,</span> <span class="s2">&quot;wide&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="s2">&quot;close_up&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="s2">&quot;camera_angle&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;eye_level&quot;</span><span class="p">,</span> <span class="s2">&quot;high_angle&quot;</span><span class="p">,</span> <span class="s2">&quot;low_angle&quot;</span><span class="p">,</span> <span class="s2">&quot;overhead&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="s2">&quot;composition&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;rule_of_thirds&quot;</span><span class="p">,</span> <span class="s2">&quot;centered&quot;</span><span class="p">,</span> <span class="s2">&quot;symmetrical&quot;</span><span class="p">,</span> <span class="s2">&quot;framing&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="s2">&quot;lighting&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;high_key&quot;</span><span class="p">,</span> <span class="s2">&quot;low_key&quot;</span><span class="p">,</span> <span class="s2">&quot;natural&quot;</span><span class="p">,</span> <span class="s2">&quot;backlit&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="s2">&quot;style&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cinematic&quot;</span><span class="p">,</span> <span class="s2">&quot;documentary&quot;</span><span class="p">,</span> <span class="s2">&quot;vlog&quot;</span><span class="p">,</span> <span class="s2">&quot;commercial&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">}</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">tag_shot_language</span><span class="p">(</span><span class="n">shot_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">segment_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">frame_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="n">vlm_generate_json</span><span class="p">(</span><span class="n">frames</span><span class="o">=</span><span class="n">frame_paths</span><span class="p">,</span> <span class="n">allowed_vocab</span><span class="o">=</span><span class="n">VOCAB</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="n">tags</span> <span class="o">=</span> <span class="n">sanitize_and_coerce_to_vocab</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">VOCAB</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="n">motion</span> <span class="o">=</span> <span class="n">classify_camera_motion</span><span class="p">(</span><span class="n">segment_path</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="s2">&quot;shot_id&quot;</span><span class="p">:</span> <span class="n">shot_id</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="s2">&quot;vlm_tags&quot;</span><span class="p">:</span> <span class="n">tags</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="s2">&quot;camera_motion&quot;</span><span class="p">:</span> <span class="n">summarize_camera_motion</span><span class="p">(</span><span class="n">motion</span><span class="p">),</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>    <span class="p">}</span>
+</code></pre></div>
+<p><em>Listing P14-7: Process flow example</em></p>
+<p>Using a controlled vocabulary is strongly recommended here, to avoid letting the model generate tags freely. Free-text tags appear richer but are difficult to use for retrieval, bucketing, and training sampling; controlled tags have a limited expressive range but group similar samples under consistent fields. For example, <code>close_up</code>, <code>medium</code>, and <code>wide</code> can be used directly for shot-size stratification; <code>golden_hour</code>, <code>backlit</code>, and <code>low_key</code> can be used for lighting distribution statistics; <code>pan_left</code>, <code>zoom_in</code>, and <code>jitter</code> can be used to construct camera motion control samples. In T2V training, these structured fields enter engineering workflows more readily than a polished but uncontrollable prose description.</p>
+<p>After completing Step 6, the final sample can be organized as follows:</p>
+<p>Listing P14-8 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">final_sample</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="s2">&quot;shot_id&quot;</span><span class="p">:</span> <span class="s2">&quot;pexels_123456_shot_0003&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;video_id&quot;</span><span class="p">:</span> <span class="mi">123456</span><span class="p">,</span> <span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;pexels&quot;</span><span class="p">,</span> <span class="s2">&quot;page_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://...&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;segment_path&quot;</span><span class="p">:</span> <span class="s2">&quot;shots/pexels_123456/shot_0003.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;start_ts&quot;</span><span class="p">:</span> <span class="mf">12.48</span><span class="p">,</span> <span class="s2">&quot;end_ts&quot;</span><span class="p">:</span> <span class="mf">17.92</span><span class="p">},</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">&quot;filters&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;motion_strength&quot;</span><span class="p">:</span> <span class="mf">1.37</span><span class="p">,</span> <span class="s2">&quot;pass_motion&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;aesthetic_score&quot;</span><span class="p">:</span> <span class="mf">6.21</span><span class="p">},</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s2">&quot;caption&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;caption_en&quot;</span><span class="p">:</span> <span class="s2">&quot;A person walks through a sunlit urban street...&quot;</span><span class="p">,</span> <span class="s2">&quot;caption_short&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="s2">&quot;shot_language&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="s2">&quot;shot_size&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="s2">&quot;camera_angle&quot;</span><span class="p">:</span> <span class="s2">&quot;eye_level&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="s2">&quot;lighting&quot;</span><span class="p">:</span> <span class="s2">&quot;natural&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="s2">&quot;style&quot;</span><span class="p">:</span> <span class="s2">&quot;cinematic&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span class="s2">&quot;camera_motion&quot;</span><span class="p">:</span> <span class="s2">&quot;pan_right&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="p">},</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing P14-8: Python implementation excerpt</em></p>
+<p>This structure already has the basic form of trainable data. Safety filtering (NSFW), OCR/watermark filtering, deduplication, class resampling, and WebDataset packaging can all be added subsequently. The key principle to keep in mind throughout this pipeline is the sample organization approach: video samples progressively accumulate learnable supervision signals at each stage, and are finally organized into training data. Shot segmentation provides temporal boundaries, motion filtering provides dynamic quality, aesthetic filtering provides visual quality, multi-frame captioning provides semantic supervision, and cinematic language annotation provides shooting control information. Used together, these fields make it substantially easier for T2V models to establish stable "text—action—shot" correspondences.</p>
+<h2 id="4-engineering-execution-resumable-processing-sharding-and-gpu-memory-degradation">4. Engineering Execution: Resumable Processing, Sharding, and GPU Memory Degradation<a class="headerlink" href="#4-engineering-execution-resumable-processing-sharding-and-gpu-memory-degradation" title="Permanent link">&para;</a></h2>
+<p>The code in this project is not a one-off notebook but is organized as a production pipeline. <code>run_pipeline.sh</code> chains the six stages into an end-to-end workflow, controlled via environment variables for data directory, output directory, GPU count, sample limit, and model paths. Default configuration includes <code>ROOT</code>, <code>OUT</code>, <code>SRC</code>, <code>N_GPU</code>, <code>MAX_SAMPLES</code>, <code>CLIP_PATH</code>, <code>MLP_PATH</code>, and <code>QWEN_PATH</code>. These variables should be written into the experiment record to avoid retaining only the final JSONL while losing the runtime environment.</p>
+<p>Listing P14-9 shows the core form of the run entry point. This command is not the only deployment method, but it illustrates the minimum engineering boundary of this project: input directory, output directory, GPU count, sample limit, and model paths must all be provided explicitly.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">ROOT</span><span class="o">=</span>/data0/book_code<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nv">OUT</span><span class="o">=</span>/data0/book_code/stage1_output<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nv">SRC</span><span class="o">=</span>/data0/book<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nv">N_GPU</span><span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nv">MAX_SAMPLES</span><span class="o">=</span><span class="m">5000</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nv">CLIP_PATH</span><span class="o">=</span>/data0/vit-large<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="nv">MLP_PATH</span><span class="o">=</span>/data0/improved-aesthetic-predictor/sac+logos+ava1-l14-linearMSE.pth<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="nv">QWEN_PATH</span><span class="o">=</span>/data0/qwen-vl<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>bash<span class="w"> </span>run_pipeline.sh
+</code></pre></div>
+<p><em>Listing P14-9: Command-line run example</em></p>
+<p>This command serves to fix the runtime context rather than to demonstrate all parameters. A true production run must also record the versions of CUDA, PyTorch, Transformers, PySceneDetect, ffmpeg, CLIP weights, Qwen2.5-VL weights, and the LAION-Aesthetic MLP weights.</p>
+<p>Three categories of engineering controls in the script deserve individual explanation. The first is <strong>checkpoint resumption</strong>. Each stage uses <code>repair_tail</code> to fix potentially corrupted JSONL tails, <code>scan_done_ids</code> to scan already-completed <code>video_id</code> or <code>shot_id</code> entries, and <code>SafeJsonlWriter</code> to append new results. This design allows scripts to resume after a mid-run failure without discarding already-processed clips.</p>
+<p>The second is <strong>sharded execution</strong>. CPU stages use multi-process workers; GPU stages partition samples deterministically by <code>shard-id</code> and <code>num-shards</code>. Aesthetic scoring, captioning, and cinematic language annotation can all be distributed across multiple GPUs running in parallel. Each GPU writes to an independent shard, which is subsequently merged via <code>utils.merge_shards</code>. This avoids multiple processes writing to the same file simultaneously and makes it easy to identify which GPU or shard encountered an anomaly.</p>
+<p>The third is <strong>GPU memory degradation</strong>. <code>aesthetic_filter.py</code>, <code>caption_with_vlm.py</code>, and <code>shot_language_tagger.py</code> all incorporate <code>DegradePolicy</code> and <code>safe_call</code>. When an OOM error occurs, the script progressively reduces batch size, frame count, maximum resolution, or generation length rather than terminating the entire pipeline. For video tasks, this is important because the frame complexity and model input length vary greatly across shots, and a statically fixed batch size is easily disrupted by individual outlier samples.</p>
+<p>Table P14-2 summarizes the key runtime parameters and their effects.</p>
+<p><em>Table P14-2: Key runtime parameters of the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default or Example</th>
+<th>Scope of Effect</th>
+<th>Tuning Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scene_detect.py --threshold</code></td>
+<td><code>27.0</code></td>
+<td>Number and completeness of detected shots</td>
+<td>Inspect a sample of segmentation results before fixing the threshold</td>
+</tr>
+<tr>
+<td><code>scene_detect.py --min-shot-len</code></td>
+<td><code>1.0</code> seconds</td>
+<td>Whether short clips are retained</td>
+<td>T2V training typically discards excessively short shots</td>
+</tr>
+<tr>
+<td><code>motion_filter.py --threshold</code></td>
+<td><code>0.5</code></td>
+<td>Recall rate of dynamic clips</td>
+<td>Lower for slow-motion or scenic footage</td>
+</tr>
+<tr>
+<td><code>aesthetic_filter.py --frames</code></td>
+<td><code>4</code></td>
+<td>Stability and compute cost of aesthetic scoring</td>
+<td>Increase frame count when quality varies widely</td>
+</tr>
+<tr>
+<td><code>aesthetic_filter.py --threshold</code></td>
+<td><code>5.0</code></td>
+<td>Visual quality gate</td>
+<td>Recommend retaining scores first, then bucketing for training</td>
+</tr>
+<tr>
+<td><code>caption_with_vlm.py --frames</code></td>
+<td><code>8</code></td>
+<td>Temporal information in captions</td>
+<td>Increase for clips with complex action</td>
+</tr>
+<tr>
+<td><code>caption_with_vlm.py --min-words</code></td>
+<td><code>50</code></td>
+<td>Caption verbosity</td>
+<td>Word count cannot substitute for factual accuracy</td>
+</tr>
+<tr>
+<td><code>MAX_SAMPLES</code></td>
+<td><code>5000</code></td>
+<td>Experiment scale</td>
+<td>Set a small value first for teaching or smoke testing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-quality-acceptance-and-release-gates">5. Quality Acceptance and Release Gates<a class="headerlink" href="#5-quality-acceptance-and-release-gates" title="Permanent link">&para;</a></h2>
+<p>Accepting a video generation dataset cannot be reduced to "checking whether captions were generated." For T2V training, at minimum, provenance, clips, motion, visual quality, text, cinematic tags, and safety boundaries must all be simultaneously verified. Table P14-3 provides the publication-grade acceptance criteria for this project.</p>
+<p><em>Table P14-3: Publication acceptance checklist for the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Acceptance Dimension</th>
+<th>Metric / Evidence</th>
+<th>Pre-Release Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provenance compliance</td>
+<td><code>license</code>, <code>page_url</code>, <code>author_name</code>, source file path</td>
+<td>Randomly sample and trace back to original pages; confirm authorization and attribution fields are complete</td>
+</tr>
+<tr>
+<td>Segmentation quality</td>
+<td>Shot duration distribution, empty clip rate, segmentation failure log</td>
+<td>Spot-check whether boundaries cross scenes or produce excessively short fragments</td>
+</tr>
+<tr>
+<td>Motion quality</td>
+<td><code>motion_strength</code> distribution, <code>pass_motion</code> ratio</td>
+<td>Inspect low- and high-scoring samples; verify threshold does not incorrectly discard slow-motion clips</td>
+</tr>
+<tr>
+<td>Visual quality</td>
+<td><code>aesthetic_score</code> distribution, proportion of anomalous status</td>
+<td>Separately spot-check low-scoring, high-scoring, and boundary samples</td>
+</tr>
+<tr>
+<td>Caption quality</td>
+<td><code>n_words</code>, <code>caption_short</code>, manual consistency spot-check</td>
+<td>Check for frame enumeration, fabricated subjects, or missing actions</td>
+</tr>
+<tr>
+<td>Cinematic language</td>
+<td>Controlled vocabulary hit rate, <code>unknown</code> proportion, camera motion distribution</td>
+<td>Verify tags are usable for retrieval, bucketing, and control training</td>
+</tr>
+<tr>
+<td>Resumability</td>
+<td>Shard files, logs, <code>_DONE</code> markers, merge results</td>
+<td>Confirm that failed reruns do not produce duplicate writes or lost samples</td>
+</tr>
+<tr>
+<td>Safety boundary</td>
+<td>NSFW, watermark, OCR, portrait rights, and sensitive scene checks</td>
+<td>Safety filter records must be supplemented before publication or public release</td>
+</tr>
+</tbody>
+</table>
+<p>During acceptance, it is recommended to divide samples into three spot-check groups. The first group consists of samples that pass all filters, used to confirm final training set quality. The second group consists of samples just below threshold — boundary cases used to determine whether the threshold is too strict. The third group consists of failed samples, used to determine whether failures originate from the data itself, model calls, GPU OOM, missing paths, or corrupted JSONL. Inspecting only passing samples while ignoring failed ones consistently leads to overestimating pipeline quality.</p>
+<h2 id="6-common-failures-and-localization-paths">6. Common Failures and Localization Paths<a class="headerlink" href="#6-common-failures-and-localization-paths" title="Permanent link">&para;</a></h2>
+<p>Common issues in P14 can be localized by stage. If the count in <code>source_videos.jsonl</code> is anomalous, first check whether <code>pexels_manifest.jsonl</code> exists, whether video paths are accessible, and whether <code>ffprobe</code> is installed. If <code>stage2_scenes.jsonl</code> is empty, first check the PySceneDetect threshold, video encoding format, and ffmpeg split output. If the motion filter pass rate is too low, examine <code>proxy_w</code>, <code>proxy_h</code>, <code>stride</code>, and the threshold, rather than immediately concluding that the videos are invalid.</p>
+<p>GPU-stage failures typically fall into three categories. The first is incorrect weight paths, such as <code>CLIP_PATH</code>, <code>MLP_PATH</code>, or <code>QWEN_PATH</code> not existing. The second is insufficient GPU memory — in this case, observe whether the log shows <code>DegradePolicy</code> has already reduced to a smaller batch, lower resolution, or fewer frames. The third is single-sample anomalies, such as a video that cannot be frame-sampled, a corrupted frame file, or an unexpected VLM response format. For the third category, the entire shard should not be allowed to fail — the affected sample should be marked <code>status="error"</code> and deferred to a subsequent post-mortem.</p>
+<p>When final manifest construction fails, the cause is typically not a model issue but inconsistent primary keys across stages. All stages must use <code>shot_id</code> as the join key. If a given stage used a different naming convention, downstream joins will produce missing fields. Troubleshooting should start from <code>stage2_scenes.jsonl</code> and check, stage by stage, the count of <code>shot_id</code> entries, duplicates, and missing values.</p>
+<h2 id="7-final-manifest-and-training-integration">7. Final Manifest and Training Integration<a class="headerlink" href="#7-final-manifest-and-training-integration" title="Permanent link">&para;</a></h2>
+<p>After the first six stages are complete, the project must merge the distributed provenance, clip, filter, caption, and cinematic language fields into a manifest that can be consumed by the training side. This step is handled in the code by <code>utils.build_manifest</code>. Its responsibility is not to generate new content but to organize multi-stage evidence into a stable sample contract. For T2V training, the final manifest must at minimum answer five questions: where is the video clip, what is the text supervision, do the quality signals pass, what are the cinematic language tags, and can the sample be traced back to its source.</p>
+<p>Table P14-4 presents the recommended field structure for the final manifest.</p>
+<p><em>Table P14-4: Recommended field structure for the T2V final manifest</em></p>
+<table>
+<thead>
+<tr>
+<th>Field Group</th>
+<th>Fields</th>
+<th>Source Stage</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Identity fields</td>
+<td><code>shot_id</code>, <code>video_id</code>, <code>idx</code></td>
+<td>scene detect</td>
+<td>Sample primary key and join key</td>
+</tr>
+<tr>
+<td>Provenance fields</td>
+<td><code>license</code>, <code>page_url</code>, <code>author_name</code>, <code>source_path</code></td>
+<td>source load</td>
+<td>Authorization, attribution, and retraction</td>
+</tr>
+<tr>
+<td>Temporal fields</td>
+<td><code>start_ts</code>, <code>end_ts</code>, <code>duration</code></td>
+<td>scene detect</td>
+<td>Training clip boundaries</td>
+</tr>
+<tr>
+<td>File fields</td>
+<td><code>segment_path</code>, <code>frame_paths</code></td>
+<td>scene detect / caption</td>
+<td>Training read access and manual spot-checks</td>
+</tr>
+<tr>
+<td>Motion fields</td>
+<td><code>motion_strength</code>, <code>pass_motion</code>, <code>camera_motion</code></td>
+<td>motion / shot tags</td>
+<td>Dynamic quality and camera motion control</td>
+</tr>
+<tr>
+<td>Visual quality</td>
+<td><code>aesthetic_score</code>, <code>pass_aesthetic</code>, <code>per_frame_scores</code></td>
+<td>aesthetic filter</td>
+<td>Quality bucketing and sampling weights</td>
+</tr>
+<tr>
+<td>Text supervision</td>
+<td><code>caption_en</code>, <code>n_words</code>, <code>caption_short</code></td>
+<td>VLM caption</td>
+<td>T2V text conditioning</td>
+</tr>
+<tr>
+<td>Cinematic language</td>
+<td><code>shot_size</code>, <code>camera_angle</code>, <code>lighting</code>, <code>style</code></td>
+<td>shot tags</td>
+<td>Control training and retrieval</td>
+</tr>
+<tr>
+<td>Audit fields</td>
+<td><code>status</code>, <code>error</code>, <code>run_id</code>, <code>model_versions</code></td>
+<td>all stages</td>
+<td>Post-mortem and release gates</td>
+</tr>
+</tbody>
+</table>
+<p>When integrating with training, it is not advisable to immediately write all fields into the model input. A more prudent approach is to use the manifest in three layers. The first layer is training-essential fields, including <code>segment_path</code> and <code>caption_en</code>. The second layer is sampling control fields, including <code>motion_strength</code>, <code>aesthetic_score</code>, <code>shot_size</code>, and <code>camera_motion</code>. The third layer is audit fields, including provenance, authorization, run batch, and error status. The training data loader needs to read only the first layer and part of the second; the auditing system and data dashboard require the complete set of fields.</p>
+<p>Table P14-5 presents three common training integration approaches.</p>
+<p><em>Table P14-5: Training integration approaches for video generation datasets</em></p>
+<table>
+<thead>
+<tr>
+<th>Integration Approach</th>
+<th>Data Organization</th>
+<th>Applicable Scenario</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JSONL manifest + local video</td>
+<td>JSONL pointing to <code>segment_path</code></td>
+<td>Single-machine teaching, internal experiments</td>
+<td>Manifest must be rewritten if paths are migrated</td>
+</tr>
+<tr>
+<td>WebDataset tar shards</td>
+<td><code>.tar</code> containing video, caption, metadata</td>
+<td>Large-scale distributed training</td>
+<td>Shard size, sample ordering, and index must be fixed</td>
+</tr>
+<tr>
+<td>Object storage URI</td>
+<td>Manifest pointing to S3/OSS/HDFS URI</td>
+<td>Multi-machine training and platform deployments</td>
+<td>Requires permissions, caching, and failure retry</td>
+</tr>
+</tbody>
+</table>
+<p>If the training framework only accepts a simple "video path + caption" format, the remaining fields should not be discarded. A narrow-format training file can be generated while retaining the wide-format audit manifest. The narrow format serves training throughput; the wide format serves data governance. Both are linked via <code>shot_id</code>.</p>
+<h2 id="8-deliverable-directory-and-version-freezing">8. Deliverable Directory and Version Freezing<a class="headerlink" href="#8-deliverable-directory-and-version-freezing" title="Permanent link">&para;</a></h2>
+<p>P14 deliverables should not consist solely of the final manifest. A video data pipeline involves video clips, sampled frames, model outputs, quality scores, and logs — any missing component will impair reproducibility. Table P14-6 presents the recommended directory structure.</p>
+<p><em>Table P14-6: Deliverable directory for the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+<th>Publication Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_videos.jsonl</code></td>
+<td>Source video manifest and ffprobe metadata</td>
+<td>Publish a de-identified version</td>
+</tr>
+<tr>
+<td><code>shots/</code></td>
+<td>Single-shot clips</td>
+<td>Determine based on Pexels or internal licensing</td>
+</tr>
+<tr>
+<td><code>frames/</code></td>
+<td>Sampled frames for each shot</td>
+<td>Usable for spot-checks; confirm authorization before public release</td>
+</tr>
+<tr>
+<td><code>stages/stage2_scenes.jsonl</code></td>
+<td>Shot segmentation results</td>
+<td>Publishable</td>
+</tr>
+<tr>
+<td><code>stages/stage3_motion.jsonl</code></td>
+<td>Motion filtering results</td>
+<td>Publishable</td>
+</tr>
+<tr>
+<td><code>stages/stage4_aesthetic.jsonl</code></td>
+<td>Aesthetic scoring results</td>
+<td>Publishable</td>
+</tr>
+<tr>
+<td><code>stages/stage5_captions.jsonl</code></td>
+<td>Multi-frame caption results</td>
+<td>Publish after spot-check review</td>
+</tr>
+<tr>
+<td><code>stages/stage6_shot_language.jsonl</code></td>
+<td>Cinematic language and camera motion tags</td>
+<td>Publishable</td>
+</tr>
+<tr>
+<td><code>logs/</code></td>
+<td>Per-stage logs and GPU shard logs</td>
+<td>Publish a de-identified version</td>
+</tr>
+<tr>
+<td><code>manifest/final_manifest.jsonl</code></td>
+<td>Final sample manifest for training</td>
+<td>Core release artifact</td>
+</tr>
+<tr>
+<td><code>reports/quality_report.md</code></td>
+<td>Quality, failure, and spot-check report</td>
+<td>Core release evidence</td>
+</tr>
+<tr>
+<td><code>reports/license_audit.md</code></td>
+<td>Provenance, authorization, and takedown mechanism description</td>
+<td>Required for public release</td>
+</tr>
+</tbody>
+</table>
+<p>Version freezing must include at minimum four categories of information. The first is code version, including the commit or release package version of each script. The second is model version, including the path and weight hash for CLIP, the LAION-Aesthetic MLP, Qwen2.5-VL, or InternVL3. The third is tool version, including ffmpeg, PySceneDetect, OpenCV, Transformers, and PyTorch. The fourth is threshold version, including scene threshold, motion threshold, aesthetic threshold, minimum word count, and sampling frame count. Without these records, even with access to the same batch of videos, it is very difficult to reproduce the same set of training samples.</p>
+<h2 id="9-data-dashboard-and-continuous-iteration">9. Data Dashboard and Continuous Iteration<a class="headerlink" href="#9-data-dashboard-and-continuous-iteration" title="Permanent link">&para;</a></h2>
+<p>Before a video dataset enters training, it is advisable to establish a lightweight data dashboard. The dashboard need not be a complex system — even a set of statistical scripts and a Markdown report can significantly improve review efficiency. Table P14-7 presents the recommended dashboard metrics.</p>
+<p><em>Table P14-7: Dashboard metrics for the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Dashboard Metric</th>
+<th>Computed From</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Number of video sources</td>
+<td><code>source_videos.jsonl</code></td>
+<td>Check source material coverage</td>
+</tr>
+<tr>
+<td>Shot duration distribution</td>
+<td><code>stage2_scenes.jsonl</code></td>
+<td>Determine whether segmentation is too fragmented or too coarse</td>
+</tr>
+<tr>
+<td>Motion distribution</td>
+<td><code>stage3_motion.jsonl</code></td>
+<td>Adjust the proportion of dynamic samples</td>
+</tr>
+<tr>
+<td>Aesthetic distribution</td>
+<td><code>stage4_aesthetic.jsonl</code></td>
+<td>Adjust the visual quality threshold</td>
+</tr>
+<tr>
+<td>Caption length distribution</td>
+<td><code>stage5_captions.jsonl</code></td>
+<td>Identify excessively short or templated descriptions</td>
+</tr>
+<tr>
+<td><code>unknown</code> tag proportion</td>
+<td><code>stage6_shot_language.jsonl</code></td>
+<td>Check controlled vocabulary and VLM tag quality</td>
+</tr>
+<tr>
+<td>Failure status counts</td>
+<td>Per-stage <code>status</code> field</td>
+<td>Locate systemic failures</td>
+</tr>
+<tr>
+<td>Spot-check pass rate</td>
+<td>Manual review records</td>
+<td>Decide whether to release</td>
+</tr>
+</tbody>
+</table>
+<p>During continuous iteration, avoid adjusting thresholds based solely on final training outcomes. The more prudent approach is to first observe distributions on the data dashboard, then manually spot-check boundary samples, and finally validate with a small-scale training run. Directly adjusting thresholds by large amounts based on model performance risks attributing training hyperparameter issues to data filtering, or concealing data biases within model metrics.</p>
+<h2 id="10-sample-retraction-and-copyright-response">10. Sample Retraction and Copyright Response<a class="headerlink" href="#10-sample-retraction-and-copyright-response" title="Permanent link">&para;</a></h2>
+<p>Video data requires retraction mechanisms more urgently than plain text or single-image data. A video clip may involve the original author's license, platform permissions, portrait rights, location information, trademarks, watermarks, and on-screen text. Even though this project uses Pexels open-license video as its example, publication should still preserve the path from every final sample back to the original page and author information.</p>
+<p>Table P14-8 presents the video sample retraction workflow.</p>
+<p><em>Table P14-8: Video generation data sample retraction workflow</em></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Action</th>
+<th>Affected Objects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Log the request</td>
+<td>Record video URL, author, requester, reason, and timestamp</td>
+<td>request ticket</td>
+</tr>
+<tr>
+<td>Locate source video</td>
+<td>Find via <code>video_id</code>, <code>page_url</code>, or file hash</td>
+<td><code>source_videos.jsonl</code></td>
+</tr>
+<tr>
+<td>Locate derived shots</td>
+<td>Find all <code>shot_id</code> entries under the same <code>video_id</code></td>
+<td><code>stage2_scenes.jsonl</code></td>
+</tr>
+<tr>
+<td>Delete intermediate artifacts</td>
+<td>Remove corresponding clips, frames, captions, and tags</td>
+<td><code>shots/</code>, <code>frames/</code>, stages</td>
+</tr>
+<tr>
+<td>Rebuild manifest</td>
+<td>Re-merge final manifest and statistical reports</td>
+<td>manifest / reports</td>
+</tr>
+<tr>
+<td>Publish release note</td>
+<td>Record deletion scope, new version number, and impact statistics</td>
+<td>release note</td>
+</tr>
+</tbody>
+</table>
+<p>The retraction workflow requires the final manifest to retain <code>video_id</code>, <code>page_url</code>, <code>author_name</code>, and <code>license</code>. If only <code>segment_path</code> and <code>caption_en</code> are stored, it becomes very difficult to confirm which original video a training sample came from. For public video platforms, authorization status may also change over time; therefore, published versions should freeze a provenance snapshot and specify the policy for responding to subsequent retraction requests.</p>
+<h2 id="11-domain-transfer-from-public-video-to-vertical-video-assets">11. Domain Transfer: From Public Video to Vertical Video Assets<a class="headerlink" href="#11-domain-transfer-from-public-video-to-vertical-video-assets" title="Permanent link">&para;</a></h2>
+<p>The P14 pipeline can be transferred to scenarios such as e-commerce, education, industrial, medical, transportation, and film/advertising footage, but different domains define "trainable clips" differently. Public video emphasizes natural scenes and general motion; industrial video emphasizes defects, processes, and equipment motion; educational video emphasizes whiteboard content, gestures, and demonstration steps; transportation video emphasizes object trajectories, viewpoints, and safety events.</p>
+<p>Table P14-9 presents the adjustment directions for domain transfer.</p>
+<p><em>Table P14-9: Domain transfer considerations for the video generation data pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Video Type</th>
+<th>Stages Requiring Adjustment</th>
+<th>Additional Acceptance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E-commerce</td>
+<td>Product showcases, livestream clips</td>
+<td>Watermark/OCR, product subject stability, brand authorization</td>
+<td>Check for product attribute claims and exaggerated descriptions</td>
+</tr>
+<tr>
+<td>Education</td>
+<td>Lectures, whiteboards, lab demonstrations</td>
+<td>OCR, spoken subtitles, step alignment</td>
+<td>Copyright, answer leakage, and knowledge accuracy</td>
+</tr>
+<tr>
+<td>Industrial</td>
+<td>Production lines, equipment, defect video</td>
+<td>Shot segmentation, slow-motion threshold, anomalous action labels</td>
+<td>Internal permissions and expert defect review</td>
+</tr>
+<tr>
+<td>Transportation</td>
+<td>Dashcam, intersection, drone video</td>
+<td>Object trajectories, occlusion, weather and time-of-day labels</td>
+<td>Privacy, license plate, and face anonymization</td>
+</tr>
+<tr>
+<td>Medical</td>
+<td>Surgery, imaging dynamics, rehabilitation motion</td>
+<td>High-risk content filtering, expert captioning</td>
+<td>Patient privacy and medical expert review</td>
+</tr>
+<tr>
+<td>Film/Advertising</td>
+<td>Raw footage, commercial clips</td>
+<td>Cinematic language, style, copyright metadata</td>
+<td>Copyright chain and redistribution scope</td>
+</tr>
+</tbody>
+</table>
+<p>General thresholds should not be reused directly when transferring to a new domain. For example, many valid industrial videos may show low-speed mechanical motion — an excessively high <code>motion_strength</code> threshold would incorrectly discard them. Educational whiteboard videos may show relatively little frame change, yet OCR content and sequential narration carry training value. Transportation videos may have strong motion, yet privacy and safety filtering are more critical. Accordingly, thresholds should be determined jointly by domain spot-checks and downstream training objectives.</p>
+<h2 id="12-integration-with-the-p13-instruction-factory">12. Integration with the P13 Instruction Factory<a class="headerlink" href="#12-integration-with-the-p13-instruction-factory" title="Permanent link">&para;</a></h2>
+<p>P14 produces high-quality video shots and structured video metadata; P13 produces multimodal instruction data. The two can be combined into Video-Instruct or Video-QA datasets: use P14 to generate <code>segment_path</code>, <code>frame_paths</code>, <code>caption_en</code>, <code>shot_language</code>, and <code>camera_motion</code>, then use P13's templates, judges, multilingual expansion, and packaging mechanisms to produce instruction samples for video understanding or video generation control.</p>
+<p>Table P14-10 presents the integration approach between the two.</p>
+<p><em>Table P14-10: Integration of P14 video fields into the P13 instruction factory</em></p>
+<table>
+<thead>
+<tr>
+<th>P14 Field</th>
+<th>How P13 Can Use It</th>
+<th>Example Task</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>caption_en</code></td>
+<td>As base video description or answer draft</td>
+<td>"Describe the video in detail."</td>
+</tr>
+<tr>
+<td><code>frame_paths</code></td>
+<td>As multi-frame visual input</td>
+<td>"What changes from the first frame to the last frame?"</td>
+</tr>
+<tr>
+<td><code>camera_motion</code></td>
+<td>Construct cinematic language Q&amp;A</td>
+<td>"Is the camera panning or zooming?"</td>
+</tr>
+<tr>
+<td><code>shot_size</code></td>
+<td>Construct composition and framing tasks</td>
+<td>"Identify the shot size and explain why."</td>
+</tr>
+<tr>
+<td><code>lighting</code></td>
+<td>Construct lighting style descriptions</td>
+<td>"Describe the lighting and mood."</td>
+</tr>
+<tr>
+<td><code>motion_strength</code></td>
+<td>Control sample difficulty and sampling weights</td>
+<td>High-dynamic samples used for action understanding</td>
+</tr>
+<tr>
+<td><code>aesthetic_score</code></td>
+<td>Control visual quality bucketing</td>
+<td>High-quality samples used for generation training</td>
+</tr>
+</tbody>
+</table>
+<p>This integration avoids rebuilding video instruction data from scratch. P14 handles video material and temporal quality; P13 handles instruction diversity and language quality. If the scope later expands to video generation control training, the <code>shot_language</code> fields can also be converted into prompt conditions — for example, "a cinematic wide shot with natural lighting and a slow zoom-in over ocean cliffs" — and paired with video clips for T2V training.</p>
+<h2 id="results-and-analysis">Results and Analysis<a class="headerlink" href="#results-and-analysis" title="Permanent link">&para;</a></h2>
+<p>Table P14-11 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P14-11: Example of multi-frame sampling from a video clip</em></p>
+<table>
+<thead>
+<tr>
+<th>frame1</th>
+<th>frame2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="glightbox" href="../../../images/part14/Luo-Project14-Fig01.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="frame1" src="../../../images/part14/Luo-Project14-Fig01.jpg" /></a></td>
+<td><a class="glightbox" href="../../../images/part14/Luo-Project14-Fig02.jpg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="frame2" src="../../../images/part14/Luo-Project14-Fig02.jpg" /></a></td>
+</tr>
+</tbody>
+</table>
+<p>The figure shows two sampled frames from the output data. The clip presents a coastal scene filmed from a high-altitude aerial perspective: deep blue water continuously crashes against rugged reef formations, white foam forms clearly at the edges of the dark rock faces, and sparse green vegetation distributed among the rocks preserves a degree of visual layering within the natural environment. The multi-frame caption covers the clip's subjects, scene, lighting, and atmosphere, describing natural illumination, cool-toned ocean surface, clear rock textures, and the dynamic quality imparted by wave motion. From the cinematic language annotation results, this shot is identified as <code>extreme_wide</code> shot size, <code>high_angle</code> camera angle, <code>rule_of_thirds</code> composition, <code>natural</code> lighting type, <code>cool</code> overall color tone, and <code>cinematic</code> style tag. The camera motion module classifies it as <code>zoom_in</code>, indicating a noticeable push-in or scale change in the frame; <code>motion_strength=0.8974</code> indicates that the clip carries a stable motion signal and is suitable for T2V training to learn natural scene motion, aerial perspectives, and coastal cinematic language.</p>
+<p>For formal acceptance, the project must satisfy at least four conditions: first, all samples can be traced back through <code>shot_id</code> to the source video, author, page URL, and license status; second, video clip paths, start/end timestamps, and frame counts are consistent with the actual files; third, motion intensity, aesthetic scores, captions, and cinematic language tags can be read by downstream training or sampling scripts; fourth, samples with low quality, low motion, unclear provenance, or unverified licensing do not enter the formal training set. Only when all these conditions are simultaneously satisfied does the pipeline output meet the basic prerequisites for advancing from prototype validation to the training data candidate pool.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter followed a video generation data pipeline from video sources through clip segmentation, captioning, quality scoring, and training packaging. Its main lesson is that T2V data assets need task definition, data boundaries, architecture choices, sample schema, metric acceptance, and reproducibility resources on the same chain.</p>
+<p>The scope is public video samples and a small-scale pipeline. It does not cover full commercial copyright management or large-scale video platforms. Larger-scale, higher-risk, or stricter compliance settings require renewed review of data sources, permission status, manual review proportions, operating costs, and rollback strategies.</p>
+<p>As part of Part XIV, this chapter corresponds to the project-level validation of the methods presented earlier in this book. Readers may combine this case with the data recipes in Part XIII, the platform governance chapters earlier in the book, and the checklists in the appendix to form a closed loop from methodological understanding to engineering delivery.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.</p>
+<p>Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, others (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.</p>
+<p>Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, others (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Farnebäck G (2003) Two-Frame Motion Estimation Based on Polynomial Expansion. In: Proceedings of the 13th Scandinavian Conference on Image Analysis, pp 363–370. https://doi.org/10.1007/3-540-45103-x_50.</p>
+<p>Pexels (2014) Pexels: Free Stock Photos, Royalty Free Images &amp; Videos. Available at: https://www.pexels.com.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models from Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748–8763.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278–25294. Available at: https://arxiv.org/abs/2210.08402.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../p13_multimodal_instruction_factory/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Project 13: Qwen-VL Multimodal Instruction Factory">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Project 13: Qwen-VL Multimodal Instruction Factory
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../p15_dataagent_semantic_nl2sql_agent/" class="md-footer__link md-footer__link--next" aria-label="Next: Project 15: DataAgent Semantic Business Intelligence Assistant">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Project 15: DataAgent Semantic Business Intelligence Assistant
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,4104 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part2/ch04_data_sources/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../ch05_cleaning_dedup/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 4: Data Sources, Acquisition, and Copyright - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-4-data-sources-acquisition-and-copyright" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 4: Data Sources, Acquisition, and Copyright
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part2/ch04_data_sources/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part2/ch04_data_sources/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-why-a-team-with-enough-data-still-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Why a Team With "Enough Data" Still Failed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#41-why-pre-training-corpora-can-fail-at-the-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Why Pre-training Corpora Can Fail at the Source
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 Why Pre-training Corpora Can Fail at the Source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-source-selection-sets-the-capability-ceiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.1 Source Selection Sets the Capability Ceiling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-three-classic-source-selection-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.2 Three Classic Source-Selection Mistakes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-the-misunderstanding-that-more-data-is-always-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.3 The Misunderstanding That "More Data Is Always Better"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-source-map-and-mixing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Source Map and Mixing Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Source Map and Mixing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-eight-core-source-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.1 Eight Core Source Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-source-type-license-and-risk-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.2 Source Type, License, and Risk Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-from-business-goals-to-data-mix-plans" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.3 From Business Goals to Data Mix Plans
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43-ingestion-pipelines-parsing-and-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Ingestion Pipelines, Parsing, and Provenance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 Ingestion Pipelines, Parsing, and Provenance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#431-distributed-asynchronous-crawling-and-robotstxt-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.1 Distributed Asynchronous Crawling and robots.txt Compliance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#432-parsing-heterogeneous-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.2 Parsing Heterogeneous Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#433-provenance-metadata-the-birth-certificate-of-each-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.3 Provenance Metadata: The Birth Certificate of Each Record
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#434-resumability-and-job-reliability" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.4 Resumability and Job Reliability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#44-copyright-licensing-and-traceable-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Copyright, Licensing, and Traceable Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 Copyright, Licensing, and Traceable Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#441-three-license-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.1 Three License Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#442-whitelist-graylist-and-blacklist-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.2 Whitelist, Graylist, and Blacklist Controls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#443-automatic-license-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.3 Automatic License Classification
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#45-case-review-and-practical-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Case Review and Practical Recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.5 Case Review and Practical Recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-1-end-to-end-lessons-from-common-crawl-chinese-corpus-ingestion-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case 1: End-to-End Lessons From Common Crawl Chinese Corpus Ingestion (Anonymized Composite Case)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-2-compliance-risk-in-financial-enterprise-knowledge-base-ingestion-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case 2: Compliance Risk in Financial Enterprise Knowledge-Base Ingestion (Anonymized Composite Case)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-why-a-team-with-enough-data-still-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Why a Team With "Enough Data" Still Failed
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#41-why-pre-training-corpora-can-fail-at-the-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Why Pre-training Corpora Can Fail at the Source
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.1 Why Pre-training Corpora Can Fail at the Source">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#411-source-selection-sets-the-capability-ceiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.1 Source Selection Sets the Capability Ceiling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#412-three-classic-source-selection-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.2 Three Classic Source-Selection Mistakes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#413-the-misunderstanding-that-more-data-is-always-better" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1.3 The Misunderstanding That "More Data Is Always Better"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#42-source-map-and-mixing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Source Map and Mixing Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.2 Source Map and Mixing Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#421-eight-core-source-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.1 Eight Core Source Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#422-source-type-license-and-risk-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.2 Source Type, License, and Risk Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#423-from-business-goals-to-data-mix-plans" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2.3 From Business Goals to Data Mix Plans
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#43-ingestion-pipelines-parsing-and-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Ingestion Pipelines, Parsing, and Provenance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.3 Ingestion Pipelines, Parsing, and Provenance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#431-distributed-asynchronous-crawling-and-robotstxt-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.1 Distributed Asynchronous Crawling and robots.txt Compliance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#432-parsing-heterogeneous-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.2 Parsing Heterogeneous Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#433-provenance-metadata-the-birth-certificate-of-each-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.3 Provenance Metadata: The Birth Certificate of Each Record
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#434-resumability-and-job-reliability" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3.4 Resumability and Job Reliability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#44-copyright-licensing-and-traceable-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Copyright, Licensing, and Traceable Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.4 Copyright, Licensing, and Traceable Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#441-three-license-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.1 Three License Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#442-whitelist-graylist-and-blacklist-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.2 Whitelist, Graylist, and Blacklist Controls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#443-automatic-license-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4.3 Automatic License Classification
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#45-case-review-and-practical-recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Case Review and Practical Recommendations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4.5 Case Review and Practical Recommendations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-1-end-to-end-lessons-from-common-crawl-chinese-corpus-ingestion-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case 1: End-to-End Lessons From Common Crawl Chinese Corpus Ingestion (Anonymized Composite Case)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-2-compliance-risk-in-financial-enterprise-knowledge-base-ingestion-anonymized-composite-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case 2: Compliance Risk in Financial Enterprise Knowledge-Base Ingestion (Anonymized Composite Case)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-4-data-sources-acquisition-and-copyright">Chapter 4: Data Sources, Acquisition, and Copyright<a class="headerlink" href="#chapter-4-data-sources-acquisition-and-copyright" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Ke Wang; Changwen Chen</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter examines source governance for text pre-training data. It answers three practical questions: which data may be collected, how it should be collected, and how the team can later prove the origin and license boundary of each batch. We first explain why source selection determines model capability, copyright exposure, and the ceiling of downstream cleaning. We then establish a source taxonomy covering open web pages, forums and Q&amp;A, encyclopedic knowledge, code, academic papers, books, enterprise data, and user feedback. The chapter then turns to production ingestion: distributed crawling, heterogeneous parsing, metadata provenance, resumable jobs, and reliability. Finally, it introduces whitelist, graylist, blacklist, and license-classification mechanisms, followed by two anonymized composite cases on Common Crawl processing and internal financial-document governance. After this chapter, readers should be able to build an auditable source inventory, license-decision framework, and metadata standard before large-scale crawling or internal-data ingestion begins.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data sources; data acquisition; copyright license; Common Crawl; provenance metadata; robots.txt; license classification; source governance</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Distinguish the quality value, scale potential, and license risk of major pre-training data sources.</li>
+<li>Design an ingestion pipeline that includes robots.txt checks, parser-quality review, and resumable processing.</li>
+<li>Record source, license, parser version, processing configuration, and ownership metadata for every data batch.</li>
+<li>Reduce copyright risk with whitelist, graylist, blacklist, and license-classification mechanisms.</li>
+<li>Explain why source governance determines the upper bound of later cleaning and training-data quality.</li>
+</ul>
+<h2 id="opening-scenario-why-a-team-with-enough-data-still-failed">Opening Scenario: Why a Team With "Enough Data" Still Failed<a class="headerlink" href="#opening-scenario-why-a-team-with-enough-data-still-failed" title="Permanent link">&para;</a></h2>
+<p>The following anonymized composite case uses approximate figures to illustrate engineering scale and risk. An AI research institute spent three months crawling public web resources and accumulated more than 2 TB of Chinese text. By a Chinchilla-style compute/data estimate, this appeared sufficient for one pre-training run of a 7B model. The team launched a two-week training job costing hundreds of thousands of RMB in compute. The first evaluation was disappointing: the model underperformed comparable open-source baselines on Chinese reading comprehension and mathematical reasoning. Worse, it frequently generated SEO-style filler paragraphs and fragments that resembled web-novel forum content.</p>
+<p>The training run itself was healthy. The problem was the data. After review, the team found that nearly 60% of the 2 TB corpus came from SEO content farms, roughly 15% came from web novels with uncertain copyright status, and less than 25% contained dense knowledge such as encyclopedic articles, technical documents, or academic summaries. In effect, the team had not collected "data"; it had collected web noise. The model faithfully learned the distribution it was given, producing fluent but hollow text.</p>
+<p>This case reveals a basic rule of pre-training data engineering: <strong>source quality determines the ceiling that later cleaning can reach</strong>. If the source is low-quality by nature, even a sophisticated cleaning pipeline can only remove some noise; it cannot create missing knowledge density or retroactively repair license uncertainty.</p>
+<hr />
+<h2 id="41-why-pre-training-corpora-can-fail-at-the-source">4.1 Why Pre-training Corpora Can Fail at the Source<a class="headerlink" href="#41-why-pre-training-corpora-can-fail-at-the-source" title="Permanent link">&para;</a></h2>
+<h3 id="411-source-selection-sets-the-capability-ceiling">4.1.1 Source Selection Sets the Capability Ceiling<a class="headerlink" href="#411-source-selection-sets-the-capability-ceiling" title="Permanent link">&para;</a></h3>
+<p>Pre-training teaches a language model to "read" large-scale text and form a statistical map of language, facts, and implicit reasoning patterns. At this stage the model is not learning an explicit rulebook. It is fitting the distribution of the training corpus. Therefore, the model tends to generate what the corpus teaches it to generate.</p>
+<p>The implication is direct: <strong>the quality ceiling of pre-training data is the capability ceiling of the model</strong>. A model pre-trained on diverse, high-density sources can often become useful with a modest amount of SFT data. A model pre-trained on biased or low-quality sources is much harder to repair later, because SFT mostly changes behavior and interaction style; it cannot inject a missing foundation of world knowledge, reasoning structure, or domain coverage that the base model never learned.</p>
+<h3 id="412-three-classic-source-selection-mistakes">4.1.2 Three Classic Source-Selection Mistakes<a class="headerlink" href="#412-three-classic-source-selection-mistakes" title="Permanent link">&para;</a></h3>
+<p>Postmortems of failed pre-training projects repeatedly expose three patterns.</p>
+<p><strong>Biased sources.</strong> The corpus is dominated by one platform, one population, or one writing style. A team may use a leading content platform because the content looks polished, only to find that the resulting model is excellent at that platform's voice and weak at academic writing, legal texts, technical manuals, or other registers. The model develops a strong "platform accent."</p>
+<p><strong>Low-density sources.</strong> The corpus is large but information-poor. SEO farms are the most obvious example. Another common example is direct crawling of repost-heavy social feeds. Individual sentences may be grammatical, but the content is mostly emotional fragments, duplicated slogans, or low-information commentary. Such material is a poor substrate for long-term memory and knowledge extraction.</p>
+<p><strong>High copyright-risk sources.</strong> Some data is large and high-quality but legally dangerous. From 2023 to 2024, OpenAI, Google, Stability AI, and others faced lawsuits from publishers, media organizations, and authors over training-data copyright. In China, the Interim Measures for Generative AI Services also require compliant training data and place responsibility for data legality on providers. Ignoring this risk can create legal and commercial exposure long after the model ships.</p>
+<h3 id="413-the-misunderstanding-that-more-data-is-always-better">4.1.3 The Misunderstanding That "More Data Is Always Better"<a class="headerlink" href="#413-the-misunderstanding-that-more-data-is-always-better" title="Permanent link">&para;</a></h3>
+<p>"More data is better" is one of the most common but most easily abused ideas in pre-training. At the macro level it is partly true: if quality is held constant, scale improves capability. At the engineering level it often becomes a substitute for judgment.</p>
+<p>The FineWeb paper (Penedo et al. 2024) offers an important observation: under the same token-count constraint, high-quality web corpora filtered from Common Crawl can train stronger models, and data cleaning, deduplication, and source-mixing plans significantly affect final results. DCLM/DataComp-LM further organizes this question into a comparable data-mix benchmark: under a fixed training budget, different data filtering and mixing strategies lead to noticeably different downstream performance (Li et al. 2024). In other words, "less but refined" can outperform "more but mixed" in pretraining data, but the conclusion must be tied to the experimental setting, model scale, and evaluation set.</p>
+<p>This conclusion lays the foundation for the source-selection strategy throughout the chapter: <strong>the data mix plan should prioritize each source's knowledge density and information diversity rather than raw volume.</strong></p>
+<hr />
+<h2 id="42-source-map-and-mixing-strategy">4.2 Source Map and Mixing Strategy<a class="headerlink" href="#42-source-map-and-mixing-strategy" title="Permanent link">&para;</a></h2>
+<p>If this chapter is an audit checklist for LLM data engineering, the source map is the central view. Before collecting anything, the team should answer: where does the corpus come from, how much does each source contribute, and what are the quality and legal risks?</p>
+<p>Figure 4-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part2/Yu-Chap04-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 4-1: Layered map of pre-training data sources" src="../../../images/part2/Yu-Chap04-Fig01.svg" /></a></p>
+<p><em>Figure 4-1: Layered map of pre-training data sources</em></p>
+<p>The three-layer taxonomy positions mainstream sources by processing complexity, knowledge density, and license risk, with typical reference ranges for mixing.</p>
+<h3 id="421-eight-core-source-categories">4.2.1 Eight Core Source Categories<a class="headerlink" href="#421-eight-core-source-categories" title="Permanent link">&para;</a></h3>
+<p><strong>Open web</strong> is the largest and most difficult source category, represented by Common Crawl. Since 2008, Common Crawl has continuously crawled the web and released monthly snapshots containing billions of pages. Its accumulated scale is beyond the petabyte level, and many large pre-training corpora use it as an upstream source. Raw web quality varies dramatically: according to FineWeb, a limited portion of raw Common Crawl is dense body text, while large portions are navigation, ads, SEO spam, JavaScript, and boilerplate. Strict cleaning is mandatory.</p>
+<p><strong>Forums and Q&amp;A</strong> include Reddit, StackOverflow, Zhihu, Quora, and similar platforms. Their value is natural interaction around real questions: follow-ups, corrections, debate, and community explanations. This is useful for conversational ability and question-understanding. StackOverflow remains especially important for code and technical reasoning. The practical caveat is access: many platforms tightened or monetized APIs in 2023-2024, making acquisition more difficult.</p>
+<p><strong>Encyclopedias and structured knowledge</strong> include Wikipedia, Wikidata, and domain wikis. Wikipedia is a near-universal component of pre-training mixtures because it is multilingual, dense, and relatively fact-oriented. It may only represent 1-3% of a training corpus by volume, yet it often contributes disproportionately to factual reliability.</p>
+<p><strong>Code</strong> comes from open-source repositories on GitHub/GitLab and from curated datasets such as The Stack. Code data improves code generation and often transfers positively to natural-language reasoning, likely because code forces structured logic. The Stack is valuable because it organizes hundreds of languages and provides license-filtered versions that retain permissive licenses such as MIT and Apache-2.0.</p>
+<p><strong>Academic papers</strong> include arXiv, PubMed Central, and Semantic Scholar-derived collections. Their knowledge density is extremely high, especially for science, medicine, mathematics, and engineering. arXiv is accessible through an API, but commercial training use still requires careful license review because paper-level licenses differ and have tightened over time.</p>
+<p><strong>Books</strong> offer high language quality, long-context structure, narrative continuity, and deep knowledge. They also carry the highest copyright risk. The Books3 subset in The Pile triggered multiple lawsuits, including litigation involving Meta's LLaMA. Safer approaches include Project Gutenberg for public-domain works or direct licensing from publishers.</p>
+<p><strong>Enterprise proprietary data</strong> is the key differentiator for vertical models. Technical documents, knowledge bases, support tickets, compliance manuals, and SOPs are often dense, structured, and highly relevant. They also contain trade secrets and internal privacy risks, so they require authorization, permission review, and PII removal before training use.</p>
+<p><strong>User feedback and online interaction</strong> form the core of a data flywheel after a model is deployed. Real user conversations, corrections, dissatisfaction signals, and preference labels can feed SFT or RLHF. These records are scarce and valuable, but they are also highly privacy-sensitive and must be governed by consent and redaction.</p>
+<h3 id="422-source-type-license-and-risk-matrix">4.2.2 Source Type, License, and Risk Matrix<a class="headerlink" href="#422-source-type-license-and-risk-matrix" title="Permanent link">&para;</a></h3>
+<p>In practical engineering decisions, source selection cannot be based on quality alone; license risk and acquisition feasibility must also be incorporated into the framework. Table 4-1 summarizes a risk-profile matrix for major data sources.</p>
+<p>License risk should be assessed against specific source terms, robots.txt, service agreements, and legal-review conclusions.</p>
+<p><em>Table 4-1: Source type, license, and risk matrix</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Source type</th>
+<th style="text-align: left;">Representative sources</th>
+<th style="text-align: left;">License pattern</th>
+<th style="text-align: left;">Commercial risk</th>
+<th style="text-align: left;">Knowledge density</th>
+<th style="text-align: left;">Scale potential</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Open web</td>
+<td style="text-align: left;">Common Crawl, RefinedWeb</td>
+<td style="text-align: left;">CC-BY / mixed page licenses</td>
+<td style="text-align: left;">Medium: page-specific</td>
+<td style="text-align: left;">Low to medium</td>
+<td style="text-align: left;">PB-level</td>
+</tr>
+<tr>
+<td style="text-align: left;">Forums and Q&amp;A</td>
+<td style="text-align: left;">Reddit, StackOverflow, Zhihu</td>
+<td style="text-align: left;">Platform terms</td>
+<td style="text-align: left;">Medium: APIs tightened</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">TB-level</td>
+</tr>
+<tr>
+<td style="text-align: left;">Encyclopedias</td>
+<td style="text-align: left;">Wikipedia, Wikidata</td>
+<td style="text-align: left;">CC-BY-SA 4.0</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Hundreds of GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Open-source code</td>
+<td style="text-align: left;">GitHub, The Stack</td>
+<td style="text-align: left;">MIT / Apache-2.0 after filtering</td>
+<td style="text-align: left;">Low with license filtering</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Several TB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Academic papers</td>
+<td style="text-align: left;">arXiv, PubMed</td>
+<td style="text-align: left;">CC-BY / OA with restrictions</td>
+<td style="text-align: left;">Medium: paper-level review</td>
+<td style="text-align: left;">Very high</td>
+<td style="text-align: left;">Hundreds of GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Copyright books</td>
+<td style="text-align: left;">Books3, Z-Library</td>
+<td style="text-align: left;">Protected by default</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Very high</td>
+<td style="text-align: left;">Hundreds of GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Public-domain books</td>
+<td style="text-align: left;">Project Gutenberg, Archive.org</td>
+<td style="text-align: left;">Public domain</td>
+<td style="text-align: left;">Very low</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Several GB</td>
+</tr>
+<tr>
+<td style="text-align: left;">Enterprise data</td>
+<td style="text-align: left;">Knowledge bases, docs, tickets</td>
+<td style="text-align: left;">Private authorization</td>
+<td style="text-align: left;">Low after internal approval</td>
+<td style="text-align: left;">Very high</td>
+<td style="text-align: left;">Project-specific</td>
+</tr>
+<tr>
+<td style="text-align: left;">User conversations</td>
+<td style="text-align: left;">Product feedback, logs</td>
+<td style="text-align: left;">Consent/privacy terms</td>
+<td style="text-align: left;">Medium: PII-sensitive</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Product-specific</td>
+</tr>
+</tbody>
+</table>
+<h3 id="423-from-business-goals-to-data-mix-plans">4.2.3 From Business Goals to Data Mix Plans<a class="headerlink" href="#423-from-business-goals-to-data-mix-plans" title="Permanent link">&para;</a></h3>
+<p>Data mix ratio is one of the most strategic decisions in pretraining data engineering. There is no universal fixed mix, because different business objectives require different data combinations. The following are reference mixing strategies for four typical business objectives:</p>
+<p><em>Table 4-2: Data mix strategy by business objective</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Business objective</th>
+<th style="text-align: left;">General web</th>
+<th style="text-align: left;">Code</th>
+<th style="text-align: left;">Academic papers</th>
+<th style="text-align: left;">Books / encyclopedia</th>
+<th style="text-align: left;">Vertical data</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>General Chinese base model</strong></td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low-medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">Pursues broad knowledge coverage; code should not be too low because it affects reasoning capability.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Code / technical specialized model</strong></td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Low-medium</td>
+<td style="text-align: left;">Low-medium</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">Code proportion rises sharply, but enough general language understanding capability must be retained.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Vertical industry model (e.g., finance/medicine)</strong></td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Domain data proportion rises significantly, while general corpora preserve baseline general capability.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Multilingual base model</strong></td>
+<td style="text-align: left;">High</td>
+<td style="text-align: left;">Medium</td>
+<td style="text-align: left;">Low-medium</td>
+<td style="text-align: left;">Low-medium</td>
+<td style="text-align: left;">Allocated by target language</td>
+<td style="text-align: left;">Language distribution in web data must be controlled to match target language-capability requirements.</td>
+</tr>
+</tbody>
+</table>
+<p>Table 4-2 uses "high/medium/low" rather than fixed percentages to avoid misreading one project's experimental mix as a universal rule. Mixing strategy also needs a <strong>dynamic adjustment mechanism</strong>: different training stages (early pretraining vs. cooldown) should use different mixing weights. The closer training gets to its later stage, the more it should raise the weight of high-quality selected data (books, academic papers, enterprise data) and reduce the weight of low-quality massive data (raw web pages). The LLaMA 3 technical report discloses 15T-scale training data and multi-stage post-training flows (Grattafiori et al. 2024), but it does not provide a directly reusable complete data mix plan; production projects must still calibrate through small-model ablations and frozen evaluation sets.</p>
+<hr />
+<h2 id="43-ingestion-pipelines-parsing-and-provenance">4.3 Ingestion Pipelines, Parsing, and Provenance<a class="headerlink" href="#43-ingestion-pipelines-parsing-and-provenance" title="Permanent link">&para;</a></h2>
+<p>After the source strategy is set, the engineering question becomes: how do we ingest scattered data efficiently, reliably, and legally, while preserving proof for every record?</p>
+<h3 id="431-distributed-asynchronous-crawling-and-robotstxt-compliance">4.3.1 Distributed Asynchronous Crawling and robots.txt Compliance<a class="headerlink" href="#431-distributed-asynchronous-crawling-and-robotstxt-compliance" title="Permanent link">&para;</a></h3>
+<p>For tens of millions of URLs, a single-threaded crawler is insufficient. Production systems usually use distributed asynchronous crawling based on <code>aiohttp</code>, <code>Scrapy</code>, Ray, or Spark. The scheduler must enforce robots.txt checks before request dispatch, both to reduce legal risk and to avoid stressing source sites.</p>
+<p>Listing 4-1 gives a lightweight asynchronous concurrent ingestion framework based on <code>aiohttp</code>. It uses <code>urllib.robotparser</code> to automatically check compliance before sending requests; production environments should also add rate limiting, audit logs, exception retries, and legally maintained source policies.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">aiohttp</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.robotparser</span><span class="w"> </span><span class="kn">import</span> <span class="n">RobotFileParser</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">AsyncEthicalCrawler</span><span class="p">:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_agent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;LLMDataBot/1.0&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span> <span class="o">=</span> <span class="n">user_agent</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">RobotFileParser</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_robots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">,</span> <span class="n">domain</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="n">robots_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;https://</span><span class="si">{</span><span class="n">domain</span><span class="si">}</span><span class="s2">/robots.txt&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">rp</span> <span class="o">=</span> <span class="n">RobotFileParser</span><span class="p">()</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">robots_url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>                    <span class="n">rp</span><span class="o">.</span><span class="n">parse</span><span class="p">((</span><span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">())</span><span class="o">.</span><span class="n">splitlines</span><span class="p">())</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>            <span class="c1"># Production systems should define a legal default here.</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>            <span class="k">pass</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span> <span class="o">=</span> <span class="n">rp</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="n">domain</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="k">if</span> <span class="n">domain</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">:</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_robots</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">domain</span><span class="p">)</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">rp_cache</span><span class="p">[</span><span class="n">domain</span><span class="p">]</span><span class="o">.</span><span class="n">can_fetch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: disallowed by robots.txt&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>            <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>                    <span class="k">return</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to fetch </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">crawl_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        <span class="n">sem</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">concurrency</span><span class="p">)</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;User-Agent&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_agent</span><span class="p">})</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">bounded_fetch</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>                <span class="k">async</span> <span class="k">with</span> <span class="n">sem</span><span class="p">:</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>                    <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">fetch_url</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>            <span class="k">return</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">bounded_fetch</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">))</span>
+</code></pre></div>
+<p><em>Listing 4-1: Example code for asynchronous concurrent ingestion and robots.txt checks</em></p>
+<p>Production environments should add rate limiting, failed retries, audit logs, and source-policy whitelists.</p>
+<p>This design can raise single-machine throughput to hundreds of QPS while preventing accidental access to disallowed paths. Production systems should add rate limits, audit logs, exception retries, and legal-policy controls.</p>
+<h3 id="432-parsing-heterogeneous-sources">4.3.2 Parsing Heterogeneous Sources<a class="headerlink" href="#432-parsing-heterogeneous-sources" title="Permanent link">&para;</a></h3>
+<p>Different sources require different parsing routes. Using the wrong parser either loses valuable content or introduces large amounts of noise.</p>
+<p><strong>HTML and WARC.</strong> Common Crawl provides WARC, WAT, and WET files. WET appears convenient because it contains extracted plain text, but this convenience is a trap for production training. Generic WET extraction often retains navigation, footers, ads, and code fragments. A better route is to parse WARC responses with a high-quality body extractor such as Trafilatura, then evaluate parser yield by language and source.</p>
+<p>Listing 4-2 shows an illustrative flow for parsing body text from WARC files while preserving source metadata.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">warcio.archiveiterator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArchiveIterator</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_warc_to_clean_text</span><span class="p">(</span><span class="n">warc_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">opener</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span> <span class="k">if</span> <span class="n">warc_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.gz&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">open</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="k">with</span> <span class="n">opener</span><span class="p">(</span><span class="n">warc_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">ArchiveIterator</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>            <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_type</span> <span class="o">!=</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="n">url</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_headers</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="s2">&quot;WARC-Target-URI&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>                <span class="n">html</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">content_stream</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>                <span class="k">continue</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>            <span class="n">text</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>                <span class="n">html</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>                <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>                <span class="n">include_comments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>                <span class="n">favor_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>                <span class="n">output_format</span><span class="o">=</span><span class="s2">&quot;txt&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>            <span class="p">)</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>            <span class="k">if</span> <span class="n">text</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>                <span class="n">metadata</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract_metadata</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>                <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>                    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">title</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>                    <span class="s2">&quot;date&quot;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">date</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>                    <span class="s2">&quot;char_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>                    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;common_crawl&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>                    <span class="s2">&quot;warc_file&quot;</span><span class="p">:</span> <span class="n">warc_path</span><span class="p">,</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>                <span class="p">})</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>    <span class="k">return</span> <span class="n">records</span>
+</code></pre></div>
+<p><em>Listing 4-2: Example code for WARC body parsing and source metadata preservation</em></p>
+<p>This snippet shows the parsing path; production environments should add encoding detection, anomalous-sample isolation, and parsing-quality spot checks.</p>
+<p><strong>PDFs.</strong> Academic papers, books, and enterprise documents are harder because PDF is a page-layout format rather than a semantic-text format. Simple extraction with <code>pdfplumber</code> or <code>PyMuPDF</code> often interleaves columns in academic papers. Scientific papers may require GROBID, Nougat, or Mathpix; enterprise PDFs should receive manual sampling after parsing to verify paragraph and table structure.</p>
+<p><strong>Git repositories.</strong> Code should normally be obtained by cloning repositories rather than through partial API pulls. The parser should identify language by extension and content, filter generated or very large files, validate syntax where possible, and read license files. For Python, AST parsing can reject corrupted files; for repository-level governance, permissive license whitelists such as MIT and Apache-2.0 are essential.</p>
+<h3 id="433-provenance-metadata-the-birth-certificate-of-each-record">4.3.3 Provenance Metadata: The Birth Certificate of Each Record<a class="headerlink" href="#433-provenance-metadata-the-birth-certificate-of-each-record" title="Permanent link">&para;</a></h3>
+<p>Traceable metadata is the foundation of data governance. Without it, a team cannot prove the legality of a record during an audit. "We remember it was legal" is not an audit trail.</p>
+<p>Every ingested batch should write metadata at the same time it writes raw data to object storage. The following example fields should be extended according to source type, authorization method, and audit requirements.</p>
+<p>Each ingested batch should write standard fields to the metadata database at the same time it lands in object storage. Listing 4-3 gives example fields; actual systems should extend them according to data source, authorization method, and audit requirements.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;ingestion_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cc-2024-10-zh-batch-0042&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;source_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;common_crawl_2024_10&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;source_url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://commoncrawl/crawl-data/CC-MAIN-2024-10/...&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;ingestion_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-10-15T08:23:41+08:00&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;license_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cc-crawl-mixed&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;license_risk&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;zh&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="nt">&quot;raw_doc_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4280350</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="nt">&quot;raw_size_bytes&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18432000000</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">&quot;parser_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;trafilatura==1.6.3&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;filter_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;min_len=200,favor_precision=true&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">  </span><span class="nt">&quot;s3_prefix&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://my-bucket/raw/cc-2024-10-zh/&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">  </span><span class="nt">&quot;team_contact&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data-team@company.com&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 4-3: Example metadata provenance fields for an ingestion batch</em></p>
+<p>Field values are illustrative examples; production environments should extend them according to authorization method, audit requirements, and data-source type.</p>
+<p>Figure 4-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part2/Yu-Chap04-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 4-2: Data ingestion and provenance chain" src="../../../images/part2/Yu-Chap04-Fig02.svg" /></a></p>
+<p><em>Figure 4-2: Data ingestion and provenance chain</em></p>
+<p>From source contact to final archive, each processing stage appends metadata records to the Provenance Ledger, forming a complete auditable data-lineage chain.</p>
+<h3 id="434-resumability-and-job-reliability">4.3.4 Resumability and Job Reliability<a class="headerlink" href="#434-resumability-and-job-reliability" title="Permanent link">&para;</a></h3>
+<p>Large ingestion jobs often run for days. Node failures, network interruptions, and expired cloud tokens are normal events. Without resumability, every interruption forces a full rerun.</p>
+<p>A robust design splits work into moderately sized checkpoint units, often one WARC file per task. After each file is processed, the state database records completion. When the job restarts, completed files are skipped. Combined with Ray Data or Spark fault tolerance, this reduces manual intervention in large-scale ingestion to near zero.</p>
+<hr />
+<h2 id="44-copyright-licensing-and-traceable-governance">4.4 Copyright, Licensing, and Traceable Governance<a class="headerlink" href="#44-copyright-licensing-and-traceable-governance" title="Permanent link">&para;</a></h2>
+<p>Copyright is one of the most underestimated risks in LLM data engineering. Many teams still assume that "everyone does it this way." That assumption is increasingly unsafe as regulation and litigation mature.</p>
+<h3 id="441-three-license-categories">4.4.1 Three License Categories<a class="headerlink" href="#441-three-license-categories" title="Permanent link">&para;</a></h3>
+<p><strong>Open licenses</strong> are relatively safe sources, including CC0, CC-BY, and CC-BY-SA. Wikipedia uses CC-BY-SA 4.0; Project Gutenberg content is generally public domain. These sources may require attribution in model reports or documentation, but they have fewer commercial restrictions. CC-BY-NC is different: the non-commercial clause generally excludes commercial products.</p>
+<p><strong>Commercial licenses</strong> are purchased through explicit agreements with publishers, media organizations, or data vendors. They are usually the safest legally, but expensive and full of specific clauses: a license may apply only to one model version, forbid derivative training data, or restrict redistribution. Legal review must inspect each agreement, and vendors should be required to provide source proof and copyright inventories.</p>
+<p><strong>Gray-zone data</strong> has unclear or contested status. Examples include crawled web text, third-party datasets that package copyrighted books, and sites that disallow crawling through robots.txt but appear in public dumps. For gray-zone sources, introduce risk tiers and joint review by legal and data teams. Whether to include them depends on company risk tolerance, product context, and jurisdiction.</p>
+<h3 id="442-whitelist-graylist-and-blacklist-controls">4.4.2 Whitelist, Graylist, and Blacklist Controls<a class="headerlink" href="#442-whitelist-graylist-and-blacklist-controls" title="Permanent link">&para;</a></h3>
+<p>The most practical engineering control is a three-list source-governance system.</p>
+<p><strong>Whitelist.</strong> Sources confirmed by legal review with clear permission. Each entry should record license version, usage restrictions, and last review date. Examples: Wikipedia under CC-BY-SA 4.0 with attribution, The Stack v2 after permissive-license filtering, and Project Gutenberg public-domain works.</p>
+<p><strong>Graylist.</strong> Sources with disputed or restrictive terms. They require case-by-case legal review and a recorded decision before use. Examples include paper-level arXiv data and platform API data governed by changing terms of service.</p>
+<p><strong>Blacklist.</strong> Sources that must not be used, including litigated datasets, domains that explicitly disallow AI training, robots.txt-disallowed sites when policy forbids use, or any source marked "not for AI training." The crawler should block these at the ingestion entrance.</p>
+<p>Listing 4-4 shows a simplified implementation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Copyright blacklist: intercept prohibited sources at the ingestion entrance</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">COPYRIGHT_BLACKLIST_DOMAINS</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="s2">&quot;nytimes.com&quot;</span><span class="p">,</span>       <span class="c1"># explicitly prohibits AI-training use</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">&quot;wsj.com&quot;</span><span class="p">,</span>           <span class="c1"># explicitly requires paid authorization</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">&quot;theguardian.com&quot;</span><span class="p">,</span>   <span class="c1"># terms of service updated to prohibit AI training</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="c1"># ... continuously updated by the legal team</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_url_allowed</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">domain</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">netloc</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">&quot;www.&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="k">return</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">domain</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">blocked</span><span class="p">)</span> <span class="k">for</span> <span class="n">blocked</span> <span class="ow">in</span> <span class="n">COPYRIGHT_BLACKLIST_DOMAINS</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 4-4: Example code for copyright blacklist interception at the ingestion entrance</em></p>
+<p>In production, the list should be maintained by legal and data-governance teams, and hit reasons and review time should be recorded.</p>
+<h3 id="443-automatic-license-classification">4.4.3 Automatic License Classification<a class="headerlink" href="#443-automatic-license-classification" title="Permanent link">&para;</a></h3>
+<p>For code data, license information is usually stored in <code>LICENSE</code> or <code>LICENSE.md</code> at the repository root and can be automatically identified through rules or classifiers. Listing 4-5 shows a simplified implementation; production systems should use stricter license-parsing libraries and legal-review workflows.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Common license keyword recognition (simple version; production use should prefer</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># a library such as license-expression)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">LICENSE_PATTERNS</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="s2">&quot;MIT&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)mit\s+license&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="s2">&quot;Apache-2.0&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)apache\s+license.*2\.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="s2">&quot;GPL-3.0&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)gnu\s+general\s+public\s+license.*version\s+3&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="s2">&quot;CC-BY-4.0&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)creative\s+commons.*attribution.*4\.0&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="s2">&quot;CC-BY-NC&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)creative\s+commons.*non.?commercial&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="s2">&quot;Proprietary&quot;</span><span class="p">:</span> <span class="sa">r</span><span class="s2">&quot;(?i)(all rights reserved|proprietary|confidential)&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">COMMERCIAL_SAFE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;MIT&quot;</span><span class="p">,</span> <span class="s2">&quot;Apache-2.0&quot;</span><span class="p">,</span> <span class="s2">&quot;CC0&quot;</span><span class="p">,</span> <span class="s2">&quot;Public Domain&quot;</span><span class="p">}</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">classify_license</span><span class="p">(</span><span class="n">license_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">LICENSE_PATTERNS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">license_text</span><span class="p">):</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>            <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>                <span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>                <span class="s2">&quot;commercial_safe&quot;</span><span class="p">:</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">COMMERCIAL_SAFE</span><span class="p">,</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>                <span class="s2">&quot;risk_level&quot;</span><span class="p">:</span> <span class="s2">&quot;low&quot;</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">COMMERCIAL_SAFE</span> <span class="k">else</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>            <span class="p">}</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;license&quot;</span><span class="p">:</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span> <span class="s2">&quot;commercial_safe&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;risk_level&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 4-5: Example code for automatic license-type classification</em></p>
+<p>This snippet is only used to illustrate rule-based recognition; production environments should use mature license-parsing libraries and retain a manual review chain.</p>
+<hr />
+<h2 id="45-case-review-and-practical-recommendations">4.5 Case Review and Practical Recommendations<a class="headerlink" href="#45-case-review-and-practical-recommendations" title="Permanent link">&para;</a></h2>
+<h3 id="case-1-end-to-end-lessons-from-common-crawl-chinese-corpus-ingestion-anonymized-composite-case">Case 1: End-to-End Lessons From Common Crawl Chinese Corpus Ingestion (Anonymized Composite Case)<a class="headerlink" href="#case-1-end-to-end-lessons-from-common-crawl-chinese-corpus-ingestion-anonymized-composite-case" title="Permanent link">&para;</a></h3>
+<p><strong>Project background.</strong> A team planned to extract a batch of high-quality Chinese text from a Common Crawl release as the main pretraining corpus for a general Chinese base model. The following scale, time, and ratio descriptions are instructional engineering estimates used to illustrate the risk difference between WET and WARC parsing routes; actual results depend on crawl batch, language-filtering strategy, parser version, and manual spot-check criteria.</p>
+<p><strong>T+0 (decision day).</strong> The team preliminarily assessed the WET files in that batch and decided that directly using WET would be simplest: after all, WET already contains plain text and avoids the parsing step. They downloaded a WET subset and performed a quick evaluation.</p>
+<p><strong>T+3 (problem discovery).</strong> Data engineers randomly sampled Chinese documents for manual review and found that quality was far below expectations. Many documents contained large amounts of navigation and menu text, such as "Home | About Us | Contact Us | Copyright Notice," and there were also problems with advertisement stuffing, product-description stuffing, and body-text truncation. The proportion of genuinely complete article bodies was insufficient to support production-grade training.</p>
+<p><strong>T+4 (route switch).</strong> The team decided to abandon the WET route and instead start from WARC files, reparsing them with Trafilatura in <code>favor_precision=True</code> mode. This increased processing time and CPU cost, but it preserved more complete HTML context for the body-text extractor to judge.</p>
+<p><strong>T+8 (reevaluation).</strong> The Trafilatura route improved results substantially. Manual spot checks showed that both the complete-body ratio and average document length were better than with the WET route. The team therefore kept WARC parsing as the production path and wrote the spot-check results into the parsing-quality baseline for this data source.</p>
+<p><strong>Core lesson.</strong> WET files are a "cheap trap": suitable only for rough experiments, not production-grade training-data preparation. Whether to switch to WARC plus a high-quality parser should be determined jointly by spot-checked quality gains, additional time, and CPU cost, rather than by file-acquisition cost alone.</p>
+<p>Three directly applicable practices follow from this case. First, <strong>establish a parsing-quality baseline</strong>: during early ingestion of any new data source, manually annotate a random sample of 500-1,000 documents according to startup-stage experience, expand the sample size according to source heterogeneity and error types, and measure complete-body ratio and average document length to form a parsing-quality baseline for that source. Second, <strong>separate evaluation samples from production samples</strong>: do not use the same quick-experiment data to evaluate final training effects, because experimental-stage processing precision is often lower than production-grade precision. Third, <strong>embed quality snapshots in the pipeline</strong>: each processing node (parsing -&gt; filtering -&gt; deduplication) should automatically output a quality snapshot report after completion, recording statistics such as average document length, short-document ratio, and character-set distribution for the current batch. Engineers can then judge whether node output quality meets expectations without additional manual sampling. This automatic quality-snapshot mechanism is one of the core methods for avoiding black-box pipelines in large-scale data engineering.</p>
+<h3 id="case-2-compliance-risk-in-financial-enterprise-knowledge-base-ingestion-anonymized-composite-case">Case 2: Compliance Risk in Financial Enterprise Knowledge-Base Ingestion (Anonymized Composite Case)<a class="headerlink" href="#case-2-compliance-risk-in-financial-enterprise-knowledge-base-ingestion-anonymized-composite-case" title="Permanent link">&para;</a></h3>
+<p><strong>Project background.</strong> A financial group decided to train an internal financial Q&amp;A model based on internal research reports, compliance manuals, product descriptions, and other documents. The data scale was approximately 500 GB (PDF + Word format), covering nearly ten years of accumulated internal documents. The following proportions and scale are used to illustrate risk types and do not represent a public event involving any specific company.</p>
+<p><strong>T+0 (data inventory).</strong> Data engineers obtained the document-directory list from the group's IT department and began batch-parsing PDF files. Engineering progressed smoothly, and within a short period the team completed document parsing and preliminary cleaning, producing a batch of candidate training data.</p>
+<p><strong>T+15 (compliance team intervention).</strong> During a routine risk inspection, the group's compliance team found that the dataset contained many copies of files from third-party organizations, such as regulator websites, rating agencies, and external law firms. These files had been historically deposited in the internal OA system, but their copyrights did not belong to the group itself. Some files even contained statements such as "may not be copied or distributed without permission."</p>
+<p><strong>T+16 (emergency pause).</strong> The legal team urgently halted the training task and required a source review of the dataset. The review found that some documents had unclear copyright ownership or clearly belonged to third parties and therefore had to be removed from the training set.</p>
+<p><strong>T+25 (fix completed).</strong> The data team labeled each document category by source ownership, established an internal copyright inventory, removed all third-party documents with questionable copyright, and supplemented authorization evidence for retained documents. Portions of internal documents that cited regulatory provisions were confirmed by compliance to fall within the scope of "reasonable quotation."</p>
+<p><strong>Core lesson.</strong> Internal enterprise documents are not automatically copyright-owned data. Before ingestion begins, all data sources should undergo systematic copyright-ownership review instead of asking the compliance department to intervene only after engineering is complete; the latter has much higher rework cost. It is recommended to introduce a "source-ownership check" node as the first step in the ingestion pipeline, requiring every file to be labeled as copyright holder / internally created / third-party quotation / unknown source, and confirmed with a signature by the document owner from the business department.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter began from how source quality constrains model capability and established a cognitive framework for the pretraining data-source system. It built a layered map covering eight core data-source categories and provided operational quantitative tools for engineering decisions through the risk matrix (Table 4-1) and mixing-strategy matrix (Table 4-2). In the ingestion-pipeline section, this chapter explained the risk of directly using WET, presented a high-quality WARC parsing implementation based on Trafilatura, and established the provenance standard that "every record has a birth certificate." The copyright-governance section introduced the three-tier whitelist, graylist, and blacklist management mechanism, together with license auto-classification code, providing an implementable compliance-engineering solution for commercial LLM teams. The two cases showed from technical and legal perspectives that source governance is the first quality gate of pretraining data engineering.</p>
+<p>In the next chapter, we will build on the raw data collected in this chapter and discuss <strong>Chapter 5: Cleaning, Deduplication, and Decontamination</strong>. Source governance determines the upper bound of the corpus that can enter the cleaning pipeline, while the cleaning pipeline determines which samples eventually enter the training set. Together, the two chapters form the quality gatekeeping system for text pretraining data engineering.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131. https://doi.org/10.18653/v1/2021.acl-demo.15.</p>
+<p>Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.</p>
+<p>Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.</p>
+<p>Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.</p>
+<p>Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.</p>
+<p>Yu S, Liu Z, Xiong C (2025) Craw4LLM: Efficient Web Crawling for LLM Pretraining. In: Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics. arXiv preprint arXiv:2502.13347.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch05_cleaning_dedup/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 5: Cleaning, Deduplication, and Decontamination">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 5: Cleaning, Deduplication, and Decontamination
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

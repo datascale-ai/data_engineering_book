@@ -1,0 +1,4448 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/appendix_d_paper_to_implementation_guide/">
+      
+      
+        <link rel="prev" href="../appendix_c_cost_estimation_and_resource_templates/">
+      
+      
+        <link rel="next" href="../appendix_e_common_bug_debugging_manual/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Appendix D: From Paper to Implementation Guide - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#appendix-d-from-paper-to-implementation-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Appendix D: From Paper to Implementation Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_d_paper_to_implementation_guide/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ja/appendix_d_paper_to_implementation_guide/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#d1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d2-five-step-translation-from-paper-to-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.2 Five-Step Translation from Paper to Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d3-paper-to-engineering-mapping-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.3 Paper-to-Engineering Mapping Table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d4-standard-template-for-engineering-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4 Standard Template for Engineering Conversion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.4 Standard Template for Engineering Conversion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d41-problem-definition-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.1 Problem Definition Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d42-data-and-input-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.2 Data and Input Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d43-architecture-and-implementation-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.3 Architecture and Implementation Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d44-evaluation-and-acceptance-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.4 Evaluation and Acceptance Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d45-risk-and-reproduction-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.5 Risk and Reproduction Template
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d5-mapping-chapters-to-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.5 Mapping Chapters to Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d6-common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.6 Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d7-how-to-use-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.7 How to Use This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d8-what-a-complete-conversion-package-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.8 What a Complete Conversion Package Looks Like
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d9-two-common-deployment-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9 Two Common Deployment Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.9 Two Common Deployment Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d91-converting-a-multimodal-rag-paper-into-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9.1 Converting a Multimodal RAG Paper into a Project
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d92-converting-a-federated-learning-paper-into-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9.2 Converting a Federated-Learning Paper into a Project
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d10-four-review-rounds-from-draft-to-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.10 Four Review Rounds from Draft to Deliverable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d11-extra-requirements-for-courses-and-open-source-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.11 Extra Requirements for Courses and Open-Source Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d12-minimal-directory-structure-for-chapter-level-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.12 Minimal Directory Structure for Chapter-Level Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d13-summary-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.13 Summary of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d14-from-paper-to-product-three-deployment-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14 From Paper to Product: Three Deployment Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.14 From Paper to Product: Three Deployment Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d141-research-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.1 Research Reproduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d142-engineering-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.2 Engineering Experiment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d143-production-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.3 Production Delivery
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d15-a-truly-handoff-ready-conversion-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.15 A Truly Handoff-Ready Conversion Package
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d16-paper-types-and-engineering-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.16 Paper Types and Engineering Strategies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d17-correction-order-after-conversion-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.17 Correction Order After Conversion Failure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d18-writing-order-for-chapter-style-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.18 Writing Order for Chapter-Style Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d19-engineering-rewrite-of-a-paper-abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.19 Engineering Rewrite of a Paper Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d20-pairing-figures-and-appendix-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.20 Pairing Figures and Appendix Material
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d21-a-reusable-readme-outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.21 A Reusable README Outline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d22-translating-paper-tasks-into-project-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.22 Translating "Paper Tasks" into "Project Tasks"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d23-suggested-extensions-for-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.23 Suggested Extensions for This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d24-four-layer-cards-for-paper-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.24 Four-Layer Cards for Paper Decomposition
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d25-roi-evaluation-for-paper-to-engineering-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.25 ROI Evaluation for Paper-to-Engineering Work
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d26-evidence-worth-preserving-in-the-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.26 Evidence Worth Preserving in the Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#d1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d2-five-step-translation-from-paper-to-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.2 Five-Step Translation from Paper to Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d3-paper-to-engineering-mapping-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.3 Paper-to-Engineering Mapping Table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d4-standard-template-for-engineering-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4 Standard Template for Engineering Conversion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.4 Standard Template for Engineering Conversion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d41-problem-definition-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.1 Problem Definition Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d42-data-and-input-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.2 Data and Input Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d43-architecture-and-implementation-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.3 Architecture and Implementation Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d44-evaluation-and-acceptance-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.4 Evaluation and Acceptance Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d45-risk-and-reproduction-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.4.5 Risk and Reproduction Template
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d5-mapping-chapters-to-projects" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.5 Mapping Chapters to Projects
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d6-common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.6 Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d7-how-to-use-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.7 How to Use This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d8-what-a-complete-conversion-package-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.8 What a Complete Conversion Package Looks Like
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d9-two-common-deployment-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9 Two Common Deployment Cases
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.9 Two Common Deployment Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d91-converting-a-multimodal-rag-paper-into-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9.1 Converting a Multimodal RAG Paper into a Project
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d92-converting-a-federated-learning-paper-into-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.9.2 Converting a Federated-Learning Paper into a Project
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d10-four-review-rounds-from-draft-to-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.10 Four Review Rounds from Draft to Deliverable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d11-extra-requirements-for-courses-and-open-source-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.11 Extra Requirements for Courses and Open-Source Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d12-minimal-directory-structure-for-chapter-level-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.12 Minimal Directory Structure for Chapter-Level Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d13-summary-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.13 Summary of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d14-from-paper-to-product-three-deployment-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14 From Paper to Product: Three Deployment Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D.14 From Paper to Product: Three Deployment Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d141-research-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.1 Research Reproduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d142-engineering-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.2 Engineering Experiment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d143-production-delivery" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.14.3 Production Delivery
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d15-a-truly-handoff-ready-conversion-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.15 A Truly Handoff-Ready Conversion Package
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d16-paper-types-and-engineering-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.16 Paper Types and Engineering Strategies
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d17-correction-order-after-conversion-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.17 Correction Order After Conversion Failure
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d18-writing-order-for-chapter-style-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.18 Writing Order for Chapter-Style Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d19-engineering-rewrite-of-a-paper-abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.19 Engineering Rewrite of a Paper Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d20-pairing-figures-and-appendix-material" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.20 Pairing Figures and Appendix Material
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d21-a-reusable-readme-outline" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.21 A Reusable README Outline
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d22-translating-paper-tasks-into-project-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.22 Translating "Paper Tasks" into "Project Tasks"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d23-suggested-extensions-for-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.23 Suggested Extensions for This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d24-four-layer-cards-for-paper-decomposition" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.24 Four-Layer Cards for Paper Decomposition
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d25-roi-evaluation-for-paper-to-engineering-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.25 ROI Evaluation for Paper-to-Engineering Work
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d26-evidence-worth-preserving-in-the-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      D.26 Evidence Worth Preserving in the Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="appendix-d-from-paper-to-implementation-guide">Appendix D: From Paper to Implementation Guide<a class="headerlink" href="#appendix-d-from-paper-to-implementation-guide" title="Permanent link">&para;</a></h1>
+<h2 id="d1-purpose-of-this-appendix">D.1 Purpose of This Appendix<a class="headerlink" href="#d1-purpose-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>This appendix addresses the middle ground between "turning a paper into engineering," "turning engineering into reproducible material," and "turning material into deliverable documentation." It is not primarily concerned with whether a paper is elegant. It asks a more practical question: <strong>how can a paper, a method, or an experimental prototype be translated into an implementation path, verification path, and release path that a team can execute?</strong></p>
+<p>In real projects, many reproduction attempts fail not because the method is impossible, but because there is no structured translation layer between the paper text and the engineering implementation. Papers usually describe what was done, how well it worked, and what it was compared against. Engineering must answer different questions: what are the inputs, where does the data come from, where are the boundaries, how do we roll back on failure, and how is the version frozen? Without this translation layer, teams can spend a long time stuck between "we understand the paper" and "the system really runs." Research on technical debt in machine-learning systems has shown that training code, data dependencies, configuration, and evaluation pipelines jointly create long-term maintenance cost, so reproduction must consider engineering boundaries from the start (Sculley et al. 2015).</p>
+<p>This appendix therefore provides a conversion template for data engineering and model reproduction. It is most useful for paper reproduction, method deployment, course projects, lab collaboration, open-source recipe organization, case-study writing, and technical review.</p>
+<h2 id="d2-five-step-translation-from-paper-to-engineering">D.2 Five-Step Translation from Paper to Engineering<a class="headerlink" href="#d2-five-step-translation-from-paper-to-engineering" title="Permanent link">&para;</a></h2>
+<p>A reusable conversion path usually has five steps:</p>
+<ol>
+<li>Rewrite the research question in the paper as an engineering question.</li>
+<li>Decompose the method description into data, process, control points, and evaluation items.</li>
+<li>Convert experimental results into reproducible input-output contracts.</li>
+<li>Write risks, assumptions, and failure conditions as boundary notes.</li>
+<li>Package everything into documents that another person can execute.</li>
+</ol>
+<p>The point is not to make the paper longer. The point is to turn abstract conclusions into objects that can be implemented, checked, and rolled back.</p>
+<h2 id="d3-paper-to-engineering-mapping-table">D.3 Paper-to-Engineering Mapping Table<a class="headerlink" href="#d3-paper-to-engineering-mapping-table" title="Permanent link">&para;</a></h2>
+<p>Table D-1 gives a general translation framework.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Paper expression</th>
+<th style="text-align: left;">Engineering expression</th>
+<th style="text-align: left;">What must be added</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Method contribution</td>
+<td style="text-align: left;">Architecture decision</td>
+<td style="text-align: left;">Inputs, dependencies, boundaries, alternatives</td>
+</tr>
+<tr>
+<td style="text-align: left;">Experimental setup</td>
+<td style="text-align: left;">Data version and configuration</td>
+<td style="text-align: left;">Sources, splits, random seed, script version</td>
+</tr>
+<tr>
+<td style="text-align: left;">Experimental result</td>
+<td style="text-align: left;">Acceptance metric</td>
+<td style="text-align: left;">Success threshold, failure threshold, baseline</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ablation analysis</td>
+<td style="text-align: left;">Change attribution</td>
+<td style="text-align: left;">Which component improved results, which was noise</td>
+</tr>
+<tr>
+<td style="text-align: left;">Discussion section</td>
+<td style="text-align: left;">Risk and applicability boundary</td>
+<td style="text-align: left;">Jurisdiction, data constraints, resource limits</td>
+</tr>
+<tr>
+<td style="text-align: left;">Limitations</td>
+<td style="text-align: left;">Failure conditions</td>
+<td style="text-align: left;">When reuse is invalid and when rework is required</td>
+</tr>
+</tbody>
+</table>
+<p>The use of this table is direct: it prevents teams from copying the paper's research narrative into engineering documentation. Engineering documentation needs operability, not academic rhetoric.</p>
+<h2 id="d4-standard-template-for-engineering-conversion">D.4 Standard Template for Engineering Conversion<a class="headerlink" href="#d4-standard-template-for-engineering-conversion" title="Permanent link">&para;</a></h2>
+<h3 id="d41-problem-definition-template">D.4.1 Problem Definition Template<a class="headerlink" href="#d41-problem-definition-template" title="Permanent link">&para;</a></h3>
+<p>Use three sentences:</p>
+<ul>
+<li>What real problem does this method solve?</li>
+<li>Why is the current process insufficient?</li>
+<li>What is the boundary of this implementation?</li>
+</ul>
+<h3 id="d42-data-and-input-template">D.4.2 Data and Input Template<a class="headerlink" href="#d42-data-and-input-template" title="Permanent link">&para;</a></h3>
+<p>State clearly:</p>
+<ul>
+<li>Data source.</li>
+<li>Sample schema.</li>
+<li>Version-freeze method.</li>
+<li>Masking and authorization status.</li>
+<li>Train, validation, test, or evaluation split strategy.</li>
+</ul>
+<p>For paper reproductions that depend on external corpora, public webpages, or third-party data, the data and input template should also explicitly record source licenses, attribution information, and traceability evidence. Large-scale data-provenance audits have shown that missing these fields makes later reuse, release, and compliance judgment very fragile (Longpre et al. 2023).</p>
+<h3 id="d43-architecture-and-implementation-template">D.4.3 Architecture and Implementation Template<a class="headerlink" href="#d43-architecture-and-implementation-template" title="Permanent link">&para;</a></h3>
+<p>State clearly:</p>
+<ul>
+<li>The core modules.</li>
+<li>How data flows through the modules.</li>
+<li>Which steps can be automated and which require human confirmation.</li>
+<li>How to roll back or retry on failure.</li>
+</ul>
+<h3 id="d44-evaluation-and-acceptance-template">D.4.4 Evaluation and Acceptance Template<a class="headerlink" href="#d44-evaluation-and-acceptance-template" title="Permanent link">&para;</a></h3>
+<p>State clearly:</p>
+<ul>
+<li>The primary metric.</li>
+<li>Slice metrics.</li>
+<li>The baseline.</li>
+<li>The success criterion.</li>
+<li>Which results require review.</li>
+</ul>
+<h3 id="d45-risk-and-reproduction-template">D.4.5 Risk and Reproduction Template<a class="headerlink" href="#d45-risk-and-reproduction-template" title="Permanent link">&para;</a></h3>
+<p>State clearly:</p>
+<ul>
+<li>Resources required for reproduction.</li>
+<li>Common reasons reproduction fails.</li>
+<li>Assumptions that, if false, make the method non-reusable.</li>
+<li>What must be written into the README, experiment notes, or appendix.</li>
+</ul>
+<h2 id="d5-mapping-chapters-to-projects">D.5 Mapping Chapters to Projects<a class="headerlink" href="#d5-mapping-chapters-to-projects" title="Permanent link">&para;</a></h2>
+<p>Different parts of this book convert into different engineering artifacts:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Source content</th>
+<th style="text-align: left;">Suitable engineering artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Text, multimodal, and RAG chapters</td>
+<td style="text-align: left;">Data-pipeline specifications, parsing protocols, retrieval protocols</td>
+</tr>
+<tr>
+<td style="text-align: left;">Alignment, synthesis, and evaluation chapters</td>
+<td style="text-align: left;">Annotation guidelines, generation protocols, evaluation cards</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent, DataOps, and governance chapters</td>
+<td style="text-align: left;">Permission boundaries, flowcharts, audit templates</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compliance, privacy, and cross-border chapters</td>
+<td style="text-align: left;">Legal confirmation forms, checklists, exception notes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Specialized datasets and project chapters</td>
+<td style="text-align: left;">Reproduction packages, delivery checklists, acceptance tables</td>
+</tr>
+</tbody>
+</table>
+<p>The point is that a paper is not the endpoint, and engineering is not merely "getting the code to run." A valuable deliverable is something another person can take over.</p>
+<h2 id="d6-common-failure-modes">D.6 Common Failure Modes<a class="headerlink" href="#d6-common-failure-modes" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Translating conclusions but not conditions.</li>
+<li>Keeping results but not failure samples.</li>
+<li>Writing implementation but not versions.</li>
+<li>Writing reproduction steps but not boundaries.</li>
+<li>Saying where the method applies but not where it does not apply.</li>
+</ol>
+<h2 id="d7-how-to-use-this-appendix">D.7 How to Use This Appendix<a class="headerlink" href="#d7-how-to-use-this-appendix" title="Permanent link">&para;</a></h2>
+<p>If the task is paper reproduction, start with D.2 and D.4.
+If the task is project deployment, start with D.3 and D.5.
+If the task is a course or bootcamp, start with D.4 and D.6.</p>
+<h2 id="d8-what-a-complete-conversion-package-looks-like">D.8 What a Complete Conversion Package Looks Like<a class="headerlink" href="#d8-what-a-complete-conversion-package-looks-like" title="Permanent link">&para;</a></h2>
+<p>If a team truly wants to turn a paper into deliverable material, it usually should not produce only a README. A more reliable package separates research explanation, engineering implementation, reproduction instructions, risk boundaries, and maintenance responsibility into different layers.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Deliverable</th>
+<th style="text-align: left;">Role</th>
+<th style="text-align: left;">Minimum requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Project overview</td>
+<td style="text-align: left;">Explains what is being built and why</td>
+<td style="text-align: left;">One-page problem definition</td>
+</tr>
+<tr>
+<td style="text-align: left;">Method note</td>
+<td style="text-align: left;">Explains the core idea</td>
+<td style="text-align: left;">Diagram plus key steps</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data note</td>
+<td style="text-align: left;">Describes data source and version</td>
+<td style="text-align: left;">Source, split, authorization, freeze method</td>
+</tr>
+<tr>
+<td style="text-align: left;">Code repository</td>
+<td style="text-align: left;">Supports implementation and execution</td>
+<td style="text-align: left;">Runnable scripts, locked dependencies, entry instructions</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation script</td>
+<td style="text-align: left;">Ensures comparability</td>
+<td style="text-align: left;">Metric script, baseline, slice output</td>
+</tr>
+<tr>
+<td style="text-align: left;">Risk note</td>
+<td style="text-align: left;">States where the method must not be misused</td>
+<td style="text-align: left;">Applicability boundary, failure conditions, cautions</td>
+</tr>
+<tr>
+<td style="text-align: left;">Review record</td>
+<td style="text-align: left;">Explains why decisions were made</td>
+<td style="text-align: left;">Change history, failure samples, lessons learned</td>
+</tr>
+</tbody>
+</table>
+<p>This table turns "paper reproduction" from a one-off implementation task into an engineering package that another person can inherit. Without these seven classes of material, many claims of reproducibility really mean only "the original author can run it again." Data notes, model notes, and data cards can respectively draw on Datasheets for Datasets, Model Cards, and Data Cards for organizing source, use, limits, and evaluation information (Gebru et al. 2021; Mitchell et al. 2019; Pushkarna et al. 2022).</p>
+<h2 id="d9-two-common-deployment-cases">D.9 Two Common Deployment Cases<a class="headerlink" href="#d9-two-common-deployment-cases" title="Permanent link">&para;</a></h2>
+<h3 id="d91-converting-a-multimodal-rag-paper-into-a-project">D.9.1 Converting a Multimodal RAG Paper into a Project<a class="headerlink" href="#d91-converting-a-multimodal-rag-paper-into-a-project" title="Permanent link">&para;</a></h3>
+<p>Assume a paper discusses a multimodal RAG system that answers questions by jointly using documents, charts, and body text. The first engineering step is not copying the algorithm. It is writing the problem boundary: what objects are retrieved, how evidence is chunked, how image and text are aligned, whether answers are generative or citation-based, and whether the system refuses or degrades on failure.</p>
+<p>Engineering implementation usually needs four things that papers often treat lightly. First, document parsing needs fallback and cannot rely on one OCR path. Second, retrieved results need evidence citations and cannot output only an answer. Third, the evaluation set must be sliced by task so that failures can be attributed to text, charts, or cross-page references. Fourth, caches and indexes must be bound to data versions; otherwise later reproduction cannot identify which corpus produced the retrieval result.</p>
+<p>Therefore, a multimodal RAG engineering deliverable should usually include a document-parsing pipeline, evidence index, question-answering protocol, sliced evaluation, failure-sample pool, and version-freeze note. One method point in a paper often becomes a full system in engineering.</p>
+<h3 id="d92-converting-a-federated-learning-paper-into-a-project">D.9.2 Converting a Federated-Learning Paper into a Project<a class="headerlink" href="#d92-converting-a-federated-learning-paper-into-a-project" title="Permanent link">&para;</a></h3>
+<p>If the paper is about federated learning, engineering translation must be especially careful: algorithmic feasibility and organizational feasibility are not the same. A paper may discuss only parameter aggregation and metric improvement, but a project must also answer whether each party may share gradients, whether secure aggregation is required, whether communication rounds and bandwidth cost are acceptable, how participant dropout is handled, how privacy budget is recorded, and who approves the result.</p>
+<p>In this case, running the model code is not enough for deployment. Federated-learning projects often involve legal, security, business-owner, and operations-platform coordination. The engineering package should include at least four extra documents: participant agreement, data-boundary note, communication and security policy, and abnormal-exit and audit mechanism. The difficulty is often not "whether the algorithm exists," but whether the system has the institutions and interfaces that allow multiple organizations to run it over time.</p>
+<h2 id="d10-four-review-rounds-from-draft-to-deliverable">D.10 Four Review Rounds from Draft to Deliverable<a class="headerlink" href="#d10-four-review-rounds-from-draft-to-deliverable" title="Permanent link">&para;</a></h2>
+<p>Do not write the conversion once and hand it off immediately. Use four review rounds:</p>
+<ol>
+<li>Review the problem definition and confirm the research question and engineering question are aligned.</li>
+<li>Review the data and implementation and confirm inputs, process, and versions are clear.</li>
+<li>Review metrics and boundaries and confirm success and failure conditions are both stated.</li>
+<li>Review the delivery package and confirm another person can run, judge, and reuse it independently.</li>
+</ol>
+<p>If a round fails, the issue is usually not "minor polishing." It indicates that the previous layer of translation is incomplete.</p>
+<h2 id="d11-extra-requirements-for-courses-and-open-source-reproduction">D.11 Extra Requirements for Courses and Open-Source Reproduction<a class="headerlink" href="#d11-extra-requirements-for-courses-and-open-source-reproduction" title="Permanent link">&para;</a></h2>
+<p>Courses and open-source projects amplify the pressure of paper-to-engineering translation because readers are not the original authors and may not share the same environment or context. These scenarios require extra emphasis:</p>
+<ul>
+<li>Dependencies must be locked.</li>
+<li>Data must state whether it can be public.</li>
+<li>Run instructions must be written from a newcomer perspective.</li>
+<li>Failure messages must include actionable troubleshooting paths.</li>
+<li>Figures and results must be traceable to the prose.</li>
+</ul>
+<p>If these requirements are not met, the project may look normal on the author's machine but quickly lose stability in a course, bootcamp, or open-source setting.</p>
+<h2 id="d12-minimal-directory-structure-for-chapter-level-reproduction">D.12 Minimal Directory Structure for Chapter-Level Reproduction<a class="headerlink" href="#d12-minimal-directory-structure-for-chapter-level-reproduction" title="Permanent link">&para;</a></h2>
+<p>For a chapter-level reproduction repository, consider this structure:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Directory / file</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>README.md</code></td>
+<td style="text-align: left;">Project overview, run entry, result summary</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>data/</code></td>
+<td style="text-align: left;">Data snapshot, index, and version note</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>src/</code></td>
+<td style="text-align: left;">Core implementation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>configs/</code></td>
+<td style="text-align: left;">Parameters, paths, run configuration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scripts/</code></td>
+<td style="text-align: left;">Reproducible run scripts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>eval/</code></td>
+<td style="text-align: left;">Evaluation scripts and slice reports</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>docs/</code></td>
+<td style="text-align: left;">Documentation, boundary notes, FAQ</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>reports/</code></td>
+<td style="text-align: left;">Result charts, acceptance screenshots, postmortems</td>
+</tr>
+</tbody>
+</table>
+<p>This structure is not the only answer, but it separates implementation from delivery from the start and prevents the repository from becoming an island of code without explanation.</p>
+<h2 id="d13-summary-of-this-appendix">D.13 Summary of This Appendix<a class="headerlink" href="#d13-summary-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>The core conclusion is unchanged, but it can now be stated more completely: <strong>paper language must go through engineering translation, documentation translation, and responsibility translation before it becomes a truly deliverable capability.</strong> Only when method, data, evaluation, boundaries, and maintenance responsibility are translated together does reproduction become an inheritable, maintainable, iterable engineering asset rather than a one-time craft.</p>
+<h2 id="d14-from-paper-to-product-three-deployment-paths">D.14 From Paper to Product: Three Deployment Paths<a class="headerlink" href="#d14-from-paper-to-product-three-deployment-paths" title="Permanent link">&para;</a></h2>
+<p>Not every paper should become the same kind of project. In the use cases of this book, common paths fall into three types.</p>
+<h3 id="d141-research-reproduction">D.14.1 Research Reproduction<a class="headerlink" href="#d141-research-reproduction" title="Permanent link">&para;</a></h3>
+<p>The goal is to make the paper work and verify whether the method holds. This path fits coursework, internal research, open-source reproduction, and technical review. Deliverables usually include:</p>
+<ul>
+<li>Run instructions.</li>
+<li>Data-preparation scripts.</li>
+<li>Training and evaluation scripts.</li>
+<li>Result tables and figures.</li>
+<li>Ablations aligned with the paper.</li>
+</ul>
+<p>Two risks are most serious: skipping critical settings for speed, and silently changing the problem definition to make the results look better. Research reproduction may simplify engineering, but it must not change the original paper's boundary.</p>
+<h3 id="d142-engineering-experiment">D.14.2 Engineering Experiment<a class="headerlink" href="#d142-engineering-experiment" title="Permanent link">&para;</a></h3>
+<p>The goal is not full reproduction but embedding a paper capability into a real system for trial operation. This is common in product validation, platform exploration, or data-pipeline upgrades. The focus shifts from one score to:</p>
+<ul>
+<li>Whether the method can connect to the existing data flow.</li>
+<li>Whether it breaks existing links.</li>
+<li>Whether cost is controllable.</li>
+<li>Whether failure can be rolled back.</li>
+<li>Whether logs are auditable.</li>
+</ul>
+<p>At this stage, paper metrics are only references. Engineering cares more about latency, stability, cache hit rate, monitoring coverage, and abnormal-recovery time.</p>
+<h3 id="d143-production-delivery">D.14.3 Production Delivery<a class="headerlink" href="#d143-production-delivery" title="Permanent link">&para;</a></h3>
+<p>The goal is long-term operation, not a runnable demo. Model, data, rules, permissions, monitoring, rollback, and handoff materials must all match. Beyond the core method, the project should include:</p>
+<ul>
+<li>Configuration notes.</li>
+<li>Permission notes.</li>
+<li>Monitoring rules.</li>
+<li>Alert rules.</li>
+<li>Version strategy.</li>
+<li>Exit mechanism.</li>
+</ul>
+<p>If a paper method is to reach this level, it must answer one question: when the paper author is absent, can the system still keep working?</p>
+<h2 id="d15-a-truly-handoff-ready-conversion-package">D.15 A Truly Handoff-Ready Conversion Package<a class="headerlink" href="#d15-a-truly-handoff-ready-conversion-package" title="Permanent link">&para;</a></h2>
+<p>Many conversion packages contain only code and results. A project that can really be handed off should also contain:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Component</th>
+<th style="text-align: left;">Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Problem note</td>
+<td style="text-align: left;">Explains what the paper solves and what engineering must solve</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data note</td>
+<td style="text-align: left;">Explains source, format, license, scope, and version</td>
+</tr>
+<tr>
+<td style="text-align: left;">Design note</td>
+<td style="text-align: left;">Explains core modules, inputs, outputs, and dependencies</td>
+</tr>
+<tr>
+<td style="text-align: left;">Run note</td>
+<td style="text-align: left;">Explains installation, startup, reproduction, and troubleshooting</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation note</td>
+<td style="text-align: left;">Explains metrics, slices, baselines, and acceptance criteria</td>
+</tr>
+<tr>
+<td style="text-align: left;">Risk note</td>
+<td style="text-align: left;">Explains failure modes, boundaries, and non-commitments</td>
+</tr>
+<tr>
+<td style="text-align: left;">Maintenance note</td>
+<td style="text-align: left;">Explains who updates it, when, and how rollback works</td>
+</tr>
+</tbody>
+</table>
+<p>Without these materials, a project can easily become unusable after the next environment change. In courses, team assignments, and open-source repositories, package completeness is often more important than code elegance.</p>
+<h2 id="d16-paper-types-and-engineering-strategies">D.16 Paper Types and Engineering Strategies<a class="headerlink" href="#d16-paper-types-and-engineering-strategies" title="Permanent link">&para;</a></h2>
+<p>Different papers fit different engineering rewrites.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Paper type</th>
+<th style="text-align: left;">Suitable engineering strategy</th>
+<th style="text-align: left;">Common risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Retrieval augmentation</td>
+<td style="text-align: left;">Center on data flow, index, and evaluation</td>
+<td style="text-align: left;">Index drift, cache contamination</td>
+</tr>
+<tr>
+<td style="text-align: left;">Generative model</td>
+<td style="text-align: left;">Center on prompts, post-processing, and quality gates</td>
+<td style="text-align: left;">Unstable output, biased evaluation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Federated learning</td>
+<td style="text-align: left;">Center on communication, aggregation, and privacy boundary</td>
+<td style="text-align: left;">Complex organizational coordination, unclear legal boundary</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data cleaning</td>
+<td style="text-align: left;">Center on rules, sampling audit, and regression tests</td>
+<td style="text-align: left;">Over-cleaning, excessive sample loss</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent system</td>
+<td style="text-align: left;">Center on tools, permissions, and trajectories</td>
+<td style="text-align: left;">Wrong tool calls, lost state, overreach</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compliance framework</td>
+<td style="text-align: left;">Center on jurisdiction, approval, and audit trail</td>
+<td style="text-align: left;">Engineering substituted for law, missing control points</td>
+</tr>
+</tbody>
+</table>
+<p>Paper type determines project structure, not the other way around. Do not force every paper into the pattern "train a model, then report a score."</p>
+<h2 id="d17-correction-order-after-conversion-failure">D.17 Correction Order After Conversion Failure<a class="headerlink" href="#d17-correction-order-after-conversion-failure" title="Permanent link">&para;</a></h2>
+<p>When an engineering conversion goes off track, do not immediately rebuild. Use this correction order:</p>
+<ol>
+<li>Confirm whether the problem definition is still correct.</li>
+<li>Confirm whether the data scope still matches.</li>
+<li>Check whether evaluation metrics still represent the goal.</li>
+<li>Check whether implementation over-simplified an intermediate layer.</li>
+<li>Only then consider replacing the model or algorithm.</li>
+</ol>
+<p>Teams often blame "the model," but earlier layers may have dropped the constraints. Once the problem definition is wrong, later optimization accelerates in the wrong direction.</p>
+<h2 id="d18-writing-order-for-chapter-style-reproduction">D.18 Writing Order for Chapter-Style Reproduction<a class="headerlink" href="#d18-writing-order-for-chapter-style-reproduction" title="Permanent link">&para;</a></h2>
+<p>If the target is a publishable, teachable, reproducible chapter rather than an experiment script, write in this order:</p>
+<ol>
+<li>Problem background and task boundary.</li>
+<li>Data source and sample structure.</li>
+<li>Method modules and implementation path.</li>
+<li>Evaluation design and result interpretation.</li>
+<li>Risks, limits, and reproduction notes.</li>
+</ol>
+<p>This differs from the standard paper order of method then discussion. Engineering readers first need to know whether the method can be integrated, how to integrate it, and what to do when it fails. If the algorithm is explained too heavily at the beginning, it can hide the real usage boundary.</p>
+<h2 id="d19-engineering-rewrite-of-a-paper-abstract">D.19 Engineering Rewrite of a Paper Abstract<a class="headerlink" href="#d19-engineering-rewrite-of-a-paper-abstract" title="Permanent link">&para;</a></h2>
+<p>A paper abstract often says what method was proposed, what effect was verified, and which baseline it beat. Engineering conversion should rewrite the abstract around five parts: problem, input, output, constraint, and benefit.</p>
+<p>A more useful abstract structure is:</p>
+<ol>
+<li>What business or research problem does this method solve?</li>
+<li>What data and prerequisites does it rely on?</li>
+<li>What result does it produce, and who uses it?</li>
+<li>Within which boundaries is it valid?</li>
+<li>What practical benefit does it provide over the current solution?</li>
+</ol>
+<p>After this rewrite, readers can judge faster whether the method fits the current project. In team review, an engineering abstract functions more like a decision note than a paper abstract.</p>
+<h2 id="d20-pairing-figures-and-appendix-material">D.20 Pairing Figures and Appendix Material<a class="headerlink" href="#d20-pairing-figures-and-appendix-material" title="Permanent link">&para;</a></h2>
+<p>Many conversion packages lack supporting materials rather than prose. Add at least three types of figures or tables:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Material</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Structure diagram</td>
+<td style="text-align: left;">Shows input-output relationships between modules</td>
+</tr>
+<tr>
+<td style="text-align: left;">Flowchart</td>
+<td style="text-align: left;">Shows how data or requests move</td>
+</tr>
+<tr>
+<td style="text-align: left;">Mapping table</td>
+<td style="text-align: left;">Shows how paper modules map to engineering modules</td>
+</tr>
+</tbody>
+</table>
+<p>Too many figures make the prose diffuse; too few make deployment order hard to understand. A stable approach is to put explanatory diagrams in the body and mapping or delivery diagrams in the appendix or README.</p>
+<h2 id="d21-a-reusable-readme-outline">D.21 A Reusable README Outline<a class="headerlink" href="#d21-a-reusable-readme-outline" title="Permanent link">&para;</a></h2>
+<p>If turning a paper into a repository, the README should include at least:</p>
+<ol>
+<li>Project introduction.</li>
+<li>Problem definition.</li>
+<li>Data note.</li>
+<li>Environment dependencies.</li>
+<li>Quick start.</li>
+<li>Result reproduction.</li>
+<li>Common errors.</li>
+<li>Limitations and risks.</li>
+<li>Citation and acknowledgments.</li>
+</ol>
+<p>This is not formatting preference. It lowers handoff cost. Whether another person can decide within three minutes "can this project run, how does it run, and what do I do if it breaks" largely determines whether the project can be handed over.</p>
+<h2 id="d22-translating-paper-tasks-into-project-tasks">D.22 Translating "Paper Tasks" into "Project Tasks"<a class="headerlink" href="#d22-translating-paper-tasks-into-project-tasks" title="Permanent link">&para;</a></h2>
+<p>The most common mistake is treating an experiment task in a paper as an engineering task. They are usually not equivalent.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Paper task</th>
+<th style="text-align: left;">Project task</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Pursue a higher score</td>
+<td style="text-align: left;">Pursue stability, deliverability, maintainability</td>
+</tr>
+<tr>
+<td style="text-align: left;">Accept a single run</td>
+<td style="text-align: left;">Require repeatability, rollback, audit</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compare methods</td>
+<td style="text-align: left;">Consider launch cost and integration complexity</td>
+</tr>
+<tr>
+<td style="text-align: left;">Allow manual tuning</td>
+<td style="text-align: left;">Require automated or semi-automated process</td>
+</tr>
+<tr>
+<td style="text-align: left;">Focus on experimental result</td>
+<td style="text-align: left;">Focus on long-term drift after operation</td>
+</tr>
+</tbody>
+</table>
+<p>Conversion should ask not only whether the method is accurate, but whether it is worth it, durable enough, and maintainable in a real system.</p>
+<h2 id="d23-suggested-extensions-for-this-appendix">D.23 Suggested Extensions for This Appendix<a class="headerlink" href="#d23-suggested-extensions-for-this-appendix" title="Permanent link">&para;</a></h2>
+<p>Future extensions can add three material types:</p>
+<ul>
+<li>A paper-type quick-reference diagram to select an engineering path.</li>
+<li>A failure-mode case library to identify risk early.</li>
+<li>A conversion-package checklist for author self-review before submission.</li>
+</ul>
+<p>These materials may not look like part of the method, but they determine whether a method moves from being understood to being used.</p>
+<h2 id="d24-four-layer-cards-for-paper-decomposition">D.24 Four-Layer Cards for Paper Decomposition<a class="headerlink" href="#d24-four-layer-cards-for-paper-decomposition" title="Permanent link">&para;</a></h2>
+<p>To decompose a paper into an engineering project, make four cards before writing code.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Card</th>
+<th style="text-align: left;">Question to answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Problem card</td>
+<td style="text-align: left;">What problem does the paper solve, and what pain point does it address?</td>
+</tr>
+<tr>
+<td style="text-align: left;">Method card</td>
+<td style="text-align: left;">What is the core mechanism, and which layer actually works?</td>
+</tr>
+<tr>
+<td style="text-align: left;">Assumption card</td>
+<td style="text-align: left;">What assumptions does the paper make, and which may fail in engineering?</td>
+</tr>
+<tr>
+<td style="text-align: left;">Delivery card</td>
+<td style="text-align: left;">Who receives the result, where is it used, and how is launch judged?</td>
+</tr>
+</tbody>
+</table>
+<p>These cards turn "I understand the paper" into "I know how to split it into a system." Many projects fail not because the method is bad, but because hidden assumptions such as data distribution, label quality, access permissions, latency limits, and rollback requirements are ignored during decomposition.</p>
+<h2 id="d25-roi-evaluation-for-paper-to-engineering-work">D.25 ROI Evaluation for Paper-to-Engineering Work<a class="headerlink" href="#d25-roi-evaluation-for-paper-to-engineering-work" title="Permanent link">&para;</a></h2>
+<p>Engineering conversion is not always worth doing. Before starting, evaluate ROI. Here ROI is not only financial return; it includes human effort, compute, data governance, and long-term maintenance cost.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Evaluation item</th>
+<th style="text-align: left;">Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Labor cost</td>
+<td style="text-align: left;">How many people, how long, and who maintains it</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compute cost</td>
+<td style="text-align: left;">Training, indexing, evaluation, and inference consumption</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data cost</td>
+<td style="text-align: left;">Cleaning, annotation, masking, and feedback cost</td>
+</tr>
+<tr>
+<td style="text-align: left;">Risk cost</td>
+<td style="text-align: left;">Whether failure affects existing systems or compliance boundaries</td>
+</tr>
+<tr>
+<td style="text-align: left;">Reuse benefit</td>
+<td style="text-align: left;">Whether reusable modules, processes, or teaching materials remain</td>
+</tr>
+<tr>
+<td style="text-align: left;">Transfer benefit</td>
+<td style="text-align: left;">Whether it can transfer to other tasks, courses, or projects</td>
+</tr>
+</tbody>
+</table>
+<p>If ROI exists only in paper scores but not in engineering cost, the method is better kept at the research-prototype layer rather than forced into product delivery. Recent benchmarks and surveys in data-centric AI also remind teams that many gains do not come from "switching to a larger model," but from more controllable data selection, quality improvement, provenance, and continuous maintenance (Mazumder et al. 2023; Zha et al. 2023; Longpre et al. 2023).</p>
+<h2 id="d26-evidence-worth-preserving-in-the-appendix">D.26 Evidence Worth Preserving in the Appendix<a class="headerlink" href="#d26-evidence-worth-preserving-in-the-appendix" title="Permanent link">&para;</a></h2>
+<p>To make conversion auditable, preserve:</p>
+<ol>
+<li>The paper's key figures and the engineering rewrites of those figures.</li>
+<li>Mapping from paper modules to code modules.</li>
+<li>Version screenshots for training, evaluation, and release.</li>
+<li>Failure examples and corrected comparisons.</li>
+<li>Explanations for why some paper settings were not copied.</li>
+</ol>
+<p>These materials let later readers know not only what was built, but why this design fits the current scenario better than a literal copy of the paper.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804. https://doi.org/10.1016/j.patter.2023.100804.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.</p>
+<p>Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.</p>
+<p>Mazumder M, Banbury C, Yao X, et al. (2023) DataPerf: Benchmarks for Data-Centric AI Development. In: Advances in Neural Information Processing Systems 36, Datasets and Benchmarks Track. https://doi.org/10.52202/075280-0235.</p>
+<p>Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.</p>
+<p>Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826. https://doi.org/10.1145/3531146.3533231.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28.</p>
+<p>Zha D, Bhat Z P, Lai K-H, Yang F, Jiang Z, Zhong S, Hu X (2023) Data-centric Artificial Intelligence: A Survey. arXiv preprint arXiv:2303.10158.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../appendix_c_cost_estimation_and_resource_templates/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Appendix C: Cost Estimation and Resource Templates">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Appendix C: Cost Estimation and Resource Templates
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../appendix_e_common_bug_debugging_manual/" class="md-footer__link md-footer__link--next" aria-label="Next: Appendix E: Common Data-Engineering Bug Debugging Manual">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Appendix E: Common Data-Engineering Bug Debugging Manual
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
