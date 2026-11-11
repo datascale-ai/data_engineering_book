@@ -1,4 +1,4 @@
-# 第7章 数据评估、质量闭环与运营迭代
+# 第7章：数据评估、质量闭环与运营迭代
 
 <div class="chapter-authors">王柯；于璠；於俊</div>
 
@@ -102,7 +102,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
     tokenizer = AutoTokenizer.from_pretrained(cache_model_path)
     model = AutoModelForCausalLM.from_pretrained(cache_model_path).cuda()
     model.eval()
-    
+
     ppl_results = []
     with torch.no_grad():
         for text in texts:
@@ -114,7 +114,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
             loss = outputs.loss
             ppl = torch.exp(loss)
             ppl_results.append(ppl.item())
-            
+
     return ppl_results  # 返回数组供下游生成直方图
 ```
 
@@ -139,10 +139,10 @@ def calculate_ttr(texts, tokenizer=None):
     else:
         # 使用真实的 LLM 分词器
         tokens = tokenizer.tokenize(" ".join(texts))
-    
+
     total_tokens = len(tokens)
     unique_types = len(set(tokens))
-    
+
     if total_tokens == 0:
         return 0.0
     return unique_types / total_tokens
@@ -392,7 +392,7 @@ def calculate_ttr(texts, tokenizer=None):
 
 为此，本章系统说明了建立“离线代理指标（PPL/TTR 等）”的必要性，并由此引出 DVC 版本比对、问题样本库留存、A/B Testing 实验，最终沉淀为包含四大运营动作周期的敏捷工作流。这使得大语言模型的数据研发不再是孤立的黑盒流程，而是一条能够通过效果缺失反推上游采集和清洗策略的质量闭环。
 
-从原始网页到质量把控、清洗去重、混合配比，再到高效流入 GPU，第二篇完成了文本预训练数据工程的主体链路。下一章将进入第三篇，讨论结构更复杂、成本更高、对齐要求更严格的多模态数据工程：**第8章 图文对数据工程**。
+从原始网页到质量把控、清洗去重、混合配比，再到高效流入 GPU，第二篇完成了文本预训练数据工程的主体链路。下一章将进入第三篇，讨论结构更复杂、成本更高、对齐要求更严格的多模态数据工程：**第8章：图文对数据工程**。
 
 ## 参考文献
 

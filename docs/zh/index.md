@@ -29,27 +29,27 @@
 - [本篇目录](part1/index.md)
 - [第1章：大语言模型时代的数据革命](part1/ch01_data_change.md)
 - [第2章：LLM数据生命周期与质量评估框架](part1/ch02_quality_framework.md)
-- [第3章 AI原生数据栈与成本治理](part1/ch03_data_stack.md)
+- [第3章：AI原生数据栈与成本治理](part1/ch03_data_stack.md)
 
 ## 第二篇：文本预训练数据工程
 
 面向大规模文本语料，覆盖数据来源、采集版权、清洗去重、分词序列化、高效加载和质量闭环。
 
 - [本篇目录](part2/index.md)
-- [第4章 数据源、采集与版权](part2/ch04_data_sources.md)
-- [第5章 清洗、去重与去污染](part2/ch05_cleaning_dedup.md)
-- [第6章 分词、序列化与高效加载](part2/ch06_tokenization_loading.md)
-- [第7章 数据评估、质量闭环与运营迭代](part2/ch07_data_operations.md)
+- [第4章：数据源、采集与版权](part2/ch04_data_sources.md)
+- [第5章：清洗、去重与去污染](part2/ch05_cleaning_dedup.md)
+- [第6章：分词、序列化与高效加载](part2/ch06_tokenization_loading.md)
+- [第7章：数据评估、质量闭环与运营迭代](part2/ch07_data_operations.md)
 
 ## 第三篇：多模态数据工程
 
 处理图文、文档、视频、音频与跨模态对齐数据，关注样本结构、质量控制、标注增强和融合训练。
 
 - [本篇目录](part3/index.md)
-- [第8章 图文对数据工程](part3/ch08_multimodal_image.md)
-- [第9章 重标注与文档理解](part3/ch09_recaptioning_ocr.md)
-- [第10章 视频与音频数据工程](part3/ch10_video_audio.md)
-- [第11章 跨模态对齐与融合](part3/ch11_cross_modal_alignment.md)
+- [第8章：图文对数据工程](part3/ch08_multimodal_image.md)
+- [第9章：重标注与文档理解](part3/ch09_recaptioning_ocr.md)
+- [第10章：视频与音频数据工程](part3/ch10_video_audio.md)
+- [第11章：跨模态对齐与融合](part3/ch11_cross_modal_alignment.md)
 
 ## 第四篇：指令微调与偏好数据
 
