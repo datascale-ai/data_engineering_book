@@ -1,5 +1,11 @@
 # Data Engineering for Large Foundation Models: A Handbook
 
+## Full Book Architecture
+
+![Detailed architecture of Data Engineering for Large Foundation Models](../images/Yu-Book-Fig02-EN.png)
+
+*The complete data engineering pipeline, from raw data to end-to-end applications.*
+
 ## Full Table of Contents Overview
 
 The current Chinese mainline uses the 2026 Springer-size publication structure. The main text covers 48 chapters, 15 end-to-end projects, and 8 appendices (A-H). To reduce friction when reading across parts, this edition keeps a unified abbreviation table and a contents page for each part.
