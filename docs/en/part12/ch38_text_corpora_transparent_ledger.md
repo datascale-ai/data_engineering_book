@@ -10,9 +10,9 @@ This chapter uses FineWeb and Dolma as complementary cases to explain how text-c
 
 text corpora; open Web; FineWeb; Dolma; filtering and deduplication; transparent ledger; pre-training data
 
-## Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices
+## 38.1 FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices
 
-### Case A: Learning Objectives
+### 38.1.1 Learning Objectives
 
 After completing this chapter, readers should be able to:
 
@@ -23,7 +23,7 @@ After completing this chapter, readers should be able to:
 - Compare different data-processing strategies under fixed model scale, fixed token budget, fixed evaluation sets, and repeated random seeds.
 - Identify copyright, privacy, removal, evaluation-contamination, and cross-lingual transfer boundaries when adapting FineWeb-style processing to enterprise or research projects.
 
-### Case A: Opening Scenario
+### 38.1.2 Opening Scenario
 
 A team is preparing to train an English foundation model at the 7B-parameter scale. The first data plan is straightforward: download recent Common Crawl WET files, filter non-English pages, run simple deduplication, and send the text into the tokenizer. Offline samples look decent: many pages are indeed natural language, and the token volume is large enough. The team starts small-model pre-training, but after several weeks it encounters three hard-to-explain problems.
 
@@ -31,7 +31,7 @@ First, the model does not improve stably on several commonsense tasks as trainin
 
 These three problems show that Common Crawl is a Web snapshot, not a training set. The real data-engineering task is not to "download more Web pages," but to transform each Web sample into a traceable, filterable, deduplicable, evaluable, and removable training record. FineWeb is a public case study built around exactly this problem.
 
-### Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus
+### 38.1.3 Common Crawl Is a Web Snapshot, Not a Training Corpus
 
 Common Crawl WARC files preserve the original responses captured during Web crawling, including HTML, request metadata, and page structure. WET files are Common Crawl's extracted text version. For pre-training data engineering, WET is attractive: it avoids HTML parsing cost and has a size closer to the text needed for model training. However, FineWeb's experiments found that directly using WET leaves too much boilerplate, menu text, and page noise, so FineWeb re-extracts main text from WARC.
 
@@ -65,7 +65,7 @@ $$
 
 Here, $F$ denotes the filtering strategy, $D_F$ is the filtered dataset, $S_{eval}$ is the model score under a fixed evaluation protocol, $R_{risk}$ is privacy, copyright, toxicity, and contamination risk, $T_F$ is the retained token count, and $T_{target}$ is the lower token bound required by the training budget. This is not an original formula from the FineWeb paper; it is an engineering abstraction of the FineWeb experimental logic: when selecting filters, one cannot look only at whether samples appear "clean"; one must also evaluate whether the model improves under a fixed training budget and whether risk decreases.
 
-### Case A.2: FineWeb Data Definition and Public Form
+### 38.1.4 FineWeb Data Definition and Public Form
 
 FineWeb is publicly available as a full dataset, configurations split by Common Crawl dump, and smaller sample versions. The official dataset card states that users can load the full dataset or specify a particular crawl/dump; dump names follow the `CC-MAIN-(year)-(week number)` format. Sample versions include random subsets of approximately 350B, 100B, and 10B GPT-2 tokens, enabling researchers to reproduce experiments or debug processing code at lower cost.
 
@@ -111,7 +111,7 @@ The second concerns deduplication granularity. Global deduplication appears more
 
 The third concerns filter validation. FineWeb does not choose filters solely from manual rules. Instead, it trains multiple data-ablation models and compares scores on fixed evaluation sets. Filter thresholds, C4-rule choices, and custom heuristics are determined through training validation.
 
-### Case A.3: Key Fields in FineWeb Document Records
+### 38.1.5 Key Fields in FineWeb Document Records
 
 The official FineWeb dataset card states that samples include `language`, `language_score`, and `token_count` annotations, derived respectively from the language filter and GPT-2 tokenizer statistics. When reproducing a FineWeb-like pipeline inside an enterprise, processing status, provenance, deduplication, and risk fields should also be retained. Otherwise, when training results become abnormal, it is impossible to determine whether the issue came from extraction, filtering, deduplication, or sampling.
 
@@ -188,7 +188,7 @@ $$
 
 Without this manifest, even if the evaluation script is reproduced, one cannot reproduce "which exact data version was trained."
 
-### Case A.4: FineWeb's Code-based Processing Flow
+### 38.1.6 FineWeb's Code-based Processing Flow
 
 One important feature of FineWeb is that its processing pipeline has a public script. `examples/fineweb.py` in the DataTrove repository states that it is used to process and create the FineWeb dataset. The script has two major parts: first, it performs the main processing for each dump; then it applies MinHash deduplication and PII formatting to the processed output.
 
@@ -264,7 +264,7 @@ Figure 38-2 illustrates the corresponding workflow or structure.
 
 *Figure 38-2: FineWeb data-processing-choice ablation loop*
 
-### Case A.5: Evaluating FineWeb Data-processing Choices
+### 38.1.7 Evaluating FineWeb Data-processing Choices
 
 FineWeb's evaluation method differs from a typical dataset introduction. It treats data-processing steps as experimental variables and trains ablation models to compare different data versions. The paper states that ablation models keep model parameters, architecture hyperparameters, training token count, and training steps consistent. To reduce random-sampling effects, each data version is used to train two models with different random subsets and different initialization seeds, and their average scores are compared.
 
@@ -317,7 +317,7 @@ Table 38-5 summarizes the corresponding comparison and engineering consideration
 | Overly strict filters | Token scale drops and long-tail knowledge is removed | A single rule removes too many tokens | Record token-removal rate per filter and decide thresholds through ablation |
 | Residual privacy samples | Emails, public IPs, or other identifiable information enter release data | Missing PII processing or false negatives | Use `PIIFormatter` or similar rules and record replacement strategy and boundaries |
 
-### Case A.6: Usage Boundaries of Public Web Corpora
+### 38.1.8 Usage Boundaries of Public Web Corpora
 
 FineWeb is a strong public case for open Web pre-training corpus engineering, but it should not be understood simply as "all Web text that can be used directly for commercial training." Public datasets, open code, and the ODC-By license reduce the barrier to research reproduction, but they do not automatically remove copyright, privacy, safety, or removal responsibilities in the user's jurisdiction, business scenario, or downstream model release.
 
@@ -333,7 +333,7 @@ FineWeb should not be used as an unreviewed commercial training corpus. Commerci
 
 For Chinese or multilingual training, one cannot directly copy FineWeb's English FastText threshold, English tokenizer statistics, or assumptions about English page formats. Migration requires recalibrating language identification, simplified/traditional Chinese handling, site templates, domain distributions, low-quality-page rules, and evaluation tasks.
 
-### Case A: Summary
+### 38.1.9 Summary
 
 FineWeb clarifies an often underestimated issue: a Web pre-training corpus is not the result of downloading Common Crawl; it is a data asset jointly formed by code, filters, deduplication strategy, evaluation protocol, and release documentation. This chapter's core conclusions are threefold.
 
@@ -341,9 +341,9 @@ First, Web main-text extraction is a model-capability variable. FineWeb re-extra
 
 For readers of this book, what is most worth learning from FineWeb is not copying a particular token scale, but turning pre-training corpus engineering into a traceable, reproducible, evaluable, and auditable system.
 
-## Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation
+## 38.2 Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation
 
-### Case B: Learning Objectives
+### 38.2.1 Learning Objectives
 
 After completing this chapter, readers should be able to:
 
@@ -354,7 +354,7 @@ After completing this chapter, readers should be able to:
 - Understand the evidence chain of transparent corpora through the four Dolma Toolkit actions: tag, dedup, mix, and tokenize.
 - Design source ledgers, removal ledgers, contamination checks, and version-freezing mechanisms for internal enterprise pre-training corpora.
 
-### Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model
+### 38.2.2 Problem Scenario: Open Weights Still Cannot Explain the Model
 
 Two teams obtain the same 7B open-model weights. The first team wants to continue pre-training the model to improve code and scientific-question-answering capabilities. The second team wants to analyze why the model gives outdated answers on several factual questions. The weights, inference code, and part of the evaluation scripts are downloadable, but they quickly encounter the same problem: no one can answer what data the model actually saw.
 
@@ -381,7 +381,7 @@ The first is the source ledger, recording where each data type comes from, how l
 
 If these three ledgers are disconnected, transparency degrades into "downloadability." The data can be downloaded, but cannot explain the model; the model can be trained, but cannot be audited; versions can be updated, but cannot be compared.
 
-### Case B.2: Dataset Overview: Versions, Scale, and Source Structure
+### 38.2.3 Dataset Overview: Versions, Scale, and Source Structure
 
 Dolma is not a single static file, but a corpus asset with version evolution. The Hugging Face dataset card lists versions such as `v1`, `v1_5`, `v1_5-sample`, `v1_6`, `v1_6-sample`, and `v1_7`. Among them, `v1_7` is used to train OLMo 7B-v1.7 and introduces new sources, more quality filtering, and fuzzy deduplication.
 
@@ -423,7 +423,7 @@ Second, different statistical conventions serve different questions. UTF-8 bytes
 
 Third, versions cannot be directly compared without care. v1.6 and v1.7 differ in source decomposition, filtering rules, and sample proportions. If a model is trained with v1.7, one cannot explain its training behavior using only the v1.6 coarse table.
 
-### Case B.3: Decomposing a Transparent Chain Through the Source Ledger
+### 38.2.4 Decomposing a Transparent Chain Through the Source Ledger
 
 This section does not begin from an individual text, but from Dolma's source ledger to decompose the chain of a transparent pre-training corpus. The "sample" here is not an image or a question, but an evidence path from source to document and then to the training manifest.
 
@@ -514,7 +514,7 @@ Listing 38-3 provides a JSON data example.
 
 This record cannot be read at only one layer. In Dolma, the document layer, source layer, and training layer must point back to one another. If a document has a `source` but no source card, it can locate a sample but cannot explain the origin. If a source card has statistics but no training manifest, it can explain what is in the dataset but not what the model actually saw. If a manifest has sampling proportions but no document hash, removal and contamination checks break.
 
-### Case B.4: Dolma Toolkit Makes the Evidence Chain Executable
+### 38.2.5 Dolma Toolkit Makes the Evidence Chain Executable
 
 The Dolma GitHub repository states that Dolma is both a dataset and a toolkit. Dolma Toolkit supports single-machine, cluster, and cloud environments. It includes language detection, toxicity detection, perplexity scoring, and common filtering recipes such as Gopher, C4, and OpenWebText; its deduplication component uses a Rust Bloom filter for acceleration.
 
@@ -543,7 +543,7 @@ The boundary between toolchains and manual audits matters. A toolchain can stabl
 
 This is also the difference between a Dolma-like transparent corpus and an ordinary "collection of cleaning scripts." Ordinary scripts only answer "what did I delete"; a transparent toolchain must also answer "why was it deleted, how did the post-deletion distribution change, did training actually benefit, and can it be removed later." If a processing action cannot leave interpretable evidence, it is hard for it to support transparent training.
 
-### Case B.5: Evaluation Shifts from Highest Score to Attribution
+### 38.2.6 Evaluation Shifts from Highest Score to Attribution
 
 The evaluation focus of transparent corpora is not the "highest score," but whether score changes can be explained. Dolma-like source-level corpora let model evaluation move beyond leaderboards and trace training logs back to sources, versions, and sampling proportions.
 
@@ -594,7 +594,7 @@ Table 38-11 summarizes the corresponding comparison and engineering consideratio
 
 These failure modes show that transparent-corpus quality is not only about whether text is clean. A transparent training sample must pass three kinds of checks simultaneously: whether the source is explainable, whether the processing actions are reproducible, and whether training consumption is traceable. Missing any one of these checks can turn data into a corpus that is public but not auditable.
 
-### Case B.6: Reuse Boundaries of Transparent Corpora
+### 38.2.7 Reuse Boundaries of Transparent Corpora
 
 Dolma is suitable for open language-model pre-training research, source-mix experiments, transparent data-governance teaching, training-data audit method validation, and internal enterprise manifest design. It is especially suitable for research questions such as "how does training data affect model capabilities and limitations," because it opens data, dataset cards, and processing tools together.
 
@@ -610,7 +610,7 @@ Enterprises usually cannot publish training data, but they can transfer Dolma's 
 
 At the same time, Dolma is not suitable as a direct quality standard for Chinese, multilingual, or vertical-industry corpora. It is primarily an English pre-training corpus. Migration to Chinese, medical, legal, or financial scenarios requires redefining sources, licenses, filters, and evaluation tasks. Dolma should also not be used to prove that open corpora are inherently safe. The meaning of transparency is that defects are visible, locatable, and repairable, not that defects do not exist.
 
-### Case B: Summary
+### 38.2.8 Summary
 
 Dolma moves pre-training corpora from invisible data recipes toward auditable data assets. This chapter's core conclusions are threefold.
 

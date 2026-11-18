@@ -66,7 +66,7 @@ Common failures include input distribution drift, missing schema fields, quality
 
 Reproduction materials should include data source descriptions, minimal samples, configuration files, run commands, metric scripts, inspection reports, and an artifact directory. The body of the chapter retains necessary fragments; complete notebooks, long scripts, and large files are maintained separately as companion resources.
 
-## Background and Objectives
+## 1. Background and Objectives
 
 In pre-training data engineering, "Scaling Laws" (Kaplan et al. 2020) apply not only to model parameters but equally to the experimentation and validation of data recipes. In the earlier Project 1 (Mini-C4), we completed an end-to-end cleaning pipeline for a single-source corpus. However, real industrial-scale large models—such as DeepSeek-V3 (DeepSeek-AI et al. 2024)—are never trained on a single corpus; they are trained on a precise mixture of web pages, code, mathematics, academic papers, and other data sources.
 
@@ -78,7 +78,7 @@ Why do we need a Mini pre-training pipeline?
 
 This project aims to fully replicate the data recipe of DeepSeek-V3 using approximately 1B tokens—an amount that a single node with 8× 4090/A100 GPUs can process in tens of hours. Upon completing this project, readers will have a multi-source mixing sampler, a cross-source deduplication engine, and tokenizer training code targeting a 150K super-vocabulary, all meeting industrial-grade standards, providing a solid foundation for large-scale pre-training.
 
-## Architecture Design
+## 2. Architecture Design
 
 To achieve the objectives above, we designed a data pipeline consisting of four core components. The overall architecture is shown in Figure P11-1.
 
@@ -107,9 +107,9 @@ Table P11-2 maps each architectural component to its code entry point, stage art
 
 The most easily overlooked column in Table P11-2 is "Review Fields." For example, `mixed_1b_raw` is simply a Hugging Face Dataset directory on its own and says nothing about whether the recipe is correct; one must additionally verify that the sample count for each `source` is consistent with the target weights. Similarly, `mixed_1b_dedup` cannot be validated merely by checking whether the directory exists—the duplicate sample ratio and threshold must also be recorded. For the tokenizer, the existence of the file does not indicate training success; special tokens, vocabulary size, Chinese/code compression ratio, and rare-character coverage must also be checked.
 
-## Step-by-Step Implementation
+## 3. Step-by-Step Implementation
 
-### Step 1: Multi-Source Mixed Extraction and Proportioning
+### 3.1 Multi-Source Mixed Extraction and Proportioning
 
 According to the DeepSeek-V3 report, we need to fuse multiple data sources. In this implementation, we select open-source alternative datasets:
 
@@ -149,7 +149,7 @@ mixed.save_to_disk("./data/mixed_1b_raw")
 
 *Listing P11-2: Python implementation excerpt*
 
-### Step 2: Cross-Source MinHash LSH Deduplication
+### 3.2 Cross-Source MinHash LSH Deduplication
 
 After multi-source mixing, the greatest hidden risk is duplicates between different sources (for example, code snippets in The Stack v2 duplicating code segments in arXiv papers). In Project 1 (Mini-C4), we performed MinHash deduplication only within a single source; here we need global deduplication.
 
@@ -183,7 +183,7 @@ unique.save_to_disk("./data/mixed_1b_dedup")
 
 *Listing P11-3: Python implementation excerpt*
 
-### Step 3: Training a 150K Super-Vocabulary Tokenizer
+### 3.3 Training a 150K Super-Vocabulary Tokenizer
 
 DeepSeek-V3 (DeepSeek-AI et al. 2024) employs a super-vocabulary of approximately 150K entries (a substantial increase over Llama-2's 32K), which makes it highly efficient at processing Chinese text and code. In this step, we train a BPE tokenizer on the mixed and deduplicated data.
 
@@ -211,7 +211,7 @@ train_large_tokenizer(load_stage("mixed_1b_dedup"))
 
 *Listing P11-4: Python implementation excerpt*
 
-### Step 4: Pack & Shuffle and `.arrow` Shard Output
+### 3.4 Pack & Shuffle and `.arrow` Shard Output
 
 To avoid having the GPU handle large amounts of padding during training, we concatenate variable-length token sequences into contiguous segments of length `4096` or `8192` (packing), inserting special separator tokens.
 
@@ -243,7 +243,7 @@ packed.save_to_disk("./data/mixed_1b_final_packed")
 
 *Listing P11-5: Python implementation excerpt*
 
-## Engineering Execution and Minimal Reproduction Path
+## 4. Engineering Execution and Minimal Reproduction Path
 
 The minimal entry point for running this project is `run_pipeline.sh`. The script chains together four stages: multi-source sampling, cross-source deduplication, tokenizer training, and packing. Its value is not merely "saving the manual execution of four commands"; it fixes the stage order, artifact paths, and failure locations. In pre-training data engineering, an incorrect stage order directly alters the data distribution. For example, if the tokenizer is trained before cross-source deduplication, the tokenizer will see duplicate samples that should have been removed; if packing precedes shuffling, subsequent recipe adjustments become difficult to trace.
 
@@ -272,7 +272,7 @@ Table P11-3 lists the minimal audit information that should be recorded before a
 | Environment information | Python, datasets, tokenizers, datasketch versions | Diagnoses artifact differences |
 | Run results | Sample count, token count, directory size, failure logs | Determines deliverability |
 
-## Data Quality and Recipe Acceptance
+## 5. Data Quality and Recipe Acceptance
 
 The acceptance focus for Mini-DeepSeek is not the final model score but whether the recipe is interpretable, verifiable, and extensible. A common pitfall is reporting only "1B tokens were ultimately obtained" without stating which domains those tokens came from, how many cross-source duplicates were removed, or whether the tokenizer is biased toward a particular language or code domain. For pre-training data, quantity is merely the outcome; the recipe is the core.
 
@@ -292,7 +292,7 @@ Table P11-4 gives the recipe-level acceptance criteria.
 
 In practice, begin by sampling 100 records from each source for manual inspection to verify that the text type matches expectations; then spot-check near-duplicate pairs from the MinHash-deleted samples to assess whether the threshold is too strict. If the duplication rate is anomalously high, it may indicate genuine overlap between data sources, or it may indicate that 5-grams are overly sensitive to short texts. If the duplication rate is anomalously low, check whether the text field was selected correctly—some datasets use `content` rather than `text`.
 
-## Fine-Grained Inspection of Tokenizer and Packing
+## 6. Fine-Grained Inspection of Tokenizer and Packing
 
 The tokenizer training stage most easily produces the problem of "file creation succeeded but quality is unknown." `train_tokenizer.py` uses BPE, NFKC normalization, a ByteLevel pre-tokenizer, and a 150K vocabulary. This configuration suits mixed Chinese, English, code, and math corpora, but it introduces two risks. First, with a large vocabulary, a small-scale training sample may not provide sufficient coverage of long-tail tokens. Second, code and mathematical symbols may occupy a disproportionate share of the vocabulary space, affecting the compression ratio for ordinary text.
 
@@ -311,7 +311,7 @@ It is recommended to compute the metrics in Table P11-5 after training is comple
 
 The packing stage also requires inspection. `pack_shuffle.py` concatenates sample tokens and truncates to an integer multiple of `SEQ_LEN`, outputting fixed-length `input_ids`. This improves training throughput but means original document boundaries are no longer directly visible. Therefore, the insertion and counting of `<|endoftext|>` is critically important. If the separator is forgotten, the model learns adjacent documents as continuous text; if separators are overly dense, short documents will dominate the context structure.
 
-## Test Coverage and Code Isolation
+## 7. Test Coverage and Code Isolation
 
 `tests/test_pipeline.py` already covers several minimal contracts: `RECIPE` weights sum to 1, critical data sources exist, MinHash objects can be created, identical texts have a Jaccard similarity of 1.0, and `SEQ_LEN` equals 4096. These tests are not intended to replace comprehensive data acceptance; rather, they prevent the example code in the project chapter from losing its basic contracts after refactoring.
 
@@ -330,7 +330,7 @@ Table P11-6 maps tests to gaps.
 
 Published manuscripts should clearly distinguish "teaching example code" from "production-ready code." The code in this chapter illustrates the basic organization of multi-source sampling, MinHash, BPE, and packing, but real large-scale pre-training additionally requires distributed execution, data-source failure retries, download caching, contamination detection, sensitive-content filtering, license whitelisting, and training framework integration.
 
-## Common Failures and Diagnostic Paths
+## 8. Common Failures and Diagnostic Paths
 
 If the sampling stage reports an error, first check the data source name, config name, and streaming split. Field names are not consistent across different Hugging Face datasets—some use `text`, some use `content`, and others require additional authentication or configuration. If a data source returns very few samples, training should not proceed immediately; instead, the gap for that source should be recorded in the report and the actual recipe recomputed.
 
@@ -340,7 +340,7 @@ If tokenizer training takes too long, first check the training sub-sample ratio.
 
 If the training smoke test shows an anomalous loss after packing, the diagnostic sequence should be: first confirm that all `input_ids` have length `4096`; next, sample-decode packed records to check document boundaries and anomalous characters; then verify the shuffle seed and sample order; only then suspect training hyperparameters. Pre-training data problems frequently masquerade as training problems; diagnosis should return to the data artifacts first.
 
-## Training Smoke Test and Metric Recording
+## 9. Training Smoke Test and Metric Recording
 
 The goal of P11 is not to report a complete large-model training result but to demonstrate that data artifacts can enter the training pipeline. Therefore, the training smoke test should remain small-scale, short-duration, and reproducible. A qualified smoke test may run only a few hundred to a few thousand steps, but it must answer three questions: whether the data can be stably read by the training framework, whether the loss exhibits a reasonable downward trend, and whether throughput, GPU memory, and sample decoding meet expectations.
 
@@ -362,7 +362,7 @@ Table P11-7 provides a training smoke test record template.
 
 The smoke test report should not simply state "training runs successfully." More useful content includes: read throughput, loss over the first several steps, decoded results from several packed samples, and a record of how failed samples were handled. If the loss fails to decrease over an extended period, this may indicate a model configuration problem or the presence of large amounts of duplicated, garbled, or meaningless tokens in the data. If throughput is below expectation, the `.arrow` shards may be too small, data loading workers may be insufficient, or disk I/O may be the bottleneck.
 
-## Data Contamination and Benchmark Leakage Inspection
+## 10. Data Contamination and Benchmark Leakage Inspection
 
 Pre-training reproduction projects must pay attention to benchmark contamination. Even in a pedagogical reduced-scale context, the contamination inspection methodology should be documented. Multi-source corpora may contain questions, solutions, and answers from evaluation sets such as GSM8K, MATH, HumanEval, MMLU, or others. If such content enters the pre-training data, subsequent benchmark scores will be inflated.
 
@@ -381,7 +381,7 @@ Table P11-8 presents a minimal contamination inspection plan.
 
 Contamination inspection should be completed before packing, because once the data enters a packed dataset, original document boundaries and source fields become harder to trace. If a teaching project does not implement complete contamination filtering, the report should explicitly state "not used for public benchmark claims" to prevent readers from mistaking smoke-test scores for publishable results.
 
-## Deliverable Directory and Release Package Structure
+## 11. Deliverable Directory and Release Package Structure
 
 A deliverable P11 project should contain not only the final data directory but also the recipe, logs, tests, and audit materials. Table P11-9 gives the recommended directory structure.
 
@@ -402,7 +402,7 @@ A deliverable P11 project should contain not only the final data directory but a
 
 If data sources do not permit redistribution, the recipe, scripts, tokenizer, and report templates may still be published, but raw or packed samples cannot be released directly. In this case, a reproducibility guide should be provided so that readers with the requisite authorization can rebuild the data locally.
 
-## Scaling from 1B Tokens to Larger Scales
+## 12. Scaling from 1B Tokens to Larger Scales
 
 The reduced-scale pipeline of P11 helps readers understand the recipe, but scaling to 10B, 70B, or larger requires systematic refactoring. Table P11-10 lists the refactoring checklist for moving from the teaching implementation to a production-scale implementation.
 
@@ -420,7 +420,7 @@ The reduced-scale pipeline of P11 helps readers understand the recipe, but scali
 
 The most important point when scaling is not to mistake "the script runs" for "the system is scalable." Large-scale pre-training data systems must handle failure retries, checkpoint-based resumption, version freezing, sample deletion, license changes, in-training data mixing strategy adjustments, and multi-team collaboration. The value of P11 lies in presenting the minimal form of these problems rather than claiming to replace a complete industrial system.
 
-## Data Dashboard and Continuous Monitoring
+## 13. Data Dashboard and Continuous Monitoring
 
 Once pre-training data engineering enters continuous iteration, one-off run logs are insufficient. Data sources update, licenses change, field schemas are adjusted, and Hugging Face datasets may change their splits or sample content due to maintenance. Therefore, P11 needs a lightweight data dashboard for comparing differences across different run batches.
 
@@ -443,7 +443,7 @@ Table P11-11 gives the recommended dashboard metrics.
 
 The core value of the dashboard is batch comparison. For example, if The Stack v2 sample count is unchanged in a given run but the token count rises significantly, it may indicate that code samples have become longer or that filtering conditions have changed. If the deduplication rate for OpenWebMath suddenly increases in a given run, it may indicate that templated content in math web pages has increased. Without a batch dashboard, these changes often go undetected until a training loss or benchmark anomaly is observed.
 
-## Deletion Requests and Sample Withdrawal Mechanism
+## 14. Deletion Requests and Sample Withdrawal Mechanism
 
 Multi-source pre-training data must have a sample withdrawal capability. Even in a pedagogical reproduction context, the following should be documented: if a data source, author, or content owner requests the deletion of samples, how does the system locate, remove, and rebuild downstream artifacts? The current P11 implementation retains the `source` field, but original document boundaries are weakened in packed data, so deletion requests are best handled before packing.
 
@@ -462,7 +462,7 @@ Table P11-12 gives the processing path for deletion requests.
 
 Real production systems typically store document-level hashes, URLs, source, license, and a packed-shard reverse index. Teaching implementations do not necessarily require a complete index, but readers should understand that the earlier lineage is discarded, the higher the subsequent withdrawal cost. Retaining this point in the published text prevents readers from mistakenly believing that `.arrow` training data can circulate independently of its origin.
 
-## Domain Transfer: From General Recipe to Domain-Specific Models
+## 15. Domain Transfer: From General Recipe to Domain-Specific Models
 
 The Mini-DeepSeek recipe is dominated by web pages, code, mathematics, academic papers, and Chinese text. Transferring to legal, medical, financial, or industrial domains requires more than simply adding a domain-specific data source to `RECIPE`. Domain data typically carries stronger requirements around permissions, privacy, terminology, and temporal relevance, necessitating independently designed recipes and acceptance criteria.
 
@@ -480,7 +480,7 @@ Table P11-13 gives adjustment directions for domain transfer.
 
 When transferring to a domain, it is recommended to retain the general corpus as a foundation and gradually increase the domain corpus proportion. If the domain data proportion is raised too rapidly, the model may acquire domain terminology capability while losing general language and coding capability. A safer approach is to design a multi-round curriculum: maintain a dominant share of general corpus in the early stages, then increase domain- and task-relevant data proportions in the mid-to-late stages, monitored by domain validation sets.
 
-## Relationship with P01 Mini-C4
+## 16. Relationship with P01 Mini-C4
 
 P01 focuses on single-source web page cleaning; P11 focuses on a multi-source pre-training recipe. These are not redundant; they represent an upgrade from "cleaning one type of corpus" to "organizing multiple types of corpora." Table P11-14 summarizes the differences.
 
@@ -498,7 +498,7 @@ P01 focuses on single-source web page cleaning; P11 focuses on a multi-source pr
 
 Understanding this relationship helps readers connect the projects in Part XIV. P01 is the starting point of data cleaning; P11 organizes multiple cleaned sources into a pre-training recipe. Without the quality filtering of P01, the multi-source recipe of P11 would absorb large amounts of noise; without the recipe organization of P11, the single-source cleaning of P01 is insufficient to support modern general-purpose model training.
 
-## Results Presentation and Analysis
+## 17. Results Presentation and Analysis
 
 The pedagogical example configuration can be set up to run on a single node (e.g., 8× 4090 GPUs), recording end-to-end elapsed time to demonstrate the organization of a pipeline acceptance report.
 
@@ -506,11 +506,11 @@ When running at a sampling scale of `TARGET_TOTAL_DOCS = 500,000`, the MinHash d
 
 The shuffled and packed `mixed_1b_final_packed` dataset should record storage size, number of `.arrow` shards, and token statistics. An indicative report may use approximately `5 GB` and approximately **1.05B tokens** to describe the output format, but the formal version must be generated jointly from script output, the sample manifest, and the random seed.
 
-### Tokenizer Efficiency Validation
+### 17.1 Tokenizer Efficiency Validation
 
 With the vocabulary expanded to 150K entries, sampling-based validation shows that this tokenizer achieves an average Chinese web page compression ratio (tokens/char) of **0.62**, a significant improvement over Llama-2's 1.1, substantially increasing downstream pre-training throughput efficiency.
 
-## Cost and Optimization
+## 18. Cost and Optimization
 
 For the pedagogical example at the 1B-token scale, resource consumption can be recorded under the following headings:
 
@@ -520,14 +520,14 @@ For the pedagogical example at the 1B-token scale, resource consumption can be r
 **Optimization Notes**:
 If horizontal scaling to 70B tokens is required, single-node Python in-memory processing will become the bottleneck. It is recommended to integrate a distributed engine such as Apache Spark (Zaharia et al. 2016) or Ray (Moritz et al. 2018). For the MinHash deduplication step, memory decoupling can be achieved by storing hash buckets in an external database such as Redis.
 
-## Extended Considerations
+## 19. Extended Considerations
 
 Scaling the Mini-DeepSeek recipe to tens-of-billions-of-tokens requires particular attention to two points:
 
 1. **Dynamic decay of mixing ratios (Curriculum)**: In the early stages of training, foundational knowledge (web pages and academic papers) should dominate; in the mid-to-late stages, the sampling weights of code and mathematics (OpenWebMath) should be increased. `mix_sampler.py` can be refactored into a streaming module that supports epoch-level dynamic loading.
 2. **Comparison with the earlier project**: Compared to P01 (Mini-C4) in Part XIV, this project no longer relies on simple filtering with a single quality threshold; instead, it uses cross-source fusion and a super-vocabulary design to demonstrate how modern industrial-scale models such as DeepSeek-V3 lay their multi-task foundations.
 
-### Data Compliance and Open-Source License Notes
+### 19.1 Data Compliance and Open-Source License Notes
 
 When performing multi-source mixing, the open-source licenses of the original data must be strictly observed:
 

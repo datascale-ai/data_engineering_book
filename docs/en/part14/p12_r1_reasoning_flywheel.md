@@ -67,9 +67,7 @@ Common failures include input distribution drift, missing schema fields, quality
 
 Reproducibility materials should include data source descriptions, minimal samples, configuration files, run commands, metric scripts, inspection reports, and artifact directories. The main text retains necessary excerpts; complete notebooks, long scripts, and large files are maintained separately as companion resources.
 
-## R1-Style Reasoning Data Flywheel — From Long-CoT Cold Start to Rejection-Sampling Recirculation
-
-### Background and Objectives
+## 1. Background and Objectives
 
 The insight brought by reasoning models such as R1 / QwQ (Guo et al. 2025; Qwen Team 2025) is not merely that "models can output longer chains of thought," but that reasoning capability can be decomposed into a runnable data engineering pipeline. Traditional SFT projects typically revolve around a fixed batch of `instruction-response` samples, and the data itself rarely changes after training. The R1-style data flywheel is different: the model generates multiple candidate traces for the same task, the system uses a verifier to determine which traces are correct, which are format-stable, and which are worth recirculating, and then reorganizes the selected successful samples into supervised fine-tuning data for the next round. In this way, data is no longer a static asset prepared before training but becomes part of the model's capability iteration.
 
@@ -140,7 +138,7 @@ Table P12-2 summarizes the corresponding comparison and engineering consideratio
 
 ## 3. Step-by-Step Implementation: From Cold-Start Samples to a Recirculable SFT Dataset
 
-### Step 1: Prepare the Environment and Task Data
+### 3.1 Prepare the Environment and Task Data
 
 The project recommends running in an isolated conda environment. After entering the code directory, create the environment:
 
@@ -172,7 +170,7 @@ Input data can be understood by task type: `OpenThoughts` provides Long-CoT cold
 
 ---
 
-### Step 2: Extract Cold-Start SFT Data
+### 3.2 Extract Cold-Start SFT Data
 
 The goal of the cold-start stage is to organize data from different sources into a unified SFT message format. The command is as follows:
 
@@ -247,7 +245,7 @@ After cold-start data is generated, `cold_start_summary.json` should be inspecte
 
 ---
 
-### Step 3: Generate Multi-Path Reasoning Traces Using Mock or vLLM
+### 3.3 Generate Multi-Path Reasoning Traces Using Mock or vLLM
 
 The input to the sampling stage is the prompts from `cold_start_5k.jsonl`; the output is multiple candidate reasoning traces per prompt. To validate the pipeline first, the mock backend can be used:
 
@@ -325,7 +323,7 @@ If VRAM or throughput is insufficient, `num_samples`, `parallel_prompts`, and `m
 
 ---
 
-### Step 4: Build Math, Code, and Format Verifiers
+### 3.4 Build Math, Code, and Format Verifiers
 
 The verifier is the core of this project because it determines which candidates can become recirculated data. The verifiers in the current `verifier_pool.py` fall into three categories.
 
@@ -360,7 +358,7 @@ This structure is more valuable than a single score. If the rejection-sampling p
 
 ---
 
-### Step 5: Rejection Sampling and Generating Recirculated Samples
+### 3.5 Rejection Sampling and Generating Recirculated Samples
 
 Rejection sampling reads candidates from `data/sampled_traces`, calls the verifier, and then groups by prompt to filter. The command is as follows:
 
@@ -434,7 +432,7 @@ If the goal is to generate `10K+` recirculated samples, the candidate volume mus
 
 ---
 
-### Step 6: Merge Second-Round SFT Data, Train LoRA, and Evaluate
+### 3.6 Merge Second-Round SFT Data, Train LoRA, and Evaluate
 
 After rejection sampling is complete, merge the cold-start data with the recirculated data:
 
@@ -507,7 +505,7 @@ It should be emphasized that LoRA and the evaluation script in this project are 
 
 ---
 
-## Results Presentation and Analysis
+## 4. Results Presentation and Analysis
 
 The final output of this project is not a single score table but a set of reviewable data assets. The minimum acceptable results should include:
 

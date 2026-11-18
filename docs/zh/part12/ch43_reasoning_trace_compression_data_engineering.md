@@ -10,9 +10,9 @@
 
 推理轨迹；Long-CoT；Latent-Switch-69K；隐式计算；监督掩码；推理数据工程
 
-## Latent-Switch-69K：推理轨迹压缩与隐式计算槽位
+## 43.1 Latent-Switch-69K：推理轨迹压缩与隐式计算槽位
 
-### 学习目标
+### 43.1.1 学习目标
 
 通过本章学习，读者应能够：
 
@@ -22,7 +22,7 @@
 - 评估推理数据压缩中的答案一致性、验证充分性、压缩边界与领域偏置等风险。
 - 将 latent-switch 的隐藏规划与显式验证分离思想迁移到数学、代码与复杂指令等自有数据场景。
 
-### 43.1 开篇问题场景：Long-CoT 为什么还需要被压缩
+## 43.2 开篇问题场景：Long-CoT 为什么还需要被压缩
 
 第18章到第20章已经讨论 Chain-of-Thought、工具调用轨迹和 Agent 交互数据的基本形态。对推理模型而言，长思维链具有明确吸引力：模型把中间步骤写出来，训练者就能检查它是否在按某种可解释的路径解题，推理时也更容易通过自洽采样、验证器或过程奖励模型发现错误。然而，当 Long-CoT 从研究样例变成训练语料时，问题会立刻变得工程化。
 
@@ -40,7 +40,7 @@ Latent-Switch-69K 正是在这个问题背景下出现的。它不是一个简�
 
 本章承接第五篇的合成数据工程和第六篇的推理数据工程。第15章到第17章讨论如何生成、蒸馏和质检高质量训练样本，第18章讨论显式 CoT 的组织方式，第19章和第20章讨论工具与 Agent 轨迹中“中间状态”的记录方式。Latent-Switch-69K 则把这些线索推进到一个更细的层次：中间推理不一定都要以自然语言存储，数据集也可以显式为隐藏计算预留槽位。向后看，它会自然连接到第45章的后训练数据配方、第46章的 RL 推理数据工程，以及第十四篇 P06、P10、P12 中的推理飞轮项目。
 
-### 43.2 数据集概览：规模、难度与领域构成
+## 43.3 数据集概览：规模、难度与领域构成
 
 [Latent-Switch-69K 数据集](https://huggingface.co/datasets/Tioe/LATENT-SWITCH-69K)的最终训练 split 包含 69,745 条样本。每条保留样本包含一个用户问题、一个蒸馏出的 solution intuition、一段缩短后的显式 CoT、最终答案、latent-step 元数据，以及用于决定不同 token 区间监督方式的 mask。这个结构决定了它与普通 CoT/SFT 数据的差异：普通 SFT 记录通常只需要 prompt 和 assistant output，普通 CoT 数据通常只需要把 reasoning 和 answer 写在 `<think>` 或自然语言段落中；Latent-Switch-69K 还需要记录一个用于隐藏规划的预算，并把这个预算渲染成 student sequence 中的 latent placeholder。
 
@@ -85,7 +85,7 @@ Latent-Switch-69K 中保留有以下字段：`dataset_name`、`source_dataset`�
 
 第四组是监督字段，包括 prompt mask、latent internal mask、latent boundary mask、CoT mask、answer mask 和 teacher-KL mask。它们决定同一条 token 序列在训练时被怎样解释。普通数据集的 schema 往往只关心文本字段是否存在，Latent-Switch-69K 则必须把 mask 也视为数据资产。原因很简单：同一段文本如果 mask 不同，就对应不同训练任务。一个 latent placeholder 如果被 CE 拟合，就变成普通 token；如果被 mask 掉并替换为 recurrent latent state，它才是隐藏计算槽位。
 
-### 43.3 蒸馏与记录形成：从 teacher trace 到压缩推理记录
+## 43.4 蒸馏与记录形成：从 teacher trace 到压缩推理记录
 
 Latent-Switch-69K 的构建起点是 Dolci-Think-SFT-32B 中采样得到的推理轨迹。原始轨迹可以理解为 source reasoning traces：它们包含问题、一个或多个 assistant 输出、可能的 ground truth 或可抽取答案，以及来源和元数据。构建过程并不是直接筛选短答案，而是先把长轨迹拆解为两个互补目标：高层问题求解意图和较短的显式验证链。
 
@@ -239,7 +239,7 @@ $$
 
 第六阶段是 mask materialization。数据加载器根据 token ids 重新定位边界，构造 labels、loss weights 和各种 mask。这个阶段不宜只依赖原始字符串中的字符偏移，因为 tokenizer 改变会让字符偏移失效。更稳妥的方式是基于 token id 中的 special token 位置构造 span，并在每条样本上校验边界出现次数、顺序、答案区间和 teacher-reference 区间是否有效。
 
-### 43.4 Latent budget 与 student sequence：样本如何被渲染
+## 43.5 Latent budget 与 student sequence：样本如何被渲染
 
 Latent-Switch-69K 的关键字段之一是 `n_latent_steps`。它决定了 student sequence 中 `<latent_think>` 和 `</latent_think>` 之间放置多少个 latent placeholder。论文和代码中采用的基本启发式是：如果保留的 solution intuition 含有 \(L\) 个 token，则 latent budget 约为 \(L/2\)，再受最大 latent 长度和 tokenizer 约束裁剪。最终数据中 latent steps 的均值为 41.49，中位数为 40.00。
 
@@ -370,7 +370,7 @@ assistant_content_start <= latent_start < latent_end < think_start < think_end
 
 teacher-reference conversation 是另一条容易被忽视的序列。它不是 student sequence 的副本，而是省略 latent placeholder 后的参考对话。teacher 输入中包含原始问题和 solution intuition，assistant continuation 则是压缩 CoT 和答案。这个设计让 teacher KL 聚焦在可见推理质量和答案分布上，而不是要求 teacher 理解 student 的 latent 内部槽位。也就是说，student sequence 负责训练 latent-then-explicit 格式，teacher reference 负责提供显式验证部分的分布参考，两者服务于不同监督目标。
 
-### 43.5 Supervision masks：哪些 token 参与 loss
+## 43.6 Supervision masks：哪些 token 参与 loss
 
 Latent-Switch-69K 的监督设计可以概括为一句话：prompt tokens 和 latent interior placeholders 不参与普通 token-level CE，结构边界、显式 CoT、答案和结束 token 参与有针对性的监督，teacher KL 只对选定的显式 CoT 与答案位置生效。
 
@@ -426,7 +426,7 @@ $$
 
 还有一个细节是显式 CoT 的权重。Latent-Switch-69K 不是要删除显式推理，而是要降低对完整长 CoT 的依赖。若 CoT 权重过高，模型会更倾向于把能力用在复现可见推理文字上；若 CoT 权重过低，模型可能只学会结构和答案，显式验证链变弱。数据侧至少要保留可配置的 `cot_loss_weight` 或等价字段，使训练者能够在不同任务上调整“可见验证”与“最终答案”的平衡。
 
-### 43.6 质量控制：压缩、边界与偏置的五类风险
+## 43.7 质量控制：压缩、边界与偏置的五类风险
 
 Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包含压缩推理、latent 预算和多种 mask，风险也分成多层。
 
@@ -466,7 +466,7 @@ Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包�
 
 版本层面，每次发布都应给出数据版本号、构建脚本版本、teacher 模型版本、tokenizer 版本、special-token contract、过滤规则和统计报告。Latent-Switch-69K 这种数据集的可复查性来自“文本加结构加配置”的组合。如果只保存最终文本，几年后很难解释为什么某个样本有 38 个 latent steps，为什么某个 CoT 被降权，为什么某些 teacher KL 位置被跳过。
 
-### 43.7 与前后章节的回链：从推理数据到推理飞轮
+## 43.8 与前后章节的回链：从推理数据到推理飞轮
 
 把 Latent-Switch-69K 放回全书结构中，它的价值不在于介绍一个孤立数据集，而在于展示一种新的推理数据接口。
 
@@ -487,7 +487,7 @@ Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包�
 
 如果一个团队只复用 Latent-Switch-69K 的文本输出，而忽略 `n_latent_steps`、latent boundary 和 supervision masks，它得到的只是一个较短的 CoT SFT 数据集。只有把压缩率、latent placeholder、student sequence 和 mask 作为同一个数据工程对象管理，这个数据集才真正体现出 latent-then-explicit reasoning 的设计思想。
 
-### 43.8 复用建议：把 Latent-Switch 思路迁移到自有数据
+## 43.9 复用建议：把 Latent-Switch 思路迁移到自有数据
 
 如果团队希望在自己的数学、代码或业务推理数据上复用 Latent-Switch-69K 的思路，不建议第一步就改模型结构。更稳妥的路线是先把数据 schema 做出来。团队可以从现有 Long-CoT 样本中抽取一小批高质量问题，人工或用 teacher 模型生成 solution intuition，再生成压缩 CoT 和最终答案。随后，按 intuition 长度分配一个保守的 latent budget，例如从 \(L/3\)、\(L/2\) 和固定 32 steps 三种方案中选择一到两个版本做对照。这样做的价值在于，团队可以先观察数据是否能被稳定渲染、mask 是否正确、答案是否一致，而不必马上进入昂贵训练。
 
@@ -499,7 +499,7 @@ Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包�
 
 这也是本章反复强调 schema、mask 和质量报告的原因：latent reasoning 能否落地，首先取决于数据是否把隐藏规划的接口定义清楚，并在数据构造、训练加载和评估复盘三个阶段保持同一套可检查口径。
 
-### 43.9 小结
+## 43.10 小结
 
 Latent-Switch-69K 展示了推理数据工程的一种重要转向：从“收集更长、更详细的 CoT”转向“设计更有效的推理监督结构”。它从 Dolci-Think-SFT-32B 的推理轨迹出发，通过 teacher distillation 提取 solution intuition 和 compressed CoT，把 intuition 长度映射为 latent budget，再渲染为 `<latent_think>`、placeholder、`<think>`、answer tokens 组成的 student sequence。最终，prompt 与 latent interior 被普通 CE mask 掉，边界、显式推理、答案和结束 token 获得各自的监督，teacher KL 只对选定可见位置生效。
 

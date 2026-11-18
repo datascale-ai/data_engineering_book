@@ -10,9 +10,9 @@ This chapter discusses how visual documents become trainable, evaluable, and aud
 
 visual documents; table structure recognition; bill understanding; sample schema; structural robustness; data-quality evaluation
 
-## Case A: StructBill-CN: Bill Fields, Business Schema, and Logic Consistency
+## 40.1 StructBill-CN: Bill Fields, Business Schema, and Logic Consistency
 
-### Case A: Learning Objectives
+### 40.1.1 Learning Objectives
 
 After studying this chapter, you should be able to:
 
@@ -25,7 +25,7 @@ After studying this chapter, you should be able to:
 - Recognize privacy, compliance, and audit requirements in high-risk document scenarios, and understand the principle of public benchmark / private production separation.
 - Connect this chapter with later VLM data recipes, multimodal RAG, and privacy-pipeline projects.
 
-### Case A: Scenario Introduction
+### 40.1.2 Scenario Introduction
 
 A provincial medical-insurance center spent two months training an end-to-end bill extraction system based on Qwen2.5-VL (Bai et al., 2025). Offline evaluation looked promising: character-level recognition accuracy measured by ANLS exceeded 92%, and field-level F1 approached 90%. The team was ready to connect the system to the settlement reconciliation pipeline.
 
@@ -35,7 +35,7 @@ The acceptance team asked three questions. First, did the existing test set chec
 
 These questions hit the core issue. A dataset that only labels where fields are located cannot expose arithmetic inconsistency, structural fabrication, or row-column drift. An evaluation protocol that only measures character-level accuracy cannot answer whether a record is usable. The team must return to data engineering: annotation rules, validation pipelines, and evaluation protocols. StructBill-CN is designed around exactly this problem.
 
-### Case A.1: Why Bills and Medical-Expense Documents Are Hard to Extract
+### 40.1.3 Why Bills and Medical-Expense Documents Are Hard to Extract
 
 Medical bills, settlement statements, and pharmacy invoices sit at the intersection of high risk, high density, and weak visual cues. They are not free text that can be paraphrased, nor clean electronic spreadsheets with visible grids. They are structured records that must enter downstream systems such as financial audit, insurance claim, and ERP systems. The goal is therefore not to read text from an image, but to transcribe the image into a queryable database object.
 
@@ -63,7 +63,7 @@ Bill errors are not isolated. Imagine a borderless expense list with sparse empt
 
 This is why arithmetic self-consistency must be a first-class object. In high-risk structured extraction, the unit of data quality is not the character; it is the database-ingestible record.
 
-### Case A.2: Dataset Overview: Scale, Sources, Schema, and Task Definition
+### 40.1.4 Dataset Overview: Scale, Sources, Schema, and Task Definition
 
 #### 40.2.1 Scale and Sources
 
@@ -170,7 +170,7 @@ These difficulties are design targets, not defects. They explain why the constru
 
 The image forms of different schemas also carry different emphases, and this matters for controlled splits and sampling. CHIP-2022 inpatient, outpatient, and pharmacy invoices are wired-grid forms with relatively regular structure, mainly testing precise extraction from dense fields. Discharge records are text-dense and nearly table-free, testing long-text understanding and global key-value localization. SIBR-Med expense lists are typical borderless tables, making row-column alignment and logic consistency the main battlefield. Notice forms contain no tables, testing whether the model can refrain from fabricating tables when none should exist.
 
-### Case A.3: Sample Schema: Key-Value, Line-Item Tables, Hierarchical JSON, and Logic Constraints
+### 40.1.5 Sample Schema: Key-Value, Line-Item Tables, Hierarchical JSON, and Logic Constraints
 
 #### 40.3.1 Three Supervision Signals
 
@@ -279,7 +279,7 @@ Table 40-2 summarizes the corresponding comparison and engineering consideration
 
 This table acts as a contract between annotation rules and evaluation scripts.
 
-### Case A.4: Construction Pipeline
+### 40.1.6 Construction Pipeline
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
 
@@ -368,7 +368,7 @@ Producing only images and JSON is not enough. Each sample should carry lineage m
 
 This metadata supports error attribution, audit compliance, and reproducibility. It is also crucial for SFT warm-start data: if the supervised data used before reinforcement learning contains illegal JSON structures, the RL stage loses a stable starting point. The schema gate must therefore be strict for warm-start data.
 
-### Case A.5: Evaluation Protocol
+### 40.1.7 Evaluation Protocol
 
 StructBill-CN evaluates **extraction accuracy**, **structural quality**, and **logic consistency**.
 
@@ -444,7 +444,7 @@ Table 40-3 summarizes the corresponding comparison and engineering consideration
 
 The engineering value of attribution is speed. When a metric regresses, teams can decide whether the issue is image quality, annotation drift, or model capability. The table should also feed back into annotation rules: frequent online errors should trigger rule review and affected-sample relabeling.
 
-### Case A.6: Engineering Review
+### 40.1.8 Engineering Review
 
 #### 40.6.1 How the Data Asset Supports SRPO
 
@@ -509,15 +509,15 @@ Two directions are important. First, **multi-task negative transfer**: mixing ar
 
 StructBill-CN should be treated as an evolvable data contract. Its schema, constraints, and splits are versioned and can grow with downstream VLM and RAG needs.
 
-### Case A: Summary
+### 40.1.9 Summary
 
 StructBill-CN is not just another dataset. It addresses a data-engineering question: how to turn high-risk Chinese bill and medical-expense documents into a trainable, evaluable, and reviewable data asset from images, schemas, hierarchical JSON, table fields, and logic constraints.
 
 The main conclusion is threefold. First, in high-risk structured extraction, data quality is measured by ingestible records, not characters. Character-level metrics alone cannot expose row-column drift, arithmetic inconsistency, and structural fabrication. Second, schema is the contract for annotation, the baseline for evaluation scripts, and the input to logic reward. Third, StructBill-CN is an evolvable data contract whose schema, constraints, and splits can keep growing with VLM data recipes, multimodal RAG, and privacy-pipeline projects.
 
-## Case B: SparseTable-Bench: Sparse Tables, Empty Cells, and Structural Robustness
+## 40.2 SparseTable-Bench: Sparse Tables, Empty Cells, and Structural Robustness
 
-### Case B: Learning Objectives
+### 40.2.1 Learning Objectives
 
 Upon completing this chapter, the reader should be able to:
 
@@ -527,7 +527,7 @@ Upon completing this chapter, the reader should be able to:
 - Analyze how missing empty-cell placeholders and left-shifted text systematically undermine the discriminative power of conventional TSR evaluation, and use this analysis to design annotation constraints that preserve empty positions.
 - Explain the differences between the TEDS and TEDS-S metrics in structural robustness evaluation, and attribute errors to incorrect content reading, incorrect structure ordering, and misaligned placement using cell-level bounding boxes.
 
-### Case B.1: Why Table Structure Recognition Needs a Specialized Benchmark
+### 40.2.2 Why Table Structure Recognition Needs a Specialized Benchmark
 
 In visual document understanding, tables are frequently reduced to "collections of text blocks in an image." This simplification can sometimes work for dense tables, because every row-column position has salient text that can serve as an implicit anchor. In scenarios with weak borders, large whitespace, many empty columns, or frequent cell merges, however, text anchors quickly fail. The model sees a set of discrete characters and large blank areas; the actual grid lines are not always visible, and the logical structure can only be inferred from visual arrangement, local alignment, and contextual priors.
 
@@ -541,7 +541,7 @@ SparseTable-Bench addresses these risks at the data design stage. It treats each
 
 All three layers must coexist. Without bounding boxes alongside the HTML, the dataset cannot constrain whether the model has truly learned spatial alignment. Without HTML alongside the bounding boxes, the model cannot learn row-column topology and spanning structures. Without empty-cell placeholders alongside the non-empty text, evaluation will systematically underestimate the structural difficulty introduced by sparse layouts.
 
-### Case B.2: Dataset Overview and Task Boundaries
+### 40.2.3 Dataset Overview and Task Boundaries
 
 The task of SparseTable-Bench can be summarized as: "given a table image, recover a parseable structured representation while maintaining consistency among text, structure, and geometric positions." During training and evaluation, the model must output an HTML-like structure sequence while aligning text content and bounding boxes at the cell level. The dataset can be positioned as the data foundation for a spatially alignment-aware table recognition framework — usable for ordinary TSR training as well as for testing the structural robustness of VLMs under sparse, borderless, and partially occluded conditions. In related model experiments, STB often serves as the data basis for methods such as SA-Table and its Structural Prior Injection Adapter (SPIA). This chapter does not elaborate on the model architectures of SA-Table or SPIA; their requirements are cited only to motivate the data design decisions behind STB.
 
@@ -571,7 +571,7 @@ The second is geometrically aware annotation. Every cell has a bounding box `bbo
 
 The third is mask pressure testing. STB-Mask-Stress actively reduces text cues through column-level and local occlusion, simulating severely sparse or incomplete visual conditions. Its objective is not to produce more difficult OCR, but to test whether the model can still preserve table topology — particularly empty columns, empty cells, and cross-column relationships — when portions of the content are invisible.
 
-### Case B.3: Sample Schema: Synchronized Representation of HTML, Text, and Bounding Boxes
+### 40.2.4 Sample Schema: Synchronized Representation of HTML, Text, and Bounding Boxes
 
 A core design principle of SparseTable-Bench is to represent each table image as a synchronized multi-signal sample, rather than retaining only a single target format. The example below illustrates a simplified sample in which the second cell is empty, yet it remains a structurally valid column slot.
 
@@ -624,7 +624,7 @@ The value of this schema lies in allowing the same data to serve multiple traini
 
 The notation for the empty-cell token must remain consistent across the dataset, tokenizer, training scripts, and evaluation scripts. The dataset uses `[EMPTY_CELL]` to represent empty cells; in some model paper contexts, typographic variants such as `[EMPTY CELL]` may also appear. During engineering implementation, one canonical form should be selected and enforced uniformly during the data transformation stage; otherwise, the same empty position may be tokenized differently, causing the training objective and the evaluation objective to become misaligned.
 
-### Case B.4: Four-Stage Construction Pipeline
+### 40.2.5 Four-Stage Construction Pipeline
 
 The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 40-5.
 
@@ -656,7 +656,7 @@ The sparse topology augmentation stage is used to construct pressure tests and s
 
 The construction pipeline should ultimately produce three types of auditable artifacts: standard training/validation/test samples, STB-Mask-Stress pressure test samples, and data documentation recording the data version, source domains, split strategies, and transformation script hashes. Without this metadata, a benchmark easily becomes single-use experimental material, unable to support subsequent model iteration and cross-study comparison.
 
-### Case B.5: How Empty Cells and Sparse Layouts Induce Structural Errors
+### 40.2.6 How Empty Cells and Sparse Layouts Induce Structural Errors
 
 The core difficulty of sparse tables is not simply "too much whitespace, so too little information." Whitespace itself carries structural meaning. A blank region may represent an empty cell, an entire column of missing values, the area occupied by a spanning cell, or merely typographic whitespace on the page. If a model cannot distinguish among these cases, structural hallucinations will occur.
 
@@ -682,7 +682,7 @@ Table 40-7 summarizes the corresponding comparison and engineering consideration
 
 These errors demonstrate that the value of SparseTable-Bench is not simply providing a more difficult dataset, but transforming structural failure modes in sparse tables into supervision objects that are annotatable, computable, and attributable.
 
-### Case B.6: STB-Mask-Stress: A Pressure Test for Information-Deficient Conditions
+### 40.2.7 STB-Mask-Stress: A Pressure Test for Information-Deficient Conditions
 
 STB-Mask-Stress is the robustness evaluation split within SparseTable-Bench, dedicated specifically to pressure testing. Its design philosophy is to systematically reduce text cues — while preserving table topology — and to observe whether the model can still recover row-column structure and empty cell positions. Unlike ordinary data augmentation, the goal of STB-Mask-Stress is not to increase training set diversity, but to construct an evaluation environment that more closely resembles a "structural understanding stress test." This chapter follows the dataset documentation in using the name STB-Mask-Stress; in related experimental contexts, it can also be understood as a masked table evaluation setting oriented toward column-level occlusion, suitable for use with pressure-test metrics such as Masked-TEDS.
 
@@ -707,7 +707,7 @@ It must be emphasized that STB-Mask-Stress scores should not be equated directly
 
 From a data engineering perspective, the key to pressure testing is "occlusion and annotation synchronization." If images are occluded without updating labels, the model is required to predict invisible text, and evaluation results will conflate language memorization and guessing ability. If text is removed while also deleting cell nodes, the pressure test degenerates into an ordinary sparse table, making it impossible to test empty-position preservation. STB-Mask-Stress should therefore always uphold one principle: text evidence may be removed; structural topology must not be arbitrarily eliminated.
 
-### Case B.7: Evaluation Protocol: TEDS, TEDS-S, and Error Interpretation
+### 40.2.8 Evaluation Protocol: TEDS, TEDS-S, and Error Interpretation
 
 SparseTable-Bench uses Tree-Edit-Distance-based Similarity (TEDS) and its structural variant TEDS-S as primary evaluation metrics. TEDS parses both the predicted HTML and the reference HTML into trees, computing a normalized tree-edit similarity. It is jointly influenced by structural tags, node ordering, and cell text content. TEDS-S ignores text content and focuses more on structural topology — for example, row-column alignment, merged cell recovery, and empty cell positions.
 
@@ -737,7 +737,7 @@ Third, pressure test scores should be reported by occlusion type. Body Masking, 
 
 In addition to the primary metrics, STB is well suited to introducing several diagnostic metrics. For example, empty-cell recall measures whether `[EMPTY_CELL]` positions are preserved; column-count expansion consistency measures whether each row, when expanded, matches the reference column count; merged-cell accuracy measures `rowspan`/`colspan` correctness; and bbox match rate measures whether structural nodes correspond to their visual regions. These metrics need not all appear in leaderboards, but they are highly suited for model debugging and data quality inspection.
 
-### Case B.8: Data Engineering Practice: Using STB for Training and Reproduction
+### 40.2.9 Data Engineering Practice: Using STB for Training and Reproduction
 
 When using SparseTable-Bench for model training, the most common approach is to use images as input and organize HTML structure, cell text, and bounding boxes into a unified output sequence or multi-task supervision target. For generative VLMs, the model can directly generate HTML and insert text or empty-cell tokens at the cell content positions; for models with position heads, bbox regression or coordinate token prediction can be added alongside text generation; for adapter-based or structural prior models, bounding boxes and grid topology can be converted into auxiliary structural features to help the decoder maintain row-column alignment during generation.
 
@@ -778,7 +778,7 @@ Annotation quality inspection can also adopt a dual-channel approach. The first 
 
 A reproducible benchmark version requires pinned version numbers for the training set, validation set, standard test set, and STB-Mask-Stress, along with retained hash values of data generation scripts. Pressure tests especially require versioning, because small changes to the number of occluded columns, occlusion probability, or background fill value all affect model scores. If the occlusion strategy is adjusted in the future, it should be released as a new pressure test version rather than overwriting existing results. Only then can STB support long-term model iteration, cross-team comparison, and in-book project reproducibility experiments.
 
-### Case B.9: MindSpore Implementation and Code
+### 40.2.10 MindSpore Implementation and Code
 
 To facilitate experimental reproduction and review of data processing workflows, the MindSpore companion implementation entry point for SparseTable-Bench is:
 
@@ -792,7 +792,7 @@ https://huggingface.co/datasets/champion666/SparseTable_Bench_Dataset
 
 The role of the code repository is not to simply replicate paper experiments, but to support reproduction of the data engineering workflow described in this chapter: loading samples, validating the schema, constructing occlusions, running evaluation, and interpreting errors. As long as these interfaces remain stable, subsequent substitution of SA-Table, OCRFlux, Qwen-VL, or any other table recognition model can be compared under the same data protocol.
 
-### Case B.10: Connections to Adjacent Chapters
+### 40.2.11 Connections to Adjacent Chapters
 
 SparseTable-Bench connects naturally to multiple parts of this book.
 
@@ -806,7 +806,7 @@ Looking ahead, STB connects directly to Chapter 47 on VLM data recipes. Chapter 
 
 In the Part XIV projects, STB can also connect to P03 and P05. The LLaVA multimodal instruction data factory in P03 needs to convert document images into trainable visual instruction samples; STB can provide instruction sources such as "identify the table structure," "indicate the positions of empty cells," and "explain column-position shift errors." The multimodal RAG project in P05 needs to extract retrievable evidence from PDFs, financial reports, and scientific publications; STB can help parse tables into structured evidence that is citable, comparable, and traceable. Particularly in financial reports, medical papers, and scientific publications, table structure errors are often harder to detect and more likely to affect final answers than individual OCR character errors.
 
-### Case B: Summary
+### 40.2.12 Summary
 
 The core contribution of SparseTable-Bench is that it transforms the problem of structural robustness in sparse tables into a data engineering problem that is annotatable, trainable, and evaluable. The dataset establishes three categories of supervision signals through HTML structure sequences, cell-level text content, and fine-grained bounding boxes, and uses `[EMPTY_CELL]` to explicitly preserve empty-cell topology, preventing blank regions from being incorrectly removed during cleaning, training, and evaluation. STB-Mask-Stress further constructs pressure tests through column-aware occlusion, enabling the model's structural recovery capability under severe information deficiency to be observed in isolation.
 

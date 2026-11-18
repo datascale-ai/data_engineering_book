@@ -69,7 +69,7 @@ Common failures include input-distribution drift, missing schema fields, quality
 
 Reproduction materials should include data-source notes, a minimal sample set, configuration files, run commands, metric scripts, inspection reports, and output directories. The chapter keeps necessary fragments; full notebooks, long scripts, and large files should be maintained as companion resources.
 
-## Background and Objectives
+## 1. Background and Objectives
 
 In VLM data engineering, the bottleneck is often not only the number of image-text pairs but also the construction of high-quality, diverse instruction data. Project 3 already introduced the entry-level process for generating simple descriptions and QA instructions from single images. Under modern multimodal architectures represented by Qwen2.5-VL (Bai et al. 2025) and InternVL3 (Zhu et al. 2025), however, datasets also need to cover complex reasoning, OCR reading, fine-grained grounding, interleaved multi-image input, and video understanding.
 
@@ -83,7 +83,7 @@ Industrial multimodal instruction synthesis must handle several challenges:
 
 This project builds a complete multimodal instruction data factory. Starting from an image-only pool such as a LAION subset, it uses strong foundation models, including Qwen2.5-VL-7B and Qwen2.5-72B, to produce high-quality complex instructions in an automated and scalable way. After completing the project, readers can adapt the same production line to private image collections in domains such as medicine, law, and e-commerce.
 
-## Architecture
+## 2. Architecture
 
 The factory is divided into five components, shown in Figure P13-1.
 
@@ -113,9 +113,9 @@ Table P13-2 maps architecture components to code entry points and key artifacts.
 
 The key function of Table P13-2 is to split "generation" out of a single model call. In real projects, VLM generation is only the middle of the pipeline. Before it, controlled seeds and task templates are required; after it, consistency checks, score filtering, multilingual review, and format packaging are required. If only the generation script is kept, the chapter becomes a demo. If stage artifacts and review fields are kept, the chapter has the engineering depth expected of a project chapter.
 
-## Step-by-Step Implementation
+## 3. Step-by-Step Implementation
 
-### Step 1: Seed Selector
+### 3.1 Seed Selector
 
 From an open LAION subset (Schuhmann et al. 2022), use metadata such as image width, height, original caption length, and tags to select promising seeds.
 
@@ -158,7 +158,7 @@ if __name__ == "__main__":
 
 *Listing P13-2: Python implementation excerpt*
 
-### Step 2: Instruction Template Design
+### 3.2 Instruction Template Design
 
 Unlike fixed-question LLaVA data, this pipeline needs diverse roles and task templates.
 
@@ -189,7 +189,7 @@ def get_random_prompt(task_type):
 
 *Listing P13-3: Python implementation excerpt*
 
-### Step 3: High-throughput Generation with vLLM
+### 3.3 High-throughput Generation with vLLM
 
 With vLLM's high concurrency, selected images and instruction templates can be sent to a base multimodal model at scale.
 
@@ -250,7 +250,7 @@ def generate_instructions(seeds, model_path="Qwen/Qwen2.5-VL-7B-Instruct"):
 
 *Listing P13-4: Latent-reasoning trace sample*
 
-### Step 4: LLM-as-Judge Quality Filtering
+### 3.4 LLM-as-Judge Quality Filtering
 
 Generated responses often hallucinate. We introduce a strong judge model such as Qwen2.5-72B-Instruct. Because a text-only 72B model cannot directly inspect images, we use text-only evaluation: the judge scores the internal logic, completeness, and structure of the generated long response.
 
@@ -280,7 +280,7 @@ def score_with_llm_judge(generated_data):
 
 *Listing P13-5: Python implementation excerpt*
 
-### Step 5: Unified Downstream Packaging
+### 3.5 Unified Downstream Packaging
 
 Whether the source is a single image, multiple images, or a video clip, the final output is written as JSONL in a community format such as ShareGPT or a model-specific format such as Qwen2.5-VL fine-tuning format.
 
@@ -331,7 +331,7 @@ if __name__ == "__main__":
 
 *Listing P13-6: Python implementation excerpt*
 
-## Engineering Run Path and Minimal Reproduction
+## 4. Engineering Run Path and Minimal Reproduction
 
 The P13 code directory is `code/zh/project_13_mm_instruction_factory`. Compared with P11 and P14, this project is more of a generative data factory. The minimal reproduction path is therefore not one fixed shell script, but a staged function chain: select seeds, generate instructions from templates, then run judge, self-consistency, multilingual expansion, and format packaging. In teaching environments, a small seed set and mock judge can first validate artifact contracts before replacing them with real Qwen2.5-VL and Qwen2.5-72B-Instruct services.
 
@@ -371,7 +371,7 @@ Table P13-3 summarizes the corresponding comparison and engineering consideratio
 | Packaging version | Output format, field schema, target training framework | Ensures training scripts can read the data |
 | Spot-check record | Human samples, failure samples, revision notes | Supports release gates |
 
-## Data Schema and Sample Contract
+## 5. Data Schema and Sample Contract
 
 A minimal multimodal instruction record cannot contain only `image`, `instruction`, and `response`. The project chapter should emphasize that training formats can be narrow, but engineering intermediate states must be wider. Otherwise, once hallucination, format errors, or copyright problems appear, the data team cannot trace a sample back to its image, template, model call, or filtering step.
 
@@ -396,7 +396,7 @@ Table P13-4 summarizes the corresponding comparison and engineering consideratio
 
 The final `mm_sft_final.jsonl` file in Qwen format can be narrower than the intermediate state, but the intermediate state should not be discarded. Training files serve the training framework; audit files serve quality and release. They can be joined by `sample_id`.
 
-## Quality Filtering: From Length Thresholds to Calibrated Rubrics
+## 6. Quality Filtering: From Length Thresholds to Calibrated Rubrics
 
 The demonstration `llm_judge.py` uses response length as a proxy: answers above a certain word count receive 4.5, while shorter answers receive 3.0. This is acceptable for teaching, but not for a real release gate. A real LLM-as-Judge setup should include at least four scoring dimensions: image-text consistency, answer completeness, task following, and safety/compliance.
 
@@ -415,7 +415,7 @@ Table P13-5 summarizes the corresponding comparison and engineering consideratio
 
 Self-consistency complements judge blind spots. For complex reasoning questions, the model can generate multiple answers, then compare whether conclusions and key evidence agree. If different samples conflict on subjects, text, or spatial relationships, the record should not enter the training set even if one answer is long and fluent. The current `self_consistency.py` is a simplified interface and teaching implementation; real projects should plug in multi-sample generation and consistency metrics.
 
-## Multilingual Expansion and Cross-Language Acceptance
+## 7. Multilingual Expansion and Cross-Language Acceptance
 
 Multilingual expansion is not simply copying an English instruction and adding an `instruction_zh` field. In multimodal tasks, cross-language errors often occur in visual references and proper-name translation. For example, "the sign on the left" may be translated as "the sign on the right," or brands, place names, and units may be localized incorrectly. P13 should treat Chinese and English as two sample sets that both require spot checks, not as a cheap way to double the count.
 
@@ -433,7 +433,7 @@ Table P13-6 summarizes the corresponding comparison and engineering consideratio
 
 If the project targets Chinese-model training, do not only translate English samples into Chinese. Keep a portion of native Chinese templates and native Chinese judge prompts. Translated samples are useful for scale, but native Chinese samples better reflect real Chinese user questions.
 
-## Test Coverage and Code Notes
+## 8. Test Coverage and Code Notes
 
 `tests/test_factory.py` covers template existence, random prompt return type, judge filtering, Chinese expansion, and JSONL packaging. These tests prevent basic interface breakage, but they do not prove the factory is releasable. In particular, `generate_with_qwen_vl.py` is a teaching example. Before real vLLM or Qwen-VL integration, it needs input variables, exception handling, model-call result parsing, and failed-sample records. The chapter presents it to explain the generation-stage interface, not to claim production completeness.
 
@@ -449,7 +449,7 @@ Table P13-7 summarizes the corresponding comparison and engineering consideratio
 | Packaging test | JSONL file can be written | Conversation-field spot check |
 | End-to-end mock | Test entry exists | Small-sample real model run |
 
-## Common Faults and Troubleshooting Paths
+## 9. Common Faults and Troubleshooting Paths
 
 Seed-stage issues usually involve dead image links, missing image-size fields, or low-quality original captions. First count filtering reasons rather than only final seed count. If many images are removed by aspect-ratio filters, confirm field units and source schema.
 
@@ -459,7 +459,7 @@ Filtering-stage issues often come from a judge that over-rewards long answers. L
 
 Packaging-stage issues involve mismatch among image URLs, `<image>` markers, and the target training framework's conversation format. Randomly read JSONL lines and confirm that each line is valid JSON, `conversations[0].value` contains an image placeholder, assistant output is non-empty, and quality fields link back to intermediate records.
 
-## Manual Spot Checks and Release Gates
+## 10. Manual Spot Checks and Release Gates
 
 Multimodal instruction factories often look good on automated metrics while failing under human reading. High-scoring samples may be fluent but unfaithful to the image; multilingual samples may be grammatical but wrong on direction, count, or OCR text. Manual spot checks are therefore mandatory before release.
 
@@ -494,7 +494,7 @@ Table P13-9 summarizes the corresponding comparison and engineering consideratio
 | Safety gate | Sensitive content, privacy, identity-inference checks | Delete samples and update filtering rules |
 | Version gate | Model version, template version, run batch | Freeze versions before release |
 
-## Multi-Image and Video Extension Path
+## 11. Multi-Image and Video Extension Path
 
 The presence of `pack_multi_image_video.py` indicates that this project targets more than single-image SFT. Modern VLM training increasingly depends on interleaved images, multi-image comparison, and short video clips. The core issue is not concatenating several `<image>` tags, but making the instruction clearly point to each visual input and making the answer explicitly express comparison, ordering, temporal change, or cross-image relation.
 
@@ -512,7 +512,7 @@ Table P13-10 summarizes the corresponding comparison and engineering considerati
 
 For video, reuse P14's shot-level structure: `frame_paths`, `caption_en`, `shot_language`, and `camera_motion` can become video-instruction material for P13. A video QA sample can ask the model to explain how the subject moves or infer camera movement. P13 and P14 are therefore upstream and downstream: P13 is the instruction factory, while P14 is the video data pipeline.
 
-## Deliverable Directory and Version Management
+## 12. Deliverable Directory and Version Management
 
 P13 deliverables should be separated into raw, scored, expanded, packed, and reports. This avoids mixing training files with audit files and makes stage-level rollback possible.
 
@@ -534,7 +534,7 @@ Table P13-11 summarizes the corresponding comparison and engineering considerati
 
 For version management, hash templates and judge prompts. A model version can remain fixed while template text changes enough to shift sample distribution. A small judge-prompt change can also move pass rates. Release reports should include model version, template version, judge-prompt version, and data batch, not just "generated with Qwen2.5-VL."
 
-## Data Dashboard and Continuous Iteration
+## 13. Data Dashboard and Continuous Iteration
 
 After launch, the factory must continue observing sample distribution instead of generating once and sending data directly to training. The dashboard can start as JSONL statistics scripts; it does not need to be a complex platform. Each batch should answer: whether task types are balanced, whether judge pass rate is abnormal, whether multilingual ratio is stable, and which asset types dominate failure samples.
 
@@ -556,7 +556,7 @@ Table P13-12 summarizes the corresponding comparison and engineering considerati
 
 Dashboards must be stored by batch. A sudden judge-pass-rate increase does not necessarily mean quality improved; the judge prompt may have become looser, templates may have become longer, or the model may have learned to produce verbose answers. If OCR-task pass rate is much lower than description-task pass rate, inspect OCR image quality and the scoring rubric separately instead of raising the global threshold.
 
-## Sample Takedown and Copyright Response
+## 14. Sample Takedown and Copyright Response
 
 Multimodal data triggers copyright, portrait-right, and privacy risks more easily than pure text. A public URL does not imply unlimited redistribution of images or generated results. P13 must keep a takedown path: when an image, author, or source collection must be deleted, the system should locate related instructions, translated samples, and final training files.
 
@@ -575,7 +575,7 @@ Table P13-13 summarizes the corresponding comparison and engineering considerati
 
 The takedown mechanism requires stable `sample_id` in the intermediate state. If only the final Qwen conversation format is saved, it is hard to trace a training sample back to the original image and generation batch. P13 must therefore distinguish the narrow training table from the wide audit table.
 
-## Domain Transfer: From General Images to Industry Assets
+## 15. Domain Transfer: From General Images to Industry Assets
 
 P13 can transfer to medical imaging, industrial inspection, e-commerce product images, legal-evidence screenshots, and educational charts. But templates and gates must be redesigned for each domain. Visual evidence and risk boundaries differ too much to reuse generic LAION templates directly.
 
@@ -593,7 +593,7 @@ Table P13-14 summarizes the corresponding comparison and engineering considerati
 
 For domain transfer, build a small set of high-quality templates and expert-review samples before scaling. In high-risk domains, do not rely entirely on LLM-as-Judge. The judge can pre-filter, but release gates should be decided jointly by domain experts or rule systems.
 
-## Relationship with P03 and P14
+## 16. Relationship with P03 and P14
 
 P13 sits between P03 and P14. P03 establishes the classic LLaVA image-text and conversation baseline. P13 adds Qwen-VL-style generation, judge, self-consistency, and multilingual expansion. P14 extends visual input from static images to video shots. Together they form a progression from single-image baseline to modern multimodal factory and then to video-generation data.
 
@@ -609,7 +609,7 @@ Table P13-15 summarizes the corresponding comparison and engineering considerati
 
 With this organization, readers can treat P03 as the baseline data structure, P13 as the instruction-generation factory, and P14 as the video-material and temporal-supervision source. A future Video-QA or Video-Instruct dataset can first use P14 to create video segments and shot fields, then use P13 templates, judge, and packaging to produce instruction samples.
 
-## Results and Analysis
+## 17. Results and Analysis
 
 The example acceptance setting deploys Qwen2.5-VL-7B with vLLM on one node with four 4090 GPUs and calls a 72B model as judge through an API, producing a candidate batch of multimodal instruction samples. In formal reproduction, replace the example scale with actual task configuration, generation logs, and sample manifests.
 
@@ -618,20 +618,20 @@ The example acceptance setting deploys Qwen2.5-VL-7B with vLLM on one node with 
 
 Formal acceptance should check four kinds of evidence. First, the data can be read by downstream training scripts. Second, the task-type distribution matches the planned ratio. Third, image, instruction, and answer are not obviously mismatched. Fourth, source license, model license, and redistribution rules for generated artifacts are registered. Only after these checks can generated data move from the candidate pool into the training set.
 
-## Cost and Optimization
+## 18. Cost and Optimization
 
 The industrial synthesis factory has the following cost profile:
 
 - **Synthesis cost**: On private compute, a 7B VLM takes about 1-2 seconds to generate one long image-conditioned response. With commercial APIs, the cost is about $5-$10 per thousand high-quality samples.
 - **Scalability**: vLLM tensor parallelism handles multimodal generation pressure well. When compute is limited, reduce `max_num_seqs` and lower the sampling temperature to prevent low-value divergence.
 
-## Extensions
+## 19. Extensions
 
 Compared with earlier LLaVA-style data pipelines that relied heavily on manual work or expensive GPT-4V distillation, the Qwen-VL plus LLM-as-Judge self-distillation pipeline substantially lowers fine-tuning cost.
 
 Video clips can be inserted into the same pipeline by changing the packer: sampled frames can be represented as multiple `<image>` tags or one `<video>` field, enabling data synthesis for T2V or Video-QA models.
 
-### Data Compliance and Open-source Licensing
+### 19.1 Data Compliance and Open-source Licensing
 
 When building and publishing instruction datasets, observe these constraints:
 

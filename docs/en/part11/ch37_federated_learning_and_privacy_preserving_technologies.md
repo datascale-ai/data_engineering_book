@@ -386,21 +386,21 @@ This is not only a distributed-systems problem. A client may drop out because of
 
 ---
 
-## 37.7 Connection with the P09 Privacy-Preserving Pipeline
+## 37.7 Coordinating Privacy-Preserving Pipelines and Federated Learning
 
 P09 is not mainly about federated training. It builds a privacy-preserving data pipeline through classification, permissions, masking, isolation, audit, preflight checks, and postmortems. Its goal is not one-time masking, but a processing system that can explain responsibility boundaries and control sensitive data before it enters training or analysis.
 
-### 37.7.1 P09 Solves Governance Before Training
+### 37.7.1 Objectives and Boundaries of Pre-Training Data Governance
 
 In P09, the system first generates compliance scope, classification policy, access policy, and privacy-technology options. It then classifies raw records, masks data, quarantines risky records, emits alerts, writes audit traces, and uses preflight and postmortem artifacts to close the loop. P09 answers: which data may enter later systems, which must be isolated, which fields must be removed, which access should be audited, and which anomalies require review.
 
 This work is not federated learning, but it is required before federated learning. If classification and boundary controls are wrong, any later federated training may run on the wrong data boundary.
 
-### 37.7.2 FL Solves Cross-Party Joint Training
+### 37.7.2 Privacy Objectives for Cross-Party Joint Training
 
 Even after P09 cleans and controls data, centralized aggregation may still be inappropriate. FL and PETs answer a different question: how can modeling continue when raw data cannot be centrally shared? P09 ensures governance quality before data enters model systems. Ch37 discusses how cross-party collaboration preserves privacy boundaries after data remains in each local domain.
 
-### 37.7.3 How the Two Form a Closed Loop
+### 37.7.3 How Data Governance and Joint Training Form a Closed Loop
 
 Across the book, the loop is clear. Ch27 provides the institutional compliance framework and classification standards. P09 handles classification, masking, permissions, isolation, audit, and preflight before data enters model systems. Ch37 protects training and collaboration. Ch22 carries multimodal retrieval and application capabilities. Together they form a path from data governance to model governance to application governance.
 
@@ -409,7 +409,7 @@ Figure 37-11 illustrates the corresponding workflow or structure.
 ![Figure 37-11: Closed loop across compliance governance, privacy pipeline, federated training, and application capability](../../images/part11/Wang-Chap37-Fig11-EN.svg)
 *Figure 37-11: Closed loop across compliance governance, privacy pipeline, federated training, and application capability*
 
-### 37.7.4 Why This Connection Matters
+### 37.7.4 Value of Coordinated Governance for End-to-End Privacy Protection
 
 Many projects fail because pre-governance is done by one team and the training system by another, without shared strategy. Classification and isolation may be completed upstream while downstream training reintroduces risk through caching, debugging, parameter synchronization, or output logs. P09 and federated systems should not be isolated modules. They should share classification levels, audit policy, risk thresholds, and incident handling logic. Only then is privacy a consistent lifecycle boundary rather than a safe-looking segment.
 
