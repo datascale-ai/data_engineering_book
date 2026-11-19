@@ -1,0 +1,1101 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part4/4_1_sft_data/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第 9 章: SFTデータ (SFT データ) —— モデルの「行動規範」の構築 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#9-sft-sft" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第 9 章: SFTデータ (SFT データ) —— モデルの「行動規範」の構築
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章の概要
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="章の概要">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      学習目標
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1。中核となる概念と原則 (概念と原則)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.1。中核となる概念と原則 (概念と原則)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#911" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1.1 なぜ量よりも品質が重要なのでしょうか? — 表面形状仮説
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#912" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1.2 迅速なエンジニアリングに関するエンジニアリングの観点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#913" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1.3 自動化された建設手法
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#914-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1.4 思考連鎖 (CoT) データ: 推論のブラック ボックスを打ち破る
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#915" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1.5 データフォーマットの標準化（データフォーマット規格）
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2。エンジニアリング実装 (エンジニアリング実装)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2。エンジニアリング実装 (エンジニアリング実装)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      環境/依存関係
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#921" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.1 データ生成のための迅速なエンジニアリング
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2.1 データ生成のための迅速なエンジニアリング">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      タスクの目的: 「財務分析アシスタント」をトレーニングするための指導データのバッチを構築します。
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#922-self-instruct-evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.2 自動化された構築方法: Self-Instruct および Evol-Instruct
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2.2 自動化された構築方法: Self-Instruct および Evol-Instruct">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      コア コードの内訳: Evol-Instruct パイプライン
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#923-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.3 思考連鎖 (CoT) データ: 段階的な推論サンプルの構築
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2.3 思考連鎖 (CoT) データ: 段階的な推論サンプルの構築">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      CoT データ構築プロンプト テンプレート
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#924" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.4。実績と評価 (実績と評価)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2.4。実績と評価 (実績と評価)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      評価指標
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      ベンチマーク
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#925" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.5。落とし穴とトラブルシューティング
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#926" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2.6。各章の概要と詳細情報
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9.2.6。各章の概要と詳細情報">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献と詳細情報
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="9-sft-sft">第 9 章: SFTデータ (SFT データ) —— モデルの「行動規範」の構築<a class="headerlink" href="#9-sft-sft" title="Permanent link">&para;</a></h1>
+<h2 id="_1">章の概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>この章では、大規模言語モデル (LLM) のライフサイクルにおける重要な段階、つまり「一般的な事前トレーニング」から「特定の命令に従う」への重要な移行について詳しく説明します。私たちは単純なデータ収集を超えて、高度に設計された Prompt システムと自動パイプライン (Self-Instruct、Evol-Instruct) を通じて高品質の SFT (教師あり微調整) データセットを構築する方法を探ります。技術的な実装だけでなく、理論的基礎も分析します。なぜ少量の高品質なデータから膨大なモデルの機能を解き放つことができるのでしょうか?私たちは、データの多様性の不足、命令の複雑さの不十分さ、推論能力の不足に対処することに重点を置き、最終的には知識とルールの両方を理解するインテリジェントなエージェントを構築します。</p>
+<h3 id="_2">学習目標<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>反復的なシステム プロンプト エンジニアリングをマスター</strong>: モデルの出力形式、スタイル、深さを制御するシステム プロンプトを作成します。ロールの定義がデータ分散にどのような影響を与えるかを理解します。</li>
+<li><strong>自動データ生成パイプラインの深い理解</strong>: Self-Instruct および Evol-Instruct アルゴリズムを再現および改善し、ドメイン命令セットを最初から構築し、その背後にある「教師と生徒」の蒸留ロジックを理解します。</li>
+<li><strong>思考連鎖 (CoT) データの構築方法を学習します</strong>: 明示的な推論ステップを通じてモデル ロジックを強化し、トランスフォーマーの「ブラック ボックス」マッピングを打ち破ります。</li>
+<li><strong>データ フィルタリングと重複排除メカニズムの設計</strong>: ROUGE 重複排除からセマンティック ベクトル クラスタリングまでの高度なクリーニング戦略をマスターし、合成データの品質と多様性を確保します。</li>
+</ul>
+<blockquote>
+<p>シナリオの紹介:
+「あなたのチームが 70B パラメーターの基本モデルの事前トレーニングを終えたところだと想像してください。計算に数百万ドルを費やし、インターネット上のほぼすべてのテキストを読んでいます。この時点では、知識は豊富だが内向的な図書館員のようなもので、頭の中はシェイクスピアの戯曲、Python コード、量子力学の公式でいっぱいです。それでも、デモで興奮して「減量計画の作成を手伝ってください」と入力すると、モデルは機械的に次のように続行します。 「...は良い目標です。通常は食事と運動が含まれます。」あるいは「減量計画の定義」を書き始めて、ウィキペディア風のナンセンスの山を生成します。</p>
+</blockquote>
+<p>なぜこのようなことが起こるのでしょうか?基本モデルのトレーニング目標は「次のトークンを予測する」ことであるため、「命令」と「応答」の相互作用パターンを理解していません。この「学者」をあなたの意図を理解する個人アシスタントに変えるには、何千もの質の高い Q&amp;A ペアを与えて、話し方や問題の解決方法を段階的に教える必要があります。しかし、100,000 個の命令を手動で記述するのは費用がかかり、時間がかかり、人間の想像力は特定のパターンに限定されることがよくあります。大規模な人によるアノテーションに頼らずに、複雑かつ多様な高品質のトレーニング データを自動的に生成するにはどうすればよいでしょうか?これが、この章で取り上げるエンジニアリング上の主要な課題です。」</p>
+<hr />
+<h2 id="91">9.1。中核となる概念と原則 (概念と原則)<a class="headerlink" href="#91" title="Permanent link">&para;</a></h2>
+<p>SFT フェーズでは、<strong>データの量よりも質がはるかに重要である</strong>という点で、業界はコンセンサスに達しました。私たちが必要とするデータは、単なる「入出力」のペアではなく、さまざまなタスクの種類、複雑さのレベル、推論パターンをカバーするサンプルです。</p>
+<h3 id="911">9.1.1 なぜ量よりも品質が重要なのでしょうか? — 表面形状仮説<a class="headerlink" href="#911" title="Permanent link">&para;</a></h3>
+<p>多くの初心者は、SFT が「新しい知識を学ぶためのもの」であると誤解しています。ただし、LIMA (Less Is More for Alignment) などの古典的な研究の結果に基づくと、SFT の中心的な役割は、<strong>知識を注入することではなく</strong>、<strong>フォーマットを調整すること</strong>です。</p>
+<p><strong>曲面形状仮説</strong>では、モデルは事前トレーニング中に世界の知識と論理的能力の大部分をすでに獲得していると仮定します。 SFT は、事前トレーニングから潜在的な機能を抽出するための特定の「対話形式」または「スタイル」をモデルに教えるだけです。言い換えれば、事前トレーニングがモデルに図書館全体を読ませるようなものだとすると、SFT は本の内容ではなく、人間が好む口調で答える方法だけをモデルに教えます。</p>
+<p>これは、データにエラー、ノイズ、または論理ギャップが含まれるとモデルのパフォーマンスが急激に低下する理由を説明します。これは、モデルが「知識にインデックスを付ける方法」を学習しているためです。インデックスが間違っていると、どれだけの知識を正しく取得することもできません。したがって、数千の高品質で多様性の高いサンプルは、数百万の低品質で均質なサンプルよりも優れたモデルをトレーニングすることがよくあります。</p>
+<h3 id="912">9.1.2 迅速なエンジニアリングに関するエンジニアリングの観点<a class="headerlink" href="#912" title="Permanent link">&para;</a></h3>
+<p>データ合成において、プロンプトは単なるダイアログ入力ではなく、データを生成するためのソース コードになります。プロンプトをプログラム可能なモジュールとして扱い、反復的な最適化を通じて合成データの分布を制御します。優れたプロンプト システムには通常、次のものが含まれます。</p>
+<ul>
+<li><strong>システム プロンプト</strong>: データ ジェネレーターの「ペルソナ」と「境界」を定義します。これは単にアイデンティティを割り当てるだけではなく、ロールプレイングを通じてモデルの潜在的な領域固有の語彙分布を活性化します。たとえば、「厳格な弁護士」と「熱心な営業マン」を演じると、明らかに異なる文構造が生成されます。</li>
+<li><strong>少数ショットの例</strong>: コンテキスト学習を通じて出力形式とスタイルを固定します。これらの例は「ノイズ除去」として機能し、モデルに「これが私が望む標準的な答えです」と伝えます。</li>
+<li><strong>負の制約</strong>: モデルが特定のデータ パターンを生成することを明示的に禁止します。 LLM 生成では、モデルが遅延したり、一般的な決まり文句を使用したりする傾向があります。この統計的慣性を打ち破るには、否定的な制約が鍵となります（例：「物語の冒頭に『むかしむかし、山がありました』を使用しないでください）。」</li>
+</ul>
+<h3 id="913">9.1.3 自動化された建設手法<a class="headerlink" href="#913" title="Permanent link">&para;</a></h3>
+<p>人間データのボトルネックを打破するために、業界は 2 つの中心的な戦略を進化させてきました。バランスの取れたデータセットを構築するには、それらの違いを理解することが重要です。</p>
+<ul>
+<li><strong>自己指導</strong>: <strong>幅広い</strong>に焦点を当てます。強力なモデル (GPT-4 など) を使用して、少数のシード タスクから多くの新しいタスクを生成します。その中心的な前提: モデルは十分なタスク タイプを確認しています。プロンプトを通じてそれらを誘導するだけで済みます。</li>
+<li><strong>Evol-Instruct</strong>: <strong>深さ</strong>に焦点を当てます。特定の進化演算子 (「制約を追加する」、「推論を深める」など) を使用して、単純な命令を複雑な命令に書き換えます。これは、単純で短い命令を生成する Self-Instruct の傾向に直接対処し、モデルの論理的複雑さと制約を満たすことを強制します。</li>
+</ul>
+<p><a class="glightbox" href="../../../images/part4/Yu-Chap09-Fig01-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 9-1: Self-Instruct と Evol-Instruct の比較" src="../../../images/part4/Yu-Chap09-Fig01-ZH.png" /></a>
+<em>図 9-1: Self-Instruct と Evol-Instruct の比較</em></p>
+<p><strong>表 9-1: 主流の命令データ構築戦略の比較</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特集</th>
+<th style="text-align: left;">手動注釈</th>
+<th style="text-align: left;">自己指導</th>
+<th style="text-align: left;">Evol-Instruct</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>中心的な目標</strong></td>
+<td style="text-align: left;">非常に精度の高い、ドメイン固有の知識</td>
+<td style="text-align: left;">タスクの多様性を高める</td>
+<td style="text-align: left;">タスクの複雑さの増加</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>コスト</strong></td>
+<td style="text-align: left;">非常に高い (1 アイテムあたり $1 ～ $10)</td>
+<td style="text-align: left;">低価格 ($0.01/アイテム)</td>
+<td style="text-align: left;">中 ($0.03/アイテム、複数回の通話が必要)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>入力ソース</strong></td>
+<td style="text-align: left;">ドメインの専門家</td>
+<td style="text-align: left;">シードタスクプール</td>
+<td style="text-align: left;">既存の簡単な指示</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>動作ロジック</strong></td>
+<td style="text-align: left;">専門家の執筆とレビュー</td>
+<td style="text-align: left;">「既存のタスクとは異なる新しいタスクを生成する」</td>
+<td style="text-align: left;">「このタスクをより難しいものに書き直してください。たとえば、制約を追加します。」</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>典型的な演算子/メソッド</strong></td>
+<td style="text-align: left;">掃除、レビュー、クラウドソーシング</td>
+<td style="text-align: left;">ROUGE 重複排除、名詞/動詞フィルタリング</td>
+<td style="text-align: left;">深化する進化、広がる進化</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>使用例</strong></td>
+<td style="text-align: left;">コア ビジネス ロジック、RLHF ゴールデン データセット</td>
+<td style="text-align: left;">一般的なタスクの対象範囲の拡張、コールド スタート</td>
+<td style="text-align: left;">コード、数学、論理的推論の強化</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>潜在的なリスク</strong></td>
+<td style="text-align: left;">スケールが難しい。疲労による品質の変動</td>
+<td style="text-align: left;">均質で単純な指示になりがち</td>
+<td style="text-align: left;">過度に複雑または解決不可能な「幻覚指示」が生成される可能性があります。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="914-cot">9.1.4 思考連鎖 (CoT) データ: 推論のブラック ボックスを打ち破る<a class="headerlink" href="#914-cot" title="Permanent link">&para;</a></h3>
+<p>CoT の核心は、「入力→出力」のブラックボックス マッピングを破壊し、モデルに暗黙的な推論を明示的にさせることにあります。</p>
+<p>認知科学の観点から見ると、人間は複雑な問題 (数学など) を解決するときに、頭の中で一連の中間計算を実行します。 Transformer モデルは強力ですが、CoT トレーニングがないと、生徒に自分の作業を見せずに答えを書くように求めるなど、答えを直接推測する傾向があり、間違いが非常に発生しやすくなります。 CoT データは、Transformer の中間計算層をアクティブにし、生成されたトークン シーケンスを拡張することで、より多くの計算を困難な問題に割り当てることができるようにします (より多くの計算時間 = より多くのトークンが生成されます)。</p>
+<h3 id="915">9.1.5 データフォーマットの標準化（データフォーマット規格）<a class="headerlink" href="#915" title="Permanent link">&para;</a></h3>
+<p>エンジニアリング実装の前に、データがどのようにモデルに「供給」されるかを理解する必要があります。これは単なる JSON 解析の問題ではなく、モデルが会話履歴をどのように理解するかに関係しています。業界では主に <strong>ChatML</strong> (チャット マークアップ言語) 形式を採用しています。これにより、システム、ユーザー、アシスタントの境界が明確に区別され、プロンプト インジェクション攻撃が防止されます。</p>
+<p>トレーニング中は、通常、<code>assistant</code> 応答内のトークンの損失のみを計算し、<code>system</code> および <code>user</code> 部分をマスクすることに注意してください。これは、モデルに「質問の仕方」ではなく「答え方」を学習してもらいたいからです。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// ChatML format example</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;messages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">},</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain quantum entanglement.&quot;</span><span class="p">},</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Quantum entanglement is a phenomenon...&quot;</span><span class="p">}</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="92">9.2。エンジニアリング実装 (エンジニアリング実装)<a class="headerlink" href="#92" title="Permanent link">&para;</a></h2>
+<p>このセクションでは、ツールチェーンの選択とパイプラインの安定性の設計を含む、完全なデータ合成パイプラインの構築について説明します。</p>
+<h3 id="_3">環境/依存関係<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>langchain</code> / <code>langsmith</code>: プロンプト テンプレート、LLM 呼び出しチェーン、およびデバッグの追跡を管理します。</li>
+<li><code>rouge_score</code>: テキストの類似性と重複排除を計算します。</li>
+<li><code>numpy / scikit-learn</code>: ベクトル化された重複排除 (高度な) の場合、Embeddingを介して意味論的な距離を計算します。</li>
+<li><code>openai</code> または <code>vllm</code>: 教師モデルを呼び出すため。 vLLM は、ローカルに展開された高スループットのオープンソース教師モデル (Mixtral-8x7B など) に適しています。</li>
+<li><code>chromadb</code> / <code>faiss</code>: 大規模な重複排除と検索用のベクトル データベース。</li>
+</ul>
+<h3 id="921">9.2.1 データ生成のための迅速なエンジニアリング<a class="headerlink" href="#921" title="Permanent link">&para;</a></h3>
+<p>合成データ エンジニアリングでは、プロンプトは非常に堅牢である必要があります。ソフトウェアのバージョンを開発するのと同じように、反復的な思考を採用してシステム プロンプトを改良します。</p>
+<h4 id="_4">タスクの目的: 「財務分析アシスタント」をトレーニングするための指導データのバッチを構築します。<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h4>
+<p><strong>ステップ 1: システム プロンプトを繰り返し作成する</strong>
+* <strong>V1: シンプルすぎるため、データの均質化につながる</strong>
+    * <strong>欠陥分析</strong>: モデルで生成された指示は非常に短く、基本的な概念の説明 (例: 「株式とは何ですか?」) に集中する傾向があります。これは、「高確率で低複雑性」のテキストを生成する LLM のデフォルトの傾向を反映しています。
+    <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># V1 Prompt - Poor performance</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">system_prompt_v1</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="s2">You are a financial expert. Please generate 5 questions and answers about finance.</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div></p>
+<ul>
+<li>
+<p><strong>V2: 構造化された要件を追加</strong></p>
+<ul>
+<li><strong>改善</strong>: 解析を容易にするために JSON 形式の要件を導入しました。ガイドスタイルに「役割」設定を追加しました。</li>
+<li><strong>欠陥分析</strong>: 形式は正しいものの、内容に深みがまだなく、推論プロセスがありません。モデルは教科書的な定義のみを生成し、実際的なシナリオは生成しません。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># V2 Prompt - Structural improvement</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">system_prompt_v2</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="s2">You are a Senior Financial Analyst with 20 years of experience.</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="s2">Generate 5 pairs of instruction-response data focused on corporate finance.</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s2">Format the output as a JSON list.</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s2">Each item should have: &#39;instruction&#39;, &#39;input&#39; (optional), &#39;output&#39;.</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p><strong>V3: 最終運用対応バージョン</strong></p>
+<ul>
+<li><strong>改善</strong>: 少数ショット、負の制約、および複雑さの要件が導入されました。これは業界で使用されている標準的なパラダイムです。</li>
+<li><strong>詳細な分析</strong>: 明示的な「アンチパターン」を通じて、モデルが「ナンセンス」を生成する経路を遮断します。見本は単なる形式の参照ではなく、思考の深さのアンカーでもあります。</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># V3 Prompt - High robustness production version</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">system_prompt_v3</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s2">### ROLE</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s2">You are a Chief Market Strategist at a top-tier investment bank. Your goal is to train a junior analyst model. You demand precision, depth, and actionable insights.</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="s2">### OBJECTIVE</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="s2">Generate 5 high-quality, complex instruction-following examples related to market analysis, risk management, or quantitative trading.</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="s2">### CONSTRAINTS</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="s2">1. **Complexity**: Do NOT ask simple definitional questions (e.g., &quot;What is a bond?&quot;). Instead, ask for scenario analysis, portfolio adjustments, or impact assessments.</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="s2">2. **Format**: Strictly output a valid JSON list.</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="s2">3. **Reasoning**: The &#39;output&#39; must demonstrate step-by-step analytical reasoning before giving the conclusion.</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="s2">4. **Anti-Patterns**:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="s2">   - Avoid generic advice like &quot;Consult a financial advisor.&quot;</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="s2">   - Avoid short, one-sentence responses.</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="s2">   - Avoid vague statements; use numbers and specific financial instruments where possible.</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="s2">### OUTPUT FORMAT</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="s2">[</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="s2">  {</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="s2">    &quot;instruction&quot;: &quot;...&quot;,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="s2">    &quot;input_context&quot;: &quot;...&quot; (can be null),</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="s2">    &quot;output&quot;: &quot;...&quot;</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="s2">  }</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="s2">]</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="s2">### EXEMPLAR (One-Shot)</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="s2">[</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="s2">  {</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span class="s2">    &quot;instruction&quot;: &quot;Given a portfolio heavily weighted in tech stocks (60%), analyze the impact of a sudden 50bps rate hike by the Fed.&quot;,</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span class="s2">    &quot;input_context&quot;: null,</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span class="s2">    &quot;output&quot;: &quot;First, we identify the correlation... Tech stocks are long-duration assets... Discounted Cash Flow (DCF) models would show... Therefore, the portfolio would likely suffer significant drawdown. I recommend hedging via...&quot;</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span class="s2">  }</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span class="s2">]</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<strong>プロのヒント:</strong> V3 では、「アンチパターン」を明示しました。これはモデルの「たるみ」を防ぐ鍵となります。 LLM は安全で平凡な回答 (例: 「専門家に相談してください」) を生成する傾向がありますが、これはトレーニング データ内の低値のノイズであり、明示的に禁止する必要があります。</p>
+</li>
+</ul>
+<h3 id="922-self-instruct-evol-instruct">9.2.2 自動化された構築方法: Self-Instruct および Evol-Instruct<a class="headerlink" href="#922-self-instruct-evol-instruct" title="Permanent link">&para;</a></h3>
+<p>Evol-Instruct に基づいて簡素化されたパイプラインを実装します。中心となるのは、プロセスに検証メカニズムが導入され、プロンプトを通じて単純な命令を複雑な命令に「進化」させる方法です。</p>
+<h4 id="evol-instruct">コア コードの内訳: Evol-Instruct パイプライン<a class="headerlink" href="#evol-instruct" title="Permanent link">&para;</a></h4>
+<p><strong>ステップ 1: 進化オペレーターを定義する (進化プロンプト)</strong></p>
+<p>Evol-Instruct の本質は、このプロンプト テンプレートのセットにあります。深さ (制約を追加し、推論を深めます) と幅 (突然変異) という、さまざまな進化の方向を定義する必要があります。次のコードは、「制約の追加」と「推論の深化」のためのプロンプトを構築する方法を示しています。これらのプロンプトの設計は、データ品質の上限を直接決定します。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EvolutionPrompts</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="nd">@staticmethod</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_deepening_prompt</span><span class="p">(</span><span class="n">instruction</span><span class="p">):</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="sd">        Depth evolution: Increase logical reasoning depth.</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="sd">        By requiring &#39;explicitly ask for multiple-step reasoning&#39;, force the model from intuitive to analytical answers.</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="s2">        I want you to act as a Prompt Rewriter.</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s2">        Your objective is to rewrite a given prompt into a more complex version to make those famous AI systems (e.g., ChatGPT and GPT4) a bit harder to handle.</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="s2">        But the rewritten prompt must be reasonable and must be understood and responded by humans.</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="s2">        # Given Prompt #:</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="s2">        </span><span class="si">{</span><span class="n">instruction</span><span class="si">}</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="s2">        # Method #:</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="s2">        If #Given Prompt# can be solved with just a few simple thinking processes, you can rewrite it to explicitly ask for multiple-step reasoning.</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="s2">        # Rewritten Prompt #:</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="s2">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="nd">@staticmethod</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_constraints_prompt</span><span class="p">(</span><span class="n">instruction</span><span class="p">):</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="sd">        Depth evolution: Add specific constraints.</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="sd">        Limit word increase (10-20 words) to prevent instructions from becoming verbose without substance.</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="s2">        I want you to act as a Prompt Rewriter.</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="s2">        ... [header omitted for brevity]...</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="s2">        # Given Prompt #:</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="s2">        </span><span class="si">{</span><span class="n">instruction</span><span class="si">}</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="s2">        # Method #:</span>
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="s2">        Please add one more constraint/requirement into #Given Prompt#.</span>
+<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="s2">        You should try your best not to make the #Rewritten Prompt# become verbose, #Rewritten Prompt# can only add 10 to 20 words into #Given Prompt#.</span>
+<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a>
+<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="s2">        # Rewritten Prompt #:</span>
+<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="s2">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a>
+<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>    <span class="nd">@staticmethod</span>
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_breadth_prompt</span><span class="p">(</span><span class="n">instruction</span><span class="p">):</span>
+<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="sd">        Breadth evolution: Generate entirely new instructions on different topics based on existing ones.</span>
+<a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="sd">        Prevents data distribution collapse into narrow domains.</span>
+<a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="s2">        I want you to act as a Prompt Creator.</span>
+<a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a><span class="s2">        Please generate a brand new prompt that has the same difficulty level as #Given Prompt# but covers a completely different topic or domain.</span>
+<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a>
+<a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="s2">        # Given Prompt #:</span>
+<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="s2">        </span><span class="si">{</span><span class="n">instruction</span><span class="si">}</span>
+<a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a>
+<a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="s2">        # New Prompt #:</span>
+<a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a><span class="s2">        &quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>ステップ 2: 進化ループと例外処理を実行する</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Assume we have an LLM call interface</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">call_llm</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="c1"># Call GPT-4 or other strong model</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="c1"># In production, add retry mechanisms for network jitter</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="k">pass</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">evolve_instruction</span><span class="p">(</span><span class="n">base_instruction</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">current_instruction</span> <span class="o">=</span> <span class="n">base_instruction</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="c1"># Randomly select an evolution strategy</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="c1"># Strategy probability can be adjusted; e.g., more Breadth early, more Deepening later</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="n">strategy</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">&#39;deepening&#39;</span><span class="p">,</span> <span class="s1">&#39;constraints&#39;</span><span class="p">,</span> <span class="s1">&#39;breadth&#39;</span><span class="p">])</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="k">if</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;deepening&#39;</span><span class="p">:</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>            <span class="n">prompt</span> <span class="o">=</span> <span class="n">EvolutionPrompts</span><span class="o">.</span><span class="n">get_deepening_prompt</span><span class="p">(</span><span class="n">current_instruction</span><span class="p">)</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="k">elif</span> <span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;constraints&#39;</span><span class="p">:</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>            <span class="n">prompt</span> <span class="o">=</span> <span class="n">EvolutionPrompts</span><span class="o">.</span><span class="n">get_constraints_prompt</span><span class="p">(</span><span class="n">current_instruction</span><span class="p">)</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>            <span class="n">prompt</span> <span class="o">=</span> <span class="n">EvolutionPrompts</span><span class="o">.</span><span class="n">get_breadth_prompt</span><span class="p">(</span><span class="n">current_instruction</span><span class="p">)</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span class="c1"># Get evolved instruction</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>        <span class="n">evolved_candidate</span> <span class="o">=</span> <span class="n">call_llm</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        <span class="c1"># Quality check (simple): Prevent evolution failure</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>        <span class="c1"># Often models output &quot;Sorry, I can&#39;t do that&quot; or simply repeat the original</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>        <span class="k">if</span> <span class="s2">&quot;sorry&quot;</span> <span class="ow">in</span> <span class="n">evolved_candidate</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">evolved_candidate</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evolution failed at step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, keeping previous instruction.&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>            <span class="k">break</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        <span class="c1"># Advanced check: Simple heuristic to detect simple repetition</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>        <span class="k">if</span> <span class="n">evolved_candidate</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">current_instruction</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evolution stagnant at step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>             <span class="k">break</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>        <span class="n">current_instruction</span> <span class="o">=</span> <span class="n">evolved_candidate</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>    <span class="k">return</span> <span class="n">current_instruction</span>
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="c1"># Example run</span>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="n">seed</span> <span class="o">=</span> <span class="s2">&quot;Write a Python script to calculate Fibonacci numbers.&quot;</span>
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="n">complex_instruction</span> <span class="o">=</span> <span class="n">evolve_instruction</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="c1"># Expected result: &quot;Write a Python script to calculate the nth Fibonacci number using dynamic programming, optimize for memory usage, and handle negative input values.&quot;</span>
+</code></pre></div>
+<p><strong>ステップ 3: パフォーマンス最適化のヒント</strong>
+* <strong>バッチ処理:</strong> API を 1 つずつ呼び出さないでください。 20 個の命令を含むプロンプト リストを構築し、モデルが一度に 20 個の進化した結果を返すようにします。これにより、トークン コストとネットワーク遅延が大幅に削減されます (高スループット)。
+* <strong>失敗フィルター:</strong> 進化は頻繁に失敗します (モデルが繰り返しを開始するなど)。フィルターを実装します。進化した命令の長さが短くなったり、典型的な拒否フレーズ (「AI として…」) が含まれている場合は、サンプルを破棄します。
+* <strong>多様性制御:</strong> バッチ生成では、1 つのバッチ内のすべての命令が「Python プログラミング」に関するものになるのを避けるために、システム プロンプトで「多様なトピックの生成」を明示的に要求します。</p>
+<h3 id="923-cot">9.2.3 思考連鎖 (CoT) データ: 段階的な推論サンプルの構築<a class="headerlink" href="#923-cot" title="Permanent link">&para;</a></h3>
+<p>SFT データの中核となる価値は、モデルに「考え方」を教えることにあります。通常の Q&amp;A ペア (Q: 1+1? A: 2) では、結果のみを教えます。 CoT はプロセスを教えます。</p>
+<h4 id="cot">CoT データ構築プロンプト テンプレート<a class="headerlink" href="#cot" title="Permanent link">&para;</a></h4>
+<p>「ステップごとに考えてみましょう」を追加するだけではなく、モデルが特定の形式 (<code>&lt;thinking&gt;</code> タグなど) で出力する必要があります。このフォーマットされたデータは、その後のトレーニングで非常に役立ちます。モデルに思考プロセスを出力させるか、推論中に非表示にするかを選択できます。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># System Prompt for CoT Generation</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">cot_system_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s2">You are a reasoning expert. When answering the user&#39;s question, you MUST follow this format:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="s2">1. Enclose your thought process in &lt;thinking&gt; tags.</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="s2">2. Break down the problem into logical steps.</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="s2">3. Check for edge cases or potential errors in your logic (Self-Correction).</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="s2">4. Output the final answer in &lt;answer&gt; tags.</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="s2">Do NOT output the answer directly without the thinking process.</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="c1"># V3 Prompt Iteration for Math CoT</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="n">user_prompt_cot</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="s2">Question: A farmer has chickens and cows. There are 20 heads and 50 legs. How many of each are there?</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="s2">Please provide a Step-by-Step solution.</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>出力例 (トレーニング データとして):</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">&lt;thinking&gt;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Step<span class="w"> </span>1:<span class="w"> </span>Define<span class="w"> </span>variables.<span class="w"> </span>Let<span class="w"> </span>C<span class="w"> </span>be<span class="w"> </span>chickens,<span class="w"> </span>K<span class="w"> </span>be<span class="w"> </span>cows.
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Step<span class="w"> </span>2:<span class="w"> </span>Set<span class="w"> </span>up<span class="w"> </span>equations<span class="w"> </span>based<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>problem<span class="w"> </span>statement.
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">   </span>Equation<span class="w"> </span>1<span class="w"> </span>(Heads):<span class="w"> </span>C<span class="w"> </span>+<span class="w"> </span>K<span class="w"> </span>=<span class="w"> </span>20
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">   </span>Equation<span class="w"> </span>2<span class="w"> </span>(Legs):<span class="w"> </span>2C<span class="w"> </span>+<span class="w"> </span>4K<span class="w"> </span>=<span class="w"> </span>50
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>Step<span class="w"> </span>3:<span class="w"> </span>Solve<span class="w"> </span>for<span class="w"> </span>C<span class="w"> </span>from<span class="w"> </span>Equation<span class="w"> </span>1.<span class="w"> </span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">   </span>C<span class="w"> </span>=<span class="w"> </span>20<span class="w"> </span>-<span class="w"> </span>K.
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>Step<span class="w"> </span>4:<span class="w"> </span>Substitute<span class="w"> </span>C<span class="w"> </span>into<span class="w"> </span>Equation<span class="w"> </span>2.
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">   </span>2(20<span class="w"> </span>-<span class="w"> </span>K)<span class="w"> </span>+<span class="w"> </span>4K<span class="w"> </span>=<span class="w"> </span>50
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">   </span>40<span class="w"> </span>-<span class="w"> </span>2K<span class="w"> </span>+<span class="w"> </span>4K<span class="w"> </span>=<span class="w"> </span>50
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">   </span>2K<span class="w"> </span>=<span class="w"> </span>10<span class="w"> </span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">   </span>K<span class="w"> </span>=<span class="w"> </span>5.
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>Step<span class="w"> </span>5:<span class="w"> </span>Solve<span class="w"> </span>for<span class="w"> </span>C<span class="w"> </span>using<span class="w"> </span>the<span class="w"> </span>value<span class="w"> </span>of<span class="w"> </span>K.<span class="w"> </span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">   </span>C<span class="w"> </span>=<span class="w"> </span>20<span class="w"> </span>-<span class="w"> </span>5<span class="w"> </span>=<span class="w"> </span>15.
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>Step<span class="w"> </span>6:<span class="w"> </span>Verify<span class="w"> </span>the<span class="w"> </span>solution.<span class="w"> </span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">   </span>Heads:<span class="w"> </span>15<span class="w"> </span>+<span class="w"> </span>5<span class="w"> </span>=<span class="w"> </span>20.<span class="w"> </span>Correct.
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">   </span>Legs:<span class="w"> </span>15*2<span class="w"> </span>+<span class="w"> </span>5*4<span class="w"> </span>=<span class="w"> </span>30<span class="w"> </span>+<span class="w"> </span>20<span class="w"> </span>=<span class="w"> </span>50.<span class="w"> </span>Correct.
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="nt">&lt;/thinking&gt;</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="nt">&lt;answer&gt;</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>Chickens:<span class="w"> </span>15,<span class="w"> </span>Cows:<span class="w"> </span>5
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="nt">&lt;/answer&gt;</span>
+</code></pre></div>
+<strong>プロのヒント:</strong> <code>&lt;thinking&gt;</code> タグを使用したこのデータ戦略は、「内部独白」トレーニングと呼ばれます。 SFT 中に、モデルが思考プロセスの出力を学習できるように、これらのタグを保持します。運用環境では、解析コードを使用して <code>&lt;thinking&gt;</code> コンテンツをキャプチャし、<code>&lt;answer&gt;</code> のみをユーザーに表示するか、説明しやすくするために部分的な推論手順を示す「思考...」UI アニメーションを実装します。</p>
+<hr />
+<h2 id="924">9.2.4。実績と評価 (実績と評価)<a class="headerlink" href="#924" title="Permanent link">&para;</a></h2>
+<p>データ生成は最初のステップにすぎません。生成されたデータの品質を評価する方法も同様に重要です。モデルのトレーニングが完了するまで (場合によっては数日、数千ドルかかる)、データ品質の低下を発見するのを待つことはできません。</p>
+<h3 id="_5">評価指標<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>指示フォロー率:</strong> 通常は自動テストです。 GPT-4 を判断材料として使用し、モデルで生成された応答が入力内のすべての制約 (例: 「単語数制限」、「特定のキーワードを含む」、「JSON 形式」) を厳密に満たしているかどうかを判断します。</li>
+<li><strong>複雑さの分布:</strong> NLP ツール (SpaCy など) を使用して、動詞の多様性、構文ツリーの深さ、生成された命令の平均長を分析します。分布ヒストグラムをプロットして、Evol-Instruct が単に冗長であるだけでなく、実際に難易度が上がっていることを確認します。</li>
+<li><strong>多様性:</strong> ROUGE-L を計算するか、Embeddingコサイン類似度を使用します。データセット内のサンプル間の平均類似性が高すぎる場合、「モード崩壊」が発生しており、データに多様性が欠けています。</li>
+</ul>
+<h3 id="_6">ベンチマーク<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>学界と産業界では、SFT 後のモデルの機能をテストするためのベンチマークが認められています。
+* <strong>WizardLM 論文データ:</strong> 4 ラウンドの Evol-Instruct を通じて進化したデータでトレーニングされたモデルは、通常、生データのみを使用したモデルと比較して、GSM8K (数学) と HumanEval (コード) で 10% ～ 20% 以上の改善を示します。
+* <strong>MT-Bench:</strong> マルチターン対話評価セットは、特に指示への従う能力、推論能力、およびマルチターン対話能力をテストするもので、通常 GPT-4 によってスコア化されます。
+* <strong>コストの参考:</strong> <code>gpt-3.5-turbo</code> を使用して 52K の自己指示データを生成するには、約 500 ドルから 1000 ドルの費用がかかります (プロンプトの長さとラウンドによって異なります)。これは、手動による注釈の数十万ドルに比べて、非常に費用対効果が高くなります。</p>
+<hr />
+<h2 id="925">9.2.5。落とし穴とトラブルシューティング<a class="headerlink" href="#925" title="Permanent link">&para;</a></h2>
+<p>実際には、データ合成には落とし穴がたくさんあります。ここでは、一般的な障害モードと解決策を示します。</p>
+<ul>
+<li>
+<p><strong>落とし穴 1: モードの崩壊</strong></p>
+<ul>
+<li><strong>症状:</strong> モデル生成の命令は単調です。たとえば、1000 個の生成されたサンプルはすべて「X に関する記事を書いてください」または「Python 関数を書いてください」です。</li>
+<li><strong>原因:</strong> シード タスクが同種すぎるか、システム プロンプト温度の設定が低すぎるため、モデルが局所最適化に陥ります。</li>
+<li><strong>修正:</strong> シード タスクの多様性を高めます (100 以上の領域をカバー: 料理、法律、プログラミング、文学)。温度を上げる (0.7 → 1.0);システム プロンプトで「前の例とは異なるドメインからタスクを生成する」ことを明示的に要求します。</li>
+</ul>
+</li>
+<li>
+<p><strong>落とし穴 2: 幻覚のような制約</strong></p>
+<ul>
+<li><strong>症状:</strong> モデルはトレーニング データから「JSON を出力する必要がある」ことを学習し、カジュアル チャット (「こんにちは」) であっても JSON 出力を強制したり、要求されていないときに <code>&lt;thinking&gt;</code> タグを出力したりします。</li>
+<li><strong>原因:</strong> トレーニング データの分布が著しく歪んでいます。100% 複雑な指示があり、単純な一般的な対話データが不足しています。</li>
+<li><strong>修正:</strong> データの混合。特定の形式への過剰適合を防ぐために、10% ～ 20% の一般的な対話データ (例: ShareGPT または雑談) を Evol-Instruct データに混ぜます。これを「一般能力リプレイ」と呼びます。</li>
+</ul>
+</li>
+<li>
+<p><strong>落とし穴 3: 進化の失敗 (劣化)</strong></p>
+<ul>
+<li><strong>症状:</strong> 進化した指示は不条理になったり、論理的に矛盾したり (「母音なしで 1000 語の記事を書きなさい」)、または非常に冗長になります。</li>
+<li><strong>修正:</strong> 「長さペナルティ」または「複雑さの切り捨て」を実装します。進化した命令が複雑であるにもかかわらず GPT-4 が応答できない (または応答の品質が低い) 場合、サンプルは無効になります (悪いケース)。進化した指導の実現可能性を評価するために、GPT-4 の「教師モデル スコアリング」を導入します。</li>
+</ul>
+</li>
+<li>
+<p><strong>落とし穴 4: 壊滅的な忘却</strong></p>
+<ul>
+<li><strong>症状:</strong> SFT 後、モデルは指示に従うことを学習しますが、「愚か」に見え、事前トレーニングで得た世界の知識の一部を忘れています。</li>
+<li><strong>原因:</strong> SFT データセットはモデルの重み配分を変更し、特定のタスク フォームに過度に焦点を当て、一般的な知識のストレージを圧迫します。</li>
+<li><strong>修正:</strong> 学習率が低くなり、エポックが減少します (SFT は通常、2 ～ 3 エポックのみを必要とします)。パラメータ分布の安定性を維持するために、少量の事前トレーニング データ (事前トレーニング リプレイ) を SFT データに追加します。</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="926">9.2.6。各章の概要と詳細情報<a class="headerlink" href="#926" title="Permanent link">&para;</a></h2>
+<p>私たちはプロンプトをデータのソース コードとして扱います。プロンプトは、ソフトウェア エンジニアリング コードと同様に、厳密なバージョン管理と反復テストによって管理する必要があります。このフレームワークでは、Self-Instruct は「ゼロから 1 へ」のコールド スタートの課題を解決し、一方、Evol-Instruct は「簡単から困難へ」の複雑さの上昇を克服します。それらの有機的な組み合わせは、高性能データセットを構築するための黄金のパラダイムを構成します。一方、思考連鎖 (CoT) データは、単純な問題解決のトリックとは程遠いものです。推論を明示することで、計算リソースを重要な推論ステップに効果的に割り当て、複雑なロジックを処理するモデルの能力を根本的に強化します。結局のところ、データ合成における中心的な障壁は生成能力ではなく、フィルタリングとクリーニングの技術です。大量生成の容易さと正確なスクリーニングの難しさの間では、砂から金を抽出する能力だけが真の競争力の中心を構成します。</p>
+<h3 id="_7">参考文献と詳細情報<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ul>
+<li><em>Wang, Y. 他（2022年）。 Self-Instruct: 言語モデルと自己生成命令の調整</em> (自動命令生成に関する基礎作業)</li>
+<li><em>Xu、C.、他。 （2023年）。 WizardLM: 大規模言語モデルが複雑な命令に従うことができるようにする</em> (Evol-Instruct 進化演算子の詳細な紹介)</li>
+<li><em>Wei、J.、他。 （2022年）。 Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.</em> (CoT の基礎研究)</li>
+<li><em>Zhou、C.、他。 （2023年）。 LIMA: Less Is More for Alignment.</em> (SFT は知識ではなく形式を主に学習するという理論的根拠を確立します。「質 &gt; 量」)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

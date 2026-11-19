@@ -1,0 +1,1035 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part1/ch03_data_stack/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第3章 AI原生数据栈与成本治理 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#3-ai" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第3章 AI原生数据栈与成本治理
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part1/ch03_data_stack/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part1/ch03_data_stack/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      开篇场景：数据平台缺少治理时的风险
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 AI 原生数据栈为什么不同于传统数仓
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 AI 原生数据栈为什么不同于传统数仓">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.1 目标根本不同：从"分析查询"到"训练供给"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.2 工作负载的本质差异
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.3 成本约束的多维交织
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 数据栈五层拆解
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 数据栈五层拆解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.1 采集接入层：让数据从"到处都是"变为"有据可查"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.2 处理编排层：数据工厂的流水线调度中枢
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.3 存储索引层：三类数据的差异化存储策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.4 评测运营层：让数据质量"可见"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#325" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.5 治理安全层：数据也需要"合规档案"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#33" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 成本模型与预算治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 成本模型与预算治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.1 五大成本维度全景拆解
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.2 训练前、中、后的分阶段成本核算
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333-roi" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.3 ROI 决策框架
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#34" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 三类团队架构方案
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 三类团队架构方案">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.1 初创轻量栈：快速验证，拒绝过度设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#342" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.2 中型团队的平台化建设
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#343" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.3 大型组织的多租户协同模式
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#35" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 平台接口与后续章节承接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="3-ai">第3章 AI原生数据栈与成本治理<a class="headerlink" href="#3-ai" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；王柯；陈长汶</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章讨论支撑大模型数据工程的 AI 原生数据栈与成本治理方法。与传统数仓主要服务分析查询不同，LLM 数据栈的目标是稳定、低成本地向训练和应用链路提供可追溯、可评估、可版本化的数据资产。章节首先比较传统数据仓库与大模型数据栈在目标、工作负载和成本约束上的差异；随后将数据栈拆解为采集接入、处理编排、存储索引、评测运营和治理安全五个层级，并讨论 Spark、Ray Data、Iceberg、对象存储、向量数据库、DVC 与 MLflow 等工具的适用边界。最后，本章给出成本模型、投资回报率（return on investment，ROI）决策框架和三类团队架构方案，帮助读者在初创、中型和大型组织中选择与阶段匹配的数据基础设施。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>AI 原生数据栈；数据基础设施；Ray Data；Apache Iceberg；对象存储；成本治理；DataOps</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>区分传统数仓与 LLM 数据栈在目标和工作负载上的差异。</li>
+<li>理解 AI 原生数据栈的五层架构及其关键接口。</li>
+<li>掌握数据处理、存储、标注、推理服务和训练 I/O 的成本构成。</li>
+<li>根据团队规模选择轻量栈、平台化栈或多租户数据平台方案。</li>
+</ul>
+<h2 id="_4">开篇场景：数据平台缺少治理时的风险<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>你刚以数据负责人的身份加入一家完成 B 轮融资的大模型创业公司。接手后的第一周，你做了一次数据基础设施的全面摸底，发现语料数据零散地分布在 50 多台工程师的本地硬盘上，格式包括 <code>.txt</code>、<code>.json</code>、<code>.csv</code>、<code>.parquet</code>，缺少统一规范；每次处理新数据，都由工程师手工编写 Python 脚本在单机上运行，一份 500GB 文件跑三天是常态；三个月前还曾因为文件路径错误覆盖了关键 SFT 数据集，而这份数据没有备份和版本记录。CEO 问你：一个月后公司计划开始第一轮数十B参数量级的基座模型预训练，数据平台能否支撑？</p>
+<p>这个场景并非夸张的极端案例。在许多快速成立的大模型团队中，这种状态在早期较为常见：算法和模型架构通常是团队最优先关注的焦点，数据基础设施则容易被视为短期可延后的工作，直到关键数据丢失、训练集群因数据 I/O 成为瓶颈，或合规审计发现训练数据来源不清，团队才被迫进行紧急基础设施建设。</p>
+<p>这种被动建设方式成本较高，因为团队需要在业务压力、训练窗口和合规风险同时存在的条件下补齐平台能力。</p>
+<h2 id="31-ai">3.1 AI 原生数据栈为什么不同于传统数仓<a class="headerlink" href="#31-ai" title="Permanent link">&para;</a></h2>
+<p>在很多工程师的职业认知里，"数据基础设施"指的是 Hadoop + Hive + Spark 那一套经典大数据技术栈，以及围绕它构建的关系型数据库、数据仓库和 BI 报表体系。这套体系在过去十年里支撑了无数企业的数据分析和机器学习业务，是极为成熟、经过大规模生产验证的工程体系。</p>
+<p>然而，当传统数据仓库体系被原封不动地移植到大语言模型的数据工程场景时，在几乎每一个关键维度上都存在严重的不匹配。</p>
+<h3 id="311">3.1.1 目标根本不同：从"分析查询"到"训练供给"<a class="headerlink" href="#311" title="Permanent link">&para;</a></h3>
+<p>传统数据仓库服务的核心目标是<strong>分析与洞察</strong>：把业务数据汇聚起来，通过 SQL 查询和 BI 工具，帮助业务决策者回答"过去发生了什么"和"现在的业务状态如何"。在这个目标下，数据的核心价值体现在<strong>可查询性</strong>（Query Performance）和<strong>一致性</strong>（Consistency）上：数据必须准确、结构整齐、可以被快速JOIN和聚合。</p>
+<p>LLM 数据栈服务于截然不同的核心目标：<strong>训练一个神经网络模型</strong>。数据的最终消费者不是人，而是 GPU 上运行的 Attention 计算。在这个目标下，数据的核心价值体现在<strong>训练效率</strong>（Training Throughput）和<strong>质量信噪比</strong>（Signal-to-Noise Ratio）上：GPU 利用率需要保持在较高水平，数据中的 Token 也需要经过筛选，以降低模型学习错误知识或低质量语言模式的风险。</p>
+<p>这种目标的差异，直接导致了两套体系在技术选型上的全面分叉。</p>
+<h3 id="312">3.1.2 工作负载的本质差异<a class="headerlink" href="#312" title="Permanent link">&para;</a></h3>
+<p>传统数仓的典型工作负载是<strong>读多写少的 OLAP 查询</strong>：大量的用户并发执行 SELECT 查询，偶尔有 ETL 批量写入。数据量通常在 GB 到 TB 级别，峰值追求查询延迟低于秒级。</p>
+<p>LLM 数据栈的工作负载有着截然不同的特征结构：</p>
+<p><strong>预训练数据处理</strong>是整个体系最重的工作负载。数十 TB 到 PB 级别的原始语料需要经过去重、过滤、格式转换和分词等多道串行处理，每一步都是 CPU 密集型操作，需要在数千个核心上并行执行，才能在合理的时间窗口内完成。这类工作负载要求计算层能够高效调度和追踪数以亿计的文件/文档级任务。</p>
+<p><strong>与 GPU 训练的 I/O 对齐</strong>是另一个关键约束。模型训练期间，DataLoader 需要以很高频率（每 step）向 GPU 提供数据，任何 I/O 等待都会导致 GPU 空转并增加算力成本。因此存储层必须具备能够匹配 GPU 训练带宽需求的读取速度，这对对象存储的访问模式（顺序大文件 vs 随机小文件）和网络带宽（InfiniBand / 100GbE 以太网）都有严格要求。</p>
+<p><strong>在线推理与实时反馈的并存</strong>进一步增加了系统复杂度。当模型上线运行推理业务时，用户交互数据（包括对话记录、满意度反馈、有价值的纠错案例）需要回流，经过清洗和标注后进入 SFT 或 RLHF 数据管线。这意味着数据栈必须同时支持离线批处理（预训练语料清洗）和低延迟在线写入（用户反馈回流）。这两种工作负载对存储和计算层的要求不同，需要在系统设计阶段明确隔离与协同方式。</p>
+<h3 id="313">3.1.3 成本约束的多维交织<a class="headerlink" href="#313" title="Permanent link">&para;</a></h3>
+<p>在传统 BI 体系中，成本主要体现在<strong>存储成本</strong>和<strong>查询计算成本</strong>上。而在 LLM 数据体系中，四类成本形成了复杂的多维约束：</p>
+<p>首先是<strong>算力成本</strong>（GPU/TPU 训练集群）。GPU 云价、租赁价和自建折旧会随地域、合约、供需、机型和利用率快速变化，因此书稿不宜写死单价。工程预算应按“GPU 小时数 × 单位 GPU 小时成本 × 有效利用率折损”核算。一次预训练或重训通常会消耗大量 GPU 小时，这意味着任何由于数据问题造成的训练中断或重启，代价都很高，也是 LLM 数据栈必须强调稳定性和可回滚性的根本原因。</p>
+<p>其次是<strong>数据处理成本</strong>。大规模语料清洗任务在 CPU 或 GPU 集群上运行，成本由数据规模、解析复杂度、去重算法、质量模型推理、失败重试和中间数据写放大共同决定。如何通过精细调度（如使用 Spot 实例）和算法优化（如 MinHash (Broder 1997) 近似去重替代全量两两比较）来降低单次处理成本，是工程化必须考量的核心命题。</p>
+<p>第三是<strong>标注与人工成本</strong>。高质量的 SFT、偏好和安全样本需要具备专业背景的标注员手工撰写或复核，单位成本取决于领域难度、样本长度、质检比例、返修率和地区劳动力价格。对于医学、法律、金融等高风险领域，专家复核成本很容易成为整个数据工程预算中占比最高的单项。</p>
+<p>最后是<strong>存储成本</strong>。对象存储、块存储和归档存储的价格随云厂商、区域、折扣、访问模式和取回费用变化。预算时应区分热数据、中间产物、可复现实验快照和长期归档数据，并分别计算容量费、请求费、跨区流量费和取回费。如何在数据的全生命周期内合理规划冷热分层（Hot / Warm / Cold），避免为已不再使用的历史数据支付高额活跃层存储费用，是成本治理的重要课题（将在 §3.3 深入展开）。</p>
+<hr />
+<h2 id="32">3.2 数据栈五层拆解<a class="headerlink" href="#32" title="Permanent link">&para;</a></h2>
+<p>在明确了 AI 原生数据栈与传统数仓的本质差异之后，我们可以开始系统性地建立这套体系的架构蓝图（见图3-1）。一套完整的 LLM 数据栈，从底到顶可以拆解为五个功能层级，每一层都有其核心职责和关键的技术选型决策。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap03-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图3-1：AI原生数据栈五层架构，展示采集接入、处理编排、存储索引、评测运营和治理安全层之间的数据流" src="../../../images/part1/Yu-Chap03-Fig01.svg" /></a></p>
+<p><em>图3-1：AI 原生数据栈五层架构</em></p>
+<h3 id="321">3.2.1 采集接入层：让数据从"到处都是"变为"有据可查"<a class="headerlink" href="#321" title="Permanent link">&para;</a></h3>
+<p>采集接入层是整个数据栈的入口，负责将散落在各个来源的数据以统一受控的方式纳入数据平台管理。这听起来是最"普通"的一层，但恰恰是整个体系中最容易被忽视、出了问题却代价最高的一层。</p>
+<p>LLM 数据工程中的数据来源极为多元化：公开网页（通过 Common Crawl 快照或自研爬虫获取）、GitHub 代码仓库（通过 GitHub API 的数据集或增量镜像同步）、学术论文（从 ArXiv、PubMed、Semantic Scholar 等平台抽取）、高质量书籍（通过 Books3 等来源或合规渠道采购）、私有企业内部文档、以及用户在线反馈数据。每一类来源都有其独特的抓取方式、文件格式和更新频率。</p>
+<p>接入层的核心工程挑战不是"如何拿到数据"（这主要是爬虫和 API 开发的工作），而是<strong>如何在数据进入平台的第一时间，就建立起完整的元数据档案</strong>。每一批接入的数据，必须在落盘的同时记录以下关键元信息：数据来源（source URL 或 API endpoint）、采集时间戳（用于时效性管理）、文件格式与版本、数据所有者或许可证类型（用于合规审计）、原始文件大小和文件数量，以及本次接入的任务 ID（用于断点续传和问题溯源）。没有这份元数据档案，数据进入平台后就如同"黑匣子"——你知道里面有数据，但你不知道它从哪里来、什么时候来、在哪个版本的清洗管线中被处理过。一旦出现问题，你根本无法溯源。</p>
+<p>代码清单3-1给出了数据接入元数据登记示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 元数据登记示例：每次数据接入时自动写入元数据库</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">DataIngestionRecord</span><span class="p">:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">ingestion_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># 唯一任务ID</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># 数据来源名称 (如 &quot;common_crawl_2024_04&quot;)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">source_url</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># 原始抓取URL或API端点</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">ingestion_timestamp</span><span class="p">:</span> <span class="nb">str</span>   <span class="c1"># 接入时间戳 (ISO 8601)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">license_type</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># 许可证类型 (如 &quot;CC-BY-4.0&quot;, &quot;Unknown&quot;, &quot;Proprietary&quot;)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">file_format</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># 文件格式 (如 &quot;jsonl&quot;, &quot;parquet&quot;, &quot;warc&quot;)</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">raw_file_count</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># 原始文件数量</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">raw_size_bytes</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># 原始数据大小（字节）</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">s3_prefix</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># 落盘的对象存储路径前缀</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">crawl_agent</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># 采集脚本版本号</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">register_ingestion</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">DataIngestionRecord</span><span class="p">,</span> <span class="n">metadata_db_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;将接入记录写入元数据库（可对接 DynamoDB/PostgreSQL/本地 SQLite）&quot;&quot;&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">record_dict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">record_dict</span><span class="p">[</span><span class="s1">&#39;ingestion_timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="c1"># 实际生产中推荐写入 PostgreSQL 或 DynamoDB</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">metadata_db_path</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">record_dict</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单3-1：数据接入元数据登记示例。生产环境中应写入事务型元数据库，并补充权限、审计和幂等控制</em></p>
+<h3 id="322">3.2.2 处理编排层：数据工厂的流水线调度中枢<a class="headerlink" href="#322" title="Permanent link">&para;</a></h3>
+<p>数据进入平台后，需要经历一系列串行的处理步骤，才能从原始的"毛坯数据"转化为可以直接送入训练的"精加工数据"。这些处理步骤通常包括：HTML 标签剥离与文本提取、语言识别与过滤、基于规则的噪声过滤（去除 URL 密集、广告语段等低质文本）、近似去重（MinHash LSH）、精确去重（精确匹配）、质量评分（PPL 打分或基于分类器的质量筛选）、以及最终的分词序列化。</p>
+<p>处理编排层要解决的核心工程问题是：如何让这些步骤在数千个并行计算节点上高效执行，同时保证整个流水线的可观测性、可恢复性和可复现性。</p>
+<p>目前工业界最主流的两种选择是 <strong>Apache Spark</strong> (Zaharia et al. 2016) 和 <strong>Ray Data</strong> (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异：</p>
+<p>表3-1汇总了相应的对比和工程要点。</p>
+<p><em>表3-1：Apache Spark vs Ray Data 核心特性对比</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">对比维度</th>
+<th style="text-align: left;">Apache Spark</th>
+<th style="text-align: left;">Ray Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心语言运行时</strong></td>
+<td style="text-align: left;">Scala/Java 为核心，Python 通过 PySpark 接入，存在 JVM-Python 序列化开销</td>
+<td style="text-align: left;">Python 原生，无 JVM 开销，与 PyTorch / HuggingFace 无缝集成</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数据抽象模型</strong></td>
+<td style="text-align: left;">DataFrame（批处理思维，强调整批物化）</td>
+<td style="text-align: left;">Dataset（流水线思维，算子间数据流式传递）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GPU 计算支持</strong></td>
+<td style="text-align: left;">需借助 NVIDIA RAPIDS 插件（cuDF/cuML），集成较复杂</td>
+<td style="text-align: left;">原生支持 GPU 调度，可直接在算子中调用 CUDA 算子或部署 ML 模型</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>内存使用模式</strong></td>
+<td style="text-align: left;">算子之间必须物化中间结果到磁盘/内存，内存压力较大</td>
+<td style="text-align: left;">流水线执行，上下游算子可以重叠运行，内存效率更高</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SQL 与 BI 生态</strong></td>
+<td style="text-align: left;">Spark SQL 极为成熟，兼容 Hive 元数据，生态完整</td>
+<td style="text-align: left;">SQL 支持较弱，没有成熟的 SQL 查询接口</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>容错与稳定性</strong></td>
+<td style="text-align: left;">经过十余年 PB 级生产验证，稳定性成熟</td>
+<td style="text-align: left;">相对年轻，大规模部署的推荐实践积累少于 Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>典型代码风格</strong></td>
+<td style="text-align: left;">函数式（map/filter/groupBy 的链式调用）</td>
+<td style="text-align: left;">声明式 pipeline（<code>ds.map_batches()</code> 的链式拓扑）</td>
+</tr>
+</tbody>
+</table>
+<p>选择哪一个，取决于团队背景和工作负载特征。如果团队具备传统大数据背景，且数据处理管线中有大量 SQL 逻辑和对 Hive/Iceberg 的依赖，Spark 是更稳健的选择；如果团队是 AI/ML 背景，需要在数据处理中频繁调用 ML 模型（如用分类器打 PPL 分、用 NER 模型做 PII 检测），Ray Data 的 Python 原生和 GPU 调度优势则会较为明显。许多大型团队最终采用的是混合方案：Spark 负责海量粗过滤（语言识别、规则去重），Ray Data 负责需要 ML 推理的精细化处理（质量评分、基准污染检测）。</p>
+<p>以下是一个典型的 Ray Data 数据清洗 pipeline 示例：</p>
+<p>代码清单3-2给出了 Ray Data 清洗流水线示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ray.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_parquet</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_html_noise</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;去除 HTML 标签，计算噪声分数&quot;&quot;&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">texts</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">cleaned</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;[^&gt;]+&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">noise_scores</span> <span class="o">=</span> <span class="p">[(</span><span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;[^&gt;]+&gt;&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>                    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleaned</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;noise_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise_scores</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="n">batch</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_quality</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;过滤低质量样本&quot;&quot;&quot;</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;noise_score&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="k">return</span> <span class="n">batch</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1"># 构建清洗 pipeline</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="n">ds</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/raw/common_crawl/&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="o">.</span><span class="n">map_batches</span><span class="p">(</span><span class="n">remove_html_noise</span><span class="p">,</span> <span class="n">batch_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="o">.</span><span class="n">map_batches</span><span class="p">(</span><span class="n">filter_quality</span><span class="p">,</span> <span class="n">batch_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="p">)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="c1"># 写出到对象存储</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/processed/cc_cleaned/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单3-2：Ray Data 清洗流水线示例。生产环境中应补充失败重试、指标上报、数据版本和输出校验</em></p>
+<h3 id="323">3.2.3 存储索引层：三类数据的差异化存储策略<a class="headerlink" href="#323" title="Permanent link">&para;</a></h3>
+<p>LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对存储层的要求都不相同，因此存储索引层需要采用差异化的技术方案。</p>
+<p><strong>文本语料与结构化标注数据</strong>是体量最大的一类，包括清洗后的预训练语料（Parquet 格式）、SFT 样本集（JSONL 格式）和偏好对比数据集等。这类数据的读写模式是典型的批处理：大批量顺序写入（数据处理完成后整批落盘），大批量顺序读取（训练时 DataLoader 顺序扫描）。对象存储（AWS S3 / MinIO）是这类数据通常的推荐选择，但在其之上需要叠加一层数据湖表格式（Lakehouse Format）来解决版本管理和 ACID 事务的需求。</p>
+<p>目前主流的三种数据湖格式各有其适用场景：</p>
+<p>表3-2汇总了相应的对比和工程要点。</p>
+<p><em>表3-2：数据湖表格式选型对比</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;">Apache Iceberg</th>
+<th style="text-align: left;">Delta Lake</th>
+<th style="text-align: left;">Apache Hudi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心维护方</strong></td>
+<td style="text-align: left;">Netflix → Apache 基金会</td>
+<td style="text-align: left;">Databricks（核心商业开源）</td>
+<td style="text-align: left;">Uber → Apache 基金会</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>引擎兼容性</strong></td>
+<td style="text-align: left;">Spark / Flink / Trino / DuckDB / StarRocks（最广泛）</td>
+<td style="text-align: left;">主要 Spark，其他需适配层</td>
+<td style="text-align: left;">Spark / Flink / Presto</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ACID 事务</strong></td>
+<td style="text-align: left;">完整支持</td>
+<td style="text-align: left;">完整支持</td>
+<td style="text-align: left;">支持（以 upsert/delete 见长）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>时间旅行查询</strong></td>
+<td style="text-align: left;">完整支持（按版本号或时间戳）</td>
+<td style="text-align: left;">完整支持</td>
+<td style="text-align: left;">支持（较轻量）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Schema 演进</strong></td>
+<td style="text-align: left;">支持（列添加/重命名/删除）</td>
+<td style="text-align: left;">支持</td>
+<td style="text-align: left;">支持</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>推荐使用场景</strong></td>
+<td style="text-align: left;">多引擎混用、追求厂商中立的团队</td>
+<td style="text-align: left;">深度使用 Databricks 生态的团队</td>
+<td style="text-align: left;">有高频 upsert 需求（如实时知识库更新）的团队</td>
+</tr>
+</tbody>
+</table>
+<p>对于需要多引擎协同和对象存储扩展性的 LLM 数据工程场景，<strong>Apache Iceberg</strong> (Apache Software Foundation 2024) <strong>+ S3</strong>是常见的优先候选方案，原因是其引擎中立性——它允许工程团队同时以 Spark 执行海量清洗处理、以 DuckDB 进行轻量数据探查分析，而无需迁移数据，也不受单一商业厂商锁定。</p>
+<p><strong>向量数据（Embeddings）</strong>是第二类存储需求，主要服务于 RAG 场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（Approximate Nearest Neighbor，ANN）检索 (Malkov and Yashunin 2020)。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能较强，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100 万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + Best Matching 25，BM25 (Robertson and Zaragoza 2009) 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。</p>
+<p><strong>模型 Checkpoint 与实验产物</strong>是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&amp;B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(DVC 2024) 或 MLflow Artifacts 做版本追踪。</p>
+<p>代码清单3-3给出了使用 DVC 追踪数据集版本的命令示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 使用 DVC 为数据集建立版本追踪</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>dvc<span class="w"> </span>init
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>dvc<span class="w"> </span>add<span class="w"> </span>datasets/sft/v2.3/<span class="w">  </span><span class="c1"># 将数据集目录纳入 DVC 追踪</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>git<span class="w"> </span>add<span class="w"> </span>datasets/sft/v2.3.dvc<span class="w"> </span>.gitignore
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add SFT dataset v2.3 (84k samples, legal domain)&quot;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>dvc<span class="w"> </span>push<span class="w">  </span><span class="c1"># 将实际数据推送到 S3 远程存储</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># 其他工程师可用 dvc pull 拉取完全相同的数据</span>
+</code></pre></div>
+<p><em>代码清单3-3：使用 DVC 追踪数据集版本的命令示例</em></p>
+<p>生产环境中应配合远程对象存储权限、数据哈希校验和发布审批。</p>
+<h3 id="324">3.2.4 评测运营层：让数据质量"可见"<a class="headerlink" href="#324" title="Permanent link">&para;</a></h3>
+<p>评测运营层的职责是为整个数据平台提供可观测性（Observability）——让团队能够实时看到数据管线的运行状态、数据质量的变化趋势，以及各类实验的追踪记录。它是数据飞轮得以持续转动的"仪表盘"。</p>
+<p>一个成熟的评测运营层至少应当覆盖四个维度。<strong>数据质量看板</strong>展示每一批次数据的核心质量指标（去重率、PPL 分布、噪声比例、基准污染率），并支持与历史基线的对比，一旦某项指标偏离基线超过设定阈值，立即触发告警。<strong>管线运行监控</strong>追踪数据处理作业的任务完成率、处理速度（文档/秒）、失败重试次数和资源消耗（CPU/内存/网络），确保没有"静默失败"的情况（即任务在报错时没有触发告警，悄悄跳过了大批数据）。生产级机器学习系统中的数据管线技术债务问题已有系统研究 (Sculley et al. 2015)；一站式云原生数据处理平台（如 Data-Juicer 2.0，Chen et al. 2025）可支持 100+ 算子和 TB 级多模态数据的可重现 YAML 化处理管线。<strong>数据抽检工具</strong>提供随机抽样和人工审阅界面，允许数据工程师定期对各节点的输出数据进行人工"望闻问切"，发现自动化检测无法捕捉的系统性质量问题。<strong>实验追踪</strong>则将数据集版本与模型训练实验进行绑定记录，确保每一个模型训练实验都能准确追溯到使用了哪个版本的数据集、哪套清洗配置，这是保证实验可复现性的基础。</p>
+<h3 id="325">3.2.5 治理安全层：数据也需要"合规档案"<a class="headerlink" href="#325" title="Permanent link">&para;</a></h3>
+<p>随着 GDPR、中国《个人信息保护法》等数据隐私法规的趋严，以及 LLM 训练数据版权问题引发的多起诉讼（如 OpenAI 被多家媒体起诉、Stability AI 被Getty Images起诉），治理安全层已经从"可选的未来规划"变成了"必不可少的当下要求"。</p>
+<p>治理安全层的核心功能包括：<strong>版权与许可证管理</strong>，为每一批接入的数据记录其许可证类型（CC-BY / CC-BY-SA / CC-BY-NC / 商业授权 / 来源不明），并通过技术手段（如 robots.txt 合规检查、许可证分类器）在接入阶段就过滤掉高风险来源；<strong>PII（个人身份信息）检测与脱敏</strong>，利用 NER 模型或正则规则自动识别训练数据中的姓名、手机号、邮箱、身份证号等敏感信息，并在数据入库前完成脱敏处理；<strong>权限与访问控制</strong>，对不同级别的数据（如含有用户对话的反馈数据）实施严格的 RBAC（基于角色的访问控制）策略，确保只有经过授权的工程师可以访问和处理敏感数据；以及<strong>数据血缘追踪</strong>，记录每一批训练数据从原始来源到最终训练集的完整转化链路，确保在需要合规审计时可以提供完整的数据溯源证明（大规模数据集来源合规性审计参见 Longpre et al. 2024）。</p>
+<hr />
+<h2 id="33">3.3 成本模型与预算治理<a class="headerlink" href="#33" title="Permanent link">&para;</a></h2>
+<p>大模型数据工程的成本结构远比传统数据工程复杂。很多团队在项目立项时，只将算力（GPU 租用费用）纳入预算核算，而将数据处理、标注和存储成本粗略归入杂项支出。项目执行到中期后，数据侧成本往往会明显超出原始预算。</p>
+<h3 id="331">3.3.1 五大成本维度全景拆解<a class="headerlink" href="#331" title="Permanent link">&para;</a></h3>
+<p>LLM 数据工程的成本可以拆分为五个主要维度，理解每个维度的成本驱动因素是制定合理预算的基础。</p>
+<p><strong>数据获取成本</strong>是第一项。这包括爬虫服务器的租用和带宽费用、付费购买的商业语料（如特定领域的专业数据库授权），以及 API 接口调用费用（如通过 Diffbot 或 Apify 等数据服务平台获取结构化网页内容）。云端 Spot 实例通常低于按需实例，但折扣幅度随区域、实例类型和供需变化而变化；预算中应显式记录价格来源和生效日期。</p>
+<p><strong>数据处理成本</strong>是第二项，也是最容易被低估的。一次完整语料清洗管线（包括解析、过滤、去重、质量评分）的成本取决于处理逻辑复杂度、数据规模、区域价格、重试次数和中间结果写放大。如果需要在数据处理中进行 ML 推理（如用 GPU 运行质量分类器），GPU 实例成本会进一步叠加。</p>
+<p><strong>标注成本</strong>是第三项，也往往是整个数据预算中占比最高的单项。专业领域的高质量 SFT 样本（如医学、法律、金融）需要具备相应领域背景的专家参与。实际成本需按标注规范、样本长度、质检比例、返修率、地区劳动力价格和保密要求重新核算。</p>
+<p><strong>存储成本</strong>是第四项。实际价格需以云厂商、区域、折扣和访问模式为准。如果不做冷热分层管理，让大量已处理完毕的中间产物继续占用活跃层存储，长期累计的费用会持续上升。</p>
+<p><strong>推理服务成本</strong>是第五项，用于在数据处理阶段调用强模型进行质量评估、合成数据生成或自动化标注。预算应按输入 token、输出 token、图片/音频/视频单价、重试率、缓存命中率和并发限流共同估算。若为海量样本进行质量打分，仅 API 费用就可能成为主要成本之一，因此需要通过抽样、级联评估和缓存策略进行规划。</p>
+<h3 id="332">3.3.2 训练前、中、后的分阶段成本核算<a class="headerlink" href="#332" title="Permanent link">&para;</a></h3>
+<p>更实用的成本核算框架是按训练生命周期的三个阶段来分解：</p>
+<p>在<strong>训练前</strong>阶段，数据获取和处理是主要成本。此时最关键的预算决策是确定数据规模目标（多少 Token），以及选择自建处理集群还是使用云端 Spot 实例。通常情况下，对于百亿 Token 以内的项目，云端 Spot 实例（Ray on AWS Spot）是性价比最高的方案；对于千亿 Token 以上的大规模项目，自建或租用专用 CPU 集群可以降低单位 Token 的处理成本。</p>
+<p>在<strong>训练中</strong>阶段，算力成本占主导，但数据 I/O 的质量直接影响 GPU 利用率，进而影响实际算力成本。若训练进程长期等待 DataLoader 或远程存储，在相同有效计算量下就需要更长训练时间。因此，数据 I/O 优化通常具有较高 ROI。</p>
+<p>在<strong>训练后</strong>阶段，模型评测、数据版本归档和知识库维护（RAG 更新）形成持续性成本。此时的重点是建立清晰的数据生命周期策略：已进入正式版本的数据集可迁移至低频访问存储层；临时实验用中间数据集可设置 30 天自动删除策略；只保留有明确标记和说明的最终版本数据集。低频访问存储的具体单价与取回费用变化较快，应以 2026-06 之后的云厂商公告为准。</p>
+<h3 id="333-roi">3.3.3 ROI 决策框架<a class="headerlink" href="#333-roi" title="Permanent link">&para;</a></h3>
+<p>在面对多种数据质量提升方案时，工程师需要有一套量化的 ROI 决策框架来避免"感觉这个可能有用"这种直觉驱动的投入：</p>
+<div class="arithmatex">\[\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型商业价值}}{\text{数据处理成本} + \text{标注成本} + \text{存储成本}}\]</div>
+<p>例如，若某项法律领域 SFT 数据投入带来可统计显著的用户满意度提升，且该提升能够映射为留存、转化或人工审核成本下降，那么团队可以把增量收益与数据获取、标注、训练和上线成本进行对比，估算回收周期。这种量化分析思路，是避免数据工程陷入"感觉上做了很多工作但对模型能力没有贡献"的困境的关键工具。</p>
+<p>将以上三个环节（规划→监控→评估→优化→复盘）串联为一个持续迭代的闭环，即构成了大模型团队的<strong>成本治理闭环</strong>（见图3-2）：</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap03-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图3-2：训练数据成本治理闭环图，展示预算规划、成本监控、ROI评估、优化决策和预算复盘的循环" src="../../../images/part1/Yu-Chap03-Fig02.svg" /></a></p>
+<p><em>图3-2：训练数据成本治理闭环图，展示预算规划、成本监控、ROI评估、优化决策和预算复盘的循环</em></p>
+<hr />
+<h2 id="34">3.4 三类团队架构方案<a class="headerlink" href="#34" title="Permanent link">&para;</a></h2>
+<p>没有一套数据栈架构可以适合所有团队规模和阶段。根据团队规模和业务成熟度，可以将 LLM 数据工程团队大致分为三类，每类对应不同的推荐架构方案。</p>
+<h3 id="341">3.4.1 初创轻量栈：快速验证，拒绝过度设计<a class="headerlink" href="#341" title="Permanent link">&para;</a></h3>
+<p><strong>适用场景</strong>：1-5 人数据团队，处于 Proof-of-Concept 或天使轮至 Pre-A 轮阶段，主要任务是快速验证数据配方假说，证明模型具备核心能力。</p>
+<p>在这个阶段，最大的工程陷阱是<strong>过度设计</strong>：花三个月搭一套"工业级"的分布式数据平台，等到平台搭完，团队可能已经在对的方向上落后了两个月。初创团队的正确策略是：以最低成本验证核心假说，等到需要处理的数据量真正触碰到单机极限时，再逐步引入分布式能力。</p>
+<p>推荐的轻量栈技术组合为：存储层使用 <strong>S3 / MinIO + Parquet</strong>（暂不引入 Iceberg，手动管理版本目录即可）；计算层使用 <strong>DuckDB</strong>（适合单机或小规模数据探查，SQL 语法友好，无需配置集群）和 Python pandas/polars；版本控制使用 <strong>DVC</strong>；管道编排使用 <strong>Prefect</strong> 或 <strong>Dagster</strong>。这套组合的工程搭建时间取决于团队经验、权限流程和数据源复杂度。</p>
+<p>值得特别说明的是，DuckDB 在初创团队中常常被低估。它可以直接读写 S3 上的 Parquet 文件，无需将数据下载到本地，同时支持标准 SQL 语法，让不熟悉 PySpark 的工程师快速上手。实际耗时与费用取决于区域、实例折扣、数据格式、压缩方式和查询复杂度，生产使用前应在目标数据样本上做压测。</p>
+<h3 id="342">3.4.2 中型团队的平台化建设<a class="headerlink" href="#342" title="Permanent link">&para;</a></h3>
+<p><strong>适用场景</strong>：6-20 人数据/算法团队，A 轮至 B 轮阶段，已经验证了核心方向，开始进行百亿 Token 量级的预训练，同时维护数个垂直领域的 SFT 数据管线。</p>
+<p>这个阶段面临的核心挑战是数据管线的<strong>标准化与复用</strong>：多个工程师各自开发的清洗脚本缺乏统一接口，无法复用；数据版本管理混乱，不同的实验用了哪个版本的数据无法准确追踪；随着数据量增长，单机处理已无法满足时效性要求。</p>
+<p>推荐的中型团队技术栈为：计算层升级为 <strong>Ray Data</strong>（支持多机分布式，Python 原生友好）或 <strong>Spark on EMR</strong>（如果团队有 Spark 经验）；存储层引入 <strong>Apache Iceberg + S3</strong> 实现数据版本管理；引入 <strong>Weights &amp; Biases</strong> 或 <strong>MLflow</strong> 进行实验追踪；数据质量监控基于本章 §2.2 描述的评分卡体系，搭建基础的 Grafana 看板。数据处理代码以算子（Operator）为单位进行模块化封装，形成可复用的算子库。</p>
+<h3 id="343">3.4.3 大型组织的多租户协同模式<a class="headerlink" href="#343" title="Permanent link">&para;</a></h3>
+<p><strong>适用场景</strong>：20人以上的数据工程团队，B 轮之后或已有大型 AI 业务的科技公司，同时支持多个不同的大模型项目（如通用基座、垂直行业定制、多模态专项等），需要数据基础设施在多项目之间共享资源的同时，保持项目间的数据隔离和权限管控。</p>
+<p>大型团队架构的核心挑战是<strong>多租户管理</strong>：如何让不同业务线的 LLM 项目共用底层数据处理集群，同时保证项目A的低质量数据不会污染项目B的数据管线？如何在数十个并行的数据处理任务中进行合理的计算资源调度和优先级分配？</p>
+<p>推荐的大型团队方案以<strong>统一数据平台</strong>为核心：底层采用 Kubernetes 统一管理计算资源（包括 CPU 和 GPU 节点），Ray on Kubernetes 或 Spark on Kubernetes 提供调度；数据隔离通过 S3 的 IAM 权限策略在 Bucket-level 实现（不同项目使用独立 Bucket 或带有严格 Prefix 隔离的共享 Bucket）；元数据管理引入专业的数据目录工具（如 Apache Atlas 或 AWS Glue Data Catalog），统一管理公司内所有数据资产的血缘关系；平台团队维护一套标准化的数据处理算子库（Data Operator Library），各业务线通过调用算子库的接口开发自己的清洗管线，确保质量检测逻辑的统一。</p>
+<p>一个重要经验是：大型团队的数据平台应当<strong>分三个阶段建设</strong>，而不是一步到位。第一阶段（1-3 个月）优先打通核心链路：存储接入、基础清洗算子和版本管理，确保数据能够以受控方式流转；第二阶段（3-6 个月）围绕可观测性建设，搭建质量看板、实验追踪和告警系统，让平台从缺少透明度的流程变成可观测系统（FineWeb (Penedo et al. 2024) 和 RedPajama (Together Computer 2023) 均采用了类似的分阶段建设路径）；第三阶段（6 个月以上）再引入更复杂的多租户隔离机制、跨项目数据血缘洞察和资源配额管理。过早进入第三阶段容易使平台复杂度超过实际需求，反而降低核心数据流转效率。</p>
+<p>表3-3汇总了相应的对比和工程要点。</p>
+<p><em>表3-3：三类团队数据栈选型矩阵</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">团队规模</th>
+<th style="text-align: left;">建议存储方案</th>
+<th style="text-align: left;">建议计算框架</th>
+<th style="text-align: left;">建议编排工具</th>
+<th style="text-align: left;">建议版本管理</th>
+<th style="text-align: left;">预计搭建周期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">1-5 人（初创）</td>
+<td style="text-align: left;">S3/MinIO + Parquet</td>
+<td style="text-align: left;">DuckDB / Polars</td>
+<td style="text-align: left;">Prefect / Dagster</td>
+<td style="text-align: left;">DVC</td>
+<td style="text-align: left;">1-2 周</td>
+</tr>
+<tr>
+<td style="text-align: left;">6-20 人（中型）</td>
+<td style="text-align: left;">S3 + Apache Iceberg</td>
+<td style="text-align: left;">Ray Data 或 Spark</td>
+<td style="text-align: left;">Airflow / Dagster</td>
+<td style="text-align: left;">DVC + MLflow</td>
+<td style="text-align: left;">1-2 月</td>
+</tr>
+<tr>
+<td style="text-align: left;">20+ 人（大型）</td>
+<td style="text-align: left;">S3 + Iceberg（多 Bucket 隔离）</td>
+<td style="text-align: left;">Ray on K8s / Spark on K8s</td>
+<td style="text-align: left;">Airflow + Argo</td>
+<td style="text-align: left;">DVC + Glue Catalog + Atlas</td>
+<td style="text-align: left;">3-6 月</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="35">3.5 平台接口与后续章节承接<a class="headerlink" href="#35" title="Permanent link">&para;</a></h2>
+<p>本章构建的 AI 原生数据栈，不是一个孤立存在的技术选项菜单，而是整本书后续所有工程化内容得以落地的<strong>共同基础设施底座</strong>。理解这一点，有助于读者在后续章节中，当遇到具体的技术实现细节时，能够快速将其定位到本章建立的架构蓝图中对应的层级。</p>
+<p><strong>第二篇（文本预训练数据工程）</strong>中的 MinHash 大规模去重（第5章）、KenLM (Heafield 2011) 困惑度过滤（第6章），以及 DataLoader 的 I/O 优化策略（第7章），全部运行在本章§3.2.2 描述的<strong>处理编排层</strong>（Ray Data 或 Spark 集群）之上，依赖本章§3.2.1 描述的<strong>元数据接入层</strong>提供数据血缘追踪。</p>
+<p><strong>第三篇（多模态数据工程）</strong>中的图文对清洗、视频切片处理，对 GPU 计算资源的调度需求，正是依赖本章§3.2.3 讨论的 Ray Data 的 GPU 原生调度能力来提供技术支撑。</p>
+<p><strong>第七篇（RAG 应用数据工程）</strong>中知识库的实时更新管线，依赖本章§3.2.3 中向量数据库选型（Milvus/Qdrant）的方案来承载向量索引，同时依赖本章§3.2.5 的合规审计能力确保进入知识库的文档不存在版权风险。</p>
+<p><strong>第八篇（DataOps 平台建设）</strong>是本章的"升维扩展版"：第8章将在本章五层架构的基础上，深入探讨如何构建数据管线的端到端可观测性系统、如何实现数据资产的自动化治理，以及如何将本章讨论的质量评分卡与 CI/CD 流水线深度集成，最终让整个数据平台从"手工作坊"升级为"智能数据工厂"。</p>
+<p>关于能力边界的核心原则：<strong>凡是多个项目或多个数据阶段共同需要的能力，应当平台化</strong>（如去重算子库、质量评分卡框架、数据版本管理）；<strong>凡是与特定业务场景高度定制的能力，应当项目化</strong>（如某个垂直领域的实体识别规则、某个特定数据源的解析逻辑）。平台化的边界不是越大越好。过度抽象会降低具体项目的迭代效率，使项目团队被迫适应平台接口，而不是让平台服务于实际需求。</p>
+<hr />
+<h2 id="_5">本章小结<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本章围绕“AI原生数据栈与成本治理”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。</p>
+<p>本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。</p>
+<p>在全书结构中，本章位于基础框架层，承担承接前文基础概念并导向文本与多模态数据处理的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。</p>
+<h2 id="_6">参考文献<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>Zaharia M, Xin R S, Wendell P, Das T, Armbrust M, Dave A, Meng X, Rosen J, Venkataraman S, Franklin M J, Ghodsi A, Gonzalez J, Shenker S, Stoica I (2016) Apache Spark: A Unified Engine for Big Data Processing. Communications of the ACM 59(11):56-65.</p>
+<p>Moritz P, Nishihara R, Wang S, Tumanov A, Liaw R, Liang E, Elibol M, Yang Z, Paul W, Jordan M I, Stoica I (2018) Ray: A Distributed Framework for Emerging AI Applications. In: Proceedings of the 13th USENIX Symposium on Operating Systems Design and Implementation, pp 561-577.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29. https://doi.org/10.1109/sequen.1997.666900.</p>
+<p>Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.</p>
+<p>Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval 3(4):333-389.</p>
+<p>Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs (HNSW). IEEE Transactions on Pattern Analysis and Machine Intelligence 42(4):824-836. https://doi.org/10.1109/tpami.2018.2889473.</p>
+<p>Apache Software Foundation (2024) Apache Iceberg: Table Specification and Documentation. <a href="https://iceberg.apache.org/spec/">https://iceberg.apache.org/spec/</a> (accessed 2024-11).</p>
+<p>DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data &amp; Models. Documentation: <a href="https://dvc.org/doc">https://dvc.org/doc</a>. Source repository: <a href="https://github.com/iterative/dvc">https://github.com/iterative/dvc</a>.</p>
+<p>Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.</p>
+<p>Together Computer (2023) RedPajama: An Open Dataset for Training Large Language Models. GitHub repository. <a href="https://github.com/togethercomputer/RedPajama-Data">https://github.com/togethercomputer/RedPajama-Data</a>.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. Advances in Neural Information Processing Systems 28:2503-2511.</p>
+<p>Longpre S, Mahari R, Chen A, Obeng-Marnu N, Sileo D, Brannon W, Muennighoff N, Khazam N, Kabbara J, Perisetla K, Wu X, Shippole E, Bollacker K, Wu T, Villa L, Pentland S, Hooker S (2024) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing &amp; Attribution in AI. Nature Machine Intelligence 6(8):975-987.</p>
+<p>Chen D, Huang Y, Pan X, Jiang N, Wang H, Zhang Y, Ge C, Chen Y, Zhang W, Ma Z, Huang J, Lin W, Li Y, Ding B, Zhou J (2025) Data-Juicer 2.0: Cloud-Scale Adaptive Data Processing for and with Foundation Models. arXiv preprint arXiv:2501.14755.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,2682 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p03_llava_instruct/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目三：LLaVA 多模态指令数据工厂 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#llava" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目三：LLaVA 多模态指令数据工厂
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p03_llava_instruct/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p03_llava_instruct/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：多模态指令数据工厂的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）数据来源边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）任务边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）监督方式边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）上线能力边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p03" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P03 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从多模态资产到训练资产的数据流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从多模态资产到训练资产的数据流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：资产处理层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：监督构造层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：质检与交付层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 工程前置：多模态数据工厂的关键面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 工程前置：多模态数据工厂的关键面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 资产规划与采样策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 数据处理与接口维护
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 任务生成与模板编排
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 质检、回退与版本控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 关键职责面的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 资产层设计：多模态资产池的构建
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 资产层设计：多模态资产池的构建">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 为什么要做三类资产拆分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 资产均衡的工程意义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 为什么派生文档图像和图表图像很重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 数据 schema：多模态种子的结构化方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 数据 schema：多模态种子的结构化方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 schema 在多模态场景中的重要性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 一个更稳的最小 schema 应该包含什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 schema 的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 图像采样与重描述：监督重写的必要性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 图像采样与重描述：监督重写的必要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 重描述在这里解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 模板化生成的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 任务化重写的思路
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 文档图像与 OCR 任务：文档理解链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 文档图像与 OCR 任务：文档理解链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 OCR 任务在本项目中的定位
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 为什么不能把 OCR 结果原样塞进训练集
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 文档图像为什么是通往真实业务的关键一步
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 图表图像任务：图表阅读任务层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 图表图像任务：图表阅读任务层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 图表任务为什么要单独建类
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 本项目中的图表任务拆分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 为什么图表样本适合做失败归因
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 区域定位与坐标对齐：grounding 的几何约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 区域定位与坐标对齐：grounding 的几何约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 输入坐标和训练坐标为什么不一致
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-clamp" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 为什么还要做 clamp
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-grounding" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 为什么 grounding 样本不应该无限生成
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 坐标对齐实现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#115" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.5 这一步真正的工程意义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 多图交错样本：比较任务的构造
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 多图交错样本：比较任务的构造">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 多图任务在本项目中的价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 Payload 构建为什么是工程挑战
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 多图交错实现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 为什么交错样本数量通常不会太多
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-llava" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. LLaVA 对话模板：训练接口格式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. LLaVA 对话模板：训练接口格式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-conversation" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 conversation 模板解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 为什么要控制模板数量
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-llava" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.3 LLaVA 格式示例
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 质量控制：多模态 QA 的结构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 质量控制：多模态 QA 的结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 第一类：结构一致性检查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 第二类：语义质量检查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 第三类：可视化反查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 为什么要维护低质量样本库
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-bbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 可视化核验：bbox 反向渲染
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 可视化核验：bbox 反向渲染">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 反向渲染在这里解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 典型错误包括什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 这一步的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 训练封装：训练接口的最终整理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 训练封装：训练接口的最终整理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-train-val-smoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 train / val / smoke 三层交付
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 为什么 manifest 很重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 训练封装本质上是在做什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 项目指标：当前产出指标的含义
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 项目指标：当前产出指标的含义">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171-87-267" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 为什么“87 条资产 -&gt; 267 条训练记录”有意义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 资产类型分布说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-100" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 为什么 100% 通过率不能被过度解读
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#174-1111-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.4 为什么 11/11 PASS 很重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 成本分析：吞吐与审查的平衡
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 成本分析：吞吐与审查的平衡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 为什么人工复核成本需要单独看
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182-caption" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 为什么 caption 成本不等于总成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 成本优化应优先优化什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 失败样本与局限：当前工厂的风险点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 失败样本与局限：当前工厂的风险点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 当前最明显的局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 典型失败样本可以如何归类
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 为什么失败归因需要细化到错误类型
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 项目检查：一致性验证闭环
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 项目检查：一致性验证闭环">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 为什么要做项目检查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#202" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.2 本项目检查覆盖了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#203" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.3 为什么这一步是工程完整性的体现
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 与项目二的呼应：跨项目一致的方法骨架
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 与项目二的呼应：跨项目一致的方法骨架">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 一致点一：都强调“种子层”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 一致点二：都强调任务拆分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3 一致点三：都强调 QA 前置
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#214" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4 一致点四：都强调训练交付层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 后续扩展：走向更真实的多模态 Agent 场景
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. 后续扩展：走向更真实的多模态 Agent 场景">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 从单图走向多页文档
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 从静态图表走向复杂结构图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 从多图比较走向任务型 Agent 输入
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.4 从受控 QA 走向半自动评审面板
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. 主要交付物清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. 主要交付物清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 中间数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 训练数据产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 报告与检查产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. 结语
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：多模态标注的抽检与错误回放
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：多模态标注的抽检与错误回放">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、抽检要优先看“关系对不对”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、错误回放应成为数据工厂的固定资产
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="llava">项目三：LLaVA 多模态指令数据工厂<a class="headerlink" href="#llava" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；徐鑫；杜文卓</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>P03 聚焦把图像、区域标注、光学字符识别（OCR）信息和多图关系加工成可训练、可质检、可封装的多模态监督数据资产。章节重点不在单张图片问答，而在多模态资产到训练样本的工程化转化过程。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>多模态资产组织：管理原始图像、派生文档、图表结构与任务标签。</li>
+<li>指令合成与区域对齐：处理光学字符识别（OCR）、bounding box、对象级 grounding 与多图关系。</li>
+<li>质量审核与失败样本回查：通过可视化抽检和错误样本归因控制监督质量。</li>
+<li>训练封装与结果验证：形成统一的训练接口、切分结果与检查报告。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>原始图像资产 -&gt; 衍生文档/图表资产 -&gt; 指令合成 -&gt; 区域对齐 -&gt; 多图交错 -&gt; 质量审核 -&gt; 训练封装 -&gt; 报告与验证</strong></p>
+<p>这一结构对应的核心目标，是构建一条能够支撑 LLaVA 类模型训练的多模态数据流水线。</p>
+<hr />
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>LLaVA；多模态指令；图文对齐；视觉问答；质量评估</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“LLaVA 多模态指令数据工厂”为核心案例，目标是构建图文指令、OCR、图表和文档理解样本的多模态训练资产。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以可授权图像和受控任务模板为基础，不追求覆盖所有视觉问答类型。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<p>本项目在第十四篇中的定位，是展示 LLaVA 风格多模态指令数据的经典工程流程 (Liu et al. 2023)：从图像资产、caption、OCR、bbox 与对话模板出发，形成可训练、可抽检、可回放的监督样本。它不承担 P13 中面向 Qwen-VL、self-consistency、多语言扩展和大规模自动过滤的新版指令工厂能力；读者可将 P03 理解为经典流程基线，将 P13 理解为在更强基础模型和更复杂质量机制上的扩展版本。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“多模态资产池、图像重描述、任务模板、对话生成、质量过滤和训练封装”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P03-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>图像/文档/图表资产 -&gt; caption 与 OCR 线索 -&gt; 指令模板 -&gt; 多轮对话样本 -&gt; 质量检查 -&gt; VLM 指令数据集
+</code></pre></div></p>
+<p><em>代码清单P03-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括图文一致性、任务类型覆盖、OCR 证据可用性、对话轮次分布、格式合格率和人工抽样质量。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P03-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P03-1：LLaVA 多模态指令数据工厂出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务边界</td>
+<td>LLaVA 风格对话模板、图像描述、OCR、图表阅读、bbox grounding 与多图比较覆盖记录</td>
+<td>说明本项目是经典 LLaVA 流程基线，不把 Qwen-VL 工厂化扩展能力写入本项目结论</td>
+</tr>
+<tr>
+<td>图文一致性</td>
+<td>可视化抽检样本、错误样本归因、图像版本与 bbox 回放记录</td>
+<td>抽检时必须能回到原图、标注框、OCR 线索和生成回答</td>
+</tr>
+<tr>
+<td>训练交付</td>
+<td>train/val/smoke 切分、manifest、schema 检查和项目检查报告</td>
+<td>训练记录必须能被下游脚本稳定消费，且报告数字与产物数量一致</td>
+</tr>
+<tr>
+<td>人工复核</td>
+<td>抽样比例、复核人角色、失败样本处理状态和再生成记录</td>
+<td>grounding、OCR 和图表类样本不得只依赖自动规则通过</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自视觉模型调用、OCR 和人工复核；风险集中在图像版权、幻觉描述、敏感视觉内容和任务分布偏斜。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="1">1. 项目背景：多模态指令数据工厂的必要性<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>通用语言模型在纯文本问答上已经有较强能力，但进入视觉场景后，数据问题会立刻暴露出来。</p>
+<p>最常见的失真同样可以分成三类。</p>
+<p>第一类是<strong>视觉事实失真</strong>。模型明明看到的是两只狗，却生成三只；图里是餐桌，却说成办公桌；框选的是左上角物体，回答却描述了整张图。这类错误一旦进入训练集，会让模型把“幻觉”当成知识。</p>
+<p>第二类是<strong>任务失真</strong>。很多团队只做 caption 或通用视觉问答（VQA），于是模型只会对整图做粗描述，却不会处理对象级 grounding、文档区域阅读、图表数值比较或多图联动推理。问题不是样本太少，而是任务谱系不完整。</p>
+<p>第三类是<strong>接口失真</strong>。多模态数据的字段更多、依赖更强：图像路径、图像类型、任务标签、OCR 文本、bbox、conversation 模板、训练切分、可视化抽检结果，都必须能被下游训练和评估共同消费。只要 schema 失控，数据工厂就会退化成一堆临时脚本。</p>
+<p>因此，P03 的目标不是简单“生成一些 LLaVA 格式 JSON”，而是搭建一个<strong>LLaVA 多模态指令数据工厂</strong>，把图像资产管理、任务构造、对象级对齐、质量审核和训练交付组织成一条可复用的工程生产线。</p>
+<p>这条生产线服务的不是一次性演示，而是一种方法论：</p>
+<blockquote>
+<p>当团队未来需要从 COCO 图像扩展到真实文档、票据、图表、网页截图、多页 PDF 乃至视频关键帧时，真正能迁移的不是某个 prompt，而是这套“从多模态资产到训练监督”的数据工程方法。</p>
+</blockquote>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立多模态资产到监督样本的转化链路。</strong><br />
+即把原始图像、标注框和派生视觉资产，转成可直接用于视觉指令微调的结构化样本。</p>
+<p><strong>目标二：建立面向 LLaVA 风格训练的任务体系。</strong><br />
+本项目不把所有样本都统一成“图片 + 问答”，而是拆分为描述、计数、OCR 摘要、文档问答、图表阅读、区域定位与多图比较等不同任务类型。</p>
+<p><strong>目标三：建立可审核、可回退、可版本化的质量保障（QA）机制。</strong><br />
+多模态样本如果只有生成没有抽检，错误会以很高隐蔽性进入训练集。因此项目同时建设质量规则、人工抽检、可视化反查和低质量样本标记。</p>
+<p><strong>目标四：形成训练侧可直接消费的数据资产。</strong><br />
+最终输出不仅包括中间处理文件，还包括训练集、验证集、smoke test、manifest、评估报告和项目检查结果，确保项目能从“实验脚本”转为“正式交付物”。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了保证项目具备足够的可复现性，本项目显式设置了若干边界。</p>
+<h4 id="1_1">1）数据来源边界<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h4>
+<p>当前数据主要基于本地 COCO 子集及其标注 (Lin et al. 2014)，并进一步派生出文档式与图表式图像。它适合做方法演示、流程讲解和小型工厂验证，但并不宣称覆盖开放世界真实业务图像全貌。</p>
+<h4 id="2_1">2）任务边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>本项目当前重点覆盖以下几类任务：</p>
+<ul>
+<li>图像描述（image description）</li>
+<li>计数与视觉问答（counting / visual QA）</li>
+<li>OCR 摘要与文档问答（OCR summary / document QA）</li>
+<li>图表阅读与比较（chart reading / chart comparison）</li>
+<li>区域定位（region grounding）</li>
+<li>多图交错比较（multi-image comparison）</li>
+</ul>
+<p>这些任务已经足以覆盖“整图理解—局部定位—图文联合—跨图推理”的主干路径，但尚未完整扩展到多页长文档、表格结构化抽取、网页级导航、时序视频问答等更复杂任务。</p>
+<h4 id="3">3）监督方式边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>本项目以<strong>模板化生成 + 规则补充 + 启发式审查 + 人工抽检</strong>为主，而不是依赖大规模纯人工逐条撰写。它更像一个小型数据工厂雏形，而非大规模商业标注生产线。</p>
+<h4 id="4">4）上线能力边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>当前样本规模较小，质量通过率较高，很大程度上来自受控数据环境。它适合用于展示多模态数据工厂如何被设计，而不应被夸大为已足够支撑复杂开放场景生产上线。</p>
+<h3 id="23">2.3 边界说明的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>在实践类工程案例里，通常只有两种常见写法：</p>
+<ul>
+<li>一种是把项目写得“什么都能做”；</li>
+<li>另一种是把项目写成“在什么前提下能稳定做好什么”。</li>
+</ul>
+<p>后者明显更可信，也更容易复用。多模态项目尤其如此，因为视觉任务一旦脱离边界，就很容易把受控实验结果误说成通用能力。</p>
+<hr />
+<h2 id="3-p03">3. 项目定位：P03 的能力链位置<a class="headerlink" href="#3-p03" title="Permanent link">&para;</a></h2>
+<p>如果把全书视作一条大模型数据工程能力链，那么 P03 位于“多模态监督数据工程”这一段的核心位置。</p>
+<p>前面的章节已经讨论过文本数据清洗、SFT 数据设计、偏好数据与训练封装等方法论。本章的价值，在于把这些方法延伸到一个更复杂的对象：<strong>图像及其派生监督信号</strong>。</p>
+<p>也就是说，本章不是重新讲一遍 LLaVA 论文原理，而是展示：</p>
+<ul>
+<li>图像型监督数据为什么不能照搬文本工厂的思路；</li>
+<li>为什么多模态任务设计必须按图像类型与监督粒度拆层；</li>
+<li>为什么视觉样本的质量控制离不开可视化回查；</li>
+<li>为什么对象级坐标对齐与多图关系构造是工程要点；</li>
+<li>如何在项目初期就把训练接口、检查脚本和版本演进一起考虑进去。</li>
+</ul>
+<p>从这个意义上说，本章最重要的不是“模型能看图”，而是回答一个更大的问题：</p>
+<blockquote>
+<p>多模态监督数据，究竟应该如何被设计成一套持续生产能力，而不是一次性的样本拼装脚本？</p>
+</blockquote>
+<hr />
+<h2 id="4_1">4. 整体架构：从多模态资产到训练资产的数据流水线<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h2>
+<p>图P03-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-1：LLaVA 多模态指令数据工厂总览" src="../../../images/part14/p03/Yu-Project03-Fig01.svg" /></a>
+<em>图 P03-1：LLaVA 多模态指令数据工厂总览</em></p>
+<p>从工程视角看，本项目可以拆成三层。</p>
+<h3 id="41">4.1 第一层：资产处理层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“有没有干净、可控、结构明确的多模态输入资产”。主要包括：</p>
+<ul>
+<li>原始图像收集</li>
+<li>图像类别均衡</li>
+<li>派生文档图像构造</li>
+<li>派生图表图像构造</li>
+<li>资产 manifest 记录</li>
+</ul>
+<p>这一步的目标不是直接生成训练样本，而是把分散的视觉素材转成可追踪、可分层采样的资产池。</p>
+<h3 id="42">4.2 第二层：监督构造层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何把不同类型的视觉资产转成不同类型的监督样本”。主要包括：</p>
+<ul>
+<li>图像描述与重描述</li>
+<li>OCR 摘要与文档问答</li>
+<li>图表阅读与比较</li>
+<li>bbox 对齐与 grounding</li>
+<li>多图交错样本生成</li>
+<li>conversation 模板统一</li>
+</ul>
+<p>这一步是整个项目的核心，因为它决定模型学到的是“粗糙 caption 化能力”，还是“有任务分层的多模态理解能力”。</p>
+<h3 id="43">4.3 第三层：质检与交付层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些样本是否真的能进入训练”。主要包括：</p>
+<ul>
+<li>规则审查</li>
+<li>人工抽检</li>
+<li>bbox 可视化核验</li>
+<li>低质量样本标记</li>
+<li>train/val/smoke 切分</li>
+<li>manifest 生成</li>
+<li>报告与项目检查</li>
+</ul>
+<p>到这一步，项目才真正从“生成样本实验”变成“可复用的数据工厂”。</p>
+<hr />
+<h2 id="5">5. 工程前置：多模态数据工厂的关键面<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>在最小实验里，资产准备、样本生成、质量检查和训练封装往往可以由同一个人串起来完成；但当项目准备进入团队复用或后续扩展阶段时，更稳的做法不是强调“谁来做”，而是先把<strong>哪些职责面必须被覆盖</strong>写清楚。</p>
+<p>多模态数据工厂里，至少有四类职责面需要被显式定义。</p>
+<h3 id="51">5.1 资产规划与采样策略<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>这一层负责界定图片从哪里来、分成哪几类、覆盖到什么范围、哪些样本应该进入第一轮资产池。它关注的重点不是单条样本，而是整体分布是否均衡、是否已经覆盖通用图像、文档图像和图表图像三个层面。</p>
+<h3 id="52">5.2 数据处理与接口维护<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>这一层负责图像处理、标注对齐、schema 设计、中间产物落盘、训练切分和检查脚本。它的核心目标是保证数据接口稳定、字段一致、版本可追踪，而不是把流程停留在一组临时脚本上。</p>
+<h3 id="53">5.3 任务生成与模板编排<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>这一层负责 caption 重写、OCR 样本构造、图表任务编排、多图比较模板、API 调用与后处理。它连接“视觉资产输入”和“监督样本输出”，决定项目最终形成的是单一 caption 数据集，还是具备任务谱系的多模态监督集。</p>
+<h3 id="54">5.4 质检、回退与版本控制<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>这一层负责错误类型归因、抽检规则、可视化复核、拒收条件、低质量样本沉淀与返工闭环。在多模态场景里，这部分尤其关键，因为很多问题只有回到图片、框标注和多图顺序本身才能被真正发现。</p>
+<h3 id="55">5.5 关键职责面的作用<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>因为很多团队第一次做多模态 SFT 时，真正的问题往往不是“模型不会生成”，而是关键控制点没有被显式设计，导致：</p>
+<ul>
+<li>资产来源缺少边界；</li>
+<li>任务覆盖缺少规划；</li>
+<li>坐标与图像版本缺少校验；</li>
+<li>失败样本缺少沉淀；</li>
+<li>版本演进缺少稳定接口。</li>
+</ul>
+<p>因此，把这些职责面写清楚，本质上是在说明：<strong>多模态 SFT 更像一条带视觉质检能力的工程流水线，而不是若干临时样本拼装步骤。</strong></p>
+<p>图P03-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-2：多模态数据工厂职责协同图" src="../../../images/part14/p03/Yu-Project03-Fig02.svg" /></a>
+<em>图 P03-2：多模态数据工厂职责协同图</em></p>
+<hr />
+<h2 id="6">6. 资产层设计：多模态资产池的构建<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>通用文本 SFT 里，很多团队直接从已有文本库切片开始；但多模态项目不适合一上来就“对着图片生成问答”。原因在于，图像不是天然结构化的知识单元。</p>
+<p>因此，本项目先建设一层相对稳定的多模态资产池，并把它拆成三类：</p>
+<ul>
+<li>通用图像资产（general image）</li>
+<li>文档图像资产（document image）</li>
+<li>图表图像资产（chart image）</li>
+</ul>
+<p>这一设计的价值，不只是为了凑不同样本，而是为了给后续任务分发提供明确的“输入语义边界”。</p>
+<h3 id="61">6.1 为什么要做三类资产拆分<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p>因为不同图像天然支持的任务不同。</p>
+<ul>
+<li>通用图像更适合描述、计数、目标识别和局部定位；</li>
+<li>文档图像更适合 OCR 摘要、文档问答和局部阅读；</li>
+<li>图表图像更适合趋势总结、数值比较和结构解读。</li>
+</ul>
+<p>如果不先拆开，就会在同一个 prompt 池里混入大量不适配样本：例如对普通猫狗图片要求 OCR 摘要，对票据截图要求自然场景比较。这种混乱会直接降低有效样本比例。</p>
+<h3 id="62">6.2 资产均衡的工程意义<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>项目最终形成了 <strong>87 条资产</strong>，其中三类资产各 <strong>29 条</strong>，说明资产层不是随手收集，而是刻意做了均衡设计。这样做的好处是：</p>
+<ul>
+<li>后续任务分发更容易控制分布；</li>
+<li>结果分析时更容易判断哪类任务表现不足；</li>
+<li>小规模项目里也能避免单一图像类型主导训练集。 </li>
+</ul>
+<h3 id="63">6.3 为什么派生文档图像和图表图像很重要<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<p>许多团队会误以为“多模态 = 自然图片”。但在真实业务里，文档截图、报表、票据、仪表盘、图表和网页截图往往更重要。它们的难点不在物体识别，而在图文混合与局部结构理解。</p>
+<p>因此，本项目没有停留在 COCO 自然图像，而是进一步派生出文档式和图表式资产，用一个小规模项目把多模态任务谱系拉开。文档问答与图表问答的任务设计分别参考 DocVQA (Mathew et al. 2021) 和 ChartQA (Masry et al. 2022) 的问题类型；涉及图文相似度或视觉语义检索的环节，则参考 CLIP 的图文对齐思想 (Radford et al. 2021)。</p>
+<p>图P03-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-3：多模态资产分层示意图" src="../../../images/part14/p03/Yu-Project03-Fig03.svg" /></a>
+<em>图 P03-3：多模态资产分层示意图</em></p>
+<p>表 P03-2 总结了不同资产类型与任务映射之间的关系。</p>
+<p><em>表 P03-2：资产类型与主要风险对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>资产类型</th>
+<th>典型来源</th>
+<th>适配任务</th>
+<th>主要风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>general_image</code></td>
+<td>COCO 自然图像、通用场景图片</td>
+<td>图像描述、计数、视觉问答、局部定位</td>
+<td>幻觉描述、对象遗漏、类别混淆</td>
+</tr>
+<tr>
+<td><code>document_image</code></td>
+<td>文档截图、票据、制度页面、扫描件</td>
+<td>OCR 摘要、文档问答、局部阅读</td>
+<td>文字漏读、版式误判、局部区域错位</td>
+</tr>
+<tr>
+<td><code>chart_image</code></td>
+<td>柱状图、折线图、报表截图、仪表盘</td>
+<td>图表阅读、趋势概括、数值比较</td>
+<td>趋势反读、类别关系误判、数值遗漏</td>
+</tr>
+<tr>
+<td><code>interleaved_pair</code></td>
+<td>多图配对、跨页样本、对照截图</td>
+<td>多图比较、共同点总结、差异归纳</td>
+<td>顺序混淆、跨图串扰、配对失衡</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-schema">7. 数据 schema：多模态种子的结构化方式<a class="headerlink" href="#7-schema" title="Permanent link">&para;</a></h2>
+<p>完成资产收集之后，项目并不会直接把图片送去生成模型，而是先把资产、标注和任务字段统一进 schema。</p>
+<h3 id="71-schema">7.1 schema 在多模态场景中的重要性<a class="headerlink" href="#71-schema" title="Permanent link">&para;</a></h3>
+<p>文本数据里，很多时候 <code>instruction</code> 和 <code>output</code> 两列就能验证一个基础实验；但多模态场景不同，至少还要额外处理：</p>
+<ul>
+<li>图片文件路径</li>
+<li>图片类型</li>
+<li>原始宽高</li>
+<li>标注框</li>
+<li>OCR 文本</li>
+<li>派生任务类型</li>
+<li>对话模板</li>
+<li>样本来源与版本</li>
+</ul>
+<p>如果 schema 不统一，后面每扩一类任务就要重写一遍逻辑，项目很快会变成多套临时格式并存。</p>
+<h3 id="72-schema">7.2 一个更稳的最小 schema 应该包含什么<a class="headerlink" href="#72-schema" title="Permanent link">&para;</a></h3>
+<p>本项目的种子和训练样本，至少应包含以下字段：</p>
+<ul>
+<li><code>id</code>：样本唯一标识</li>
+<li><code>image</code>：图片路径或图片列表</li>
+<li><code>asset_type</code>：<code>general_image</code> / <code>document_image</code> / <code>chart_image</code> / <code>interleaved_pair</code></li>
+<li><code>task_type</code>：任务类型标签</li>
+<li><code>source_id</code>：来源资产标识</li>
+<li><code>bbox</code>：区域定位任务的坐标</li>
+<li><code>ocr_text</code>：OCR 或可读文本摘要</li>
+<li><code>conversations</code>：LLaVA 对话格式主体</li>
+<li><code>split</code>：train / val / smoke</li>
+<li><code>meta</code>：版本、生成方式、审核状态等元信息</li>
+</ul>
+<h3 id="73-schema">7.3 schema 的工程价值<a class="headerlink" href="#73-schema" title="Permanent link">&para;</a></h3>
+<p>schema 的意义不只是字段清单，而是让三个环节都能对齐：</p>
+<ul>
+<li>生成环节知道该写什么；</li>
+<li>QA 环节知道该查什么；</li>
+<li>训练环节知道该读什么。</li>
+</ul>
+<p>这使项目不再是“一份 JSON 就结束”，而是一个可以长期演进的接口层。</p>
+<hr />
+<h2 id="8">8. 图像采样与重描述：监督重写的必要性<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>很多现成图像数据集都带有 caption，但多模态 SFT 不能简单直接拿来训练，原因有三点。</p>
+<p>第一，原始 caption 往往偏短、偏描述性，覆盖不了问答、计数、解释和比较等任务。<br />
+第二，原始 caption 的风格不统一，不一定符合 LLaVA 对话式数据格式。<br />
+第三，原始 caption 多半只描述整图，无法覆盖对象级或图文混合型能力。</p>
+<p>因此，本项目对图像先做“重描述”，再将其转换为任务化监督。</p>
+<h3 id="81">8.1 重描述在这里解决什么问题<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>重描述并不只是把一句 caption 改得更长，而是把图像中可能用于训练的显性信息组织出来，例如：</p>
+<ul>
+<li>场景主体是什么；</li>
+<li>存在哪些显著对象；</li>
+<li>是否有可读文本；</li>
+<li>是否适合做计数；</li>
+<li>是否适合做比较或定位。</li>
+</ul>
+<p>重描述是从“图像素材”到“任务种子”的过渡层。</p>
+<h3 id="82">8.2 模板化生成的作用<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>完全开放式生成当然更灵活，但在小型工厂里也更容易失控。尤其是多模态场景，模型很容易：</p>
+<ul>
+<li>把图里不存在的东西写进去；</li>
+<li>把不确定信息说得过满；</li>
+<li>对同类图片生成风格不一致的回答。</li>
+</ul>
+<p>因此，本项目更强调模板化的 prompt 和受控生成，让样本先具备统一性，再在后续阶段逐步增加复杂度。</p>
+<h3 id="83">8.3 任务化重写的思路<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>同一张图，重写后可以派生出多种训练样本，例如：</p>
+<ul>
+<li>描述类：请概括这张图的主要场景；</li>
+<li>计数类：图中大约有几个显著主体；</li>
+<li>识别类：左侧最明显的物体是什么；</li>
+<li>推断类：这更像室内还是室外场景，为什么；</li>
+<li>OCR 类：请读出并总结图中的文字；</li>
+<li>比较类：两张图的主要共同点和差异是什么。</li>
+</ul>
+<p>这也是多模态数据工厂和“单一 caption 数据集”的根本差别：前者构造的是任务分布，后者只有素材描述。</p>
+<hr />
+<h2 id="9-ocr">9. 文档图像与 OCR 任务：文档理解链路<a class="headerlink" href="#9-ocr" title="Permanent link">&para;</a></h2>
+<p>文档图像是多模态场景中最容易被低估的一类资产。很多模型看上去能读字，但一旦进入文档问答或长段摘要，就会暴露出明显短板。</p>
+<h3 id="91-ocr">9.1 OCR 任务在本项目中的定位<a class="headerlink" href="#91-ocr" title="Permanent link">&para;</a></h3>
+<p>本项目把文档图像任务拆成两层：</p>
+<ul>
+<li><strong>OCR summary</strong>：读出图中文字并做压缩概括；</li>
+<li><strong>document QA</strong>：基于图中文字回答明确问题。</li>
+</ul>
+<p>这两者并不等价。前者更像“读到什么”，后者更像“读懂了什么并能回答什么”。</p>
+<h3 id="92-ocr">9.2 为什么不能把 OCR 结果原样塞进训练集<a class="headerlink" href="#92-ocr" title="Permanent link">&para;</a></h3>
+<p>因为 OCR 本身也会有噪声，尤其在复杂版式、局部模糊、小字体或图文混排情况下。如果把 OCR 输出原样当真值，很容易把视觉识别错误误写成监督信号。</p>
+<p>因此，本项目更合理的做法是：</p>
+<ol>
+<li>先把图中文字提取为中间层信息；</li>
+<li>再用模板控制摘要和问答任务；</li>
+<li>最后通过人工抽检和低质量标记把明显错误挡住。</li>
+</ol>
+<h3 id="93">9.3 文档图像为什么是通往真实业务的关键一步<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>因为真实世界多模态任务里，很多输入不是自然照片，而是截图、扫描件、报表、工单、票据和制度文档。只做自然图像训练，很难支撑这些场景。</p>
+<p>所以，文档图像任务在本项目里的意义，不只是扩充样本，而是把工厂从“看图说话”推进到“图文联合理解”。</p>
+<p>图P03-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-4：文档图像任务分层图" src="../../../images/part14/p03/Yu-Project03-Fig04.svg" /></a>
+<em>图 P03-4：文档图像任务分层图</em></p>
+<hr />
+<h2 id="10">10. 图表图像任务：图表阅读任务层<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>图表图像和自然图片最大的区别在于：它不是“看见什么”，而是“结构上表达了什么”。</p>
+<h3 id="101">10.1 图表任务为什么要单独建类<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>图表阅读的难点在于，它同时涉及：</p>
+<ul>
+<li>标题和图例识别</li>
+<li>轴标签理解</li>
+<li>数值关系概括</li>
+<li>趋势判断与比较</li>
+</ul>
+<p>如果把图表图像只当作普通图片做 caption，模型学到的大概率只是“这是一张柱状图”或“图中有几条线”，却学不会真正有用的图表理解。</p>
+<h3 id="102">10.2 本项目中的图表任务拆分<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>项目至少应支持以下两类：</p>
+<ul>
+<li><strong>chart reading</strong>：描述图表结构、主要趋势和显著信息；</li>
+<li><strong>chart comparison</strong>：比较不同类别、区间或曲线之间的差异。</li>
+</ul>
+<p>这使训练集不再只是视觉识别，而是开始接近多模态分析能力。</p>
+<h3 id="103">10.3 为什么图表样本适合做失败归因<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>因为图表任务的错误通常更容易归类：</p>
+<ul>
+<li>读错轴标签</li>
+<li>忽略单位</li>
+<li>把相对变化说成绝对变化</li>
+<li>比较关系反了</li>
+<li>把不存在的趋势编出来</li>
+</ul>
+<p>这些错误很适合进入失败样本库，并反过来指导 prompt 调整与 QA 规则设计。</p>
+<hr />
+<h2 id="11-grounding">11. 区域定位与坐标对齐：grounding 的几何约束<a class="headerlink" href="#11-grounding" title="Permanent link">&para;</a></h2>
+<p>在多模态训练里，grounding 是最容易被“看起来差不多”误导的一类任务。</p>
+<p>因为边框一旦有偏差，文本可能仍然很流畅，但模型学到的监督已经错了。特别是在对象级任务里，坐标偏 1% 看似很小，投射到实际图像上可能已经换了物体。</p>
+<h3 id="111">11.1 输入坐标和训练坐标为什么不一致<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>原始 COCO 标注采用像素绝对坐标 <code>[x, y, w, h]</code>。而很多 LLaVA 风格或下游对齐实现，更偏向归一化后的 <code>[ymin, xmin, ymax, xmax]</code> 表达，并将坐标映射到 <code>[0, 1000]</code> 范围。</p>
+<p>这就意味着项目必须做两层转换：</p>
+<ul>
+<li><strong>格式转换</strong>：从左上角宽高制，改为上下左右边界制；</li>
+<li><strong>尺度归一化</strong>：从像素值映射到标准区间。</li>
+</ul>
+<h3 id="112-clamp">11.2 为什么还要做 clamp<a class="headerlink" href="#112-clamp" title="Permanent link">&para;</a></h3>
+<p>即使理论公式没问题，浮点到整数转换时依然可能出现边界溢出。例如图像最右侧、最下侧的框，在舍入后可能出现 <code>1001</code> 或 <code>-1</code>。如果不做 clamp，训练脚本很可能直接报错，或者在解析中 silently fail。</p>
+<p>因此，本项目把安全截断写进对齐函数，本质上是在把数学逻辑补全成工程逻辑。</p>
+<h3 id="113-grounding">11.3 为什么 grounding 样本不应该无限生成<a class="headerlink" href="#113-grounding" title="Permanent link">&para;</a></h3>
+<p>一个常见误区是：既然有很多 bbox，就给每张图尽量生成很多问答对。这样虽然样本数会增加，但也会带来分布失衡：某些图片会因为物体特别多而被过度重复利用。</p>
+<p>因此，项目采用类似 <code>selected_anns = anns[:3]</code> 的受控策略，只选取部分对象构造问答与定位样本。这种做法的重点不是节省算力，而是避免训练集被高密度目标图像主导。</p>
+<h3 id="114">11.4 坐标对齐实现<a class="headerlink" href="#114" title="Permanent link">&para;</a></h3>
+<p>代码清单P03-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 核心代码摘自 alignment.py</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># 输入为 COCO 风格 bbox: [x, y, w, h]</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">convert_bbox</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">bbox</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">xmin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span> <span class="o">/</span> <span class="n">width</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">ymin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">y</span> <span class="o">/</span> <span class="n">height</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">xmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="n">width</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">ymax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">y</span> <span class="o">+</span> <span class="n">h</span><span class="p">)</span> <span class="o">/</span> <span class="n">height</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">ymin</span><span class="p">)),</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">xmin</span><span class="p">)),</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)),</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)),</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P03-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="115">11.5 这一步真正的工程意义<a class="headerlink" href="#115" title="Permanent link">&para;</a></h3>
+<p>bbox 对齐的重要性并不只在于“会写一个转换函数”，而在于它体现了一个关键原则：</p>
+<blockquote>
+<p>多模态数据工程里，任何“看起来只是格式改一下”的步骤，背后都可能决定监督真值是否仍然成立。</p>
+</blockquote>
+<p>图P03-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-5：bbox 坐标转换与归一化示意图" src="../../../images/part14/p03/Yu-Project03-Fig05.svg" /></a>
+<em>图 P03-5：bbox 坐标转换与归一化示意图</em></p>
+<hr />
+<h2 id="12">12. 多图交错样本：比较任务的构造<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>单图监督能教会模型看图说话，但很多真实多模态任务并不止于此。用户经常会要求：</p>
+<ul>
+<li>比较两张图的差异；</li>
+<li>判断哪张图更符合某种条件；</li>
+<li>综合多张图提取共同点；</li>
+<li>在多页输入中完成对照理解。</li>
+</ul>
+<p>因此，本项目专门建设多图交错样本。</p>
+<h3 id="121">12.1 多图任务在本项目中的价值<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>多图样本的关键，不只是把两张图拼到同一个 prompt 里，而是训练模型学习：</p>
+<ul>
+<li>顺序意识：知道第一张与第二张分别是什么；</li>
+<li>对照意识：能找共同点和差异点；</li>
+<li>聚合意识：能基于多图形成更高层概括。</li>
+</ul>
+<p>这使模型从“单图描述器”向“跨图理解器”迈出关键一步。</p>
+<h3 id="122-payload">12.2 Payload 构建为什么是工程挑战<a class="headerlink" href="#122-payload" title="Permanent link">&para;</a></h3>
+<p>在多图对话生成中，本地图片通常需要先编码，再按照目标 API 的要求组织成消息列表。这里常见问题包括：</p>
+<ul>
+<li>图片顺序混乱；</li>
+<li>Base64 数据格式不一致；</li>
+<li>单图接口逻辑无法直接复用到多图；</li>
+<li>请求体太大导致调用失败。</li>
+</ul>
+<p>因此，<code>interleaved.py</code> 中的 Base64 编码与 <code>image_url</code> 列表构造，虽然看起来像技术细节，实际上决定了多图样本能否稳定生成。</p>
+<h3 id="123">12.3 多图交错实现<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>代码清单P03-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">encode_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_comparison</span><span class="p">(</span><span class="n">img1_path</span><span class="p">,</span> <span class="n">img2_path</span><span class="p">):</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">prompt</span> <span class="o">=</span> <span class="s2">&quot;Here are two images. Please compare their similarities and differences.&quot;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="p">{</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>                <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">},</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span> <span class="s2">&quot;image_url&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data:image/jpeg;base64,</span><span class="si">{</span><span class="n">encode_image</span><span class="p">(</span><span class="n">img1_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}},</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span> <span class="s2">&quot;image_url&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data:image/jpeg;base64,</span><span class="si">{</span><span class="n">encode_image</span><span class="p">(</span><span class="n">img2_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}},</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="p">],</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>        <span class="p">}</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="p">]</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="k">return</span> <span class="n">messages</span>
+</code></pre></div></p>
+<p><em>代码清单P03-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="124">12.4 为什么交错样本数量通常不会太多<a class="headerlink" href="#124" title="Permanent link">&para;</a></h3>
+<p>多图样本生成成本更高、检查难度更大，而且错误影响也更复杂。因此在小规模工厂里，更合理的策略不是一开始追求海量，而是先做少量高价值样本，验证 schema、模板、调用链路和质量保障（QA）机制是否成立。</p>
+<hr />
+<h2 id="13-llava">13. LLaVA 对话模板：训练接口格式<a class="headerlink" href="#13-llava" title="Permanent link">&para;</a></h2>
+<p>很多入门项目会把多模态样本理解成“图像路径 + 一段文本”。但对于 LLaVA 风格训练，真正重要的是：</p>
+<ul>
+<li>图像如何被引用；</li>
+<li>用户与助手轮次如何组织；</li>
+<li>任务标签如何与模板配合；</li>
+<li>是否兼容下游训练代码。</li>
+</ul>
+<h3 id="131-conversation">13.1 conversation 模板解决什么问题<a class="headerlink" href="#131-conversation" title="Permanent link">&para;</a></h3>
+<p>conversation 模板的价值在于，它把不同任务统一进同一种训练接口。例如：</p>
+<ul>
+<li>用户提出描述请求；</li>
+<li>助手给出描述；</li>
+<li>用户提出局部定位请求；</li>
+<li>助手返回坐标与解释。</li>
+</ul>
+<p>这使不同任务类型虽然语义不同，但仍能共享同一种训练消费方式。</p>
+<h3 id="132">13.2 为什么要控制模板数量<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>模板越多，表面上看样本更丰富；但在小规模项目里，模板一旦过多，反而容易造成：</p>
+<ul>
+<li>语气漂移</li>
+<li>输出风格不一致</li>
+<li>QA 难度上升</li>
+<li>某些模板与图像类型不匹配</li>
+</ul>
+<p>因此，更合理的做法是：先建立少量稳定模板，再逐步做风格扩充。</p>
+<h3 id="133-llava">13.3 LLaVA 格式示例<a class="headerlink" href="#133-llava" title="Permanent link">&para;</a></h3>
+<p>代码清单P03-4 给出了 JSON 数据结构示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;p03_000128&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;image&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;images/sample_128.jpg&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;task_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;region_grounding&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">&quot;conversations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;human&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;image&gt; 请指出图中左侧那只狗的大致位置。&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;from&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gpt&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;value&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;它大致位于 [214, 103, 588, 472]。&quot;</span><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P03-4：JSON 数据结构示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这类格式的重点不是字段形式本身，而是训练与检查脚本都能稳定消费。</p>
+<hr />
+<h2 id="14-qa">14. 质量控制：多模态 QA 的结构<a class="headerlink" href="#14-qa" title="Permanent link">&para;</a></h2>
+<p>如果一个文本样本写得很流畅，很多时候它大概率至少是“语言上正常的”；但多模态样本不同，文本正常并不代表视觉事实正常。</p>
+<p>因此，多模态 QA 至少要做三类检查。</p>
+<h3 id="141">14.1 第一类：结构一致性检查<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>主要检查：</p>
+<ul>
+<li>图片路径是否存在；</li>
+<li>conversations 是否完整；</li>
+<li>bbox 格式是否正确；</li>
+<li>多图样本是否真的包含多张图；</li>
+<li>训练切分是否存在冲突。</li>
+</ul>
+<p>这一层更偏工程完整性。</p>
+<h3 id="142">14.2 第二类：语义质量检查<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>主要检查：</p>
+<ul>
+<li>回答是否与图像内容一致；</li>
+<li>描述是否出现明显幻觉；</li>
+<li>OCR 摘要是否遗漏核心文本；</li>
+<li>图表问答是否读错趋势；</li>
+<li>比较任务是否把两张图混淆。</li>
+</ul>
+<p>这一层更偏内容真实性。</p>
+<h3 id="143">14.3 第三类：可视化反查<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<p>对于 grounding 任务，文本检查远远不够，必须把坐标重新画回图像上。如果在图片上画出来的框不对，那无论文本多通顺，样本都应该被拒收。</p>
+<p>这就是为什么项目专门生成 bbox 可视化文件并做人工抽检。因为视觉对齐问题只有回到图像上才能被真正发现。</p>
+<h3 id="144">14.4 为什么要维护低质量样本库<a class="headerlink" href="#144" title="Permanent link">&para;</a></h3>
+<p>很多团队只保留“通过”的样本，而不系统记录“失败”的样本。这样做虽然省事，但会失去有价值的工程信号。</p>
+<p>多模态项目中，低质量样本库至少有三个价值：</p>
+<ul>
+<li>反向指导 prompt 调整；</li>
+<li>帮助归纳常见错误类型；</li>
+<li>为后续训练安全过滤提供经验基础。</li>
+</ul>
+<p>图P03-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-6：样本质检与回退闭环图" src="../../../images/part14/p03/Yu-Project03-Fig06.svg" /></a>
+<em>图 P03-6：样本质检与回退闭环图</em></p>
+<hr />
+<h2 id="15-bbox">15. 可视化核验：bbox 反向渲染<a class="headerlink" href="#15-bbox" title="Permanent link">&para;</a></h2>
+<p>在本项目中，<code>visualize_bbox.py</code> 的意义典型。它证明了多模态数据工厂不能只在 JSON 层检查，而必须具备“反向渲染”能力。</p>
+<h3 id="151">15.1 反向渲染在这里解决什么问题<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>它解决的是一个朴素但关键的问题：</p>
+<blockquote>
+<p>模型训练时看到的坐标，是否真的对应我们以为的那个对象？</p>
+</blockquote>
+<p>只有把归一化后的坐标还原回原始像素空间，再把框画在图上，我们才能真正确定标注是否仍然成立。</p>
+<h3 id="152">15.2 典型错误包括什么<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<ul>
+<li>ymin/xmin 顺序写反；</li>
+<li>宽高转换边界出错；</li>
+<li>多个框里抽错对象；</li>
+<li>图像尺寸读错；</li>
+<li>不同预处理阶段的图片不是同一版本。</li>
+</ul>
+<p>这些错误在表层 JSON 上往往很难看出来，但一可视化就会立刻暴露。</p>
+<h3 id="153">15.3 这一步的工程价值<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>这里最值得强调的是：</p>
+<p><strong>多模态 QA 不是额外附加项，而是数据真值的一部分。</strong></p>
+<p>如果没有可视化核验，bbox 样本是否正确其实并不可信。</p>
+<hr />
+<h2 id="16">16. 训练封装：训练接口的最终整理<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>很多项目做完样本生成后，就把一个训练文件交给下游，这在工程上其实是不完整的。因为训练前还有至少三件事必须明确：</p>
+<ul>
+<li>数据如何切分；</li>
+<li>是否支持快速 smoke test；</li>
+<li>是否有 manifest 能说明产物状态。</li>
+</ul>
+<h3 id="161-train-val-smoke">16.1 train / val / smoke 三层交付<a class="headerlink" href="#161-train-val-smoke" title="Permanent link">&para;</a></h3>
+<p>本项目最终应输出：</p>
+<ul>
+<li><code>train.jsonl</code>：正式训练集</li>
+<li><code>val.jsonl</code>：验证集</li>
+<li><code>smoke_test.jsonl</code>：快速连通性检查集</li>
+<li><code>training_manifest.json</code>：训练接口元信息</li>
+</ul>
+<p>其中 <code>smoke_test.jsonl</code> 关键。它不追求代表性，而追求能快速暴露字段缺失、图像路径错误、模板异常等问题。</p>
+<h3 id="162-manifest">16.2 为什么 manifest 很重要<a class="headerlink" href="#162-manifest" title="Permanent link">&para;</a></h3>
+<p>manifest 的意义在于让数据集从“若干 JSONL 文件”变成“一个可被系统读取和检查的正式产物”。</p>
+<p>它至少应该记录：</p>
+<ul>
+<li>样本总数</li>
+<li>各 split 数量</li>
+<li>各 task type 数量</li>
+<li>各 asset type 数量</li>
+<li>文件路径</li>
+<li>生成版本</li>
+<li>overlap 检查结果</li>
+</ul>
+<p>这会让后续训练、评估和版本更新都更稳。</p>
+<h3 id="163">16.3 训练封装本质上是在做什么<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>它本质上是在回答：</p>
+<blockquote>
+<p>这些样本不仅能被人看懂，而且能被系统稳定消费吗？</p>
+</blockquote>
+<p>只有当答案是肯定的，项目才能被称为数据工厂，而不是数据拼装。</p>
+<hr />
+<h2 id="17">17. 项目指标：当前产出指标的含义<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>当前结果显示，P03 有几组关键的指标：</p>
+<ul>
+<li>资产总数：<strong>87</strong></li>
+<li>三类资产：各 <strong>29</strong> 条</li>
+<li>基础指令：<strong>174</strong></li>
+<li>对齐样本：<strong>79</strong></li>
+<li>交错样本：<strong>14</strong></li>
+<li>最终训练记录：<strong>267</strong> 条</li>
+<li>QA 可视化样本：<strong>29</strong> 条</li>
+<li>质量通过率：<strong>100%</strong></li>
+<li>项目检查：<strong>11 / 11 PASS</strong></li>
+</ul>
+<h3 id="171-87-267">17.1 为什么“87 条资产 -&gt; 267 条训练记录”有意义<a class="headerlink" href="#171-87-267" title="Permanent link">&para;</a></h3>
+<p>因为这说明项目不是线性复制原始图片，而是通过任务派生把同一资产转成多种监督样本。也就是说，真正被建设的是“任务分发能力”，而不是简单素材堆叠。</p>
+<h3 id="172">17.2 资产类型分布说明了什么<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p>报告显示，最终训练集的资产类型分布不是简单的三等分，而是：</p>
+<ul>
+<li><code>general_image = 137</code></li>
+<li><code>document_image = 58</code></li>
+<li><code>chart_image = 58</code></li>
+<li><code>interleaved_pair = 14</code></li>
+</ul>
+<p>这说明：</p>
+<ul>
+<li>通用图像承担了更多基础描述与定位任务；</li>
+<li>文档和图表图像更多承担 specialized 任务；</li>
+<li>多图样本被刻意控制在较小规模，符合其高成本、高复杂度特点。</li>
+</ul>
+<p>表 P03-3 总结了样本类型、覆盖能力与工程价值之间的关系。</p>
+<p><em>表 P03-3：任务类型与工程价值对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>任务类型</th>
+<th>主要输入</th>
+<th>主要输出</th>
+<th>覆盖能力</th>
+<th>工程价值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_description</code></td>
+<td>通用图像</td>
+<td>场景描述</td>
+<td>整图理解</td>
+<td>建立视觉主语与场景表达能力</td>
+</tr>
+<tr>
+<td><code>counting_visual_qa</code></td>
+<td>通用图像</td>
+<td>计数或问答</td>
+<td>对象识别</td>
+<td>建立显著主体识别与数量判断</td>
+</tr>
+<tr>
+<td><code>ocr_summary</code></td>
+<td>文档图像</td>
+<td>文本摘要</td>
+<td>图文联合</td>
+<td>建立“看见字”到“读懂字”的过渡能力</td>
+</tr>
+<tr>
+<td><code>document_qa</code></td>
+<td>文档图像</td>
+<td>问题回答</td>
+<td>局部阅读</td>
+<td>建立区域理解与条件提取能力</td>
+</tr>
+<tr>
+<td><code>chart_reading</code></td>
+<td>图表图像</td>
+<td>趋势概括</td>
+<td>结构阅读</td>
+<td>建立数值关系与结构化解释能力</td>
+</tr>
+<tr>
+<td><code>region_grounding</code></td>
+<td>图像 + bbox</td>
+<td>坐标答案</td>
+<td>对象对齐</td>
+<td>建立区域级监督与定位能力</td>
+</tr>
+<tr>
+<td><code>multi_image_comparison</code></td>
+<td>多图输入</td>
+<td>对照总结</td>
+<td>跨图推理</td>
+<td>建立顺序意识、差异归纳与信息聚合能力</td>
+</tr>
+</tbody>
+</table>
+<h3 id="173-100">17.3 为什么 100% 通过率不能被过度解读<a class="headerlink" href="#173-100" title="Permanent link">&para;</a></h3>
+<p>这组数字看起来很好，但更合理的解释是：项目在受控环境下做了小规模、高约束的数据工厂验证，因此质量更容易被压住。</p>
+<p>这不是坏事，恰恰说明：在小范围里把方法验证，才是后续扩大的前提。</p>
+<p>但它也意味着，不能直接把这一结果外推到开放世界图像场景。</p>
+<h3 id="174-1111-pass">17.4 为什么 11/11 PASS 很重要<a class="headerlink" href="#174-1111-pass" title="Permanent link">&para;</a></h3>
+<p>项目检查通过，意味着代码、产物、报告和训练接口之间建立了基本一致性。这类信息比“模型输出看起来可用”更有说服力，因为它直接体现了工程闭环。</p>
+<hr />
+<h2 id="18">18. 成本分析：吞吐与审查的平衡<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>当前结果显示了两项很有代表性的成本信息：</p>
+<ul>
+<li>外部 caption 成本估算约 <strong>1.3 美元</strong></li>
+<li>人工复核成本约 <strong>267 元</strong></li>
+</ul>
+<p>这组数字不大，但已经能反映小型工厂的成本结构。</p>
+<p>表 P03-4 总结了当前项目的成本、耗时与人工投入。</p>
+<p><em>表 P03-4：项目条目与说明对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th style="text-align: right;">当前结果</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资产总数</td>
+<td style="text-align: right;">87</td>
+<td>三类资产均衡，各 29 条</td>
+</tr>
+<tr>
+<td>训练记录</td>
+<td style="text-align: right;">267</td>
+<td>多任务派生后的最终训练总量</td>
+</tr>
+<tr>
+<td>QA 可视化样本</td>
+<td style="text-align: right;">29</td>
+<td>支持 bbox 反向回查</td>
+</tr>
+<tr>
+<td>质量通过率</td>
+<td style="text-align: right;">100%</td>
+<td>受控环境下的小规模结果</td>
+</tr>
+<tr>
+<td>外部 caption 成本</td>
+<td style="text-align: right;">$1.3</td>
+<td>小型批量生成的模型成本</td>
+</tr>
+<tr>
+<td>人工复核成本</td>
+<td style="text-align: right;">267 元</td>
+<td>说明多模态 QA 不是免费步骤</td>
+</tr>
+<tr>
+<td>项目检查</td>
+<td style="text-align: right;">11 / 11 PASS</td>
+<td>代码、数据与报告闭环成立</td>
+</tr>
+</tbody>
+</table>
+<h3 id="181">18.1 为什么人工复核成本需要单独看<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<p>因为在多模态场景里，人工 QA 不是可有可无的最后一步，而是整个项目可信度的关键来源。尤其是 grounding、OCR 和图表类任务，完全不做人工抽检，风险会明显增大。</p>
+<h3 id="182-caption">18.2 为什么 caption 成本不等于总成本<a class="headerlink" href="#182-caption" title="Permanent link">&para;</a></h3>
+<p>很多团队在做多模态数据预算时，只算模型 API 成本，而忽略：</p>
+<ul>
+<li>派生资产准备成本</li>
+<li>失败重试成本</li>
+<li>可视化检查成本</li>
+<li>人工审核成本</li>
+<li>回退修改成本</li>
+</ul>
+<p>这会导致预算判断严重偏乐观。P03 的意义之一，就是说明：<strong>多模态数据工厂的瓶颈，很多时候不在生成本身，而在审查与回路。</strong></p>
+<h3 id="183">18.3 成本优化应优先优化什么<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<p>在这个阶段，更值得优化的往往不是每次调用少几分钱，而是：</p>
+<ul>
+<li>哪些样本值得做人工复核；</li>
+<li>哪些任务可以先用规则挡掉明显错误；</li>
+<li>哪些复杂任务应控制数量、提高单条价值；</li>
+<li>哪些中间产物要保留，避免重复生成。</li>
+</ul>
+<hr />
+<h2 id="19">19. 失败样本与局限：当前工厂的风险点<a class="headerlink" href="#19" title="Permanent link">&para;</a></h2>
+<p>多模态项目尤其需要把限制与失败模式单独拆开，因为小规模演示阶段的顺利运行并不等于工程稳定。</p>
+<h3 id="191">19.1 当前最明显的局限<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<p>第一，<strong>资产规模仍小</strong>。87 条资产足够讲清方法，但不足以支撑广泛泛化结论。<br />
+第二，<strong>文档与图表仍以派生资产为主</strong>，离真实业务文档、票据、复杂仪表盘还有差距。<br />
+第三，<strong>多图样本规模较小</strong>，更像功能验证，而不是充分训练。<br />
+第四，<strong>质量通过率来自受控环境</strong>，不能被误写成“开放场景天然稳定”。</p>
+<h3 id="192">19.2 典型失败样本可以如何归类<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<p>这类失败样本至少可以归纳为以下几类：</p>
+<ul>
+<li>视觉幻觉：图中不存在的对象被描述出来；</li>
+<li>OCR 漏读：关键文字没提到；</li>
+<li>图表误判：趋势或类别关系读错；</li>
+<li>grounding 偏框：坐标偏到相邻目标；</li>
+<li>多图混淆：把第一张和第二张图的信息串起来。</li>
+</ul>
+<p>图P03-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-7：失败样本归因示意图" src="../../../images/part14/p03/Yu-Project03-Fig07.svg" /></a>
+<em>图 P03-7：失败样本归因示意图</em></p>
+<p>表 P03-5 总结了典型失败样本类型与优先修复方向。</p>
+<p><em>表 P03-5：失败类型与优先修复方向对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>失败类型</th>
+<th>典型表现</th>
+<th>最可能来源</th>
+<th>优先修复方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>视觉幻觉</td>
+<td>回答写出图中不存在的对象或关系</td>
+<td>开放式生成过度发散、重描述过满</td>
+<td>收紧 prompt、增加显著对象约束</td>
+</tr>
+<tr>
+<td>OCR 漏读</td>
+<td>文档摘要遗漏关键字段或条件</td>
+<td>OCR 中间层噪声、局部区域不清晰</td>
+<td>加强中间层校验、提高抽检密度</td>
+</tr>
+<tr>
+<td>图表误判</td>
+<td>趋势、类别、数值关系读反</td>
+<td>图表任务模板不稳定、结构理解不足</td>
+<td>收紧图表模板、增加结构型示例</td>
+</tr>
+<tr>
+<td>grounding 偏框</td>
+<td>坐标落在相邻目标或框体越界</td>
+<td>bbox 转换、归一化或图片版本不一致</td>
+<td>反向画框核验、检查尺寸与 clamp</td>
+</tr>
+<tr>
+<td>多图混淆</td>
+<td>两张图的信息被串写到同一结论中</td>
+<td>顺序控制不足、payload 组织不稳</td>
+<td>加强顺序标识、控制多图样本复杂度</td>
+</tr>
+</tbody>
+</table>
+<p>把这类失败样本汇总成“失败归因表”后，就能直接支撑下一轮模板收缩、QA 改写和抽检策略调整。</p>
+<h3 id="193">19.3 为什么失败归因需要细化到错误类型<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>因为“有噪声”太泛，无法指导下一轮迭代。只有写成错误类型，才能真正支持：</p>
+<ul>
+<li>prompt 调整</li>
+<li>模板收缩</li>
+<li>QA 规则改进</li>
+<li>任务边界重划</li>
+</ul>
+<hr />
+<h2 id="20">20. 项目检查：一致性验证闭环<a class="headerlink" href="#20" title="Permanent link">&para;</a></h2>
+<p>P03 当前共有 <strong>11 项检查</strong>，并全部通过。</p>
+<h3 id="201">20.1 为什么要做项目检查<a class="headerlink" href="#201" title="Permanent link">&para;</a></h3>
+<p>如果一个多模态数据项目只有图片和 JSON 文件，没有检查机制，那么它是否正确其实并不清楚。因为错误可能来自很多地方：</p>
+<ul>
+<li>文件存在但字段不对；</li>
+<li>多图样本格式正确但只含一张图；</li>
+<li>bbox 有值但不在合法范围；</li>
+<li>train/val 切分泄漏；</li>
+<li>报告数字和训练文件数量不一致。</li>
+</ul>
+<h3 id="202">20.2 本项目检查覆盖了什么<a class="headerlink" href="#202" title="Permanent link">&para;</a></h3>
+<p>当前检查覆盖了：</p>
+<ul>
+<li>命令级检查：<code>py_compile</code>、<code>evaluate_factory</code></li>
+<li>数据/产物级检查：必需文件存在、资产类型覆盖、对齐样本含 bbox、多图样本确为多图、train/val 无 overlap、smoke 覆盖多个任务等</li>
+</ul>
+<h3 id="203">20.3 为什么这一步是工程完整性的体现<a class="headerlink" href="#203" title="Permanent link">&para;</a></h3>
+<p>因为它意味着项目不是“肉眼觉得差不多”，而是在代码、数据、训练接口和报告之间形成了一个一致性闭环。</p>
+<p>从工程复用角度看，这类闭环信息往往比单个示例更有迁移价值。</p>
+<p>图P03-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p03/Yu-Project03-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P03-8：项目验证闭环图" src="../../../images/part14/p03/Yu-Project03-Fig08.svg" /></a>
+<em>图 P03-8：项目验证闭环图</em></p>
+<hr />
+<h2 id="21_1">21. 与项目二的呼应：跨项目一致的方法骨架<a class="headerlink" href="#21_1" title="Permanent link">&para;</a></h2>
+<p>虽然 P02 是法律文本工厂，P03 是多模态工厂，但两者在数据工程方法上有很强呼应关系。</p>
+<h3 id="211">21.1 一致点一：都强调“种子层”<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>P02 先建法规种子文本，P03 先建多模态资产池。本质上都不是直接生成监督，而是先构建可靠输入层。</p>
+<h3 id="212">21.2 一致点二：都强调任务拆分<a class="headerlink" href="#212" title="Permanent link">&para;</a></h3>
+<p>P02 把法律任务拆成 legal QA、法条解释和案情分析；P03 则把多模态任务拆成描述、OCR、图表、grounding 和多图比较。两者都说明：</p>
+<blockquote>
+<p>好的数据工厂，核心不是多做样本，而是把不同能力拆开生产。</p>
+</blockquote>
+<h3 id="213-qa">21.3 一致点三：都强调 QA 前置<a class="headerlink" href="#213-qa" title="Permanent link">&para;</a></h3>
+<p>P02 的重点是审核协议与风险拒答，P03 的重点是可视化反查与失败样本库。虽然具体形式不同，但都在强调：<strong>质量控制必须进入生产线，而不是留到训练后。</strong></p>
+<h3 id="214">21.4 一致点四：都强调训练交付层<a class="headerlink" href="#214" title="Permanent link">&para;</a></h3>
+<p>两章最后都不是停在“样本生成完了”，而是继续下探到训练切分、manifest、报告、检查脚本与交付物。</p>
+<p>从整体结构看，P03 与 P02 保持了相似的工程展开顺序：</p>
+<ul>
+<li>先讲为什么；</li>
+<li>再讲边界；</li>
+<li>再讲分层架构；</li>
+<li>再讲 step-by-step；</li>
+<li>最后讲结果、成本、局限与迁移。</li>
+</ul>
+<hr />
+<h2 id="22-agent">22. 后续扩展：走向更真实的多模态 Agent 场景<a class="headerlink" href="#22-agent" title="Permanent link">&para;</a></h2>
+<p>P03 的价值，不在于它已经把多模态数据做到了很大，而在于它搭出了一个可扩展的最小工厂。</p>
+<p>下一步如果继续扩展，可以优先沿以下几个方向推进。</p>
+<h3 id="221">22.1 从单图走向多页文档<a class="headerlink" href="#221" title="Permanent link">&para;</a></h3>
+<p>把文档图像从单页截图扩展到多页 PDF、长截图、表单与票据组合，才能进一步测试长上下文图文理解能力。</p>
+<h3 id="222">22.2 从静态图表走向复杂结构图<a class="headerlink" href="#222" title="Permanent link">&para;</a></h3>
+<p>把当前图表任务扩展到真实 BI 面板、混合图表、仪表盘和多图联动，会更接近企业分析场景。</p>
+<h3 id="223-agent">22.3 从多图比较走向任务型 Agent 输入<a class="headerlink" href="#223-agent" title="Permanent link">&para;</a></h3>
+<p>例如把网页截图、表格截图、说明文档和操作界面放到同一个样本中，让模型学习“读图—比对—执行建议”这类更贴近 Agent 的能力。</p>
+<h3 id="224-qa">22.4 从受控 QA 走向半自动评审面板<a class="headerlink" href="#224-qa" title="Permanent link">&para;</a></h3>
+<p>随着样本规模扩大，纯人工抽检会很快成为瓶颈。下一步更合理的方向，是建设更系统的多模态质检面板、错误标签体系和分层抽样策略。</p>
+<hr />
+<h2 id="23_1">23. 主要交付物清单<a class="headerlink" href="#23_1" title="Permanent link">&para;</a></h2>
+<h3 id="231">23.1 中间数据产物<a class="headerlink" href="#231" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/asset_manifest.jsonl</code></li>
+<li><code>data/processed/asset_collection_summary.json</code></li>
+<li><code>data/processed/llava_instruct.jsonl</code></li>
+<li><code>data/processed/llava_alignment.jsonl</code></li>
+<li><code>data/processed/llava_interleaved.jsonl</code></li>
+<li><code>data/processed/quality_audit.jsonl</code></li>
+<li><code>data/processed/low_quality_flags.jsonl</code></li>
+<li><code>data/processed/manual_review_samples.jsonl</code></li>
+<li><code>data/processed/qa_visual_audit.jsonl</code></li>
+</ul>
+<h3 id="232">23.2 训练数据产物<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/training/final_llava_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<h3 id="233">23.3 报告与检查产物<a class="headerlink" href="#233" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/reports/p3_metrics.json</code></li>
+<li><code>data/reports/p3_report.md</code></li>
+<li><code>data/reports/p3_test_results.json</code></li>
+<li><code>data/reports/p3_test_report.md</code></li>
+</ul>
+<p>表 P03-6 总结了本项目交付物的类别与作用。</p>
+<p><em>表 P03-6：类别与作用对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>代表文件</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资产与中间层</td>
+<td><code>asset_manifest.jsonl</code>、<code>llava_alignment.jsonl</code>、<code>llava_interleaved.jsonl</code></td>
+<td>记录资产来源、任务派生与中间样本状态</td>
+</tr>
+<tr>
+<td>质检与审核层</td>
+<td><code>quality_audit.jsonl</code>、<code>low_quality_flags.jsonl</code>、<code>qa_visual_audit.jsonl</code></td>
+<td>沉淀规则检查、低质量样本与可视化复核结果</td>
+</tr>
+<tr>
+<td>训练交付层</td>
+<td><code>final_llava_dataset.jsonl</code>、<code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code>、<code>training_manifest.json</code></td>
+<td>提供训练、验证与连通性检查入口</td>
+</tr>
+<tr>
+<td>报告与验证层</td>
+<td><code>p3_metrics.json</code>、<code>p3_report.md</code>、<code>p3_test_results.json</code>、<code>p3_test_report.md</code></td>
+<td>记录指标、结论与项目级检查结果</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="24">24. 结语<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
+<p>对于多模态训练来说，真正难做的往往不是“让模型看到图片”，而是<strong>让图片、文字、区域和任务关系一起变成可信的监督数据</strong>。</p>
+<p>P03 这个案例的价值，不在于样本规模已经很大，而在于它把多模态数据工程中最关键的几个问题浓缩进了一条可以复现的小型流水线：</p>
+<ul>
+<li>先建设资产层，而不是直接生成；</li>
+<li>再按任务谱系拆分监督，而不是只有 caption；</li>
+<li>对 grounding 做严格对齐，而不是坐标随便转；</li>
+<li>对样本做可视化抽检，而不是只看文本通顺；</li>
+<li>最后交付训练切分、manifest、报告与检查闭环，而不是只留下一份 JSON 文件。</li>
+</ul>
+<p>这个案例最重要的启发是：</p>
+<blockquote>
+<p>多模态数据工厂，不是图片越多越好，而是要把“资产、任务、质量、交付”四层一起设计出来。</p>
+</blockquote>
+<p>只有当这些层被一起设计并串成闭环时，多模态项目才真正从演示样例变成了可扩展的工程系统。</p>
+<hr />
+<h2 id="_11">专题：多模态标注的抽检与错误回放<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>LLaVA 类数据工厂还有一个需要重点关注、但经常被轻描淡写的部分，就是抽检与错误回放。因为多模态样本的错误往往并不体现在一句文本里，而是体现在图像、框、文本和任务关系的错位上。如果没有稳定的抽检和 replay 机制，团队很容易在样本量增加的同时失去对质量的直觉。</p>
+<h3 id="_12">一、抽检要优先看“关系对不对”<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>与纯文本数据不同，多模态样本最值得优先检查的不是句子是否通顺，而是关系是否成立。例如：</p>
+<ul>
+<li>框选区域是否真的对应描述对象；</li>
+<li>问答是否真的依赖该图像，而不是纯常识就能答；</li>
+<li>多图比较任务是否真的比较了不同图片中的信息；</li>
+<li>interleaved 样本里的图文顺序是否支持当前任务。</li>
+</ul>
+<p>这些关系一旦错位，哪怕文本本身写得很顺，样本仍然会变成低价值监督信号。</p>
+<h3 id="_13">二、错误回放应成为数据工厂的固定资产<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>P03 这类项目特别适合把高频错误沉淀为 replay 集。比如：</p>
+<ul>
+<li>框坐标映射正确但语义对象错了；</li>
+<li>图表读到了标题，却没有读到关键趋势；</li>
+<li>多图样本里模型被相似背景误导；</li>
+<li>文档截图里的正文、批注和表格关系被打散。</li>
+</ul>
+<p>把这些问题固定为 replay 样本后，团队就能在每次迭代时快速验证“这类错有没有真正变少”。对多模态数据工厂来说，replay 集往往比一次性大规模抽检更能支撑长期质量改进。</p>
+<h2 id="_14">本章小结<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>本章以“LLaVA 多模态指令数据工厂”为案例，展示了构建图文指令、OCR、图表和文档理解样本的多模态训练资产的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以可授权图像和受控任务模板为基础，不追求覆盖所有视觉问答类型。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_15">参考文献<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning. NeurIPS 2023. https://doi.org/10.52202/075280-1516.</p>
+<p>Lin T-Y, Maire M, Belongie S, Hays J, Perona P, Ramanan D, Dollár P, Zitnick C L (2014) Microsoft COCO: Common Objects in Context. ECCV 2014. https://doi.org/10.1007/978-3-319-10602-1_48.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, et al. (2021) Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.</p>
+<p>Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. WACV 2021. https://doi.org/10.1109/wacv48630.2021.00225.</p>
+<p>Masry A, Long D X, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022. https://doi.org/10.18653/v1/2022.findings-acl.177.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

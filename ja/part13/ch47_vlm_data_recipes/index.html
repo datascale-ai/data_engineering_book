@@ -1,0 +1,934 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part13/ch47_vlm_data_recipes/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第47章：视觉语言配方：Qwen-VL 与 InternVL - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#47qwen-vl-internvl" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第47章：视觉语言配方：Qwen-VL 与 InternVL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part13/ch47_vlm_data_recipes/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part13/ch47_vlm_data_recipes/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例分析：视觉语言模型（VLM）复现中的数据配方瓶颈
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#471-vlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.1 VLM 数据三阶段流水线
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#472-vlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.2 主流 VLM 数据组成横向对比
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#473-native-resolution-vs-dynamic-hi-res" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.3 关键技术差异：Native Resolution vs Dynamic Hi-Res
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#474" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.4 多模态指令数据合成
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#475-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.5 长视频 / 文档 / OCR 数据特化处理
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#476" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.6 核心案例拆解
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="47.6 核心案例拆解">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-ainternvl3-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A：InternVL3 的全开源 SFT 数据复现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-blaion-llava-recap-558k" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B：LAION 提纯与 LLaVA-Recap-558K
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-cqwen25-vl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case C：Qwen2.5-VL 长视频数据配方的工程推断
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#477" class="md-nav__link">
+    <span class="md-ellipsis">
+      47.7 实施风险、成本与适用边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="47qwen-vl-internvl">第47章：视觉语言配方：Qwen-VL 与 InternVL<a class="headerlink" href="#47qwen-vl-internvl" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">曹旭宏；王柯；刘青松</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>在视觉语言模型（vision-language model，VLM）的架构创新逐渐收敛的背景下，数据配方的精细程度已成为头部模型与跟随者之间的主要分界。本章以"配方"视角，系统拆解 Qwen2.5-VL、InternVL3、LLaVA-OneVision 与 MiniCPM-V 等主流 VLM 的数据工程实践。内容首先建立预训练、多任务高分辨率对齐与监督微调（supervised fine-tuning，SFT）三阶段流水线，说明各阶段在数据规模、质量要求与冻结策略上的数量级差异；继而横向对照各模型在预训练图文对、交错图文文档、富光学字符识别信息（optical-character-recognition-rich，OCR-Rich）数据、视觉定位（Grounding）与视频数据上的配比，归纳重描述（Re-captioning）优先、OCR 数据安全阈值、视频数据从可选转为必选等关键趋势；随后剖析动态高分切片（Dynamic Hi-Res）与原生分辨率（Native Resolution）两派在 Token 长度管控与分桶（Bucketing）上的数据工程分歧，以及对比式图文预训练（Contrastive Language-Image Pretraining，CLIP）打分过滤与强 VLM 重标注的质量提升机制。本章强调，从原始 alt-text 到可执行视觉监督信号的转化，是现代 VLM 数据配方可复现性的核心环节。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>VLM 数据配方；视觉语言模型；重描述；高分辨率训练；OCR-Rich 数据；多模态 SFT</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够设计 VLM 预训练、多任务高分辨率对齐与监督微调三阶段流水线，并说明各阶段在数据规模、质量要求与冻结策略上的差异。</li>
+<li>能够对比 Qwen2.5-VL、InternVL3、LLaVA-OneVision 与 MiniCPM-V 在图文对、交错文档、OCR-Rich、视觉定位与视频数据上的配比。</li>
+<li>能够区分动态高分切片与原生分辨率两派在 Token 长度管控与分桶上的数据工程分歧。</li>
+<li>能够设计 CLIP 打分过滤与强 VLM 重标注相结合的图文质量提升机制，并设定 OCR 数据安全阈值。</li>
+<li>能够解释从原始 alt-text 到可执行视觉监督信号的转化为何是 VLM 数据配方可复现性的核心环节。</li>
+</ul>
+<h2 id="vlm">案例分析：视觉语言模型（VLM）复现中的数据配方瓶颈<a class="headerlink" href="#vlm" title="Permanent link">&para;</a></h2>
+<p>在视觉语言模型（VLM）的工业级复现实践中，研究人员常观察到一种典型的性能瓶颈现象：即使采用与当前先进模型（如 Qwen2.5-VL）相同规格的视觉编码器，并接入同等参数规模的大语言模型（LLM）基座，严格遵循经典的早期两阶段训练方案（例如 LLaVA-1.5 的训练管线：在 Stage-1 使用 LAION-CC-SBU 的 558K 图文对进行视觉对齐预训练，在 Stage-2 使用 LLaVA-Instruct-150K 进行全参数微调），其在 MMMU 与 DocVQA 等复杂多模态基准测试中的得分，往往显著低于预期，差距甚至可达 10 到 15 个百分点。尽管这类模型在初步的人工测试中表现出流畅的对话与基本的指令遵循能力，但在高难度认知任务上的表现却大幅落后。</p>
+<p>深入的工程分析表明，此类性能差距的根源主要并非来自模型架构，而是由于早期公开方案在数据工程维度上的局限性。具体而言，性能瓶颈可归结为以下四个被忽视的数据工程维度：</p>
+<ul>
+<li><strong>数据质量劣化（Data Quality Degradation）</strong>：原始网络抓取的 alt-text（如 LAION 数据集）图文相关性通常较低，其 CLIP 余弦相似度中位数仅为 0.26 左右。相比之下，先进模型通常采用强模型（如 GPT-4V）重标注的数据，其图文相关性可达 0.61 以上。低质量的文字描述会导致模型在预训练阶段建立错误的跨模态对齐关系。</li>
+<li><strong>分辨率降采样信息丢失（Resolution Downsampling Loss）</strong>：传统的固定分辨率预处理（如 Resize 至 336×336），会导致财报 PDF、教科书插图等图像中的细粒度文字信息严重丢失，从而直接削弱模型的文档问答（DocVQA）能力。</li>
+<li><strong>数据类型覆盖缺失（Data Type Coverage Deficiency）</strong>：早期的指令微调数据集（如 LLaVA-Instruct-150K）缺乏富含光学字符识别信息（OCR-Rich）、图表问答（ChartQA）以及带有边界框坐标的视觉定位（Grounding）类型指令。这种分布缺陷致使模型在文档理解和精确定位任务上缺乏泛化能力。</li>
+<li><strong>缺乏阶段性课程式调度（Lack of Curriculum Scheduling）</strong>：在传统方案中，所有数据在各阶段均采用均匀混合采样。然而，现代先进 VLM 在训练中往往采用动态采样策略，对高信息密度数据（如视觉数学推理）进行后期上采样，并在预训练末期引入退火式的高质量数据窗口。缺乏阶段隔离的混合采样会显著降低高阶能力的收敛效率。</li>
+</ul>
+<p>此案例揭示了当前 VLM 工程研发的核心命题：<strong>数据配方的精细程度直接决定了模型能力的上限</strong>。在架构创新逐渐趋同的背景下，数据工程层面的精细化控制已成为拉开模型性能差距的关键因素。在多模态技术快速迭代的周期中，构建更精细、更严格的多模态数据工程配方，远比单一的模型架构微调更为关键。</p>
+<blockquote>
+<p><strong>前置知识与合规边界提示</strong>：
+本章专注于探讨针对具体 VLM 特化的“数据配方”与 Curriculum 调度差异。关于基础的图文对抓取、MinHash 去重流水线、基础 OCR 抽取，以及跨模态对齐的通用预处理（如 Resize/CenterCrop 等图像处理流），已经在 <strong>Ch08（图文对）</strong>、<strong>Ch09（重标注与文档理解）</strong>、<strong>Ch10（视频与音频）</strong> 与 <strong>Ch11（跨模态对齐）</strong> 中做了详尽铺垫。对于底层通用流水线，可先复习图47-1 的多模态数据工程全景。此外，任何涉及图像爬虫版权的溯源风险，请直接参阅 <strong>Ch04 §4.4</strong> 与 <strong>Ch27（数据合规）</strong>。本章只讲“配方”，不重复“造轮子”。</p>
+</blockquote>
+<p><a class="glightbox" href="../../../images/part13/Cao-Chap47-Fig01.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图47-1：多模态数据工程全景图" src="../../../images/part13/Cao-Chap47-Fig01.png" /></a></p>
+<p><em>图47-1：多模态数据工程全景图</em></p>
+<hr />
+<h2 id="471-vlm">47.1 VLM 数据三阶段流水线<a class="headerlink" href="#471-vlm" title="Permanent link">&para;</a></h2>
+<p>如果我们去剖析 Qwen2.5-VL 或 InternVL3 的技术报告，会发现当今的 VLM 数据配方已经形成了高度标准化的"三阶段流水线"（如图47-2 所示）。仅仅是预训练阶段，其目标就已经从单纯的"概念绑定"演化为深度的"视觉特征结构化"。每个阶段对数据的质量要求、类型分布与规模体量均存在数量级上的差异，盲目混用三个阶段的数据是大量团队配方失败的首要根源。</p>
+<p><a class="glightbox" href="../../../images/part13/Cao-Chap47-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图47-2：VLM 数据三阶段流水线 (3-Stage VLM Data Engineering Pipeline)" src="../../../images/part13/Cao-Chap47-Fig02-EN.svg" /></a></p>
+<p><em>图47-2：VLM 数据三阶段流水线</em></p>
+<p><strong>阶段一：预训练（Pre-training / Feature Alignment）</strong></p>
+<p>此阶段的核心目标是<strong>视觉概念与文本词汇的粗粒度对齐</strong>。数据规模通常在数亿至数十亿图文对（Image-Text Pairs）量级，主要来源包括经过对比式图文预训练（CLIP）强过滤的 LAION 子集 (Schuhmann et al. 2022)、DataComp-1B (Gadre et al. 2023)、COYO-700M，以及近两年兴起的 Re-captioning 数据（如 ShareGPT4V-1.2M、LLaVA-Recap-558K）。</p>
+<p>在这一阶段，头部模型的工程要点有三：其一，<strong>冻结 LLM，只训练视觉编码器和投影层（Projector）</strong>，以防止 LLM 在低质量图文噪声下发生灾难性遗忘（Catastrophic Forgetting）；其二，<strong>引入 CLIP-Score 过滤阈值</strong>（通常 ≥ 0.28），剔除图文相关性极低的噪声图文对——这一步可去除原始 LAION-5B 中高达 70% 的低质样本；其三，<strong>Re-captioning 优先于原始 alt-text</strong>——InternVL3 的消融实验表明，将 558K 原始 LAION 数据的 alt-text 替换为强 VLM 重写的详细描述后，Stage-1 的视觉对齐精度提升了约 7 个 MMMU 百分点 [D] (Chen et al. 2023)。</p>
+<p><strong>阶段二：多任务与高分辨率对齐（Multi-task &amp; Hi-Res Alignment）</strong></p>
+<p>这是新一代 VLM 能够读懂发票、财报和复杂论文图表的关键能力。数据规模通常在数千万样本量级，但对类型多样性与格式正确性的要求成倍增加。此阶段引入的关键数据类型包括：高分辨率 OCR 数据（PDF 截图 + 文字坐标标注）、文档视觉问答（DocVQA）、InfoVQA、TextVQA、视觉定位数据（Grounding，含 BBox 坐标）、交错图文网页（Interleaved Web Data），以及图表问答（ChartQA）、PlotQA、FigureQA。</p>
+<p>此阶段的核心工程挑战是<strong>分辨率适配与 Token 长度管控</strong>。当 OCR 图像分辨率从 336×336 提升至 1344×1344 时，单张图像产生的 Vision Token 数量从约 256 个暴涨至约 4096 个，导致 Batch Size 必须相应缩减至原来的 1/16 才能维持显存不溢出。InternVL3 (Chen et al. 2024) 采用了动态分辨率分桶（Dynamic Resolution Bucketing）策略，将所有训练图像按照宽高比和面积聚类到约 40 个预定义分辨率桶中，每个 Batch 只混合同桶内的样本，有效减少了 Padding 浪费，整体 GPU 利用率提升约 23% [D]。模型在此阶段开始解冻（Unfreeze），但多数团队仍会保留 LLM 部分层的冻结，以防止在极端 OCR 数据分布下引发基础语言能力退化（Regression）。</p>
+<p><strong>阶段三：监督微调与对齐（SFT）</strong></p>
+<p>这一阶段数据量剧减至百万甚至十万级别，核心目标是让模型学会"人类对话的调性"。数据来源包括：复杂逻辑推理题（Visual CoT）、视觉数学题解析（MathVista (Lu et al. 2023)、GeoQA、MathV360K）、GPT-4V 合成对话蒸馏、多轮交互对话，以及人类偏好反馈（RLHF/DPO）。</p>
+<p>SFT 阶段对数据质量的要求达到三个阶段之最。Qwen2.5-VL 的技术报告披露 [D]，其 SFT 数据混合中，经人工审核的高质量样本占比超过 30%，LLM-as-Judge 自动评分低于 4.0/5.0 的样本会被直接丢弃。与此同时，InternVL3 的 SFT 数据集（约 1.2M 全开源）中，纯自然场景图文对已降至不足 10%，而 OCR-Rich、Grounding、Chart 等高密度类型合计超过 60% [D]——这个比例在三年前几乎是不可想象的。由于高质量数据极度稀缺，<strong>合成（Synthesis）成为了该阶段的主旋律</strong>，也是 §47.4 重点拆解的核心议题。</p>
+<hr />
+<h2 id="472-vlm">47.2 主流 VLM 数据组成横向对比<a class="headerlink" href="#472-vlm" title="Permanent link">&para;</a></h2>
+<p>与纯文本基座模型类似，多模态模型之间的数据壁垒同样极高。表47-1 展示了基于当前最新技术报告（截至 2026 年 4 月）和开源社区推断得出的头部 VLM 数据配方对比。这不仅仅是数字的堆砌，而是各家对于"到底什么是视觉智能"在工程信仰上的不同折射。</p>
+<p><em>(注：表中标注约定：[D] = 报告明确披露；[I] = 推断；[E] = 估算。)</em></p>
+<p><em>表 47-1：主流 VLM 数据组成横向对比 (4 行 × 8 列)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模型系</th>
+<th style="text-align: left;">预训练图文对规模</th>
+<th style="text-align: left;">预训练清洗策略</th>
+<th style="text-align: left;">Interleaved 文档占比</th>
+<th style="text-align: left;">SFT 多模态指令量</th>
+<th style="text-align: left;">视频数据规模</th>
+<th style="text-align: left;">OCR/Doc特化</th>
+<th style="text-align: left;">高清分辨率支持度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Qwen2.5-VL</strong></td>
+<td style="text-align: left;">~2B+ Pairs [I]</td>
+<td style="text-align: left;">自研图像过滤+重写</td>
+<td style="text-align: left;">极高 (~30%) [I]</td>
+<td style="text-align: left;">~5M+ [E]</td>
+<td style="text-align: left;">极高, 变长片段 [D]</td>
+<td style="text-align: left;">强，多语言OCR</td>
+<td style="text-align: left;">Native Resolution</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>InternVL 3</strong></td>
+<td style="text-align: left;">~1.2B Pairs [D]</td>
+<td style="text-align: left;">全面重标 (ShareGPT4V) (Chen et al. 2023)</td>
+<td style="text-align: left;">较高 (~20%) [I]</td>
+<td style="text-align: left;">~1.2M (全开源) [D]</td>
+<td style="text-align: left;">中，关键帧抽取</td>
+<td style="text-align: left;">极强，中英双语</td>
+<td style="text-align: left;">Dynamic Hi-Res</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>LLaVA-OneVision</strong></td>
+<td style="text-align: left;">~1B Pairs [D]</td>
+<td style="text-align: left;">依赖现成优质开源库</td>
+<td style="text-align: left;">中等 (~15%) [E]</td>
+<td style="text-align: left;">~1M (单/多/视) [D]</td>
+<td style="text-align: left;">中，AnyRes-Video</td>
+<td style="text-align: left;">中等</td>
+<td style="text-align: left;">AnyRes Patching</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MiniCPM-V</strong></td>
+<td style="text-align: left;">~500M Pairs [E]</td>
+<td style="text-align: left;">端侧特化，高要求提纯</td>
+<td style="text-align: left;">较高 (偏排版) [I]</td>
+<td style="text-align: left;">~800K [E]</td>
+<td style="text-align: left;">弱 (偏图文交互)</td>
+<td style="text-align: left;">强，端侧优化</td>
+<td style="text-align: left;">Adaptive 切片</td>
+</tr>
+</tbody>
+</table>
+<p>从上表中，工程师必须读懂以下<strong>五条底层趋势</strong>，才能避免在数据配方上重蹈覆辙：</p>
+<p><strong>趋势一：垃圾进，垃圾出（GIGO）在视觉领域更高风险</strong></p>
+<p>Qwen 和 InternVL 已经不再信任原始爬网图文对的文本部分。他们动用了数以万计的 GPU 小时，利用上一代强模型对几十亿张图片进行了重新看图说话（Re-captioning），这带来的性能提升远超增加百亿参数。LLaVA-OneVision (Li et al. 2024) 的论文明确指出 [D]，在预训练阶段使用 GPT-4V 重写后的 Caption 替换原始 alt-text，MMMU 提升了 4.2 个点，而增加 50% 数据量仅提升了 1.1 个点。数据质量的杠杆效应，在视觉领域被放大了数倍。</p>
+<p><strong>趋势二：交错数据是图文推理的桥梁</strong></p>
+<p>让模型看懂一张图和一句话是基础，但让模型看懂"网页排版中图文交错的逻辑"才是进阶。交错文档数据（如 MMC4 (Zhu et al. 2023)、OBELICS (Laurençon et al. 2023)）的占比，直接决定了模型在 In-context Learning 和长文档推理中的表现。Qwen2.5-VL 在 Interleaved Web Data 上的投入显著高于同期竞品 [I]，这是其在 MMMU-Pro 等复杂多图推理任务上领先的关键数据侧原因之一。</p>
+<p><strong>趋势三：OCR 与 Grounding 数据的"硬性门槛"效应</strong></p>
+<p>并非所有 OCR 数据都能线性提升文档理解能力。当 OCR-Rich 数据占 SFT 总量的比例低于 15% 时，模型的细粒度文本阅读能力会呈现断崖式退化；当该比例超过 25% 时，收益趋于平缓但不会反弹 [E]。这意味着 OCR 数据存在一个"工程安全阈值"——低于它会严重拖累文档能力，高于它仅有边际收益。InternVL3 将 OCR-Rich 类数据维持在 SFT 总量的约 30% [D]，正是精确卡在了这一阈值之上。</p>
+<p><strong>趋势四：视频数据正在从"可选项"变为"必选项"</strong></p>
+<p>在 LLaVA-1.5 时代，视频数据只是少数团队才会涉足的"豪华配置"。但随着 Qwen2.5-VL 和 InternVL3 开始原生支持长视频理解，<strong>视频数据是否充足已经成为影响综合能力排名的关键因素</strong>。Qwen2.5-VL 的视频理解能力在 Video-MME、MVBench 等榜单上的领先，相当程度上来自其预训练阶段引入的大规模变长视频片段数据 [D]，而非单纯的架构改进。</p>
+<p><strong>趋势五：MiniCPM-V 的"端侧数据精炼"哲学</strong></p>
+<p>MiniCPM-V 提供了一个截然不同的数据配方范式：在总体规模受限的条件下，以高要求的数据质量打磨替代规模扩张。其 SFT 数据中，每条样本都经过"多模型投票+人工二次审核"的双重过滤 [I]，平均每条样本的构建成本是普通合成流水线的 5 倍以上。结果是：使用不足 1/5 的数据规模，在端侧部署的典型场景（文档截图识别、多语言 OCR）上取得了接近甚至超越参数量更大模型的表现。这说明，对于特定场景的垂直优化，精炼数据的价值密度完全可以超越规模堆叠。</p>
+<hr />
+<h2 id="473-native-resolution-vs-dynamic-hi-res">47.3 关键技术差异：Native Resolution vs Dynamic Hi-Res<a class="headerlink" href="#473-native-resolution-vs-dynamic-hi-res" title="Permanent link">&para;</a></h2>
+<p>多模态领域存在一个长期的工程痛点：高分辨率（High-Resolution）图像带来的 Token 爆炸。如果强制把图片统一 Resize 到 224×224，模型就变成了"近视眼"，永远无法读懂密集排列的发票和数学公式。为了解决这个问题，数据管线中演化出了两派截然不同的处理哲学，它们在数据预处理阶段就已经产生了本质分歧。</p>
+<p>图47-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part13/Cao-Chap47-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图47-3：Native vs Dynamic Resolution 数据 pipeline 对比 (Resolution Handling)" src="../../../images/part13/Cao-Chap47-Fig03-EN.svg" /></a></p>
+<p><em>图47-3：原生分辨率与动态分辨率对比</em></p>
+<p><strong>派系一：动态高分切片（Dynamic Hi-Res Patching / AnyRes）</strong></p>
+<p>以 InternVL 和 LLaVA 系列为代表。在数据输入预处理阶段，系统保持视觉编码器（如 CLIP-ViT）的输入分辨率（如 448×448）不变。对于一张 1000×2000 的长图，数据引擎会在不破坏宽高比的情况下，将其动态切割（Crop）成多个 448×448 的 Patch 子图，并额外生成一张低分辨率的全局缩略图（Thumbnail）。</p>
+<p>在语言模型端，它看到的是一段特殊的序列：<code>[Global Thumbnail Token] [Patch 1] [Patch 2] ... [Patch N]</code>。这种做法在工程上极其讨巧：可以直接复用现有的强力开源视觉编码器（如 CLIP-ViT-L/14@336），无需改造任何算子，训练框架完全兼容。数据预处理脚本极简，一张图片的切片操作仅需约 2ms。但代价是：切片边界处的语义会发生断裂，模型在处理跨切片的超大表格、连续数学公式和横排 PDF 时，容易出现跨 Patch 的幻觉（Hallucination）。InternVL3 的技术报告中坦承，在 DocVQA (Mathew et al. 2021) 的"跨页表格"类题目上，Dynamic Hi-Res 方案的错误率比 Native Resolution 高出约 8% [D]。</p>
+<p><strong>派系二：原生分辨率（Native Resolution / M-RoPE）</strong></p>
+<p>以 Qwen2-VL 和 Qwen2.5-VL 为代表。他们摒弃了僵硬的切块逻辑，在数据加载阶段，允许图像以原生分辨率和原生宽高比直接输入。通过引入 M-RoPE（多模态旋转位置编码）(Wang et al. 2024)，将传统的 1D 位置编码扩展为 2D（图像的 x/y 坐标），甚至 3D（针对视频的时间维度 t）。在数据整理时，只需要将图像的实际宽、高 Token 数量动态反馈给 Attention 计算流，无需 Padding 填充。</p>
+<p>这种配方保留了最完整的全局和局部信息，彻底消除了 Patch 边界的语义断裂，是精度最高的方案。但其数据工程复杂度也是最高的：训练数据需要按图像的 Token 数量（而非图像数量）进行精确的分桶（Bucketing）和拼接（Packing），以防止每个 Batch 内出现极端的长度方差导致 OOM。Qwen2.5-VL 为此专门设计了"token-aware"的数据打包器，将每个 Batch 的总 Vision Token 数量控制在一个固定区间内，牺牲了约 15% 的训练吞吐率，换来了 OOM 率接近于零 [I]。</p>
+<p>表47-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 47-2：原生分辨率与动态高分辨率数据处理差异 (2 行 × 6 列)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">解决流派</th>
+<th style="text-align: left;">代表模型</th>
+<th style="text-align: left;">图像数据预处理动作</th>
+<th style="text-align: left;">视觉编码器改造</th>
+<th style="text-align: left;">LLM 端 Token 序列特征</th>
+<th style="text-align: left;">优劣势评估</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Native Res.</strong></td>
+<td style="text-align: left;">Qwen2.5-VL</td>
+<td style="text-align: left;">保持原图，按 Patch Size 动态展开</td>
+<td style="text-align: left;">移除固定 Pos Embedding</td>
+<td style="text-align: left;">二维绝对坐标映射 (M-RoPE)</td>
+<td style="text-align: left;">精度最高，无边界断裂 / 工程难度极大，内存易碎片化</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Dynamic Patching</strong></td>
+<td style="text-align: left;">InternVL3 / LLaVA</td>
+<td style="text-align: left;">保持长宽比，动态等距裁剪 (Crop)</td>
+<td style="text-align: left;">无需改造，完全冻结可用</td>
+<td style="text-align: left;"><code>&lt;global&gt; &lt;patch1&gt; &lt;patch2&gt;</code> 线性拼接</td>
+<td style="text-align: left;">工程简单，兼容开源栈 / 存在拼接缝隙，增加冗余计算</td>
+</tr>
+</tbody>
+</table>
+<p><strong>工程选型建议</strong>：对于中小团队或资源受限场景，Dynamic Hi-Res Patching 是工程上更合理的起点，其拼接缝隙问题可通过增加 Overlap Crop（约 30% 重叠区域）得到部分缓解；若目标是在 DocVQA、OCRBench 等文档理解榜单上冲击 SOTA，且有充足的工程算力储备，Native Resolution 是值得付出工程代价的终极方向。两者之间，没有绝对的优劣，只有与团队资源匹配的合理权衡。</p>
+<hr />
+<h2 id="474">47.4 多模态指令数据合成<a class="headerlink" href="#474" title="Permanent link">&para;</a></h2>
+<p>到了微调（SFT）阶段，高质量的指令数据成了决定模型上限的最后一块拼图。由于让人类去框选图片中的物体（Grounding）或编写复杂的视觉逻辑题极其昂贵，<strong>"合成数据工厂"</strong>成了头部玩家的标配。</p>
+<p><a class="glightbox" href="../../../images/part13/Cao-Chap47-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图47-4：多模态指令合成 pipeline (Multi-modal Instruction Synthesis)" src="../../../images/part13/Cao-Chap47-Fig04-EN.svg" /></a></p>
+<p><em>图47-4：多模态指令合成流水线</em></p>
+<p>如图47-4 所示，多模态指令合成已经远超简单的"让 GPT-4V 看看图并造句"。一个现代的数据合成管线通常包含以下组件的协同：</p>
+<ol>
+<li><strong>基础视觉感知网络</strong>：利用现成的专有小模型，如 Grounding DINO (Liu et al. 2023) 提取所有物体的边界框（Bounding Boxes），利用 PaddleOCR 提取密集文本，甚至利用深度估计模型提取 3D 景深。</li>
+<li><strong>文本化表征（Textual Representation）</strong>：将上述感知到的视觉信息，强制翻译为结构化的纯文本（如 JSON 或 Markdown）。</li>
+<li><strong>高能力 LLM 知识重组</strong>：将带有边界框和 OCR 信息的文本输入高能力语言模型（由于图片已被转化为精确文本，此时甚至不需要 GPT-4V，用纯文本的 GPT-4 也能完成），让其生成复杂的推理指令，如："结合图片右上角的发票总额和左侧的名目，计算税率"。</li>
+<li><strong>质量过滤与去重</strong>：利用 Self-consistency（多次采样取多数投票）或 LLM-as-Judge 对合成结果进行质量打分，过滤掉幻觉严重或逻辑混乱的样本；并进行指令级别的语义去重，避免同一张图衍生出大量同质化问答。</li>
+</ol>
+<p>表47-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 47-3：多模态指令数据合成方法对比 (3 行 × 5 列)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">合成流派</th>
+<th style="text-align: left;">核心依赖模型</th>
+<th style="text-align: left;">典型应用场景</th>
+<th style="text-align: left;">成本估算</th>
+<th style="text-align: left;">噪声与幻觉风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>GPT-4V 蒸馏法</strong></td>
+<td style="text-align: left;">外部闭源 VLM API</td>
+<td style="text-align: left;">复杂逻辑推理题、长文摘要</td>
+<td style="text-align: left;">极高 (依赖 API Quota)</td>
+<td style="text-align: left;">较低，但受限于教师模型固有偏见</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>自蒸馏管线 (Self-Instruct)</strong></td>
+<td style="text-align: left;">专有感知模型 + 开源强 LLM</td>
+<td style="text-align: left;">细粒度物体 Grounding、密集 OCR</td>
+<td style="text-align: left;">中等 (算力折旧)</td>
+<td style="text-align: left;">较高，依赖 OCR 召回率，易出现幽灵框</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>规则模板泛化 (Rule-based)</strong></td>
+<td style="text-align: left;">结构化数据库 (如图谱)</td>
+<td style="text-align: left;">简单属性问答、图表数值检索</td>
+<td style="text-align: left;">极低 (脚本生成)</td>
+<td style="text-align: left;">极低，但指令多样性差，语言生硬</td>
+</tr>
+</tbody>
+</table>
+<p>以下是一个 Qwen2.5-VL 风格自蒸馏 Caption 重写管线的核心代码框架：</p>
+<p>代码清单47-1给出了流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 自蒸馏 Caption 重写核心流程（骨架示意）</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qwen2VLForConditionalGeneration</span><span class="p">,</span> <span class="n">AutoProcessor</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">RECAPTION_PROMPT</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="s2">&quot;请为这张图片撰写一段详细的场景描述（150-300词）。&quot;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="s2">&quot;需涵盖：主体对象、空间位置关系、色彩与光线、文字内容（如有）、&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="s2">&quot;情感氛围、以及图片可能的使用场景。不要以&#39;这张图片&#39;开头。&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">recaption_batch</span><span class="p">(</span><span class="n">image_paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">model</span><span class="p">,</span> <span class="n">processor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="k">for</span> <span class="n">img_path</span> <span class="ow">in</span> <span class="n">image_paths</span><span class="p">:</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image</span><span class="p">},</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>            <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>  <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">RECAPTION_PROMPT</span><span class="p">}</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        <span class="p">]}]</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span><span class="n">messages</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="n">inputs</span> <span class="o">=</span> <span class="n">processor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">text</span><span class="p">],</span> <span class="n">images</span><span class="o">=</span><span class="p">[</span><span class="n">image</span><span class="p">],</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="n">output_ids</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        <span class="n">caption</span> <span class="o">=</span> <span class="n">processor</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">output_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">caption</span><span class="p">)</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p><em>代码清单47-1：流程示例</em></p>
+<p><strong>工程要点说明</strong>：</p>
+<ul>
+<li><code>temperature=0.7</code> 是防止 Caption 模式坍塌的关键参数，低于 0.5 时生成风格趋于同质化；</li>
+<li>对于 OCR-Rich 图像（如发票、表格），应在 RECAPTION_PROMPT 中显式要求"逐字复述图中所有可见文字"，以避免幻觉；</li>
+<li>建议在同一批次中混合不同类型的图像（自然场景、文档、图表），防止模型对单一分布过拟合；</li>
+<li>每批样本完成后使用 CLIP-Score 对新 Caption 与图像的相关性重新打分（阈值 ≥ 0.30），低分样本丢弃而非回收。</li>
+</ul>
+<hr />
+<h2 id="475-ocr">47.5 长视频 / 文档 / OCR 数据特化处理<a class="headerlink" href="#475-ocr" title="Permanent link">&para;</a></h2>
+<p>随着 VLM 向现实世界复杂场景扩展，传统的“静态高质自然风景图”占比逐渐降低，取而代之的是包含高密度信息的人造图像。数据团队在应对以下三种高信息密度变体时，总结出了一组可复用的工程经验：</p>
+<p><strong>1. 密集文档与 OCR（Document-Rich Data）</strong>
+为了提升模型在 DocVQA 和 MMMU 等文档与多模态理解基准上的表现，InternVL 与 Qwen 等团队会大量引入金融财报（带有致密 PDF 表格）、医学病历截图和复杂学术海报。
+其处理手段已经不仅限于单纯的图像输入，而是采用“文本辅助注入”策略：在数据流进入模型前，预先把高分辨率图像送入专门的 OCR 引擎（如 PaddleOCR-v4 或专用的 MinerU PDF 解析器）。提取出的纯文本会被直接作为“金标准 Context”编码到人类指令的开头（例如：<code>System: 此图包含以下文字&lt;OCR&gt;...&lt;OCR&gt;</code>）。
+此外，数据流水线还会对原始图片施加高强度的色彩反转、灰度转换、噪点注入（Augmentation），甚至故意给文字打码或加上污渍。这种增强训练策略旨在降低视觉编码器对顶层大模型常识补全的依赖，使其真正学习从视觉特征中识别字符。一旦文档数据占比低于 15%，模型的细粒度文本阅读能力就可能出现明显退化。</p>
+<p><strong>2. 长视频流的时空降维（Spatio-Temporal Redundancy）</strong>
+视频处理的核心挑战是时空信息冗余。假设一段 10 分钟的超市监控视频以 30fps 输入，总计将产生 1.8 万张图片，如果全部转换为 Token，其数量级会迅速超过当前 128k 乃至 1M 的上下文窗口。
+早期模型（如 Video-LLaVA）采用了简单的“定长抽帧”方案（如无论长短，一律抽取 8 帧或 16 帧），这对于几秒钟的短视频尚可，但对于几十分钟的教学视频则难以适配。现代模型（如 Qwen2.5-VL）开始使用<strong>基于光流与内容感知的动态变帧频策略（Dynamic Optical Flow Sampling）</strong>。
+数据引擎会事先计算相邻帧的像素级差异（如结构相似性指标，Structural Similarity Index Measure，SSIM，或 Flow-net 特征）。在长达数分钟的静止画面中，引擎可能仅保留 1 帧稀疏关键帧；而当画面中出现快速移动（如车祸瞬间或魔术变牌）时，引擎会在 1 秒内进行多次密集采样，并为每一个图像切片附加专属的时间维度标记（<code>&lt;Time-Step=2.1s&gt;</code>）。这种数据预打包技术，有助于在节省算力的同时支持长视频推理训练。</p>
+<p><strong>3. 多模态交织文档（Interleaved Documents / Web Pages）</strong>
+人类构建的大多数复杂知识（如维基百科、技术博客），并非孤立的一张图或一句话，而是以“一段文本 + 一张结构图 + 另一段补充文本 + 一张数据表”的交织态存在的。在构建高质量的预训练与对齐数据时，工程师必须编写极为复杂的 HTML 解析器，将网页的 DOM 树严格序列化。
+其核心原则是：<strong>必须保持文本和图像在 Token 序列中的物理先后顺序不变。</strong> 工程师需要将图片视为一种占据大量 Token 预算的特殊符号，嵌入到文本当中（例如：<code>The architecture of Transformers is shown here: &lt;Image_Token_Start&gt;...&lt;Image_Token_End&gt;. Note that the self-attention...</code>）。如果在数据清洗（如去除网页广告条）时导致配图发生错位，就会在模型内部引发严重的逻辑混淆（如将猫的描述对应到了一双鞋的图片上）。因此，大型实验室通常会专门研发启发式的交织清洗工具箱（Interleaved Cleaner）。</p>
+<hr />
+<h2 id="476">47.6 核心案例拆解<a class="headerlink" href="#476" title="Permanent link">&para;</a></h2>
+<p>在当今开源生态中，本章选取三条具有代表性的 VLM 数据管线复现路径，分别对应三种典型的工程起点：从全开源复现、从低质量数据提纯，以及从大规模长视频数据反推配方。</p>
+<h3 id="case-ainternvl3-sft">Case A：InternVL3 的全开源 SFT 数据复现<a class="headerlink" href="#case-ainternvl3-sft" title="Permanent link">&para;</a></h3>
+<p>InternVL 团队不仅开源了模型权重，还开源了百万级别的 SFT 高质量指令数据集（InternVL-Chat-V1-5-SFT-1.2M）。其数据工程亮点在于<strong>细粒度分类与精炼</strong>。</p>
+<p>团队将训练数据切分为：ChartQA（图表解析）、DocVQA（文档解析）、MathV360K（数学推理）、LLaVA-Instruct（日常通用交互）、ShareGPT4V（高质量描述）等多个子集。在数据打包（Packing）阶段，针对每个 Batch，训练引擎会尽量保证各类型的配比均衡，防止 OCR 类数据因其平均 Token 长度更长而在 Batch 中"过度代表"。</p>
+<p><strong>复现路径</strong>：通过 HuggingFace 下载 InternVL-Chat-V1-5-SFT-1.2M 数据集（CC-BY-4.0 协议），使用其开源的训练代码 InternVL2-Training，在 8 卡 A100 上约 36 小时可完成 InternVL3-8B 的 SFT 阶段复现。关键配置：Global Batch Size = 512，Learning Rate = 2e-5，图像分辨率使用 Dynamic 448×N 方案，每张图最多 12 Patches。</p>
+<p><strong>核心收获</strong>：通过学习其开源的数据配比逻辑，可以清晰地理解"如何用 1.2M 的精调数据，让一个冻结基座涌现出超越参数量更大模型的通用视觉对话能力"——答案不在于规模，而在于类型覆盖的均衡性与单条样本的信息密度。</p>
+<h3 id="case-blaion-llava-recap-558k">Case B：LAION 提纯与 LLaVA-Recap-558K<a class="headerlink" href="#case-blaion-llava-recap-558k" title="Permanent link">&para;</a></h3>
+<p>早期的 LAION 数据集中存在大量关联度较低的 alt-text（例如图片是一只猫，文字却是"点击购买猫粮"）。如果直接将其输入模型，模型将学习到错误的图文对应关系。开源社区通过 LLaVA-Recap-558K 项目验证了一条改进路径。</p>
+<p><strong>提纯流程</strong>：</p>
+<ol>
+<li>从 LAION-CC-SBU 中用 CLIP-Score 过滤（阈值 0.28），从原始约 300 万样本中筛出约 70 万高相关图文对；</li>
+<li>进一步用视觉美学打分模型（LAION-Aesthetics-V2）(Schuhmann et al. 2022) 过滤掉低质图像，最终保留约 558K；</li>
+<li>用 LLaVA-1.5-13B 配合特定 System Prompt（要求生成 150-250 词的详细场景描述）对所有 558K 图片重新生成 Caption；</li>
+<li>对新 Caption 与图像重新计算 CLIP-Score，低于 0.30 的样本二次过滤（约丢弃 5%）。</li>
+</ol>
+<p>这个二次提纯的数据集成本约为：558K × 13B 模型推理成本 ≈ 约 80 GPU 小时（单卡 A100）。产出的 LLaVA-Recap-558K 成为了目前无数中小团队 VLM 冷启动的黄金矿脉，其 CLIP-Score 中位数从原始的 0.26 提升至 0.38 [E]。</p>
+<h3 id="case-cqwen25-vl">Case C：Qwen2.5-VL 长视频数据配方的工程推断<a class="headerlink" href="#case-cqwen25-vl" title="Permanent link">&para;</a></h3>
+<p>不同于 InternVL 的全开源，Qwen2.5-VL 的训练数据并未公开。但通过其技术报告的关键披露和社区复现实验，我们可以合理推断其长视频数据流水线的核心配置。</p>
+<p><strong>推断依据</strong>：Qwen2.5-VL 技术报告 [D] 明确披露：（1）视频预训练数据采用"变长时间戳"格式，每帧附带 <code>&lt;|vision_start|&gt; timestamp &lt;|vision_end|&gt;</code> 标记；（2）视频数据的帧率采用内容自适应策略，静止场景最低 0.5fps，高动态场景最高 2fps；（3）训练数据中包含超过 1 小时的长视频片段（通过 M-RoPE 的时间维度支持）。</p>
+<p><strong>推断流水线</strong>：</p>
+<ul>
+<li><strong>Step 1 视频源</strong>：从 YouTube（Creative Commons 协议）、Pexels、WebVid-10M 子集采集视频原始素材，按内容分类（教程 / 纪录片 / 科普 / 事件记录）；</li>
+<li><strong>Step 2 镜头切分</strong>：PySceneDetect 基于内容差分自动切分镜头，过滤单镜头时长 &lt; 3s 或 &gt; 10min 的极端片段；</li>
+<li><strong>Step 3 帧采样</strong>：对每个镜头片段计算相邻帧 SSIM，静止段（SSIM &gt; 0.95）以 0.5fps 采样，运动段（SSIM &lt; 0.80）以 2fps 采样；</li>
+<li><strong>Step 4 多帧 Caption</strong>：将每个镜头的关键帧（通常 4-16 帧）拼排成"时间序列图"后输入 Qwen2.5-VL-7B 生成时序描述，要求描述包含"在第 N 秒，画面中……"的时间戳格式；</li>
+<li><strong>Step 5 时空对齐验证</strong>：用关键词抽取检验 Caption 中的时间词与实际帧序号是否对应（如"镜头推进"必须出现在 SSIM 梯度上升的帧范围内），不对齐样本丢弃。</li>
+</ul>
+<p><strong>关键发现</strong>：通过社区复现实验 [E]，在同等参数量模型上，引入上述时空对齐 Caption 的长视频数据后，Video-MME（长视频子集）得分提升约 6-9 个百分点，而相同时间随机采帧策略仅提升 2-3 个百分点。<strong>Caption 中的时序信息质量，而非帧数，才是长视频理解能力的真正瓶颈。</strong></p>
+<hr />
+<h2 id="477">47.7 实施风险、成本与适用边界<a class="headerlink" href="#477" title="Permanent link">&para;</a></h2>
+<p>在落地企业级自研 VLM 数据配方时，不仅需要考量算法设计，也要面对高昂的工程算力成本，以及技术报告中往往没有充分展开的隐性风险。以下七条经验来自实际生产复盘，而非理论推演。</p>
+<p><strong>1. Caption 模式坍塌（Mode Collapse in Captions）与幻觉放大</strong></p>
+<p>在合成数据工厂阶段，如果使用单一的教师模型去大规模生成合成 Caption，被训练的学生模型很容易陷入"模式坍塌"。例如，学生模型可能长期以"The image shows..."开头作答，甚至继承教师模型固有的偏见——一旦看到穿着白色实验服的人，即使图里是医生，也会说成是"科学家"。为了缓解这种坍塌，需要在合成流水线的 Prompt 库中注入足够多的模板变体，主动提高解码阶段的温度噪声（如 <code>Temperature &gt; 0.7</code> 或应用 <code>Top-P</code> 采样），并引入基于奖励模型（Reward Model）的过滤机制，以遏制单一模型幻觉被级联放大。</p>
+<p><strong>2. 高分辨率的内存黑洞与梯度穿透浪费（Padding Penalty）</strong></p>
+<p>当采用 Native Resolution 处理大批量非标准尺寸图像时，如果缺乏高阶序列拼接算法，不同长宽的图片会在一个训练批次（Batch）内引起巨大的长度方差。为了对齐张量，底层必须使用大量 Padding 来填满空白——这些无效的 Padding Token 不仅会直接导致 HBM 出现 OOM，还会吃掉大量算力进行无意义的零梯度反向传播计算。解决办法只能是引入专为变长序列设计的 FlashAttention 改进版（Varlen FlashAttention）(Dao et al. 2022)，或采用基于 Token 数量而非样本数量的 Packing 策略。</p>
+<p><strong>3. 合成 API 成本：需要独立核算的预算项</strong></p>
+<p>调用 GPT-4V 接口来合成高质量的多模态指令并非免费。目前调用顶级视觉闭源 API 处理一张中等分辨率图像（带 Prompt），其成本往往在 $0.005 至 $0.01 美金不等。构建 1M 级别的高质量指令集，仅 API 的直接开支就可能达到 5,000 至 10,000 美金。因此，依靠"专有轻量级开源 VLM 作初筛 + 大模型做校验"的双级联蒸馏，是当前工业级数据中台的重要降本路径。</p>
+<p><strong>4. 图像合规与版权风险（Copyright Risks）</strong></p>
+<p>与纯文本不同，图像领域在确权与合规审计时更容易暴露来源和授权问题。爬取含有真实人物面部的高清图片，或未经授权大量抓取带有隐形数字水印的商业版权图库，都可能带来严重合规风险。<strong>任何进入生产调度环境的图像抓取任务，均应严格遵照 Ch04 §4.4 与 Ch27 的安全审计机制</strong>进行面部模糊（Face Blurring）与元数据的合规溯源打标。</p>
+<p><strong>5. 数据类型失衡导致的"跷跷板效应"</strong></p>
+<p>当 OCR-Rich 类数据比例过高（&gt; 40%）时，模型的自然场景理解能力（如风景描述、人物情感识别）会出现明显退化——业界称其为"跷跷板效应"。解决方案是引入"能力感知的动态采样器"（Capability-Aware Sampler）：在每个 Epoch 结束后，用一组轻量化的能力探针（每类约 50 题的快速评测集）检测各维度能力的相对得分，并根据得分自动调高低分类型数据的下一 Epoch 采样概率，从而动态维持各能力维度的均衡性。</p>
+<p><strong>6. 多语言 OCR 数据的隐性分布偏差</strong></p>
+<p>对于需要支持多语言 OCR 的模型（如 Qwen2.5-VL 的 29 种语言支持），一个极易忽视的陷阱是：不同语言的 OCR 训练数据在<strong>字体分布</strong>上高度不均匀。中文有数千种常见字体，但阿拉伯语的训练数据往往只覆盖 5-10 种字体。当模型在真实场景中遇到非覆盖字体时（如阿拉伯语手写体或异体字），OCR 识别率会从 92% 骤降至 40% 以下 [E]。建议对每种语言的训练数据进行字体覆盖度审计，低覆盖语言优先通过字体合成（Font Synthesis）工具扩充字体多样性，而非简单追加图文对数量。</p>
+<p><strong>7. 适用边界：何时不该追求顶级配方</strong></p>
+<p>并非所有场景都需要 Qwen2.5-VL 级别的复杂数据配方。以下三种情况应考虑降级策略：</p>
+<ul>
+<li><strong>垂直领域小数据场景</strong>：若应用场景高度集中（如仅做工厂质检图像分析），使用 LLaVA-1.5 两阶段方案 + 300-500 条高质量领域标注数据进行 LoRA 微调，往往比全量三阶段流水线 + 通用数据配方表现更好，且成本低 100 倍以上；</li>
+<li><strong>极低时延推理场景</strong>：若需要在边缘设备（如手机、嵌入式芯片）部署，优先选择 MiniCPM-V 的端侧数据精炼哲学，而非无限堆叠 Interleaved Web Data；</li>
+<li><strong>冷启动快速验证</strong>：若处于产品 POC 阶段，建议先用 LLaVA-Recap-558K + LLaVA-Instruct-150K 快速建立基线（约 24h），验证产品逻辑可行性后，再投入资源做定制化数据工程。</li>
+</ul>
+<hr />
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>多模态 VLM 的能力提升，表面上来自视觉架构与语言架构的协同，背后则依赖系统化的数据治理。本章从一个真实的数据配方失效事故出发，系统拆解了当今头部 VLM 数据配方的四个核心维度：</p>
+<ul>
+<li><strong>三阶段流水线</strong>（§47.1）：预训练-多任务对齐-SFT 三阶段对数据规模、质量、类型的要求完全不同，强行混用是最常见的失败根源；</li>
+<li><strong>横向对比趋势</strong>（§47.2）：从 Qwen2.5-VL、InternVL3、LLaVA-OneVision 到 MiniCPM-V，"Re-captioning 优先于 alt-text"、"Interleaved 数据比例决定推理深度"、"端侧精炼哲学"是三条可以直接落地的工程规律；</li>
+<li><strong>分辨率二分法</strong>（§47.3）：Native Resolution（Qwen路线）与 Dynamic Hi-Res（InternVL/LLaVA路线）之间没有绝对的优劣，只有与团队资源匹配的合理权衡；</li>
+<li><strong>合成数据工厂</strong>（§47.4-§47.5）：自蒸馏 Caption 重写流水线、OCR 强制注入、长视频动态变帧频策略，是三个可以直接复用的高价值工程模块。</li>
+</ul>
+<p>三个案例拆解（§47.6）提供了从"全开源复现"（InternVL3）、"低质量数据提纯"（LAION-Recap）到"技术报告反推配方"（Qwen2.5-VL 长视频）的三条不同切入路径，分别对应不同资源禀赋和工程起点的团队。</p>
+<p>七条实施风险（§47.7）揭示了技术报告中普遍回避的工程细节，尤其是"适用边界"一节提醒读者：<strong>最复杂的配方不一定是最适合的配方，始终以业务场景和团队资源约束为第一优先级</strong>。</p>
+<p>当 VLM 通过本章所述的高标准数据配方，掌握了对物理世界与二维平面的"看图理解"能力后，它也就具备了理解视觉输入并驱动后续生成任务的基础。在下一章 <strong>Ch48：生成式数据管线：FLUX 与 Wan</strong> 中，我们将视角转向生成任务，讨论当模型从"观察者"转向像素与视频生成时，数据配方将如何演进。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Chen Z, Wu J, Wang W, Su W, Chen G, Xing S, Zhong M, Liu Q, Lu Y, Li B, others (2023) InternVL: Scaling up Vision Foundation Models and Aligning for Generic Visual-Linguistic Tasks (ShareGPT4V). arXiv preprint arXiv:2312.14238.</p>
+<p>Chen Z, Wang W, Tian H, Ye S, Gao Z, Cui E, Tong X, Hu J, Luo J, Ma S, others (2024) InternVL3: Exploring Advanced Training and Test-Time Scaling for Vision-Language Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Dao T, Fu D Y, Ermon S, Rudra A, Ré C (2022) FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness. In: Advances in Neural Information Processing Systems 35:16344-16359. https://doi.org/10.52202/068431-1189.</p>
+<p>Gadre S Y, Ilharco G, Fang A, Hayase J, Ilharco G, Marten T, Wortsman M, Goyal S, Guha E, Jain H, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. In: Advances in Neural Information Processing Systems 36. Available at: https://arxiv.org/abs/2304.14108.</p>
+<p>Laurençon A, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, others (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. arXiv preprint arXiv:2306.16527.</p>
+<p>Li B, Zhang Y, Guo D, Zhang R, Li F, Zhang J, Zhang Y, Zhu P, Zhang Z, Yang J, others (2024) LLaVA-OneVision: Easy Visual Task Transfer. arXiv preprint arXiv:2408.03326.</p>
+<p>Liu H, Li C, Wu Q, Lee Y J (2024b) Visual Instruction Tuning (LLaVA-1.5). In: Advances in Neural Information Processing Systems 36.</p>
+<p>Liu S, Zeng Z, Ren T, Li F, Zhang H, Yang J, Li C, Yang J, Su H, Zhu J, others (2023) Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection. arXiv preprint arXiv:2303.05499.</p>
+<p>Lu P, Bansal H, Xia T, Liu J, Li C, Hajishirzi H, Cheng H, Chang K W, Galley M, Gao J (2023) MathVista: Evaluating Mathematical Reasoning of Foundation Models in Visual Contexts. arXiv preprint arXiv:2310.02255.</p>
+<p>Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision, pp 2200-2209. https://doi.org/10.1109/wacv48630.2021.00225.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models from Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278-25294. Available at: https://arxiv.org/abs/2210.08402.</p>
+<p>Wang P, Bai S, Tan S, Wang S, Fan Z, Bai J, Chen K, Liu X, Wang J, Ge W, others (2024) Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution. arXiv preprint arXiv:2409.12191.</p>
+<p>Yue X, Ni Y, Zhang K, Zheng T, Liu R, Zhang S, Stevens J, Jiang C, Zheng N, Sun T, others (2024) MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 9556-9567. https://doi.org/10.1109/cvpr52733.2024.00913.</p>
+<p>Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. arXiv preprint arXiv:2304.06939.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

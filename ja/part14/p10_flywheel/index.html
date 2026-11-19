@@ -1,0 +1,2449 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p10_flywheel/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目十：端到端 LLM 数据飞轮 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#llm" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目十：端到端 LLM 数据飞轮
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p10_flywheel/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p10_flywheel/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：端到端大语言模型（LLM）数据飞轮的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）集成范围边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）时效性边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）评估边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）组织边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p10" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P10 在能力体系中的总装层角色
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从上游项目资产到组织级飞轮总装
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从上游项目资产到组织级飞轮总装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-data-source-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：数据来源层（data source layer）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-processing-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：处理层（processing layer）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-modeling-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：建模层（modeling layer）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-application-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 第四层：应用层（application layer）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-governance-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 第五层：治理层（governance layer）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.6 五层结构的工程作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 上游项目汇总：registry 作为系统入口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 上游项目汇总：registry 作为系统入口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 registry 不应停留在项目名称
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 registry 作为系统起点
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 代码展开一：汇总上游项目资产
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 代码展开一：汇总上游项目资产">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 registry 的结构化汇总方式
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 阶段规划：五阶段推进结构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 阶段规划：五阶段推进结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 阶段化与流水线化的区别
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 阶段规划在总装层中的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 代码展开二：构建飞轮架构与阶段规划
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 代码展开二：构建飞轮架构与阶段规划">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 架构需要结构化表达
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 从代码角度理解飞轮结构
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 系统边界与控制点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 系统边界与控制点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 什么是控制点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 治理边界需要显式建模
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 控制点的工程作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 运行记录与里程碑
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 运行记录与里程碑">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 运行记录的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 里程碑作为组织层接口
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 指标解读：系统级信号的含义
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 指标解读：系统级信号的含义">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 系统指标与单项模型指标的区别
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 瓶颈分析：飞轮连通后的关键约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 瓶颈分析：飞轮连通后的关键约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 基础语料规模约束
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-prm-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 PRM 验证 gap
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 平台回归对飞轮的影响
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 把瓶颈纳入主体的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 成本与共享收益
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 成本与共享收益">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 总装层的集成成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 共享平台收益体现在哪里
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 代码展开三：在评估脚本中生成系统级指标
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 代码展开三：在评估脚本中生成系统级指标">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 系统级指标的计算基础
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 验证闭环：一致性检查机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 验证闭环：一致性检查机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 系统项目的检查脚本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-pass" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 PASS 的工程含义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 代码展开四：将检查机制写成工程契约
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 代码展开四：将检查机制写成工程契约">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 工程契约在总装层中的位置
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 主要交付物：系统交付清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 主要交付物：系统交付清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 交付物清单的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 与普通项目清单的区别
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 组织与协同：总装层的职责接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 组织与协同：总装层的职责接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 总装层涉及的关键职责面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 协同结构的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-executive-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 管理视图：executive dashboard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 管理视图：executive dashboard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 dashboard 在飞轮中解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 dashboard 的系统角色
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 局限与风险
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 局限与风险">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 局限说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 向在线飞轮扩展：下一阶段的重点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 向在线飞轮扩展：下一阶段的重点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 在线反馈回流
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 A/B 实验与预算控制的预留
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 本章在全书中的收束作用
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. 主要交付物清单与代码索引
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. 主要交付物清单与代码索引">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 主要文档与报告
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 主要处理中间产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 主要控制台产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#234" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.4 主要源码索引
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#235" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.5 交付物与代码索引的用途
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. 结语：持续性比速度更重要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：飞轮中的反馈回流设计
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：飞轮中的反馈回流设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、反馈不只是用户点赞或差评
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、反馈事件需要统一 schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、回流的关键不是“自动”，而是“可分流”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、反馈回流如何进入下一轮版本
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：预算、优先级与投资回报
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：预算、优先级与投资回报">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、优先级判断不应只看单点效果
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、系统项目更适合看“杠杆率”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、预算分配应同时覆盖增长项与防守项
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、投资回报要看“系统记忆”是否积累
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：总装层年度推进路线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：总装层年度推进路线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、第一阶段：统一资产与契约
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、第二阶段：补齐质量门禁与治理控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、第三阶段：引入在线反馈与实验机制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、第四阶段：形成跨团队稳定运营
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：飞轮总装的风险台账与季度复盘
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：飞轮总装的风险台账与季度复盘">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、总装层最需要记录的是跨项目风险
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、季度复盘应围绕系统问题，而不是项目汇报
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、风险台账的价值在于形成组织记忆
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：飞轮与业务价值的映射关系
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：飞轮与业务价值的映射关系">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、飞轮的第一层业务价值是减少重复建设
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、飞轮的第二层业务价值是缩短问题定位时间
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、飞轮的第三层业务价值是让扩展更可预测
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#owner" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：总装层 owner 的职责边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：总装层 owner 的职责边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#owner_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、owner 负责的不是替代所有项目，而是维护系统主链
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#owner_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、owner 还要负责把“系统语言”带进组织
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="llm">项目十：端到端 LLM 数据飞轮<a class="headerlink" href="#llm" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王柯；徐鑫；穆冠霖</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组织成一条持续运转的端到端大语言模型（LLM）数据飞轮。章节重点不在新增单点能力，而在把第十四篇项目资产、接口、阶段和控制点整合为统一系统。随着本篇扩展到 P01-P15，P10 的出版口径应从早期“前九个项目总装”更新为“第十四篇项目总装层”，既覆盖 P01-P09 的基础数据工程，也预留 P11-P15 的开源配方、推理飞轮、多模态指令、视频生成和企业级问数能力。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>资产汇总与阶段规划：把 P01-P15 的产物纳入统一 registry 与阶段体系。</li>
+<li>训练、应用与反馈接口：明确数据进入训练、模型进入应用、应用反馈回流上游的连接方式。</li>
+<li>控制点与治理边界：把版本控制、回滚、人审、隐私隔离和异常响应写入系统结构。</li>
+<li>检查验收与组织复用：通过代码、产物和检查脚本验证飞轮能否稳定运行。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>资产汇总 -&gt; 阶段规划 -&gt; 训练封装 -&gt; 应用执行 -&gt; 反馈回流 -&gt; 版本治理 -&gt; 隐私与回滚控制 -&gt; 系统检查</strong></p>
+<p>这一结构对应的核心目标，是把离散项目沉淀为一套可复盘、可检查、可扩展的大语言模型（LLM）工程飞轮。</p>
+<hr />
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>数据飞轮；反馈回流；资产汇总；版本治理；系统验收</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“端到端 LLM 数据飞轮”为核心案例，目标是把上游数据项目、反馈、评测和发布治理整合为持续改进的数据飞轮。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>强调组织级流程与资产整合，不替代单个模型训练系统或完整 MLOps 平台。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“上游资产注册、阶段规划、反馈回写、评测归因、发布控制和里程碑治理”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P10-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>项目资产 -&gt; registry -&gt; 阶段计划 -&gt; 训练/评测反馈 -&gt; 数据修订 -&gt; 发布决策 -&gt; 飞轮报告
+</code></pre></div></p>
+<p><em>代码清单P10-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括资产覆盖率、反馈闭环率、版本迭代周期、评测回归定位、发布通过率和里程碑完成度。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P10-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P10-1：LLM 数据飞轮出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资产整合</td>
+<td>上游项目覆盖率、registry 完整性和接口映射记录</td>
+<td>每个上游资产应能说明来源、责任人、版本和复用方式</td>
+</tr>
+<tr>
+<td>反馈闭环</td>
+<td>反馈回流率、评测回归定位和版本迭代周期</td>
+<td>飞轮指标应说明触发动作，不能停留在仪表盘展示</td>
+</tr>
+<tr>
+<td>组织决策</td>
+<td>发布通过率、里程碑完成度和风险台账关闭率</td>
+<td>跨项目风险必须有 owner、期限和复盘结果</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自跨项目治理、反馈采集和评测复跑；风险集中在归因不清、指标漂移和组织责任断点。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。总装层需要统一记录数据集、并行处理、实验追踪和质量检查，因此可参考 Hugging Face Datasets (Hugging Face 2026)、Ray Data (Ray Project 2026)、MLflow (MLflow Authors 2026) 与 Great Expectations (Great Expectations Contributors 2026) 的工程对象；基础语料进入飞轮前，也应保留类似 C4/T5 数据处理中的来源与过滤说明 (Raffel et al. 2020)。</p>
+<h2 id="1-llm">1. 项目背景：端到端大语言模型（LLM）数据飞轮的必要性<a class="headerlink" href="#1-llm" title="Permanent link">&para;</a></h2>
+<p>通用的大模型工程实践，在单点能力上已经积累了很多成熟方法。例如，团队知道如何做预训练语料清洗，知道如何做监督微调（SFT）样本构造，知道如何做偏好对、过程奖励模型（PRM）、检索增强生成（RAG）、Agent、平台化和隐私治理。但一旦进入真实组织环境，问题往往不在单点组件本身，而在于<strong>这些组件之间没有被组织成一条持续运转的系统链路</strong>。</p>
+<p>最常见的断裂有三类。</p>
+<p>第一类是<strong>资产断裂</strong>。前一个项目做出来的数据、模板和评估结果，无法被后一个项目直接消费。于是每个项目都像在“重新造轮子”。</p>
+<p>第二类是<strong>接口断裂</strong>。明明上游已经有语料、标注结果或评测记录，但下游不知道该读什么文件、该信任什么字段、该继承什么版本信息。结果就是流程能跑一次，却难以稳定重跑。</p>
+<p>第三类是<strong>治理断裂</strong>。很多团队愿意谈模型、谈效果、谈产品，但不愿意把版本控制、回滚机制、隐私边界、组织分工和事故响应写进系统设计。这会导致系统一旦放大，就无法稳定运转。</p>
+<p>因此，P10 的目标是构建一个<strong>端到端大语言模型（LLM）数据飞轮总装层</strong>，把第十四篇 P01-P15 的产物、阶段、接口、控制点和治理机制汇总为统一的系统结构。早期代码原型中只纳入 P01-P09，可作为最小总装实现理解；当前书稿的出版叙述则应按 P01-P15 的完整项目集合解释。</p>
+<p>这一结构面向的是持续迭代的组织级工程场景。随着语料扩展、新任务接入、模型替换、应用上线和反馈回流，真正能够被复用的不是某个单独脚本，而是这套“资产汇总—阶段规划—系统边界—治理控制—验证闭环”的系统方法。</p>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：汇总上游项目资产。</strong>
+即把分散在不同目录、不同报告和不同任务形态中的项目产物，统一纳入一个可追踪的 registry 与阶段体系。</p>
+<p><strong>目标二：建立从数据到应用再到治理的飞轮结构。</strong>
+本项目不再只看“数据做得怎么样”或“模型训得怎么样”，而是明确区分 data source、processing、modeling、application、governance 五层，让端到端系统的主干结构清楚可见。</p>
+<p><strong>目标三：把接口、控制点与瓶颈显式化。</strong>
+飞轮的价值不在于画一张流程图，而在于指出哪里有控制点、哪里有系统边界、哪里是当前瓶颈、哪里需要组织协同。</p>
+<p><strong>目标四：形成可检查、可复现、可交付的总装产物。</strong>
+最终输出不仅包括架构图、阶段规划和 dashboard，还包括检查脚本、测试结果和报告文件，保证代码、产物和统计结果彼此一致。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了让项目保持可复现性，本项目显式设置了若干边界。</p>
+<h4 id="1">1）集成范围边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>当前飞轮聚焦已有项目产物的离线整合，而不是重新执行所有上游训练流程。早期实现以 P01-P09 为最小闭环，当前第十四篇出版口径应扩展到 P01-P15，并把 P11-P15 标记为新增配方、推理、多模态、视频和企业应用能力。这意味着它更适合作为<strong>系统总装图与工程复盘层</strong>，而不是在线实时生产系统本身。</p>
+<h4 id="2_1">2）时效性边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>本项目强调的是离线流程、结构设计与交付一致性，而不是实时事件驱动的在线闭环。因此，这里展示的是“飞轮框架与方法”，而不是最终工业级在线编排平台。</p>
+<h4 id="3">3）评估边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治理结构，而不是单个模型在某个 benchmark 上的最高分数。</p>
+<h4 id="4">4）组织边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>本项目已经显式纳入组织分工、共享平台收益和治理边界，但仍然属于教学型最小闭环，不应被夸大为完整企业级平台方案。</p>
+<h3 id="23">2.3 边界说明的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>边界说明用于明确系统当前已经打通的范围、仍依赖的离线假设、现阶段能够支撑的结论，以及后续扩展的主要方向：</p>
+<ul>
+<li>明确已经打通了哪些链路；</li>
+<li>明确还停留在哪些离线假设；</li>
+<li>明确当前结果可以支撑什么结论；</li>
+<li>明确哪些部分还需要未来扩展。</li>
+</ul>
+<p>对于总装层项目，这种界定直接决定章节能否作为稳定的方法资产，而不是停留在概念描述层。</p>
+<hr />
+<h2 id="3-p10">3. 项目定位：P10 在能力体系中的总装层角色<a class="headerlink" href="#3-p10" title="Permanent link">&para;</a></h2>
+<p>如果把整条大语言模型（LLM）工程能力链看成一个系统，那么 P10 位于总装层与收束层的位置。它的作用不是补充某一项局部能力，而是把预训练、监督微调（SFT）、多模态、偏好、检索增强生成（RAG）、过程奖励模型（PRM）、Agent、平台与隐私治理组织成统一系统。</p>
+<p>本章关注的是以下几个系统级问题：</p>
+<ul>
+<li>单点项目如何沉淀为系统能力；</li>
+<li>资产复用如何替代项目堆叠；</li>
+<li>阶段规划、接口约束和治理控制如何共同构成可运行框架；</li>
+<li>总装层如何通过代码、检查和报告保持一致性；</li>
+<li>跨项目结果如何被收束为可复盘、可扩展的统一方法框架。</li>
+</ul>
+<hr />
+<h2 id="4_1">4. 整体架构：从上游项目资产到组织级飞轮总装<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h2>
+<p>图P10-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-1：端到端 LLM 数据飞轮总览图" src="../../../images/part14/p10/Wang-Project10-Fig01.svg" /></a>
+<em>图 P10-1：端到端 LLM 数据飞轮总览图</em></p>
+<p>从工程视角看，本项目可以拆成五层，而不是只看“数据输入—模型输出”这样一条线性流程。</p>
+<h3 id="41-data-source-layer">4.1 第一层：数据来源层（data source layer）<a class="headerlink" href="#41-data-source-layer" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“系统的原料从哪里来”。它不仅包括网页或文档数据，还包括敏感数据输入、知识文档接入和原始业务材料。这一层所对应的不是单一数据集，而是整个飞轮的入口。</p>
+<h3 id="42-processing-layer">4.2 第二层：处理层（processing layer）<a class="headerlink" href="#42-processing-layer" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“原料如何变成可训练、可消费、可治理的中间资产”。清洗、去重、脱敏、指令合成、课程组织等能力都位于这里。它决定飞轮进入模型层之前，数据是否已经被工程化。</p>
+<h3 id="43-modeling-layer">4.3 第三层：建模层（modeling layer）<a class="headerlink" href="#43-modeling-layer" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“监督信号如何被组织成模型能力”。监督微调（SFT）、过程奖励模型（PRM）、Agent tool-use training、多模态训练都属于这一层。它不是单独训练一个模型，而是在组织哪些监督形式真正进入模型参数与行为模板。</p>
+<h3 id="44-application-layer">4.4 第四层：应用层（application layer）<a class="headerlink" href="#44-application-layer" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“模型能力如何进入真实任务执行”。检索增强生成（RAG）服务、Agent 执行和反馈回收都位于这里。没有应用层，飞轮只能停留在训练闭环，而无法形成业务反馈。</p>
+<h3 id="45-governance-layer">4.5 第五层：治理层（governance layer）<a class="headerlink" href="#45-governance-layer" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“系统如何长期可控”。版本管理、谱系追踪、回滚机制、隐私控制、审计和事故响应都位于这里。很多团队把治理写成附录，但在飞轮中，治理本身就是主结构之一。</p>
+<h3 id="46">4.6 五层结构的工程作用<a class="headerlink" href="#46" title="Permanent link">&para;</a></h3>
+<p>因为它把“飞轮”从抽象概念变成了可讨论的工程对象。团队不再只是说“我们有数据、有模型、有应用”，而是能够明确：</p>
+<ul>
+<li>哪一层承接哪类项目；</li>
+<li>哪些接口跨层传递；</li>
+<li>哪些边界必须单独控制；</li>
+<li>哪些问题不能在单层内部解决。</li>
+</ul>
+<hr />
+<h2 id="5-registry">5. 上游项目汇总：registry 作为系统入口<a class="headerlink" href="#5-registry" title="Permanent link">&para;</a></h2>
+<p>飞轮的复用能力首先建立在 registry 之上。registry 负责明确上游项目清单、阶段归属、输出资产和下游接口，把分散项目转化为可追踪、可组合的系统资产。</p>
+<p>P10 的 registry 应按照第十四篇 P01-P15 的完整目录维护。早期实现已经把 P01-P09 统一纳入汇总体系，形成项目 registry 与 phase inventory；当前书稿中，需要把 P10-P15 作为新增总装对象继续补入。当前出版口径包括：</p>
+<ul>
+<li>应纳入项目 <code>15</code> 个；</li>
+<li>已规划阶段 <code>5</code> 个；</li>
+<li>已汇总接口至少覆盖数据、训练、应用、治理、推理、多模态、视频和企业问数等能力面。</li>
+</ul>
+<p>这些统计反映的不是数量本身，而是系统已经具备跨项目资产登记、阶段划分和接口暴露能力，为后续复用、阶段规划和治理控制提供统一入口。</p>
+<h3 id="51-registry">5.1 registry 不应停留在项目名称<a class="headerlink" href="#51-registry" title="Permanent link">&para;</a></h3>
+<p>如果 registry 里只有项目名称，那么它依然只是一个目录索引，而不是系统接口层。真正有价值的 registry，至少应该回答：</p>
+<ul>
+<li>项目属于哪个阶段；</li>
+<li>产出哪些 deliverables；</li>
+<li>对下游暴露哪些 interfaces_out；</li>
+<li>这些结果是否通过测试；</li>
+<li>是否需要额外人审与治理控制。</li>
+</ul>
+<h3 id="52-registry">5.2 registry 作为系统起点<a class="headerlink" href="#52-registry" title="Permanent link">&para;</a></h3>
+<p>飞轮并不会自动形成。它需要先把零散资产定义为可继承、可追踪、可复用的系统对象。registry 的作用在于：</p>
+<ul>
+<li>它把离散项目变成了可组合模块；</li>
+<li>它为阶段规划提供输入；</li>
+<li>它为后续架构映射和瓶颈识别提供依据；</li>
+<li>它为组织层复盘提供统一语言。</li>
+</ul>
+<p>图P10-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-2：上游项目 registry 与接口映射图" src="../../../images/part14/p10/Wang-Project10-Fig02.svg" /></a>
+<em>图 P10-2：上游项目 registry 与接口映射图</em></p>
+<hr />
+<h2 id="6">6. 代码展开一：汇总上游项目资产<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p><code>src/collect_upstream_projects.py</code> 负责汇总上游项目资产，并将项目信息整理为统一规格。</p>
+<p>代码清单P10-2 保留出版稿中的关键结构。完整项目清单、指标文件路径和接口字段应维护在配套资源的 <code>src/collect_upstream_projects.py</code> 中，正文只展示支撑飞轮装配的最小数据模型。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">PROJECT_SPECS</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;p1&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="s2">&quot;acquisition&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="s2">&quot;interfaces_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;foundation_corpus&quot;</span><span class="p">,</span> <span class="s2">&quot;training_manifest&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="p">},</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">{</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="s2">&quot;alignment&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="s2">&quot;interfaces_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;sft_corpus&quot;</span><span class="p">,</span> <span class="s2">&quot;preference_data&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="p">},</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="p">{</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;p10&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="s2">&quot;governance&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="s2">&quot;interfaces_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;project_registry&quot;</span><span class="p">,</span> <span class="s2">&quot;release_gate&quot;</span><span class="p">,</span> <span class="s2">&quot;feedback_routing&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="s2">&quot;registry_role&quot;</span><span class="p">:</span> <span class="s2">&quot;assembly_layer&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="p">},</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="p">{</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="s2">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;p11&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="s2">&quot;phase&quot;</span><span class="p">:</span> <span class="s2">&quot;foundation_recipe&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="s2">&quot;interfaces_out&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;pretraining_recipe&quot;</span><span class="p">,</span> <span class="s2">&quot;tokenizer_artifact&quot;</span><span class="p">,</span> <span class="s2">&quot;packed_training_data&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="p">},</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="c1"># P12-P15 follow the same schema in the accompanying project script.</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P10-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段结构反映了上游资产汇总的几个基本要求：</p>
+<ul>
+<li>上游项目必须被显式建模；</li>
+<li>项目元信息必须包含阶段与接口；</li>
+<li>“项目存在”不等于“项目可被下游消费”；</li>
+<li>飞轮的第一步，是把项目目录变成结构化资产目录。</li>
+</ul>
+<h3 id="61-registry">6.1 registry 的结构化汇总方式<a class="headerlink" href="#61-registry" title="Permanent link">&para;</a></h3>
+<p>这种结构化表达把项目汇总落实为可复制的方法。后续其他总装层项目也可以沿用同样方式，将已有项目逐个纳入统一 registry，而不必依赖手工整理。</p>
+<p>图P10-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-3：上游项目结构化配置示意图" src="../../../images/part14/p10/Wang-Project10-Fig03.svg" /></a>
+<em>图 P10-3：上游项目结构化配置示意图</em></p>
+<hr />
+<h2 id="7">7. 阶段规划：五阶段推进结构<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>系统闭环通常会被简化为一条线性流程：原始数据 → 清洗 → 训练 → 上线 → 反馈。这样的表达能够说明顺序，但无法说明<strong>各环节属于哪个阶段、由谁负责，以及通过什么里程碑进入下一段</strong>。</p>
+<p>P10 的价值之一，就是把飞轮拆成了更清晰的阶段体系。当前结果显示，整条飞轮共包含 <code>5</code> 个阶段，并且当前阶段完成率达到 <code>100.00%</code>，平均阶段评分为 <code>0.924</code>。这些结果说明飞轮并不只是概念设计，而是已经形成了一套可度量的阶段主线。</p>
+<h3 id="71">7.1 阶段化与流水线化的区别<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>因为流水线强调顺序，而阶段化强调：</p>
+<ul>
+<li>当前目标是什么；</li>
+<li>阶段输出是什么；</li>
+<li>进入下一阶段的门槛是什么；</li>
+<li>哪些资源和团队在这一段承担主责。</li>
+</ul>
+<h3 id="72">7.2 阶段规划在总装层中的作用<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>阶段规划把飞轮从单纯的连通关系扩展为可推进、可复盘、可治理的组织结构。这里真正重要的，是把可迁移的推进方法明确下来，而不是停留在静态示意图层面。</p>
+<p>图P10-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-4：五阶段推进与里程碑关系图" src="../../../images/part14/p10/Wang-Project10-Fig04.svg" /></a>
+<em>图 P10-4：五阶段推进与里程碑关系图</em></p>
+<hr />
+<h2 id="8">8. 代码展开二：构建飞轮架构与阶段规划<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p><code>src/build_flywheel.py</code> 负责把第十四篇项目映射到飞轮结构中。早期最小实现只覆盖 P01-P09；当前出版口径应把 P10-P15 继续映射到 governance、foundation recipe、reasoning、multimodal instruction、generative media 和 enterprise application 等阶段。</p>
+<p>代码清单P10-3 保留层级映射的核心骨架。完整实现可在配套资源的 <code>src/build_flywheel.py</code> 中维护，并随项目清单增减同步更新。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_architecture</span><span class="p">(</span><span class="n">registry</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="s2">&quot;layers&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>            <span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;data_source_layer&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>                <span class="s2">&quot;responsibilities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;web/data ingestion&quot;</span><span class="p">,</span> <span class="s2">&quot;document intake&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>                <span class="s2">&quot;mapped_projects&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;p1&quot;</span><span class="p">,</span> <span class="s2">&quot;p5&quot;</span><span class="p">,</span> <span class="s2">&quot;p9&quot;</span><span class="p">,</span> <span class="s2">&quot;p11&quot;</span><span class="p">,</span> <span class="s2">&quot;p14&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="p">},</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>            <span class="p">{</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;processing_layer&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>                <span class="s2">&quot;responsibilities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cleaning&quot;</span><span class="p">,</span> <span class="s2">&quot;dedup&quot;</span><span class="p">,</span> <span class="s2">&quot;instruction synthesis&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>                <span class="s2">&quot;mapped_projects&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;p1&quot;</span><span class="p">,</span> <span class="s2">&quot;p2&quot;</span><span class="p">,</span> <span class="s2">&quot;p3&quot;</span><span class="p">,</span> <span class="s2">&quot;p4&quot;</span><span class="p">,</span> <span class="s2">&quot;p9&quot;</span><span class="p">,</span> <span class="s2">&quot;p11&quot;</span><span class="p">,</span> <span class="s2">&quot;p13&quot;</span><span class="p">,</span> <span class="s2">&quot;p14&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="p">},</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="p">{</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;application_layer&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>                <span class="s2">&quot;responsibilities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;RAG service&quot;</span><span class="p">,</span> <span class="s2">&quot;agent execution&quot;</span><span class="p">,</span> <span class="s2">&quot;semantic BI&quot;</span><span class="p">,</span> <span class="s2">&quot;feedback collection&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>                <span class="s2">&quot;mapped_projects&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;p5&quot;</span><span class="p">,</span> <span class="s2">&quot;p7&quot;</span><span class="p">,</span> <span class="s2">&quot;p10&quot;</span><span class="p">,</span> <span class="s2">&quot;p15&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="p">},</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            <span class="p">{</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;governance_layer&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>                <span class="s2">&quot;responsibilities&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;release gates&quot;</span><span class="p">,</span> <span class="s2">&quot;privacy controls&quot;</span><span class="p">,</span> <span class="s2">&quot;rollback&quot;</span><span class="p">,</span> <span class="s2">&quot;cross-project registry&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>                <span class="s2">&quot;mapped_projects&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;p8&quot;</span><span class="p">,</span> <span class="s2">&quot;p9&quot;</span><span class="p">,</span> <span class="s2">&quot;p10&quot;</span><span class="p">],</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>            <span class="p">},</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>        <span class="p">]</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P10-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段结构说明，飞轮依赖显式映射来维持一致性。项目与层级被写入数据结构后，报告、检查、dashboard 和治理分析都可以围绕同一套映射展开。</p>
+<h3 id="81">8.1 架构需要结构化表达<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>因为只写在图里的架构，很难验证，也很难维护。一旦项目新增、阶段变更或治理边界调整，如果底层没有结构化表示，所有图和说明都会很快过时。</p>
+<h3 id="82">8.2 从代码角度理解飞轮结构<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>从代码角度看，飞轮不是一个抽象名词，而是一组：</p>
+<ul>
+<li>层级定义；</li>
+<li>职责说明；</li>
+<li>项目映射；</li>
+<li>阶段产物；</li>
+<li>运行记录；</li>
+<li>里程碑与控制点。</li>
+</ul>
+<p>这种表达方式，才真正让飞轮具备工程可维护性。</p>
+<p>图P10-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-5：飞轮五层结构代码映射图" src="../../../images/part14/p10/Wang-Project10-Fig05.svg" /></a>
+<em>图 P10-5：飞轮五层结构代码映射图</em></p>
+<hr />
+<h2 id="9">9. 系统边界与控制点<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<p>跨项目、跨阶段、跨团队系统的可控性，取决于边界和控制点是否被显式建模。飞轮一旦进入真实组织环境，决定系统稳定性的往往正是那些<strong>不能被直接穿透的边界</strong>。</p>
+<p>P10 当前结果显示，飞轮架构包含 <code>5</code> 层、<code>4</code> 个控制点和 <code>4</code> 条治理边界。这说明项目不仅描述了数据流动路径，也把需要拦截、审查、记录和治理的位置一并纳入系统设计。</p>
+<h3 id="91">9.1 什么是控制点<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>控制点可以理解为飞轮中的“阀门”。在这些位置，系统不能只凭自动流转继续向前，而必须触发额外判断，例如：</p>
+<ul>
+<li>是否通过质量门槛；</li>
+<li>是否涉及敏感信息；</li>
+<li>是否需要人工审核；</li>
+<li>是否允许进入下游训练或上线。</li>
+</ul>
+<h3 id="92">9.2 治理边界需要显式建模<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<p>因为很多事故都不是发生在模型推理时，而是发生在数据进入系统之前、跨阶段交接时、上线回滚时或日志审计中。飞轮越完整，越需要边界治理，而不是越可以忽略治理。</p>
+<h3 id="93">9.3 控制点的工程作用<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>控制点的存在说明，飞轮并不追求无差别加速，而是为不同环节配置不同的流转速度、审查要求和可追踪性。</p>
+<p>图P10-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-6：系统边界与控制点示意图" src="../../../images/part14/p10/Wang-Project10-Fig06.svg" /></a>
+<em>图 P10-6：系统边界与控制点示意图</em></p>
+<hr />
+<h2 id="10">10. 运行记录与里程碑<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>系统项目如果只有最终报告，就缺少时间维度。真实工程通常按阶段推进、按节点完成，并通过里程碑逐步收敛。因此，P10 除了总报告，还保留了 flywheel runs 和 milestone board。</p>
+<h3 id="101">10.1 运行记录的作用<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>运行记录让系统具备时间维度，不仅可以看到最终状态，还可以追踪：</p>
+<ul>
+<li>飞轮经历了哪些阶段；</li>
+<li>每个阶段的状态和评分如何；</li>
+<li>哪些里程碑已经完成；</li>
+<li>哪些地方曾经存在阻塞或风险。</li>
+</ul>
+<h3 id="102">10.2 里程碑作为组织层接口<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>对工程师来说，阶段计划可能已经足够；但对管理者、评审和跨团队协作方来说，milestone 往往是更容易沟通的对象。它把复杂技术过程转换成更可执行的组织节奏。</p>
+<p>图P10-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-7：运行记录与里程碑板示意图" src="../../../images/part14/p10/Wang-Project10-Fig07.svg" /></a>
+<em>图 P10-7：运行记录与里程碑板示意图</em></p>
+<hr />
+<h2 id="11">11. 指标解读：系统级信号的含义<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>P10 当前给出的关键结果包括：</p>
+<ul>
+<li>当前出版口径应纳入项目 <code>15</code> 个；</li>
+<li>已规划阶段 <code>5</code> 个；</li>
+<li>已汇总接口 <code>17</code> 个；</li>
+<li>上游检查通过 <code>103/103</code>；</li>
+<li>飞轮架构 <code>5</code> 层；</li>
+<li>控制点 <code>4</code> 个；</li>
+<li>治理边界 <code>4</code> 条；</li>
+<li>阶段完成率 <code>100.00%</code>；</li>
+<li>平均阶段评分 <code>0.924</code>；</li>
+<li>当前主要瓶颈 <code>3</code> 项。</li>
+</ul>
+<p>这些数字主要反映三个系统层面的结论。</p>
+<p>第一，早期 P01-P09 最小闭环已经达到可被纳入总装层的状态。<code>103/103</code> 的上游检查通过结果说明，基础项目当前处于可集成状态；在第十四篇扩展到 P15 后，还需要把 P11-P15 的配方、推理、多模态、视频和企业应用产物补入同一 registry，并为新增项目建立同等检查口径。</p>
+<p>第二，飞轮结构已经不只是“有很多项目”，而是形成了分层结构、阶段设计和治理边界，这让它开始具备系统级可讨论性。</p>
+<p>第三，P10 已经开始识别系统瓶颈。总装层的价值不在于证明系统已经完美，而在于为下一轮优化提供清晰的优先级。</p>
+<h3 id="111">11.1 系统指标与单项模型指标的区别<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>单项模型指标通常回答“模型效果怎样”；而系统指标回答的是：</p>
+<ul>
+<li>项目之间能否整合；</li>
+<li>阶段是否闭环；</li>
+<li>治理是否完整；</li>
+<li>哪些地方会限制下一轮扩展。</li>
+</ul>
+<p>P10 的独特之处，在于它衡量的不是局部最优，而是一条工程链是否已经具备闭环能力。</p>
+<hr />
+<h2 id="12">12. 瓶颈分析：飞轮连通后的关键约束<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>系统链路连通并不等于系统已经成熟。P10 明确列出了当前主要瓶颈，用于说明飞轮的完成度、约束条件和下一阶段投入重点。</p>
+<p>当前项目识别出的三个主要瓶颈包括：</p>
+<ul>
+<li>基础语料规模约束；</li>
+<li>PRM 验证 gap；</li>
+<li>平台回归处理问题。</li>
+</ul>
+<h3 id="121">12.1 基础语料规模约束<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>飞轮并不是只靠后端监督或应用反馈就能自动变强。上游基础语料的规模与质量，依然决定整个系统的地基是否足够稳。如果基础层过薄，下游很多能力扩展都会受到限制。</p>
+<h3 id="122-prm-gap">12.2 PRM 验证 gap<a class="headerlink" href="#122-prm-gap" title="Permanent link">&para;</a></h3>
+<p>因为推理与过程监督是很多 LLM 系统逐步成熟的重要部分。如果验证链条本身还不够稳定，那么下游模型即使表现不错，也可能缺少足够强的可解释与可审计支撑。</p>
+<h3 id="123">12.3 平台回归对飞轮的影响<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>飞轮一旦形成，就意味着多个项目共享平台和流程。此时任何平台回归，都不再只是局部问题，而会影响多个下游环节。因此，平台治理在飞轮里不是配套项，而是核心稳定器。</p>
+<h3 id="124">12.4 把瓶颈纳入主体的必要性<a class="headerlink" href="#124" title="Permanent link">&para;</a></h3>
+<p>瓶颈分析用于说明三件事：</p>
+<ul>
+<li>系统当前已经达到的完成度；</li>
+<li>仍未解决的关键问题；</li>
+<li>下一轮优化最值得投入的方向。</li>
+</ul>
+<p>图P10-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-8：飞轮瓶颈定位图" src="../../../images/part14/p10/Wang-Project10-Fig08.svg" /></a>
+<em>图 P10-8：飞轮瓶颈定位图</em></p>
+<hr />
+<h2 id="13">13. 成本与共享收益<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>系统级复用既带来共享收益，也引入额外集成成本。P10 当前估算结果显示，跨项目人工复核工时约为 <code>8.06</code> 小时，对应成本约 <code>850.33</code> 元。这说明飞轮已经开始把共享成本显式化，而不是默认整合为零成本。</p>
+<h3 id="131">13.1 总装层的集成成本<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>飞轮并不是自动复用机制。上游项目要被整理成可集成状态，通常需要：</p>
+<ul>
+<li>统一接口；</li>
+<li>汇总元信息；</li>
+<li>对齐检查结果；</li>
+<li>生成新一层报告与 dashboard；</li>
+<li>在必要时重新做人审与复核。</li>
+</ul>
+<h3 id="132">13.2 共享平台收益体现在哪里<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>从源码逻辑看，P10 不只是计算了人工复核成本，也显式给出了共享平台收益和复用示例，例如语料与 manifest 的多项目复用、推理反馈与工具模板的复用、P8/P9 的集中治理收益等。这种写法把“飞轮能带来什么”从抽象口号变成了具体收益项。</p>
+<hr />
+<h2 id="14">14. 代码展开三：在评估脚本中生成系统级指标<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p><code>src/evaluate_flywheel.py</code> 负责把散落在多份产物中的结果收束成系统级指标与总报告。</p>
+<p>代码清单P10-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">total_manual_review_hours</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;estimated_manual_review_hours&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">total_manual_review_cost_rmb</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;estimated_manual_review_cost_rmb&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">registry</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">stage_completion_rate</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;completed&quot;</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">runs</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">avg_stage_score</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;score&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">runs</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">bottlenecks</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;foundation_corpus_scale&quot;</span><span class="p">,</span> <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;P1 final retention is only 17.37%, limiting base corpus growth.&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;prm_validation_gap&quot;</span><span class="p">,</span> <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;P6 validation pass rate is 0.6759, leaving room for stronger trace verification.&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;platform_regression_handling&quot;</span><span class="p">,</span> <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;low&quot;</span><span class="p">,</span> <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;P8 still observed one regressed run and one failed run, so release gates should stay strict.&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P10-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段计算逻辑把系统级判断落实为结构化指标与结构化结论。报告中的主要结论由 registry、runs 和其他中间产物共同支撑，而不是来自主观归纳。</p>
+<h3 id="141">14.1 系统级指标的计算基础<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>这里的关键点在于两个维度同时成立：</p>
+<ul>
+<li>正文需要解释系统级指标的工程意义；</li>
+<li>这些结论需要由结构化计算过程支撑。</li>
+</ul>
+<p>因此，这段代码承担的是从指标生成到结果解读的连接作用。</p>
+<p>图P10-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-9：系统级指标生成逻辑图" src="../../../images/part14/p10/Wang-Project10-Fig09.svg" /></a>
+<em>图 P10-9：系统级指标生成逻辑图</em></p>
+<hr />
+<h2 id="15">15. 验证闭环：一致性检查机制<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>总装层项目是否成熟，不能只看是否输出了报告，还要看是否建立了一致性验证机制。否则，就会出现说明和图示已经完成，而底层产物并不一致的情况。</p>
+<p>P10 当前检查结果为：</p>
+<ul>
+<li>总检查项：<code>13</code></li>
+<li>通过检查项：<code>13</code></li>
+<li>总体状态：<code>PASS</code>。</li>
+</ul>
+<p>同时，验证覆盖包括：</p>
+<ul>
+<li>命令级检查项 <code>2</code> 个；</li>
+<li>数据/产物级检查项 <code>11</code> 个；</li>
+<li>命令级覆盖 <code>py_compile, evaluate_flywheel</code>；</li>
+<li>数据级覆盖 <code>required_files_exist</code>、<code>all_upstream_projects_registered</code>、<code>phase_inventory_consistent</code>、<code>architecture_layers_and_control_points_present</code>、<code>stage_plan_covers_end_to_end</code>、<code>flywheel_runs_complete</code> 等关键项目。</li>
+</ul>
+<h3 id="151">15.1 系统项目的检查脚本<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>因为系统项目最容易发生“局部都对、整体不通”的问题。例如：</p>
+<ul>
+<li>某个 JSON 文件存在，但字段已经和报告不一致；</li>
+<li>某个阶段计划写得很好，但 milestone 没有同步更新；</li>
+<li>代码能运行，但总报告仍引用旧数据；</li>
+<li>项目已经补充了治理边界，但检查项并未覆盖。</li>
+</ul>
+<h3 id="152-pass">15.2 PASS 的工程含义<a class="headerlink" href="#152-pass" title="Permanent link">&para;</a></h3>
+<p>PASS 说明 P10 当前已经具备代码、产物、统计和报告相互对齐的最小闭环。对于总装层项目，这意味着章节并非停留在文档整理，而是建立了重组、验证与再表达的一致性链路。</p>
+<hr />
+<h2 id="16">16. 代码展开四：将检查机制写成工程契约<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>P10 的 <code>src/run_p10_checks.py</code> 脚本，把总装层的验收规则写成了可执行工程契约。</p>
+<p>代码清单P10-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">run_command</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="s2">&quot;command&quot;</span><span class="p">:</span> <span class="n">command</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="s2">&quot;returncode&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span class="s2">&quot;stdout&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="s2">&quot;stderr&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P10-5：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段结构体现了检查机制的几个基本要求：</p>
+<ul>
+<li>命令执行结果要被结构化记录；</li>
+<li>检查结果不能只看终端输出；</li>
+<li>通过与失败都要能进入后续报告；</li>
+<li>系统状态必须可追踪、可复核。</li>
+</ul>
+<p>再往下看，主函数还会读取 registry、architecture、boundaries、stage_plan、runs、metrics 和 dashboard 等多类产物。这说明检查并不是针对单个文件，而是针对总装层一致性的检查。</p>
+<h3 id="161">16.1 工程契约在总装层中的位置<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>这一节说明，P10 并不止于汇总上游项目，还把总装层自身纳入了工程质量管理。对于整章来说，这一部分承担的是把系统整合与质量契约连接起来的作用。</p>
+<p>图P10-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p10/Wang-Project10-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P10-10：检查脚本与系统契约图" src="../../../images/part14/p10/Wang-Project10-Fig10.svg" /></a>
+<em>图 P10-10：检查脚本与系统契约图</em></p>
+<hr />
+<h2 id="17">17. 主要交付物：系统交付清单<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>对于系统总装项目，交付物清单是判断系统是否完成结构化落地的重要依据。P10 当前已经形成了较完整的交付清单，包括：</p>
+<ul>
+<li><code>data/processed/upstream_project_registry.json</code></li>
+<li><code>data/processed/phase_inventory.json</code></li>
+<li><code>data/processed/flywheel_architecture.json</code></li>
+<li><code>data/processed/system_boundaries.json</code></li>
+<li><code>data/processed/stage_plan.json</code></li>
+<li><code>data/processed/flywheel_runs.jsonl</code></li>
+<li><code>data/processed/bottleneck_analysis.json</code></li>
+<li><code>data/processed/cost_model.json</code></li>
+<li><code>data/processed/org_operating_model.json</code></li>
+<li><code>data/console/milestone_board.json</code></li>
+<li><code>data/console/executive_dashboard.json</code></li>
+<li><code>data/reports/p10_metrics.json</code></li>
+<li><code>data/reports/p10_report.md</code></li>
+<li><code>data/reports/p10_test_results.json</code></li>
+<li><code>data/reports/p10_test_report.md</code>。</li>
+</ul>
+<h3 id="171">17.1 交付物清单的作用<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>这组交付物说明总装层已经沉淀为一套可复核的具体资产，并分别服务于不同角色：</p>
+<ul>
+<li>工程师看 processed 数据；</li>
+<li>项目经理看 milestone 与 dashboard；</li>
+<li>评审看 report 与 metrics；</li>
+<li>QA 或平台角色看 test_results 与 test_report。</li>
+</ul>
+<h3 id="172">17.2 与普通项目清单的区别<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p>普通项目清单往往只列出“代码、报告、图表”。P10 的清单更接近系统接口目录，说明不同层面的信息已经被拆分、组织并对外暴露。</p>
+<hr />
+<h2 id="18">18. 组织与协同：总装层的职责接口<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>前面很多章节更偏向单一能力模块，而 P10 天然要求跨项目、跨阶段、跨角色协同。总装层的稳定性不仅依赖代码实现，也依赖职责接口是否清晰。</p>
+<h3 id="181">18.1 总装层涉及的关键职责面<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<p>从 P10 的结构看，至少包括以下几类角色：</p>
+<ul>
+<li>上游项目负责人：保证各自项目产物、指标和测试状态可供总装层消费；</li>
+<li>数据/训练工程角色：理解各类输入输出接口，保证 processed 资产可被复用；</li>
+<li>平台角色：负责 dashboard、版本、回滚与运行治理；</li>
+<li>隐私/治理角色：确保敏感数据、审计与边界控制被显式纳入飞轮；</li>
+<li>评审或项目管理角色：基于里程碑和阶段计划做跨团队复盘。</li>
+</ul>
+<h3 id="182">18.2 协同结构的必要性<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<p>很多团队在第一次搭建系统飞轮时，问题并不出在实现能力，而是出在协同结构本身：</p>
+<ul>
+<li>没有人负责总装层；</li>
+<li>没有人统一维护 registry；</li>
+<li>没有人定义跨阶段接口；</li>
+<li>没有人把治理要求写成工程对象；</li>
+<li>所有信息都散落在口头沟通里。</li>
+</ul>
+<p>因此，飞轮首先是一种组织化工程结构，其次才是一组脚本。</p>
+<hr />
+<h2 id="19-executive-dashboard">19. 管理视图：executive dashboard<a class="headerlink" href="#19-executive-dashboard" title="Permanent link">&para;</a></h2>
+<p>如果说 processed 目录和检查脚本服务于工程侧，那么 executive dashboard 更偏向组织侧。它的作用在于把复杂的跨项目状态压缩为可快速理解的控制面板。</p>
+<h3 id="191-dashboard">19.1 dashboard 在飞轮中解决什么问题<a class="headerlink" href="#191-dashboard" title="Permanent link">&para;</a></h3>
+<p>它解决的是下面这些问题：</p>
+<ul>
+<li>当前飞轮整体是否健康；</li>
+<li>哪些阶段已经完成；</li>
+<li>哪些瓶颈最值得优先处理；</li>
+<li>是否存在跨项目回归风险；</li>
+<li>共享平台和治理层是否发挥作用。</li>
+</ul>
+<h3 id="192-dashboard">19.2 dashboard 的系统角色<a class="headerlink" href="#192-dashboard" title="Permanent link">&para;</a></h3>
+<p>因为飞轮一旦进入组织级视角，就不可能只靠工程师自己读 JSON 文件来运转。总会有更多角色需要一眼看懂系统状态。dashboard 的价值，就在于为总装层提供统一可视化入口。</p>
+<hr />
+<h2 id="20">20. 局限与风险<a class="headerlink" href="#20" title="Permanent link">&para;</a></h2>
+<p>P10 当前已经形成了较完整的系统结构，但它依然有较为明确的局限。</p>
+<p>首先，它高度依赖第十四篇各项目的报告准确性和产物完整性。如果上游项目本身统计有误、字段失真或测试不完整，那么 P10 再完整，也只能在错误输入上进行结构化整合。随着 P11-P15 加入，registry 还要额外记录模型配方、推理轨迹、多模态样本、视频片段和 DataAgent 服务资产，否则总装层会继续停留在 P01-P09 的旧边界内。</p>
+<p>其次，当前识别出的瓶颈仍主要集中在基础语料规模、PRM 验证质量和平台回归控制上。这说明飞轮虽然已经形成，但还没有完全进入“高频自增强”状态。</p>
+<p>最后，这仍然是一张<strong>离线系统设计图</strong>。它距离真实在线飞轮，还存在监控、实验反馈、在线策略切换、用户行为采集和自动预算控制等工程差距。</p>
+<h3 id="201">20.1 局限说明的作用<a class="headerlink" href="#201" title="Permanent link">&para;</a></h3>
+<p>局限说明的意义，在于帮助界定当前系统的完成度与后续扩展方向：</p>
+<ul>
+<li>什么已经验证；</li>
+<li>什么仍在过渡态；</li>
+<li>下一阶段最可能补齐哪些环节。</li>
+</ul>
+<hr />
+<h2 id="21_1">21. 向在线飞轮扩展：下一阶段的重点<a class="headerlink" href="#21_1" title="Permanent link">&para;</a></h2>
+<p>P10 已经给出了几条清晰的后续扩展方向，包括：</p>
+<ul>
+<li>把更多在线反馈、A/B 实验和成本预算纳入飞轮；</li>
+<li>继续强化跨团队阶段复盘、治理节奏和接口契约；</li>
+<li>把 executive dashboard 从静态报告推进到持续更新的控制面板。</li>
+</ul>
+<h3 id="211">21.1 在线反馈回流<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>因为只有当应用层反馈真正回流到数据与训练层，飞轮才会从“静态闭环”进入“动态闭环”。这一步会显著提升系统的现实价值，但也会增加治理复杂度。</p>
+<h3 id="212-ab">21.2 A/B 实验与预算控制的预留<a class="headerlink" href="#212-ab" title="Permanent link">&para;</a></h3>
+<p>因为很多团队等到系统已经很大时才开始补这两块，代价往往更高。把它们提前作为扩展方向写进来，有助于在设计早期就预留这些位置。</p>
+<hr />
+<h2 id="22_1">22. 本章在全书中的收束作用<a class="headerlink" href="#22_1" title="Permanent link">&para;</a></h2>
+<p>P10 位于全书后段，其作用在于对前面项目进行系统级收束。</p>
+<p>前面的项目分别处理：</p>
+<ul>
+<li>某一类数据的生产方式；</li>
+<li>某一类监督的构造方法；</li>
+<li>某一类应用的承接路径；</li>
+<li>某一类平台与治理机制的落地方式。</li>
+</ul>
+<p>而 P10 处理的是这些能力之间的系统级组织关系：</p>
+<ul>
+<li>各类能力如何被组织成一条可复用的系统链；</li>
+<li>组织能力如何在单点能力之上形成稳定结构；</li>
+<li>章节之间如何从并列关系转为前后依赖、相互解释的整体体系。</li>
+</ul>
+<p>因此，P10 的作用不在于增加新的局部能力，而在于把前面项目从并列集合组织成结构完整的方法体系。</p>
+<hr />
+<h2 id="23_1">23. 主要交付物清单与代码索引<a class="headerlink" href="#23_1" title="Permanent link">&para;</a></h2>
+<h3 id="231">23.1 主要文档与报告<a class="headerlink" href="#231" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>p10_report.md</code></li>
+<li><code>p10_metrics.json</code></li>
+<li><code>p10_test_report.md</code></li>
+<li><code>p10_test_results.json</code></li>
+</ul>
+<h3 id="232">23.2 主要处理中间产物<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>upstream_project_registry.json</code></li>
+<li><code>phase_inventory.json</code></li>
+<li><code>flywheel_architecture.json</code></li>
+<li><code>system_boundaries.json</code></li>
+<li><code>stage_plan.json</code></li>
+<li><code>flywheel_runs.jsonl</code></li>
+<li><code>bottleneck_analysis.json</code></li>
+<li><code>cost_model.json</code></li>
+<li><code>org_operating_model.json</code></li>
+</ul>
+<h3 id="233">23.3 主要控制台产物<a class="headerlink" href="#233" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>milestone_board.json</code></li>
+<li><code>executive_dashboard.json</code></li>
+</ul>
+<h3 id="234">23.4 主要源码索引<a class="headerlink" href="#234" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>src/collect_upstream_projects.py</code></li>
+<li><code>src/build_flywheel.py</code></li>
+<li><code>src/evaluate_flywheel.py</code></li>
+<li><code>src/run_p10_checks.py</code></li>
+<li><code>src/pipeline_utils.py</code></li>
+</ul>
+<h3 id="235">23.5 交付物与代码索引的用途<a class="headerlink" href="#235" title="Permanent link">&para;</a></h3>
+<p>这里的目标，是让读者明确：</p>
+<ul>
+<li>应该去看哪些文件；</li>
+<li>哪些代码对应哪些章节逻辑；</li>
+<li>哪些产物可以拿来复核；</li>
+<li>哪些结构可以复用到自己的项目里。</li>
+</ul>
+<hr />
+<h2 id="24">24. 结语：持续性比速度更重要<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
+<p>“数据飞轮”通常会让人联想到增长、自动化和不断加速。但从工程角度看，飞轮更核心的价值在于<strong>持续性</strong>。</p>
+<p>它体现的是以下几项系统能力：</p>
+<ul>
+<li>项目成果能够在后续项目中持续保留与复用；</li>
+<li>数据、模型、应用和治理不再彼此割裂；</li>
+<li>系统可以在多轮迭代中保留结构、边界和记忆；</li>
+<li>组织能够从项目堆叠转向能力体系建设。</li>
+</ul>
+<p>P10 的价值并不只是总结前面若干项目，而是把第十四篇 P01-P15 重新组织为一条可解释、可检查、可扩展的端到端系统链。这也是本章最重要的工程意义。</p>
+<hr />
+<h2 id="_11">专题：飞轮中的反馈回流设计<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>飞轮之所以叫“飞轮”，关键不在于它覆盖了很多层，而在于它能够形成回流。如果只有数据进入模型、模型进入应用、应用产生结果，却没有把结果重新组织成下一轮数据与治理输入，那么系统本质上仍然是一次性的线性流水线。</p>
+<h3 id="_12">一、反馈不只是用户点赞或差评<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>很多团队在谈反馈回流时，第一反应是收集用户满意度。但对 LLM 系统来说，真正有价值的反馈远不止这一类。更完整的反馈通常至少包括：</p>
+<ul>
+<li>应用层的失败问答、拒答、幻觉和检索误召回；</li>
+<li>Agent 执行中的工具调用失败、记忆漂移和恢复轨迹；</li>
+<li>多模态 RAG 中的证据页缺失、图表误读和跨页整合错误；</li>
+<li>人工评测中的偏好对、打分记录和修正意见；</li>
+<li>隐私治理中的阻断事件、脱敏缺口和审计告警；</li>
+<li>平台层的回归实验、rollback、incident review 和例外审批记录。</li>
+</ul>
+<p>这些反馈共同组成了一套“系统行为证据”。如果只保留最后一层的用户满意度，团队能够看到症状，却无法知道症状来自哪一层。</p>
+<h3 id="schema_1">二、反馈事件需要统一 schema<a class="headerlink" href="#schema_1" title="Permanent link">&para;</a></h3>
+<p>飞轮要形成真正可复用的回流能力，反馈必须先被统一成结构化事件，而不能只停留在聊天记录、表格备注或零散 issue 里。一个可用的反馈事件，通常至少要包含：</p>
+<ul>
+<li>反馈来源，说明它来自应用、评测、平台、治理还是人工校验；</li>
+<li>关联项目和阶段，说明它更接近 P02、P05、P07、P08 还是 P09 一类问题；</li>
+<li>失败类型或改进类型，区分是数据缺口、检索缺口、模型缺口还是流程缺口；</li>
+<li>影响范围，说明问题影响的是单条样本、某类任务、某个项目还是整条系统链；</li>
+<li>建议动作，说明反馈最终应进入哪一类返工或优化队列。</li>
+</ul>
+<p>只有当这些字段被显式保留，反馈才真正能被下游流程消费。否则再多反馈也只能作为经验存在，而不能进入飞轮。</p>
+<h3 id="_13">三、回流的关键不是“自动”，而是“可分流”<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>飞轮设计里一个常见误区，是过早追求“全自动反馈回流”。但在大多数团队的实际阶段，更重要的是先做到“可分流”，也就是能把反馈可靠地送到正确的上游项目，而不是让所有问题都重新回到总装层。</p>
+<p>例如：</p>
+<ul>
+<li>如果问题主要来自法律问答的风险拒答不足，它应优先进入 P02 类 SFT 与偏好数据补强；</li>
+<li>如果问题来自图表误读或目录页误召回，它应回到 P05 类多模态 RAG 评测与检索优化；</li>
+<li>如果问题来自工具调用轨迹混乱，它更可能属于 P07 的 Agent Tool-use 训练改造；</li>
+<li>如果问题来自回归实验和版本失控，它更应由 P08 的平台治理对象承接；</li>
+<li>如果问题来自隐私边界触发与数据拦截，则应由 P09 的隐私流程升级优先吸收。</li>
+</ul>
+<p>从系统角度看，分流能力比自动化本身更重要。因为只要分流做对了，哪怕后面仍需要人工介入，飞轮也已经形成正确方向；反过来，如果自动化很强但分流总是错，系统只会更快地把问题送到错误位置。</p>
+<h3 id="_14">四、反馈回流如何进入下一轮版本<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>反馈事件形成之后，还需要一个能进入版本周期的闭环。比较成熟的做法通常包括以下四步：</p>
+<ul>
+<li>先做聚类，把零散事件聚成若干高频问题主题；</li>
+<li>再做优先级排序，区分必须立即阻断的问题和可以排期优化的问题；</li>
+<li>然后映射到具体项目与阶段，生成下一轮版本待办；</li>
+<li>最后在下一次总装评审时复盘“哪些反馈已被吸收、哪些仍在排队、哪些已确认不处理”。</li>
+</ul>
+<p>这样设计的价值，是让反馈不再只是情绪性或偶发性输入，而是稳定进入版本推进节奏。飞轮真正需要的，不是“反馈越来越多”，而是“反馈越来越有处可去”。</p>
+<hr />
+<h2 id="_15">专题：预算、优先级与投资回报<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>P10 这种总装层项目还有一个很现实的问题，就是它会同时暴露很多值得做的事情。既然上游九个项目都能提供扩展方向，团队就必须回答：在资源有限的情况下，下一步先投什么，为什么先投它。</p>
+<h3 id="_16">一、优先级判断不应只看单点效果<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>在飞轮体系里，一个看似局部的小改动，可能会带来很大的系统收益；反过来，一个看起来“很强”的单点项目，如果无法被其他层复用，整体收益可能并不高。因此，优先级判断至少要同时考虑四个维度：</p>
+<ul>
+<li>影响范围，某项改动影响单一模块，还是能改善多个下游环节；</li>
+<li>可复用性，改动形成的是一次性成果，还是长期可复用的系统资产；</li>
+<li>风险暴露度，当前问题是否已经频繁出现在核心链路上；</li>
+<li>落地成本，团队是否具备当前阶段足够的实现与维护能力。</li>
+</ul>
+<p>把这四个维度放在一起看，很多决策就会更清楚。例如，补齐统一反馈 schema 可能看起来没有训练一个新模型那么“显眼”，但它对整个飞轮的可持续性价值可能更大。</p>
+<h3 id="_17">二、系统项目更适合看“杠杆率”<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>对于总装层，最值得优先推进的事情，通常不是单次收益最高的，而是杠杆率最高的。所谓杠杆率，可以简单理解为：一项投入是否能够同时降低多个项目的重复成本、沟通成本和回归成本。</p>
+<p>从当前飞轮结构看，往往具备高杠杆率的方向包括：</p>
+<ul>
+<li>统一 registry 和接口契约，减少上游项目接入成本；</li>
+<li>强化评测门禁和质量基线，减少错误版本进入系统的概率；</li>
+<li>补齐反馈回流与分流机制，减少问题在总装层堆积；</li>
+<li>完善 dashboard 与里程碑机制，降低组织协作的不确定性；</li>
+<li>强化平台治理与 rollback 机制，降低飞轮放大后的恢复成本。</li>
+</ul>
+<p>这些动作未必最“炫”，但往往最能决定飞轮能不能真正稳定转起来。</p>
+<h3 id="_18">三、预算分配应同时覆盖增长项与防守项<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>总装层最容易出现的一种偏差，是把预算都投向增长项，例如更多数据、更大模型、更多功能，而低估防守项的重要性。事实上，飞轮越往后期走，防守项的价值越大，因为它们决定系统是否还能在扩张中保持可控。</p>
+<p>一个更平衡的预算视角通常需要同时覆盖：</p>
+<ul>
+<li>增长项，例如新数据源、新任务形态、新应用链路；</li>
+<li>提效项，例如接口统一、自动检查、批量评测和流水线优化；</li>
+<li>防守项，例如隐私治理、审计、rollback、事故复盘与质量门禁；</li>
+<li>组织项，例如 dashboard、里程碑、跨团队协议和版本评审机制。</li>
+</ul>
+<p>如果预算长期只投增长项，飞轮会看起来越来越快，但内部摩擦和隐藏风险也会越来越高；如果预算长期只投防守项，系统又可能陷入保守、难以形成外部价值。因此，总装层真正需要的是平衡，而不是单边拉满。</p>
+<h3 id="_19">四、投资回报要看“系统记忆”是否积累<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>单个项目的回报通常可以看得比较直接，比如样本更多了、准确率更高了、延迟更低了。但飞轮型项目有一项更关键、也更容易被忽略的回报，就是系统记忆是否在积累。</p>
+<p>所谓系统记忆，指的是这些东西是否越来越多地被沉淀下来并能被下一轮直接复用：</p>
+<ul>
+<li>哪类资产进入 registry；</li>
+<li>哪类失败会被自动识别；</li>
+<li>哪些控制点已经被写入治理边界；</li>
+<li>哪些问题能够通过 dashboard 和检查脚本快速暴露；</li>
+<li>哪些团队协作模式已经变成固定节奏。</li>
+</ul>
+<p>只要这些记忆在持续积累，飞轮的 ROI 就不应只用短期效果来评判。因为它建设的是“以后每一轮都能少走多少弯路”的能力。</p>
+<hr />
+<h2 id="_20">专题：总装层年度推进路线<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
+<p>P10 当前展示的是一个离线、教学型、但结构已经比较完整的飞轮总装层。若把它进一步推进到更成熟的组织实践中，一个比较务实的年度推进路线，通常可以按“先统一、再门禁、后在线”的节奏展开。</p>
+<h3 id="_21">一、第一阶段：统一资产与契约<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>年度的起点通常不应是扩更多功能，而应是先把总装层最基础的接口统一起来。这个阶段的重点包括：</p>
+<ul>
+<li>统一上游项目的 registry 字段；</li>
+<li>统一 metrics、test results 和 report 的最小接口；</li>
+<li>统一 processed 资产的命名、版本和来源记录；</li>
+<li>统一跨项目阶段划分和交付清单。</li>
+</ul>
+<p>这一阶段做完之后，飞轮最大的收益不是“更智能”，而是“更清楚”。所有项目开始用相近的方式被总装层消费，后续自动检查、里程碑看板和反馈回流才会有共同基础。</p>
+<h3 id="_22">二、第二阶段：补齐质量门禁与治理控制<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>当资产与契约基本统一后，下一步应优先补齐门禁和治理，而不是立即转向复杂在线化。因为没有门禁的飞轮，只会把更多不稳定内容更快地放大出去。</p>
+<p>这一阶段可以重点推进：</p>
+<ul>
+<li>关键阶段的质量基线定义；</li>
+<li>发布前检查脚本与审批规则；</li>
+<li>rollback 条件与 incident review 触发机制；</li>
+<li>隐私与合规控制点的前置化。</li>
+</ul>
+<p>这一步的目标，是让飞轮从“连起来了”升级为“连起来之后也可控”。</p>
+<h3 id="_23">三、第三阶段：引入在线反馈与实验机制<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p>在前两个阶段相对稳固之后，飞轮才适合引入更多在线化元素。例如：</p>
+<ul>
+<li>应用层用户反馈回收；</li>
+<li>A/B 实验结果沉淀；</li>
+<li>运行时预算与资源消耗监控；</li>
+<li>高频问题自动聚类与回流；</li>
+<li>面向总装层的持续更新 dashboard。</li>
+</ul>
+<p>在线化的难点不在于采集数据，而在于让这些数据能以工程化方式回到上游项目。也正因此，在线化更适合作为第三阶段，而不是第一阶段。</p>
+<h3 id="_24">四、第四阶段：形成跨团队稳定运营<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p>当系统已经具备统一接口、质量门禁和在线反馈后，飞轮就可以进一步进入跨团队稳定运营阶段。这一阶段的关键不是技术复杂度，而是组织可持续性，包括：</p>
+<ul>
+<li>固定的阶段评审与里程碑机制；</li>
+<li>清晰的总装层 owner 与上游对接人；</li>
+<li>面向业务、治理和工程三类角色的不同 dashboard；</li>
+<li>明确的预算评审、优先级评审和复盘节奏；</li>
+<li>可持续维护的文档、报告与知识库。</li>
+</ul>
+<p>如果这一步走通，飞轮就不再只是一本书中的案例，而会逐渐具备进入真实组织实践的形态。它未必一步到位成为企业级平台，但已经具备从项目集合演化为系统能力的基本条件。</p>
+<hr />
+<h2 id="_25">专题：飞轮总装的风险台账与季度复盘<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h2>
+<p>P10 作为总装层，还有一个特别值得补出来的工程动作，就是风险台账。因为总装层最容易出现的假象，是“所有项目都在推进，所以系统也在推进”。但真实情况往往是，局部项目在进步，系统级风险也可能同时在积累。如果没有风险台账，总装层就很难持续做出正确的优先级判断。</p>
+<h3 id="_26">一、总装层最需要记录的是跨项目风险<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<p>与单项目不同，P10 更应重点记录那些跨项目传播的风险。例如：</p>
+<ul>
+<li>上游项目统计口径不一致，导致总装层 dashboard 失真；</li>
+<li>某一类评测集太弱，导致多个项目都对效果过度乐观；</li>
+<li>平台回归控制不足，导致风险版本仍可能进入后续环节；</li>
+<li>隐私边界没有被同步继承，导致应用层与数据层之间出现治理断点；</li>
+<li>反馈回流缺乏统一 schema，导致问题虽然被发现，却无法稳定回到上游。</li>
+</ul>
+<p>这些风险的共同特点是，单看任何一个项目都像“局部问题”，但一旦放到飞轮里，就会变成系统性摩擦。因此，总装层的风险台账不能只摘抄上游问题，而要专门记录“这些问题会如何跨层传播”。</p>
+<h3 id="_27">二、季度复盘应围绕系统问题，而不是项目汇报<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>总装层做季度复盘时，最容易滑向另一种惯性，就是让每个项目各自汇报进展，然后把这些汇报机械拼接成一份系统总结。这样做当然能看到项目状态，却不一定能看到系统状态。</p>
+<p>更有效的季度复盘方式，通常应优先回答这些问题：</p>
+<ul>
+<li>本季度飞轮最明显的系统瓶颈是什么；</li>
+<li>哪些上游改进真正传导到了下游收益；</li>
+<li>哪些风险反复出现，说明已经不再是单点偶发；</li>
+<li>哪些治理动作有效降低了恢复成本；</li>
+<li>下一季度最值得优先投的杠杆项是什么。</li>
+</ul>
+<p>一旦复盘围绕这些问题展开，P10 就不再只是“总装展示层”，而会变成真正的系统决策入口。</p>
+<h3 id="_28">三、风险台账的价值在于形成组织记忆<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h3>
+<p>很多系统之所以每隔一段时间就会“重复犯老错”，不是因为团队不努力，而是因为组织记忆没有被沉淀下来。风险台账最重要的价值，不在于把问题列得更漂亮，而在于持续回答三件事：</p>
+<ul>
+<li>这个问题以前出现过没有；</li>
+<li>它当时是怎么被处理的；</li>
+<li>这次为什么又出现，说明哪一层机制还没有真正修好。</li>
+</ul>
+<p>只要这些信息能够在季度复盘中持续积累，飞轮就会逐渐具备一种需要重点关注的能力：不仅知道系统现在怎样，还知道系统为什么会走到现在这样。对于总装层来说，这种可追溯的组织记忆，往往比一次局部提效更有长期价值。</p>
+<hr />
+<h2 id="_29">专题：飞轮与业务价值的映射关系<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h2>
+<p>总装层项目还有一个很现实的挑战，就是它的价值常常不如单点项目那么直观。一个新的数据集、一个新的模型指标提升，通常很容易解释；而飞轮、治理、接口契约、总装看板这些东西，如果不主动映射到业务价值，就很容易被误解成“只有平台团队自己在关心”的工作。</p>
+<h3 id="_30">一、飞轮的第一层业务价值是减少重复建设<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h3>
+<p>当 registry、阶段规划和接口契约逐步稳定之后，业务最先感受到的通常不是“模型突然更强”，而是重复建设显著减少。以前每个项目都要重新整理输入输出、重新解释版本来源、重新建立评测口径；有了总装层，这些动作可以被越来越多地继承。这种减少重复建设的收益，往往是飞轮最先兑现、也最容易被低估的一部分价值。</p>
+<h3 id="_31">二、飞轮的第二层业务价值是缩短问题定位时间<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h3>
+<p>业务方并不一定关心 total registry 有多少字段，但会非常关心一件事：一旦系统表现异常，团队需要多久才能说清问题到底出在哪里。飞轮把项目、阶段、控制点、检查和风险台账连起来之后，最直接的收益之一，就是把定位路径变短。对组织来说，这意味着更少的扯皮、更短的恢复时间和更明确的优先级。</p>
+<h3 id="_32">三、飞轮的第三层业务价值是让扩展更可预测<a class="headerlink" href="#_32" title="Permanent link">&para;</a></h3>
+<p>当团队准备接入新数据源、新任务、新应用或新治理要求时，如果没有总装层，扩展往往像重新开一个新项目；有了飞轮之后，扩展则更像把新能力放进已有结构里。业务真正需要的，不只是系统越来越大，而是系统在变大时仍然可预测。P10 的长期价值，恰恰就在于帮助组织把“扩展”从一次次临时冲刺，逐步变成一种可规划的能力建设过程。</p>
+<hr />
+<h2 id="owner">专题：总装层 owner 的职责边界<a class="headerlink" href="#owner" title="Permanent link">&para;</a></h2>
+<p>飞轮要真正运转起来，还需要一个在很多团队里经常被忽视的角色，就是总装层 owner。没有这个角色，P10 很容易退化成“各方都看一下，但没有人真正负责”的汇总项目；有了这个角色，总装层才会成为持续性的系统入口。</p>
+<h3 id="owner_1">一、owner 负责的不是替代所有项目，而是维护系统主链<a class="headerlink" href="#owner_1" title="Permanent link">&para;</a></h3>
+<p>总装层 owner 最关键的职责，不是代替上游项目负责人做细节工作，而是维护几条系统主链：</p>
+<ul>
+<li>registry 和接口契约是否持续统一；</li>
+<li>阶段规划和里程碑是否仍然有效；</li>
+<li>检查脚本、风险台账和 dashboard 是否持续反映真实系统状态；</li>
+<li>跨项目问题是否被正确分流、跟进和复盘。</li>
+</ul>
+<p>只要这几条主链有人持续维护，飞轮就能长期保持结构完整；如果没有，系统很快就会重新碎片化。</p>
+<h3 id="owner_2">二、owner 还要负责把“系统语言”带进组织<a class="headerlink" href="#owner_2" title="Permanent link">&para;</a></h3>
+<p>总装层 owner 还有一个隐性但需要重点关注的职责，就是把系统语言带进组织协作。也就是说，让不同团队开始用同一套阶段、接口、控制点、风险和里程碑语言讨论问题。对飞轮来说，这种共同语言本身就是极高价值的基础设施，因为它会直接减少跨项目沟通中的模糊成本和解释成本。</p>
+<h2 id="_33">本章小结<a class="headerlink" href="#_33" title="Permanent link">&para;</a></h2>
+<p>本章以“端到端 LLM 数据飞轮”为案例，展示了把上游数据项目、反馈、评测和发布治理整合为持续改进的数据飞轮的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。强调组织级流程与资产整合，不替代单个模型训练系统或完整 MLOps 平台。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_34">参考文献<a class="headerlink" href="#_34" title="Permanent link">&para;</a></h2>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.</p>
+<p>Hugging Face (2026) Datasets Documentation. https://huggingface.co/docs/datasets/.</p>
+<p>Ray Project (2026) Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.</p>
+<p>MLflow Authors (2026) MLflow Documentation. https://mlflow.org/docs/latest/.</p>
+<p>Great Expectations Contributors (2026) Great Expectations Documentation. https://docs.greatexpectations.io/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

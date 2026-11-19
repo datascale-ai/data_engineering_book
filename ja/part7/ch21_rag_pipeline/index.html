@@ -1,0 +1,1847 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part7/ch21_rag_pipeline/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第21章：RAG 数据流水线 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#21rag" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第21章：RAG 数据流水线
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part7/ch21_rag_pipeline/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part7/ch21_rag_pipeline/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      应用级数据工程导读
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      章节导读
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#211-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 为什么 RAG 的根基是文档工程
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.1 为什么 RAG 的根基是文档工程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2111-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.1 RAG 系统问题的本质
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2112" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.2 文档工程的定义与工程内涵
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2113" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.3 文档结构对知识表达的决定性作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2114-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.4 RAG 数据链路的数学抽象与系统约束
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2115-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.5 RAG 错误的累积机制与误差分解
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2116-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.6 信息压缩视角下的 RAG 本质
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2117" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.7 生产级文档工程的核心能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2118" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.8 短板效应：数据决定系统上限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2119" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.9 工程案例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21110" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1.10 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#212" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 数据采集、解析与结构化清洗
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.2 数据采集、解析与结构化清洗">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2121" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.1 多源知识接入
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2122" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.2 文档解析
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2123" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.3 结构化清洗
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2124" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.4 语义切分与知识单元构建
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2125" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.5 工程挑战与质量评估
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2126" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2.6 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#213" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3 切分、索引与检索策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.3 切分、索引与检索策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2131-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.1 从知识单元到索引系统：RAG 检索能力的工程基础
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2132" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.2 索引粒度设计：父子索引、多粒度索引与上下文保持
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2133" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.3 向量检索、关键词检索、结构化检索与混合检索
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2134-rerank" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.4 Rerank
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2135" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.5 表格、结构化字段与多类型知识的统一索引
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2136" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.6 检索评估
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2137" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3.7 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#214" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4 评测、回灌与知识更新
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.4 评测、回灌与知识更新">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2141-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.1 为什么 RAG 系统必须建立评测闭环
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2142" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.2 分层评测
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2143" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.3 评测数据集构建
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2144" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.4 在线反馈与错误归因
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2145" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.5 知识更新与版本治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2146" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4.6 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#215-checklist-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5 企业案例与工程 Checklist：从文档流水线到生产级 RAG
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21.5 企业案例与工程 Checklist：从文档流水线到生产级 RAG">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2151-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.1 为什么需要用真实复杂文档验证 RAG 流水线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2152" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.2 复杂文档案例：企业差旅制度问答系统
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2153" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.3 端到端处理流程：从制度文档到可检索知识资产
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2154-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.4 知识单元 Schema 与代码清单
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2155-checklist-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.5 工程 Checklist：生产级 RAG 数据流水线的验收标准
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2156-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.6 从案例到方法：RAG 数据流水线的复用模式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2157" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5.7 本节小结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="21rag">第21章：RAG 数据流水线<a class="headerlink" href="#21rag" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">杜文卓；赵功鹏；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>检索增强生成（Retrieval-Augmented Generation，RAG）系统的回答质量上限，往往在查询抵达模型之前就已被前置的数据处理链路锁定。本章把 RAG 重新界定为一项文档工程（Document Engineering）问题：系统面向的并非原始文档，而是经过解析、清洗、结构化与切分后的数据表征，任一环节的信息损耗都会在后续流程中被逐级放大。全章沿数据流水线的真实走向组织，先论证 RAG 的根基在于文档工程而非末端生成，继而阐述多源知识的稳定接入、异构格式解析与结构化清洗，再讨论如何把知识单元转化为兼顾向量、关键词、结构化字段与父子层级的多路检索基础设施，随后建立面向整条链路的评测、错误归因、回灌与知识更新闭环，最后通过企业复杂文档案例与工程 Checklist，说明上述方法如何收敛为可追溯、可验证、可交付的生产级流水线。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>RAG 数据流水线；文档工程；检索增强生成；chunk 切分；知识更新；评测回灌</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够解释为什么 RAG 的性能上限由前置数据流水线而非末端生成模型决定。</li>
+<li>能够设计涵盖多源接入、异构格式解析与结构化清洗的文档工程处理链路。</li>
+<li>能够构建兼顾向量、关键词、结构化字段与父子层级的多路检索索引方案。</li>
+<li>能够设计 chunk 切分策略，在保留文档结构骨架的前提下控制语义断裂。</li>
+<li>能够建立面向全链路的评测、错误归因与知识回灌闭环以支撑生产级交付。</li>
+</ul>
+<hr />
+<h2 id="_4">应用级数据工程导读<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>随着大模型逐渐从具备能力走向落地应用，数据工程的关注重点也在发生转移。在前几篇中，本文更多讨论的是如何构建训练数据，使模型具备语言理解、生成、多模态处理以及推理与工具使用等能力。然而，在真实业务场景中，模型能力通常并不直接决定应用效果，而影响系统表现的往往是围绕应用场景构建的数据体系。在应用阶段，模型不再孤立运行，而是嵌入在复杂系统之中，与知识库、检索模块、上下文构造以及用户交互机制共同组成一个完整链路。此时，问题的核心不再只是“模型是否能回答”，而是“系统是否能稳定地回答正确问题”。例如，知识是否被正确接入与更新，检索是否能够命中关键内容，上下文是否被合理组织，以及模型输出是否具备可追溯依据，这些都成为决定应用质量的关键因素。</p>
+<p>因此，本篇聚焦大模型应用依赖的数据底座，讨论数据工程如何从“训练数据构建”升级为“应用数据闭环构建”。这里的数据不再是一次性构建的数据集，而是一个持续演进的系统资源：它既包括离线构建的知识库与索引结构，也包括在线产生的用户反馈、错误案例与行为数据。数据工程的目标，也从离线最优转向在线稳定，从静态优化转向持续运营。围绕这一转变，本篇将从 RAG 数据流水线、多模态检索与视觉知识处理，以及在线反馈闭环与知识更新三个方向展开，系统讨论应用级数据的接入、处理、评测与回流机制。与前几篇相比，这一阶段更强调跨模块协同与端到端视角：数据问题往往不是单点产生，而是在文档解析、检索、生成与反馈等多个环节中逐步放大，需要通过统一的指标体系与回流机制进行治理。</p>
+<p>本篇所要回答的核心问题是如何构建一个能够持续更新、可控演进、并最终形成数据飞轮的应用级数据工程体系。同时，这一体系不仅决定单次回答的质量，更决定系统是否能够在真实环境中长期稳定运行，并随着使用不断提升自身能力。</p>
+<h2 id="_5">章节导读<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<hr />
+<p>随着大模型在企业知识问答、文档理解与智能助手等场景中的广泛应用，RAG（Retrieval-Augmented Generation，检索增强生成）逐渐成为最主流的落地范式之一（Lewis et al. 2020; Gao et al. 2023）。相比纯模型生成，RAG 通过引入外部知识，使系统能够获得更强的事实性、更高的可控性以及更好的可更新能力。然而在实际工程中往往存在一种误区，人们习惯于将 RAG 的核心归结于检索算法或向量数据库的选型，却忽视了数据工程才是支撑其运转的基石。通过大量实践容易观察到，RAG 系统的失败往往并非源于模型能力不足，也并非单纯由于检索模型不够先进，而是来自更上游的数据问题。例如，文档解析不完整导致关键信息缺失，切分策略不合理造成语义断裂，元数据缺失使得检索结果难以排序与过滤，这些问题会在系统运行中逐步放大，最终表现为“答非所问”、“引用错误”或“无法回答”等现象。因此，RAG 的性能上限本质上由其数据流水线所决定。在这一背景下，本章聚焦RAG 的数据基础，讨论如何从原始知识源出发，构建一条完整且可控的数据流水线。这里的数据工程不只是简单的向量化处理，而是涵盖了从数据接入、解析清洗、结构化建模，到切分索引与检索策略设计的全链路过程。每一个环节都会直接影响最终生成效果，并且这些影响往往具有跨阶段传导的特性。</p>
+<p>与传统数据处理相比，RAG 数据流水线具有更强的结构依赖性和上下文敏感性。文档不仅需要被正确解析，还需要以适合检索与生成的方式被重新组织；数据不仅要干净，还要可被定位及正确引用。这意味着数据工程的核心目标已经发生转移，其重点不再局限于单纯提升数据本身的质量，而是转向全面提升数据被模型正确理解与使用的能力。围绕这一目标，本章将系统展开 RAG 数据流水线的关键组成部分：从多源知识的接入与解析，到结构化清洗与元数据补全，再到切分策略、索引构建与检索优化，以及最终的评测与回流机制。通过这一过程，本章将建立一个核心认知：在 RAG 系统中，数据并不是模型的输入前置步骤，而是决定系统是否可靠运行的基础设施。</p>
+<hr />
+<h2 id="211-rag">21.1 为什么 RAG 的根基是文档工程<a class="headerlink" href="#211-rag" title="Permanent link">&para;</a></h2>
+<h3 id="2111-rag">21.1.1 RAG 系统问题的本质<a class="headerlink" href="#2111-rag" title="Permanent link">&para;</a></h3>
+<p>相关研究表明，检索增强语言模型的收益不仅来自生成模型本身，也高度依赖检索到的外部证据是否能够被稳定接入和有效利用（Guu et al. 2020; Izacard and Grave 2021）。随着 RAG 在企业知识问答、文档助手、智能客服和行业知识系统中的广泛应用，其性能瓶颈逐渐显现。实践证明，系统的表现并非单纯取决于基座模型的能力，亦非局限于向量数据库或检索算法的选型。在大量落地实践中，即便引入了性能更强的模型与更先进的 Embedding 技术，系统输出仍存在显著且非随机的波动。这种不稳定性具有鲜明的结构性特征，表现为在特定类型的问题上应答自如，而在另一些场景下则出现系统性的失效。进一步分析表明，此类问题多源于数据处理链路的早期阶段，而非模型推理环节。当查询请求抵达模型时，答案生成的质量上限实际上已被前置的数据处理流程所锁定。模型仅负责对既定输入进行推理与表达，并不具备对底层数据的修复与重构能力。</p>
+<p>在这种背景下，将 RAG 简单理解为“检索 + 生成”的组合，是一种过度简化。在真实的生产环境中，模型并非直接面向原始文档进行推理，而是基于经过多轮复杂转换后的数据表征。如图21-1所示，这一转换链路涵盖文档解析、清洗与结构化、切分、索引构建等多个环节，任一节点的信息损耗或结构偏移，均会在后续流程中被逐级放大。故而，构建高效系统的核心在于对全链路数据处理机制的深度理解与优化，而非仅聚焦于末端的生成阶段。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-1：RAG 系统中的数据变换链路" src="../../../images/part7/Du-Chap21-Fig01-EN.svg" /></a></p>
+<p><em>图21-1：RAG 系统中的数据变换链路</em></p>
+<h3 id="2112">21.1.2 文档工程的定义与工程内涵<a class="headerlink" href="#2112" title="Permanent link">&para;</a></h3>
+<p>近年来的文档智能研究进一步说明，版面、视觉与文本信息的联合建模是复杂文档理解的重要基础，而不是纯文本抽取的附属环节（Kim et al. 2022）。因此，构建高可用 RAG 系统的首要任务，并非盲目对比 Embedding 模型在评测榜单上的得分，而是必须重新审视并确立文档工程（Document Engineering）在全链路中的核心地位（Xu et al. 2020）。</p>
+<p>在此，需对文档工程给出严谨的技术定义。文档工程绝非简单调用基础解析库将 PDF 或 Word 暴力转化为纯文本字符串的过程；它是将非结构化或半结构化的复杂人类知识源，降维并重构为一种能够被高维向量空间稳定表征、被检索引擎精准命中、被生成模型无歧义理解，且能够供终端用户溯源验证的机器友好型数据表示过程。该过程不仅涵盖基础的光学字符识别（OCR）与文本抽取，更深度涉及版面还原（Layout Analysis）、文档逻辑树重建（如章节-子章节-段落层级解析）、表格关系映射、图像说明绑定，以及对时间戳、作者、权限密级等元数据的系统化挂载（Huang et al. 2022; Appalaraju et al. 2021）。</p>
+<h3 id="2113">21.1.3 文档结构对知识表达的决定性作用<a class="headerlink" href="#2113" title="Permanent link">&para;</a></h3>
+<p>表格抽取与长上下文研究同样提示，结构位置、表头关系与上下文位置会显著影响后续信息利用效果（Smock, Pesala and Abraham 2022; Liu et al. 2024）。在大量未能实现预期业务价值的检索增强生成项目中，其数据预处理环节普遍存在范式缺陷。典型的做法是将海量异构文档直接导入解析脚本，在剥离全部版式特征后将其转化为纯文本流，继而依据硬编码的固定阈值（如 500 Tokens）进行机械式切片，最终输入至嵌入模型以构建向量索引（Karpukhin et al. 2020）。</p>
+<p>这种流水线式处理虽然具备极高的吞吐量，却从根本上忽视了知识组织的本质规律。专业领域的知识并非无结构的线性字符堆积，其语义密度与逻辑严谨性高度依赖于原生的物理版式与上下文关联（Reimers and Gurevych 2019）。例如：</p>
+<ul>
+<li><strong>制度与法律文件</strong>：大纲层级直接决定后续条款的适用范围与前置条件。</li>
+<li><strong>财务报告与技术手册</strong>：表格的行表头、列表头及合并单元格，赋予了孤立数值具体的业务语义。</li>
+<li><strong>SOP（标准作业程序）</strong>：步骤序列的先后关系决定了工业操作的合法性与安全性。</li>
+<li><strong>商业合同</strong>：前置的定义与释义条款构成了全文专业术语的特定解释域。</li>
+</ul>
+<p>若在解析和切分阶段，上述结构化骨架遭到破坏，即便所有文本字符均被无损保留，其承载的知识亦已沦为丧失逻辑关联的语义碎片。</p>
+<p>图21-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-2：文档从原始形态到 RAG 可用知识单元的结构变化" src="../../../images/part7/Du-Chap21-Fig02-EN.svg" /></a></p>
+<p><em>图21-2：文档从原始形态到 RAG 可用知识单元的结构变化</em></p>
+<h3 id="2114-rag">21.1.4 RAG 数据链路的数学抽象与系统约束<a class="headerlink" href="#2114-rag" title="Permanent link">&para;</a></h3>
+<p>从可解释、模块化知识接入的角度看，REALM 等工作已经将检索步骤显式纳入语言模型计算过程，说明 RAG 可以被理解为数据变换链路与生成函数的组合系统（Guu et al. 2020）。另一方面，从系统控制与信息论的视角分析，RAG 的最终输出可视为原始数据集经历多重非线性映射后的终态表达。若以原始文档集合 <span class="arithmatex">\(D\)</span> 为起始输入，全链路的处理过程可抽象为如下复合函数：</p>
+<div class="arithmatex">\[
+Y = f_{LLM}(Q, R(I(S(C(P(D))))))
+\]</div>
+<p>公式中各变量的具体工程含义如下：</p>
+<ul>
+<li><span class="arithmatex">\(D\)</span> (Document)：海量原始非结构化或半结构化文档源；</li>
+<li><span class="arithmatex">\(P\)</span> (Parse)：版面分析与结构化解析过程；</li>
+<li><span class="arithmatex">\(C\)</span> (Clean)：清洗、去噪与异常字符处理过程；</li>
+<li><span class="arithmatex">\(S\)</span> (Split/Chunk)：上下文语义切片过程；</li>
+<li><span class="arithmatex">\(I\)</span> (Index)：向量化表征与高维索引构建过程；</li>
+<li><span class="arithmatex">\(R\)</span> (Retrieve)：基于用户 Query 的多路召回与重排序（Rerank）过程；</li>
+<li><span class="arithmatex">\(Q\)</span> (Query)：用户的实时自然语言提问；</li>
+<li><span class="arithmatex">\(f_{LLM}\)</span>：大语言模型的推理与文本生成函数。</li>
+</ul>
+<p>该数学抽象直观地揭示了一条工程铁律：系统最终输出 <span class="arithmatex">\(Y\)</span> 距原始文档 <span class="arithmatex">\(D\)</span> 存在极长的数据链路。在前端处理（<span class="arithmatex">\(P\)</span>、<span class="arithmatex">\(C\)</span>、<span class="arithmatex">\(S\)</span>）阶段造成的不可逆结构损毁，后端检索器（<span class="arithmatex">\(R\)</span>）与生成器（<span class="arithmatex">\(f_{LLM}\)</span>）无论投入多大算力均无法进行事实性修复。这直接解释了实际业务中的典型痛点，即原始文档中客观存在的标准答案无法被系统正确召回与生成。其根本症结在于：</p>
+<ol>
+<li>答案存在于原始排版视图中，但不一定被正确解析为机器文本（可能作为背景图层被丢弃）；</li>
+<li>答案存在于解析文本中，但不一定被切分为独立且完整的知识单元（可能因固定长度切分导致核心主谓语分离）；</li>
+<li>答案完整存在于知识片段中，但不一定能被双塔模型召回（可能因缺失前置上下文导致向量表征偏离）；</li>
+<li>答案被成功召回，但不一定能以符合逻辑的形式输出（可能混杂了版本冲突的旧数据干扰模型推理）。</li>
+</ol>
+<h3 id="2115-rag">21.1.5 RAG 错误的累积机制与误差分解<a class="headerlink" href="#2115-rag" title="Permanent link">&para;</a></h3>
+<p>RAGAS 与 RAGTruth 等评测研究强调，RAG 错误需要拆解为检索、上下文利用与生成忠实性等不同维度，而不能只以最终答案好坏进行笼统判断（Es et al. 2024; Niu et al. 2024）。参考 RAG 的错误累积图可以发现，答案存在于原始文档，并不意味着它存在于检索可达的知识单元中；答案存在于知识单元中，也不意味着它能够被召回；答案被召回，也不意味着它会以完整、清晰、可引用的形式进入上下文。RAG 的失败往往不是某一个模块孤立失败，而是多个小的信息损失在链路中叠加，最终形成用户可感知的错误。</p>
+<p>图21-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-3：RAG 错误如何沿数据链路累积" src="../../../images/part7/Du-Chap21-Fig03-EN.svg" /></a></p>
+<p><em>图21-3：RAG 错误如何沿数据链路累积</em></p>
+<p>为实现对系统误差的定量干预与控制，可将 RAG 系统的“总体误差”（Total Error）进行模块化拆解。需要说明的是，下式是一种<strong>诊断性分解与工程归因框架</strong>，用于帮助团队识别问题可能来自解析、结构化、切分、检索还是生成环节；它并不表示各类误差在统计意义上严格独立，也不意味着误差一定以线性方式简单相加：</p>
+<div class="arithmatex">\[
+E_{total} = E_{parse} + E_{structure} + E_{chunk} + E_{retrieve} + E_{generate}
+\]</div>
+<ul>
+<li><strong><span class="arithmatex">\(E_{parse}\)</span>（解析误差）</strong>：含 OCR 识别谬误、多栏排版阅读流错乱、图表内嵌数据丢失等。</li>
+<li><strong><span class="arithmatex">\(E_{structure}\)</span>（结构化误差）</strong>：含段落误合并、标题层级降维、列表项与前置说明脱钩等。</li>
+<li><strong><span class="arithmatex">\(E_{chunk}\)</span>（切分误差）</strong>：主要指语义截断现象，如限制性条件与执行动作被划分至不同上下文分块中。</li>
+<li><strong><span class="arithmatex">\(E_{retrieve}\)</span>（检索误差）</strong>：召回阶段基于字面或语义的匹配失效。</li>
+<li><strong><span class="arithmatex">\(E_{generate}\)</span>（生成误差）</strong>：大模型基于正确上下文依然产生的逻辑推演错误或内部知识入侵。</li>
+</ul>
+<p>在真实系统中，这些误差之间往往存在相关性、耦合效应和放大效应。例如，解析阶段丢失表格结构会进一步增加切分误差，切分误差又会降低检索召回质量；检索阶段召回了上下文残缺的片段，也可能诱发生成阶段的错误推理。因此，该公式更适合用于排查和归因，而不应被理解为严格的统计模型或可直接估计的线性误差函数。</p>
+<p>在常规的 RAG 调优实践中，大量的计算资源与工程精力往往被倾注于后两项（如微调 Embedding 模型、引入复杂的混合检索、反复迭代 System Prompt）。然而在真实的生产环境中，前三类误差（<span class="arithmatex">\(E_{parse}, E_{structure}, E_{chunk}\)</span>）通常才是系统性能上限的决定性瓶颈。特别是在处理企业内网知识库、复杂法律卷宗或长篇医疗研报等高壁垒数据时，若前置文档工程存在明显缺陷，后置引擎不可避免地会陷入“Garbage In, Garbage Out（垃圾进，垃圾出）”的困境。</p>
+<h3 id="2116-rag">21.1.6 信息压缩视角下的 RAG 本质<a class="headerlink" href="#2116-rag" title="Permanent link">&para;</a></h3>
+<p>在更严格的系统分析视角下，RAG 数据链路可以被视为一条<strong>信息压缩与重编码（Compression &amp; Re-encoding）过程</strong>。原始文档 <span class="arithmatex">\(D\)</span> 往往包含远高于模型上下文窗口的信息密度，而整个 RAG pipeline 的本质，是在有限上下文预算（Context Budget）约束下，将原始信息压缩为一组最具代表性的子集。</p>
+<p>这一过程可以抽象为（Manning, Raghavan and Schütze 2008）：</p>
+<div class="arithmatex">\[
+\mathcal{K}^* = \arg\max_{\mathcal{K} \subset D} I(\mathcal{K}; Q)
+\]</div>
+<p>其中：</p>
+<ul>
+<li><span class="arithmatex">\(\mathcal{K}\)</span>：被检索并进入上下文的知识子集</li>
+<li><span class="arithmatex">\(Q\)</span>：用户查询</li>
+<li><span class="arithmatex">\(I(\cdot)\)</span>：互信息（Mutual Information）</li>
+</ul>
+<p>该表达式意味着：</p>
+<blockquote>
+<p>理想的 RAG 系统，应当选择与查询最相关的信息子集，而非简单的相似文本集合。</p>
+</blockquote>
+<p>然而在工程实践中，由于文档工程不完善，这一理想目标往往无法实现，主要体现在以下几个方面：</p>
+<ul>
+<li>文档结构丢失，导致语义表达能力退化</li>
+<li>chunk 粒度不合理，导致信息被稀释或割裂</li>
+<li>元数据缺失，使检索空间缺乏约束条件</li>
+</ul>
+<p>因此，实际系统往往退化为：</p>
+<div class="arithmatex">\[
+\mathcal{K}_{retrieved} \approx \text{TopK}\left(\text{sim}(Q, \text{Embedding}(\text{Chunk}))\right)
+\]</div>
+<p>即仅基于向量相似度的近似匹配。这一退化过程，正是 RAG 系统“看起来合理但经常答错”的根源之一。</p>
+<h3 id="2117">21.1.7 生产级文档工程的核心能力<a class="headerlink" href="#2117" title="Permanent link">&para;</a></h3>
+<p>生产级系统对知识资产的组织方式也呼应了机器学习系统工程中的技术债问题：若数据、依赖与监控缺乏治理，系统复杂度会在上线后持续累积（Huyen 2022）。一套达到生产级可用标准的 RAG 文档工程流水线，必须系统性解决四大核心诉求：</p>
+<ol>
+<li><strong>高保真知识留存</strong>：不仅要求文本字符级无损，更强调对文档拓扑结构（如目录树状图）、跨模态映射关系（如表格二维矩阵）及逻辑连贯性的完整保护。</li>
+<li><strong>适应性检索表征</strong>：异构知识载体需匹配差异化的处理策略。长篇招股书、稠密财务表格、FAQ 对答库与规章制度，其最优切分粒度与向量化表征机制截然不同，无法通过单一长度阈值兼容。</li>
+<li><strong>多维上下文挂载</strong>：在离散化文本的同时，必须为每一知识片段（Chunk）挂载丰富的全局元数据（Metadata），如所属文档标题、当前章节路径、业务域标签等，确保片段脱离母体后仍具备高度的“自描述性”。</li>
+<li><strong>全生命周期溯源管理</strong>：生产级系统需具备严格的审计与追溯能力，精确标定答案源于何份文件的具体页码与版本。当底层制度变更或废止时，系统应具备精准剥离失效知识片段及支持版本灰度更新的能力。</li>
+</ol>
+<p>如果没有文档工程，RAG 系统容易陷入一种“表面可用、深层不可靠”的状态。简单问题可以回答，复杂问题开始失效；普通文本可以回答，表格和图文混排内容经常出错；近期文档可以命中，历史版本和过期内容却难以过滤。这类问题在演示阶段不一定明显，但一旦进入真实业务环境，用户问题变得多样，知识库持续更新，权限和版本要求变得严格，系统缺陷就会迅速暴露。</p>
+<h3 id="2118">21.1.8 短板效应：数据决定系统上限<a class="headerlink" href="#2118" title="Permanent link">&para;</a></h3>
+<p>检索基准研究表明，不同检索模型在跨任务、跨领域场景中的表现差异显著，单一模型能力无法替代数据质量、索引设计与证据组织（Thakur et al. 2021）。</p>
+<p>表21-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-1：RAG 文档工程中的典型问题与系统表现</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">文档工程缺失环节</th>
+<th style="text-align: left;">上游数据层表现</th>
+<th style="text-align: left;">下游应用层（用户侧）系统表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>复杂表格解析失效</strong></td>
+<td style="text-align: left;">表格二维行列拓扑被展平为无序字符串；跨页表格首尾断裂。</td>
+<td style="text-align: left;">针对财报、规格参数等数值对比类查询，频繁输出错误结论或张冠李戴。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>逻辑层级与标题丢失</strong></td>
+<td style="text-align: left;">子条款脱离父级语境；上下文适用的前提条件剥离。</td>
+<td style="text-align: left;">答案缺失明确的适用范围约束，将“特定条件特例”误判为“通用规则”。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>机械式定长切分</strong></td>
+<td style="text-align: left;">完整语义段落被暴力截断；代词（如“该流程”）与指代对象分离。</td>
+<td style="text-align: left;">检索命中部分关键词，但因上下文残缺，导致模型生成内容破碎或答非所问。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>元数据（Metadata）缺失</strong></td>
+<td style="text-align: left;">知识单元丧失创建时间、发文部门及版本号等身份标识。</td>
+<td style="text-align: left;">无法过滤失效知识；面对同名文件的不同版本，模型极易缝合出逻辑矛盾的答案。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>访问权限标签未隔离</strong></td>
+<td style="text-align: left;">涉密及公开层级数据被混合写入同一公共索引库。</td>
+<td style="text-align: left;">存在严重的数据越权风险，非授权用户可能通过诱导性提示词探查到敏感信息。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>细粒度位置锚点缺失</strong></td>
+<td style="text-align: left;">文本片段缺乏精确的页码、段落号或边框坐标（Bounding Box）。</td>
+<td style="text-align: left;">结果完全不可审计，用户无法通过点击引用跳转至原文核实，系统信任度极低。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>跨模态引用链断裂</strong></td>
+<td style="text-align: left;">正文保留“如图x所示”字样，但图x的实际图像描述未被结构化关联。</td>
+<td style="text-align: left;">面临图文配合操作指南的查询时，模型无法作答或产生严重的事实性臆测。</td>
+</tr>
+</tbody>
+</table>
+<p>需要特别强调的是，RAG 的目标并不是简单地找到相似文本。在实际应用中，用户需要的是基于可靠知识的回答，而不是语义上相似但事实依据不足的片段。检索模块如果召回了相似但不相关的内容，模型可能会生成看似合理但事实错误的答案；如果召回了正确但上下文不完整的内容，模型可能会遗漏关键约束；如果召回了多个版本冲突的内容，模型可能会混合不同来源，产生难以察觉的错误。因此，RAG 数据工程要处理的不只是相似度问题，更是知识组织问题。</p>
+<p>从这一维度的工程约束来看，可利用下述公式启发式地描述 RAG 系统的性能上限：</p>
+<div class="arithmatex">\[
+Performance_{RAG} \approx \min(Q_{data}, Q_{retrieval}, Q_{generation})
+\]</div>
+<p>其中：</p>
+<ul>
+<li><span class="arithmatex">\(Q_{data}\)</span> 代表底层数据质量与文档工程处理水平；</li>
+<li><span class="arithmatex">\(Q_{retrieval}\)</span> 代表检索架构与检索模型的召回准确率；</li>
+<li><span class="arithmatex">\(Q_{generation}\)</span> 代表生成大模型的指令遵循与知识合成能力。</li>
+</ul>
+<p>该表达式揭示了经典的“木桶短板效应”：当底层数据质量（<span class="arithmatex">\(Q_{data}\)</span>）存在显著缺陷时，无论引入何种规模的巨量参数模型或多路混合检索架构，对系统整体性能的提升均将呈现断崖式的边际收益递减。需要注意的是，这里的 <span class="arithmatex">\(Q_{data}\)</span>、<span class="arithmatex">\(Q_{retrieval}\)</span> 与 <span class="arithmatex">\(Q_{generation}\)</span> 并非天然处于同一量纲；若在工程评估中使用类似表达，必须先将各指标归一化到同一尺度，并明确其评价口径。该公式主要用于解释瓶颈约束和优化优先级，不应用作精确的性能预测公式。</p>
+<p>图21-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-4：RAG 系统性能的短板效应" src="../../../images/part7/Du-Chap21-Fig04-EN.svg" /></a></p>
+<p><em>图21-4：RAG 系统性能的短板效应</em></p>
+<h3 id="2119">21.1.9 工程案例<a class="headerlink" href="#2119" title="Permanent link">&para;</a></h3>
+<p>在企业级知识工程实践中，内部知识库问答系统的构建通常被视为检索增强生成技术最具商业价值的落地场景。项目初期的技术路径往往呈现高度一致性，即采用通用解析工具将制度文档、产品手册及会议纪要等异构资料批量转化为纯文本，继而依据预设的 Token 阈值进行机械切片，最终经由嵌入模型写入向量数据库以构建索引。该模式具备极高的工程便捷性，能够在演示环境中快速实现功能闭环，对于结构简单的事实型查询，例如流程材料确认或产品功能列举，通常表现出令人满意的应答准确率。这种初期的表象成功往往导致技术团队产生认知偏差，误将系统视为成熟可用，并倾向于通过模型迭代或参数微调来优化效果。然而，当系统进入真实生产环境后，其性能瓶颈便迅速显现。用户查询逐渐从单一事实检索转向复杂的业务决策支持，例如涉及特定人群的政策差异对比、跨版本的功能限制说明、财务指标变动归因分析或异常流程的特殊处置路径。此类复杂查询的共同特征在于，其答案并非孤立存在于单一文本片段中，而是高度依赖跨段落、跨结构乃至跨文档的信息整合与逻辑推理。</p>
+<p>面对上述复杂场景，系统开始频繁出现事实性幻觉与逻辑断裂，具体表现为关键约束条件缺失、引用内容断章取义、版本信息混淆甚至生成看似合理实则错误的解释。更为棘手的是，此类错误往往具有非随机的结构性特征，即在相似结构的问题上表现忽高忽低，严重削弱了用户信任。在故障排查初期，团队通常沿袭惯性思维，优先从模型层面寻求突破，例如更换嵌入模型、引入重排序策略或升级更大参数量的生成模型。尽管这些优化手段在特定指标上可能带来局部提升，但很快便会触及上限，系统整体的不稳定性并未得到根治。</p>
+<p>通过深入的系统性复盘，问题的根源最终被定位至数据处理链路的早期阶段。具体而言，前端处理流程存在三个维度的结构性缺陷。第一是层级结构的坍塌。制度与手册中的章节、条款及子条款构成了严密的逻辑约束体系，但在解析过程中，这些物理版式与逻辑层级被压平为线性文本，导致原本具有特定适用范围的约束条件被误解为通用规则，从而引发事实性错误。第二是语义切分的割裂。基于固定长度的切片策略严重破坏了知识的完整性，常将一个完整的逻辑单元，例如包含前提条件与执行结论的规则说明，强行拆分为多个碎片。当用户查询仅命中其中任一碎片时，系统因无法获取完整上下文而生成残缺或误导性的答案。第三是元数据的缺失。文档的版本号、生效时间、所属部门及权限范围等属性是判断答案有效性的关键依据。初期系统往往忽视对这些元数据的提取与索引，导致检索器无法过滤过期内容或区分信息来源，造成新旧知识混杂。此外，对于财务报表等复杂格式文档，表格结构的丢失尤为高风险。二维数据在解析过程中被转化为无序的文本序列，数值间的逻辑关系荡然无存。即便检索器命中了相关文本，生成模型也难以在无结构的数据中重建原始逻辑，导致推理失败。</p>
+<p>综上所述，系统失效的根本症结并非文本数据的缺失，而是知识表示形态的不可用。问题核心不在于数据是否存在，而在于数据是否以可被机器正确理解与推理的形式存在于系统中。这一认知标志着系统设计范式从以模型为中心向以数据为中心的根本转变。技术团队不再将数据视为被动导入的对象，而是将其作为核心资产进行主动构建。因此，生产级检索增强生成系统必须完成从文档集合向知识资产的质变。文档集合仅是文件的物理堆叠，其内部结构、语义关联及版本演化处于隐式状态，而知识资产则要求每一个最小知识单元均具备清晰的来源标识、明确的结构边界、完整的语义表达以及可追溯的版本信息。这种升级带来的收益是多维度的。在检索层面，系统能够结合结构特征与元数据实现精确过滤，而非单纯依赖语义相似度。在生成层面，模型基于完整且一致的上下文进行推理，大幅降低了信息冲突与逻辑缺失。在用户层面，答案的可引用性与可验证性显著提升了系统的可信度。从宏观视角审视，这一过程本质上是将非结构化信息处理问题转化为结构化知识工程问题。唯有完成这一转化，检索增强生成系统才能从回答问题的工具演进为支撑业务决策的智能基础设施。</p>
+<h3 id="21110">21.1.10 本节小结<a class="headerlink" href="#21110" title="Permanent link">&para;</a></h3>
+<p>由此可见，RAG 的根基是文档工程，并不是一句口号，而是由系统结构决定的工程事实。模型生成能力决定了答案表达的上限，检索系统决定了相关知识能否被召回，而文档工程则决定了知识是否以正确形态进入整个系统。没有高质量的文档工程，RAG 系统可能仍然可以完成演示，但很难在生产环境中长期稳定运行。</p>
+<p>本节的核心结论可以概括为：在 RAG 系统中，数据不是模型的简单输入，而是支撑系统可靠性的基础设施。后续章节将围绕这一基础设施展开，继续讨论如何进行多源知识接入、复杂文档解析、结构化清洗、chunk 切分、索引构建、检索评测和反馈回流，从而构建一条可持续演进的 RAG 数据流水线。</p>
+<h2 id="212">21.2 数据采集、解析与结构化清洗<a class="headerlink" href="#212" title="Permanent link">&para;</a></h2>
+<h3 id="2121">21.2.1 多源知识接入<a class="headerlink" href="#2121" title="Permanent link">&para;</a></h3>
+<p>上一节中已说明，RAG 系统的可靠性并不只取决于生成模型或检索算法，同时也取决于上游文档工程是否扎实（Lewis et al. 2020; Borgeaud et al. 2022）。本节将核心议题聚焦于知识供给链路的工程化重构，将系统性阐释原始资料如何经由严谨的处理流程，演变为具备可检索性、可引用性与可治理性的结构化知识单元。具体而言，论述将围绕知识的来源界定、异构与动态数据的标准化转换机制，以及知识单元的形式化构建展开。</p>
+<p>如表21-2所示，企业级 RAG 系统的知识源通常呈现出高度的异构性与动态性。制度规范、产品手册、FAQ 及财务报表等资料，通常以 PDF、Word、Markdown 或网页等多种形式，分散存储于 OA 系统、内部 Wiki 及协同平台中。这些数据源不仅在格式上存在差异，其更新频率、权限边界、可信度及使用场景亦截然不同。因此，生产级系统中的数据采集绝非单纯的文件搬运，而是构建一条具备可追溯性的持续数据通道。其核心价值在于将静态文件转化为动态资产，使系统能够精确掌握数据的来源、有效性、维护者、更新时间及访问权限，从而在源头上规避知识过期与版本冲突。早期项目常采用的全量复制与一次性解析策略，仅适用于原型验证。面对真实业务中制度修订与产品迭代的持续变化，系统必须具备增量感知与局部重建能力。从工程视角审视，数据采集需解决三个核心问题：一是跨源数据的稳定接入，二是涵盖来源、版本及权限的元数据登记，三是基于变更感知的增量更新机制。</p>
+<p>为此，建立统一的<strong>知识源注册表</strong>至关重要。该注册表作为数据流水线的入口，虽不强制存储全文，但必须完整记录数据源的身份信息、同步策略、解析规则及质量状态。这一机制确保了后续解析、切分与索引的每一次操作均有据可查，从而实现从无序文件堆积向规范化知识治理的根本性转变。</p>
+<p><em>表 21-2：RAG 系统常见知识源及接入特征</em></p>
+<table>
+<thead>
+<tr>
+<th>知识源类型</th>
+<th>常见格式</th>
+<th>核心处理重点</th>
+<th>主要风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>制度规范文档</td>
+<td>PDF / Word</td>
+<td>层级、条款、版本、权限</td>
+<td>条款脱离父级语境，旧版本被误召回</td>
+</tr>
+<tr>
+<td>产品技术手册</td>
+<td>HTML / Markdown / PDF</td>
+<td>章节路径、功能版本、代码块</td>
+<td>多版本并存，说明与示例分离</td>
+</tr>
+<tr>
+<td>FAQ 与客服知识库</td>
+<td>数据库 / Excel / JSON</td>
+<td>问答对、标签、去重、口径统一</td>
+<td>重复答案、表述不一致</td>
+</tr>
+<tr>
+<td>财务与业务报表</td>
+<td>PDF / Excel</td>
+<td>表格结构、单位、口径、备注</td>
+<td>表格被展平，数值语义丢失</td>
+</tr>
+<tr>
+<td>会议纪要与协作文档</td>
+<td>Word / Markdown / 在线文档</td>
+<td>议题、结论、待办、责任人</td>
+<td>口语化严重，事实与观点混杂</td>
+</tr>
+<tr>
+<td>扫描件与图片文档</td>
+<td>Image / Scanned PDF</td>
+<td>OCR、版面检测、人工抽检</td>
+<td>识别错误、漏字、阅读顺序错乱</td>
+</tr>
+</tbody>
+</table>
+<p>异构数据源的天然属性决定了其处理策略必须具备高度针对性。制度文件需保留严密的条款层级与版本效力，产品手册需凸显功能模块与平台差异，FAQ 需确保问答口径的统一，而财务报表则需精确还原表格结构与数值语义。若采用单一的文本抽取与固定切分流水线进行无差别处理，极易在入口阶段引入难以修复的系统性偏差。因此，采集环节必须确立严格的接入边界与准入机制。低质量、过期、冗余或缺乏维护责任的数据不仅无法提升系统效能，反而会稀释有效信息密度，增加检索噪声并削弱用户信任。成熟的工程实践要求在入口处执行来源可信度、内容有效性、权限合规性及维护责任归属的四重校验，从源头上阻断无效数据污染。这种前置治理直接关乎系统的安全性与准确性。若未能在采集阶段厘清文档的生效状态、适用范围及访问权限，模型在生成阶段必然面临引用废止制度、混淆部门规则乃至发生越权信息泄露的高风险。唯有确立严谨的数据入口规范，后续的解析、清洗与索引构建方能具备坚实的工程基础。</p>
+<p>此外，工程实现上需严格区分<strong>全量接入</strong>与<strong>增量接入</strong>。全量接入服务于系统冷启动，侧重覆盖率与一致性；增量接入服务于系统持续运行，侧重变更检测与局部重建。当源数据发生变更时，系统应具备精准定位能力，仅对受影响的知识单元执行更新，并在涉及结构变动时同步维护章节路径与引用锚点，避免全量重建带来的资源浪费与索引震荡。</p>
+<p>综上所述，RAG 数据采集的核心目标并非物理层面的数据搬运，而是构建一条稳定、可追踪、可更新的结构化数据流。唯有确立严谨的数据入口规范，后续的解析、清洗与索引构建方能具备坚实的工程基础。</p>
+<hr />
+<h3 id="2122">21.2.2 文档解析<a class="headerlink" href="#2122" title="Permanent link">&para;</a></h3>
+<p>数据完成接入后，下一步是文档解析。文档解析是 RAG 数据流水线中最容易被低估、也最容易产生不可逆损失的环节。它的任务不是简单地把文档转成文本，而是尽可能恢复原始文档中的版面、层级、结构和语义关系。</p>
+<p>在传统文本处理任务中，文本通常被假设为线性序列。但真实文档并不总是线性的。PDF 可能包含双栏排版、页眉页脚、脚注、表格、图片、批注和页码；Word 文档可能包含标题样式、编号列表、嵌套表格和修订记录；网页可能包含导航栏、广告、侧边栏、正文和评论区；PPT 则经常通过空间布局表达层级关系。若解析过程只是抽取字符流，就会丢失大量隐含结构。例如，一份制度文件中，“第三章 报销管理”下面的“第十二条”与“第十三条”并不是孤立段落，而是共同属于同一章节范围。若解析后只保留文字，不保留章节路径，系统在回答时可能无法判断某条规则的适用范围。再如，一张费用标准表中，“一线城市 / 住宿标准 / 800 元”三者之间的关系由表格行列共同决定，若表格被展平成一串无序文本，模型就很难准确判断哪个数字对应哪个字段。</p>
+<p>因此，文档解析通常需要分为三个层次：版面解析、结构解析和语义解析。版面解析关注页面上的视觉区域划分，识别标题、正文、表格、图片、页眉、页脚、脚注等元素，并恢复它们的空间位置。结构解析关注这些元素之间的逻辑关系，例如标题层级、段落归属、列表嵌套、表格行列关系等。语义解析则进一步识别内容角色，例如定义、规则、条件、步骤、结论、示例和注意事项等。</p>
+<p>图21-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig05-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-5：复杂文档的版面解析与结构还原" src="../../../images/part7/Du-Chap21-Fig05-EN.svg" /></a></p>
+<p><em>图21-5：复杂文档的版面解析与结构还原</em></p>
+<p>在工程实现上，不同类型文档通常需要不同解析策略。对于结构良好的 HTML 或 Markdown 文档，系统可以直接利用 DOM 树或标题标记恢复结构；对于 Word 文档，可以利用样式信息和段落编号解析层级；对于 PDF，则通常需要结合文本坐标、字体大小、空间距离和视觉模型判断阅读顺序；对于扫描件，则需要先进行 OCR，再进行版面检测和结构重建。</p>
+<p>对于表格解析而言，问题更加复杂。表格中的每个单元格并不是独立文本，而是由行表头、列表头、单位、备注和上下文共同定义含义。一个数值 “800” 如果脱离其行列坐标，几乎没有实际语义；只有与“一线城市”、“住宿标准”、“元/天”等信息绑定，才成为可回答问题的知识。</p>
+<p>因此，在复杂文档场景下，表格不应简单转成纯文本，而应同时保留结构化表示和自然语言表示。结构化表示便于精确查询和校验，自然语言表示便于进入向量检索。两者结合，才能兼顾机器处理和语义召回。例如，对于差旅标准表，可以同时保留原始单元格坐标、结构化字段和自然语言展开句：</p>
+<p>代码清单21-1给出了JSON 数据示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;city_tier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;一线城市&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;expense_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;住宿标准&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;amount&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;元/天&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;差旅费用管理制度&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;table&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单21-1：JSON 数据示例</em></p>
+<p>同时，还可以生成适合检索的自然语言表示：</p>
+<blockquote>
+<p>“根据《差旅费用管理制度》第 12 页表 3，一线城市住宿标准为 800 元/天。”</p>
+</blockquote>
+<p>这类表示既保留了可验证结构，也提高了自然语言检索的命中概率。</p>
+<p>在生产系统中，解析阶段还需要保留页面坐标或引用锚点。这样，当模型生成答案时，系统不仅可以返回文本来源，还可以定位到原文页码、段落或表格单元格。这对于企业场景尤其重要，因为用户不仅需要答案，还需要验证答案来自哪里。没有引用锚点的 RAG 系统，往往只能给出“看起来合理”的回答，却很难建立业务信任。</p>
+<p>由此可见，文档解析不是一个简单的预处理步骤，而是知识重建的第一层。如果解析阶段失败，后续的清洗、切分、索引和生成都只能在错误基础上继续运行。</p>
+<hr />
+<h3 id="2123">21.2.3 结构化清洗<a class="headerlink" href="#2123" title="Permanent link">&para;</a></h3>
+<p>文档解析完成后，系统得到的是带有一定结构的中间结果。但这个中间结果通常还不能直接进入索引。原因在于，解析结果中往往包含噪声、重复、缺失、错序、格式不一致和语义边界不清等问题。结构化清洗的任务，就是在进入切分与索引之前，对这些问题进行系统修复。与传统文本清洗不同，结构化清洗更侧重于知识层面的可用性。传统方法多聚焦于字符级处理，诸如去除乱码、统一编码或规范标点，而面向检索增强生成场景的清洗则需评估文本片段是否完整表达独立知识点、是否携带充足上下文、是否保留来源与版本信息，以及是否适配检索与引用需求。</p>
+<p>基础规范化构成了清洗的首要环节，涵盖去除重复页眉页脚、统一空格与换行符、修复光学字符识别常见错误、删除无意义符号及处理编码异常。此类操作虽看似基础，却直接决定了嵌入向量的表征质量。若同类内容因格式差异产生大量异构表达，将导致向量空间稀疏且不稳定，进而损害检索性能。</p>
+<p>结构修复则致力于解决解析系统产生的逻辑断层。解析错误常表现为跨页段落被不当拆分、列表项被错误合并或表格说明与主体分离。该环节需依据标题层级、空间布局及文本语义，将碎片化内容重组为合理的逻辑单元。</p>
+<p>内容去噪旨在识别并过滤低价值信息。企业文档中常见的版权声明、目录、修订记录、模板说明及审批流痕迹等内容，对问答任务贡献有限甚至产生干扰。系统需根据业务场景判定其留存策略，例如目录对理解文档结构具有导航价值，但不宜作为回答上下文；修订记录关乎版本追溯，但不应参与普通业务检索。</p>
+<p>元数据补全是清洗流程的收官环节，亦是系统实现可控检索的关键。缺乏来源、时间戳、版本号、章节路径及权限标识的知识单元，在生产环境中将引发严重的安全风险。尤其在多部门协作的企业场景下，不同岗位用户的访问权限存在显著差异，若所有知识被无差别写入同一索引空间，将导致越权访问隐患。因此，元数据补全必须从数据源头确立知识边界与访问规则。</p>
+<p>表21-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-3：RAG 知识单元推荐元数据字段</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>主要作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>doc_id</code></td>
+<td>文档唯一标识</td>
+<td>版本管理、血缘追踪</td>
+</tr>
+<tr>
+<td><code>source_system</code></td>
+<td>来源系统</td>
+<td>判断数据来源与同步方式</td>
+</tr>
+<tr>
+<td><code>chapter_path</code></td>
+<td>章节路径</td>
+<td>保留语义上下文，支持过滤</td>
+</tr>
+<tr>
+<td><code>page_range</code></td>
+<td>页码范围</td>
+<td>支持引用定位</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>文档版本</td>
+<td>区分新旧知识</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>更新时间</td>
+<td>支持时效性过滤</td>
+</tr>
+<tr>
+<td><code>access_level</code></td>
+<td>权限等级</td>
+<td>防止越权检索</td>
+</tr>
+<tr>
+<td><code>content_type</code></td>
+<td>段落、表格、图示、FAQ 等</td>
+<td>决定检索与展示策略</td>
+</tr>
+<tr>
+<td><code>quality_score</code></td>
+<td>质量评分</td>
+<td>支持排序、抽检和告警</td>
+</tr>
+<tr>
+<td><code>citation_anchor</code></td>
+<td>引用锚点</td>
+<td>支持答案可验证</td>
+</tr>
+</tbody>
+</table>
+<p>结构化清洗的第五类任务是知识单元的自描述增强。许多片段在原文中依赖上下文才能理解，例如“上述标准适用于正式员工”或“该流程需提前三天申请”。如果这些句子脱离父级标题、前文定义或适用范围，就会失去完整意义。为解决这一问题，可以在构建知识单元时，将标题路径、关键前置定义或适用范围补充到 chunk 中，使其在检索时更容易被正确匹配。</p>
+<p>例如，原文中的一句话是：</p>
+<blockquote>
+<p>“该补贴标准适用于一线城市。”</p>
+</blockquote>
+<p>如果单独进入索引，其语义并不完整。经过上下文增强后，可以变为：</p>
+<blockquote>
+<p>“在《差旅费用管理制度》第一章第 1.3 节‘差旅费用标准’中，住宿补贴标准适用于一线城市。”</p>
+</blockquote>
+<p>这种增强并不是修改原文事实，而是将隐含上下文显式化，使知识单元具备更强的可检索性和可解释性。需要注意的是，结构化清洗不能过度加工。过度改写可能引入新的错误，尤其在法律、医疗、财务等高风险场景中，原文表达本身具有严格约束。因此，更合理的方式是保留原文片段，同时添加结构化上下文字段，而不是直接替换原文。</p>
+<hr />
+<h3 id="2124">21.2.4 语义切分与知识单元构建<a class="headerlink" href="#2124" title="Permanent link">&para;</a></h3>
+<p>在完成解析和清洗之后，系统需要将长文档拆分为适合检索的知识单元，这一过程通常被称为 chunking。相比采集与解析，chunking 看似简单，但它对 RAG 系统效果的影响极大。很多系统“能检索到但答不好”的问题，本质上都与切分策略有关。</p>
+<p>固定长度切分是最常见的初始方案。例如，每 500 tokens 或 1000 tokens 切成一个片段，并设置一定 overlap。这种方式实现简单、吞吐高，也便于工程并行处理。但它最大的缺陷是忽视语义边界。一个规则条款、一个表格说明、一个操作步骤或一个案例分析，可能被切断在两个 chunk 中。模型拿到其中任意一半，都无法理解完整含义。更合理的方式是基于语义结构进行切分。对于制度文件，可以按章节、条款和子条款切分；对于产品手册，可以按功能模块和操作步骤切分；对于 FAQ，可以将问题、答案和标签作为天然单元；对于报表，可以将表格、表格标题、单位、备注和相关正文绑定为一个知识单元。近期针对金融报告 RAG 的研究显示，按文档元素类型进行切分通常比简单固定长度切分更有利于检索与问答效果（Jimeno Yepes et al. 2024）。</p>
+<p>图21-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig06-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-6：不同切分策略对语义完整性的影响" src="../../../images/part7/Du-Chap21-Fig06-EN.svg" /></a></p>
+<p><em>图21-6：不同切分策略对语义完整性的影响</em></p>
+<p>chunk 粒度的选择需要在多个目标之间权衡。粒度太粗，会导致每个 chunk 包含过多信息，向量表征变得不聚焦，召回结果可能相关但不精确；粒度太细，则会导致上下文不足，模型难以回答需要完整背景的问题。因此，生产系统通常不会使用单一粒度，而是采用多粒度索引策略。</p>
+<p>多粒度索引的基本思想是，同时保留不同层次的知识单元。例如，可以为同一文档构建章节级 chunk、段落级 chunk 和表格级 chunk。检索时先通过粗粒度召回定位章节，再通过细粒度检索获得具体证据。这种方式能够兼顾召回覆盖与答案精度。在实际设计中，还需要考虑 chunk 的“可回答性”。一个好的 chunk 不只是语义完整，还应该能够支持回答某类问题。例如，如果用户问“试用期员工能否申请差旅补贴”，系统需要召回的片段不仅应包含“差旅补贴标准”，还应包含“适用人群”或“员工类型限制”。如果这些信息被分散在多个 chunk 中，检索系统需要具备组合召回能力，否则模型只能基于不完整证据作答。</p>
+<p>因此，chunking 不应仅由长度控制，而应由问题类型和知识结构共同决定。对于规则类知识，适用条件、执行动作和例外说明应尽可能保持在同一知识单元中；对于流程类知识，步骤顺序和前后依赖应保持连续；对于表格类知识，表头、单位、备注和数据行应绑定；对于 FAQ 类知识，问题改写、标准答案和标签应共同进入索引。</p>
+<p>此外，还需要注意 chunk overlap 的使用。overlap 可以缓解边界截断问题，但也会引入冗余。当 overlap 过大时，向量库中会出现大量高度相似片段，导致检索结果重复，降低上下文利用效率。生产系统应根据文档类型选择 overlap 策略，而不是全局统一。</p>
+<p>在知识单元构建阶段，还应建立质量检查机制。常见检查包括：chunk 是否过短或过长，是否缺少来源，是否缺少章节路径，是否包含乱码，是否与其他 chunk 高度重复，是否存在权限标签缺失，是否引用了已废弃文档。这些检查可以在索引前作为质量闸门，避免低质量知识进入检索空间。</p>
+<hr />
+<h3 id="2125">21.2.5 工程挑战与质量评估<a class="headerlink" href="#2125" title="Permanent link">&para;</a></h3>
+<p>当采集、解析、清洗与切分环节被整合为端到端的数据流水线，系统面临的核心挑战便从单一算法的优化转向整体工程的稳定性。生产级检索增强生成系统必须在精度、成本、吞吐、鲁棒性与可治理性之间寻求动态平衡（Johnson, Douze and Jégou 2019）。计算资源消耗与处理效率是首要考量。鉴于复杂文档解析常涉及光学字符识别、版面分析及视觉模型推理等高开销操作，面对百万级文档规模时，必须设计批处理机制、并发调度策略、缓存复用逻辑及增量更新方案。缺乏此类优化将导致数据更新周期过长，致使知识库滞后于业务变更。流水线的鲁棒性直接决定了系统的可用性。真实场景中的文档常包含损坏文件、加密保护、扫描倾斜、图像模糊及编码异常等缺陷。工程实现上需构建完善的容错机制，包括失败隔离、错误日志记录、自动重试及人工复核流程，确保局部异常不会导致整体流程中断。质量评估机制的缺失则会使前述环节的努力失效。仅依赖任务执行状态无法反映数据健康度，一个表面成功的解析任务可能已丢失全部表格结构，而输出的文本切片可能完全割裂了语义边界。因此，系统需建立多维度的质量校验体系，对解析完整性、切分合理性及元数据准确性进行量化评估，确保进入索引的数据具备知识价值。</p>
+<p>从这个角度来看，RAG 数据流水线必须建立质量指标体系。常见指标包括接入成功率、源数据覆盖率、解析失败率、结构还原率、OCR 错误率、噪声残留率、元数据完整率、chunk 长度分布、重复率、权限标签覆盖率和可追溯率等。这些指标可以分为自动指标和人工抽检指标。自动指标适合大规模监控，例如长度分布、字段完整率、重复率和解析失败率；人工抽检则用于判断更复杂的语义质量，例如表格是否正确、章节是否准确、chunk 是否具备可回答性。</p>
+<p>为了让数据流水线长期可用，还需要建立数据处理日志和血缘记录。每个知识单元应记录其从哪份文档生成，经过哪些处理步骤，使用了哪个解析器版本，何时生成，是否经过质量检查，是否被写入索引。当用户反馈某个答案错误时，团队可以沿着血缘链路回溯问题来源：是原文错误、解析错误、切分错误、索引错误，还是检索与生成阶段的问题。在生产系统中，可以通过引入“数据处理版本”的概念以确保数据流水线的这种长线可用性。在版本管理下，解析规则、清洗规则和 chunking 策略都会随版本的变更而持续迭代。如果策略变化后系统效果提升或下降，团队必须能够对比不同数据处理版本，而不仅仅对比模型版本。否则，一旦系统表现变化，就很难判断是模型变化、数据变化还是处理规则变化导致的。</p>
+<p>此外，权限与合规也是这一阶段无法绕开的重点。数据在采集和清洗时就应进行权限标记与敏感信息检测，而不是等到生成答案时再处理。原因在于，一旦敏感内容进入公共索引空间，即使后续在 UI 层做了限制，也可能留下潜在泄露风险。因此，权限控制应尽早进入数据流水线。</p>
+<p>从系统设计角度看，一个成熟的 RAG 数据处理流水线通常包含数据源连接器、原始数据存储、文档解析服务、结构化清洗服务、chunk 构建服务、质量检测服务、元数据管理服务、版本管理服务和索引写入服务。这些模块应当松耦合，便于替换和扩展。它们的目标不是一次性生成一个能用的索引，而是持续生产、维护和优化知识资产。</p>
+<hr />
+<h3 id="2126">21.2.6 本节小结<a class="headerlink" href="#2126" title="Permanent link">&para;</a></h3>
+<p>本节围绕 RAG 系统的数据入口展开，系统讨论了从多源知识接入、文档解析、结构化清洗，到语义切分与质量评估的完整链路。可以看到，在检索模型和大语言模型发挥作用之前，数据已经经历了多轮关键工程处理。每一个环节都会影响最终答案质量，也都会决定系统是否能够在真实业务环境中稳定运行。数据采集解决的是“知识从哪里来”的问题，但生产级采集并不是一次性导入，而是建立持续更新、可追踪、可治理的数据流。文档解析解决的是“知识如何被机器读取”的问题，其重点不是抽取字符，而是还原版面结构、逻辑层级和表格关系。结构化清洗解决的是“知识如何变得可信”的问题，需要去噪、修复、补全元数据并保持知识单元的自描述性。语义切分解决的是“知识以什么粒度进入检索系统”的问题，需要在语义完整性、检索效率和上下文预算之间取得平衡。</p>
+<p>这一节的核心结论可以概括为：RAG 数据处理的目标，不是把文档变成文本，而是把原始资料转化为结构清晰、语义完整、可检索、可追溯、可治理的知识单元。只有在这一基础之上，后续的索引构建、检索优化和生成回答才有稳定的工程前提。也就是说，数据采集、解析与结构化清洗并不是 RAG 系统的外围工作，而是系统能力建设的第一阶段。它决定了知识能否被正确表达、被准确召回，并最终被模型可靠使用。在下一节中，我们将进一步讨论如何基于这些知识单元构建索引体系与检索策略，使经过处理的数据转化为可服务应用的知识能力。</p>
+<h2 id="213">21.3 切分、索引与检索策略<a class="headerlink" href="#213" title="Permanent link">&para;</a></h2>
+<h3 id="2131-rag">21.3.1 从知识单元到索引系统：RAG 检索能力的工程基础<a class="headerlink" href="#2131-rag" title="Permanent link">&para;</a></h3>
+<p>在上一节中，我们讨论了如何将原始文档通过采集、解析、清洗与语义切分，转化为结构清晰、语义完整、可追溯的知识单元。完成这一步之后，RAG 数据流水线进入一个新的阶段：如何让这些知识单元能够被用户问题稳定、准确地召回。如果说文档解析和结构化清洗解决的是“知识如何被正确表达”的问题，那么索引与检索策略解决的就是“知识如何被系统正确找到”的问题（ Thakur et al. 2021）。二者之间并不是简单的前后关系，而是高度耦合的系统关系。知识单元的粒度、元数据、结构字段、表格表示方式，都会直接影响索引设计；而索引系统的能力边界，也会反过来约束前面切分与清洗阶段的数据组织方式。</p>
+<p>很多早期 RAG 项目会把索引理解为一个单纯的向量化过程：将每个 chunk 输入 embedding 模型，得到向量表示后写入向量数据库，然后在用户提问时进行相似度搜索。这种方式实现简单，也能支撑基础演示，但在真实业务场景中很快会遇到瓶颈。原因在于，用户问题并不总是与文档片段在语义空间中呈现直接相似关系。用户可能使用口语化表达，可能提出组合型问题，也可能询问隐含在表格、版本、条件和上下文中的知识。如果索引系统只有单一路径，就很难应对这些复杂问题。因此，生产级 RAG 系统中的索引，不能只是一批向量的集合，而应是一套面向知识使用场景设计的检索基础设施。它通常同时包含向量索引、关键词索引、结构化字段索引、元数据过滤索引以及父子层级索引等多种形式。不同索引承担不同职责，共同构成多路召回与精排的基础。</p>
+<p>在这一意义上，索引构建并不是简单的“写入数据库”，而是将知识单元组织成可检索、可过滤、可排序、可追溯的系统结构。索引设计是否合理，直接决定了 RAG 系统能否从“相关文本检索”升级为“可靠知识检索”。</p>
+<hr />
+<h3 id="2132">21.3.2 索引粒度设计：父子索引、多粒度索引与上下文保持<a class="headerlink" href="#2132" title="Permanent link">&para;</a></h3>
+<p>索引构建的第一个关键问题，是索引粒度。也就是说，系统到底应该把什么作为最小检索单元：句子、段落、条款、章节，还是完整文档。这个问题看似属于切分阶段，但实际上也是索引阶段的核心设计问题。因为切分决定了知识单元的形态，而索引决定了这些知识单元如何参与召回与排序。如果索引粒度过细，例如以句子为单位建立索引，系统往往能够实现较高的局部匹配精度，但召回结果缺乏上下文。用户问到一个规则时，系统可能只召回结论句，却没有召回适用条件、例外说明或前置定义。模型在缺少上下文的情况下，容易生成不完整甚至错误的回答。如果索引粒度过粗，例如以章节或整篇文档为单位建立索引，系统虽然能够保留完整上下文，但检索精度会下降。一个章节可能包含多个主题，向量表示会变得过于平均，导致用户问题与章节向量之间的相似度不够集中。系统召回的内容可能“整体相关”，但并不一定包含回答问题所需的关键证据。</p>
+<p>因此，生产级 RAG 系统通常采用多粒度索引或父子索引。父子索引的基本思想是：用较小的子 chunk 进行精准召回，但在构造模型上下文时，回到其所属的父级结构中补全上下文。这样既能保证召回阶段的精度，又能避免生成阶段上下文不足。例如，在制度文档中，可以将条款作为子 chunk 建立向量索引，同时保留其所属章节作为父节点。当用户问题命中某个条款时，系统不仅返回该条款本身，还可以补充其父级标题、适用范围和相邻条款。对于技术手册，可以用操作步骤作为子 chunk，用功能模块作为父节点；对于财务报表，可以用表格行或表格区域作为子单元，用整张表或报表章节作为父节点。</p>
+<p>图21-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig07-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-7：父子索引与多粒度检索结构" src="../../../images/part7/Du-Chap21-Fig07-EN.svg" /></a></p>
+<p><em>图21-7：父子索引与多粒度检索结构</em></p>
+<p>多粒度索引还可以支持更复杂的检索策略。例如，系统可以先进行粗粒度召回，定位可能相关的文档或章节，再在这些候选范围内进行细粒度检索。这种两阶段检索可以显著降低搜索空间，提高精度，也可以避免在全量 chunk 中进行盲目相似度搜索。</p>
+<p>从工程实践看，父子索引与多粒度索引尤其适合长文档、制度文档、合同文档、技术手册和报表类知识库。这类文档的知识通常具有明显的层级结构。如果忽略层级，只把所有 chunk 平铺到同一个向量空间中，检索系统就很难区分局部证据与整体上下文，也很难处理跨段落、跨表格或跨章节的问题。</p>
+<hr />
+<h3 id="2133">21.3.3 向量检索、关键词检索、结构化检索与混合检索<a class="headerlink" href="#2133" title="Permanent link">&para;</a></h3>
+<p>在 RAG 系统中，向量检索通常是最受关注的检索方式。它的优势在于能够捕捉语义相似关系，即使用户没有使用文档中的原始关键词，也有可能召回相关内容。例如，用户问“员工出差住酒店能报多少”，系统可以召回包含“住宿标准”、“差旅费用”、“城市等级”等表达的片段。这种语义泛化能力，是向量检索相较传统关键词检索的重要优势（Karpukhin et al. 2020; Reimers and Gurevych 2019）。</p>
+<p>然而，向量检索并不是万能的。它擅长语义相似，但不擅长精确约束。对于版本号、日期、金额、编码、专有名词、法规条款号等信息，关键词检索或结构化字段检索往往更可靠。例如，用户问“2024 版报销制度第 1.3 条如何规定”，系统如果只依赖向量相似度，可能召回语义相近但版本不同的内容；而关键词与元数据过滤可以更准确地限定检索范围。</p>
+<p>为解决此类问题，以BM25 为代表的关键词检索被提出并使用（Robertson and Zaragoza 2009）。其优势在于精确匹配，尤其适合处理专有名词、术语、编号、产品型号、接口名称和法规条款；缺点是对表达变化不够敏感。如果用户没有使用文档中的精确词汇，关键词检索可能无法命中。</p>
+<p>不同于这两种检索方式，结构化检索则主要依赖元数据和结构字段。例如，按文档类型、业务域、更新时间、版本号、权限等级、章节路径、内容类型进行过滤。结构化检索本身不一定直接回答问题，但它可以显著缩小搜索空间，避免错误召回。例如，在回答“最新差旅住宿标准”时，系统应优先过滤出有效版本、当前日期适用、用户有权限访问的制度文档，然后再进行语义检索。</p>
+<p>因此，生产级 RAG 系统通常不会在向量检索、关键词检索和结构化检索之间做单选，而是采用混合检索策略。不同检索方式承担不同职责：结构化过滤用于控制范围，关键词检索用于保证精确命中，向量检索用于增强语义召回，rerank 模型用于对候选结果进行最终排序。</p>
+<p>表21-4汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-4：不同检索方式的适用边界</em></p>
+<table>
+<thead>
+<tr>
+<th>检索方式</th>
+<th>主要优势</th>
+<th>主要短板</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>向量检索</td>
+<td>语义泛化能力强，能处理同义表达</td>
+<td>对精确数字、版本、编号不稳定</td>
+<td>概念问答、自然语言问题、模糊查询</td>
+</tr>
+<tr>
+<td>关键词检索</td>
+<td>精确匹配能力强，可解释性好</td>
+<td>对改写和近义表达不敏感</td>
+<td>条款号、产品型号、术语、专有名词</td>
+</tr>
+<tr>
+<td>结构化检索</td>
+<td>可控性强，支持权限、版本、时间过滤</td>
+<td>依赖高质量元数据</td>
+<td>企业知识库、制度检索、合规场景</td>
+</tr>
+<tr>
+<td>混合检索</td>
+<td>兼顾语义召回与精确约束</td>
+<td>架构复杂，需要权重调优</td>
+<td>生产级 RAG 系统</td>
+</tr>
+<tr>
+<td>Rerank 精排</td>
+<td>提升候选结果排序质量</td>
+<td>计算成本较高，延迟增加</td>
+<td>高准确率问答、复杂知识检索</td>
+</tr>
+</tbody>
+</table>
+<p>混合检索的关键并不是简单地把不同检索结果合并，而是要根据问题类型动态选择召回策略。例如，对于“第 1.3 条规定是什么”这类问题，关键词和结构化过滤应占更高权重；对于“员工出差酒店费用怎么报销”这类自然语言问题，向量检索应发挥更大作用；对于“哪个版本的产品支持该功能”这类问题，版本元数据过滤与关键词检索都需要重点关注。</p>
+<p>在更成熟的系统中，检索策略甚至可以由 query understanding 模块动态决定。系统先分析用户问题属于事实查询、规则查询、比较查询、流程查询、表格查询还是跨文档综合查询，再选择不同的召回路径。这种方式能够显著提升检索质量，但也对数据结构和元数据完整性提出了更高要求。</p>
+<hr />
+<h3 id="2134-rerank">21.3.4  Rerank<a class="headerlink" href="#2134-rerank" title="Permanent link">&para;</a></h3>
+<p>在多源检索完成后，系统通常会得到一组候选知识片段。这些候选片段来自不同检索通道，可能包括向量检索结果、关键词检索结果、结构化过滤后的结果，以及父子索引扩展出的上下文。此时，系统面临一个新的问题：哪些候选片段应该进入最终上下文，哪些应该被丢弃，哪些应该排序靠前。</p>
+<p>这就是 rerank 的作用。Rerank 并不负责从全量知识库中搜索，而是对召回阶段返回的候选片段进行更精细的相关性判断（Nogueira and Cho 2019）。相较向量检索常用的双塔模型，rerank 通常采用交叉编码器或大模型判断方式，能够同时看到用户问题和候选片段，从而更准确地判断二者是否匹配。例如，用户问：“试用期员工是否可以申请差旅补贴？”向量检索可能召回多个包含“差旅补贴”“员工”“申请”的片段，但其中有些片段只讨论正式员工，有些片段只讨论申请流程，还有些片段讨论补贴标准。rerank 模型需要判断哪些片段包含“试用期员工”与“差旅补贴资格”之间的关系，而不是仅仅包含相似词（Khattab and Zaharia 2020）。</p>
+<p>Rerank 的价值在复杂问题中尤为明显。对于简单事实查询，top-k 向量检索可能已经足够；但对于多条件问题、比较问题、规则问题和跨文档问题，初始召回结果往往包含大量“看似相关但不可回答”的片段。如果没有 rerank，这些片段进入模型上下文后，会干扰生成过程，甚至诱导模型产生错误结论。</p>
+<p>图21-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig08-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-8：混合检索与 Rerank 的两阶段检索流程" src="../../../images/part7/Du-Chap21-Fig08-EN.svg" /></a></p>
+<p><em>图21-8：混合检索与 Rerank 的两阶段检索流程</em></p>
+<p>在实际工程中，rerank 需要平衡效果与延迟。交叉编码器或大模型 rerank 通常比向量检索更准确，但计算成本更高。因此，常见做法是先用低成本方式召回较大的候选集，再用 rerank 对候选集进行压缩。例如，先召回 top 100，再 rerank 到 top 10，最后根据上下文预算选择 top 3 到 top 5 进入模型。</p>
+<p>除了相关性排序，rerank 阶段还可以引入更多业务约束。例如，优先选择最新版本文档，优先选择权威来源，降低低质量 chunk 权重，过滤权限不匹配内容，避免同一文档的重复片段占满上下文。这些策略使 rerank 不只是模型排序问题，而是检索质量、业务规则和安全治理的综合决策点。</p>
+<p>需要注意的是，rerank 并不能修复所有问题。如果上游解析错误、chunk 语义不完整、元数据缺失，即使 rerank 模型能力很强，也只能在错误候选中做相对排序。因此，rerank 应被视为检索链路的增强模块，而不是替代文档工程和索引设计的万能工具。</p>
+<hr />
+<h3 id="2135">21.3.5 表格、结构化字段与多类型知识的统一索引<a class="headerlink" href="#2135" title="Permanent link">&para;</a></h3>
+<p>在企业级 RAG 中，知识并不总是以普通自然语言段落存在。大量关键知识存在于表格、字段、枚举值、代码块、图示说明和结构化数据库中。如何将这些不同形态的知识纳入统一检索体系，是生产级系统必须解决的问题。对于普通文本 chunk，向量索引通常能够发挥较好效果；但对于表格和结构化字段，直接向量化往往效果有限。原因在于，表格语义依赖行列关系，而 embedding 模型未必能够稳定编码二维结构。一个表格中多个数字可能在文本展开后彼此接近，模型难以准确判断哪个数字对应哪个字段。</p>
+<p>因此，对于表格数据，通常需要同时构建三类表示。第一类是结构化表示，用于保留行列关系、字段名、单位、备注和坐标；第二类是自然语言展开表示，用于进入语义检索；第三类是摘要表示，用于粗粒度召回。例如，一张差旅费用表可以被表示为结构化 JSON，也可以被展开为“一线城市住宿标准为 800 元/天”，还可以生成摘要“该表规定不同城市等级的住宿、交通和餐饮补贴标准”。对于数据库字段或业务系统记录，也可以采用类似策略。结构化字段用于过滤和精确查询，自然语言描述用于语义召回，字段元数据用于解释和溯源。例如，在运维知识库中，一个故障工单可能包含系统名、错误码、发生时间、根因、处理方式和影响范围。系统应同时支持按错误码精确检索，也支持按自然语言问题召回类似案例。代码块也是一种特殊知识类型。代码与说明文本不可简单拆分，否则模型可能召回代码但缺少解释，或召回解释但缺少实现。对于技术文档，代码块应与函数说明、参数解释和适用版本绑定，必要时还应保留语言类型、依赖版本和运行环境等元数据。多类型知识统一索引的关键，是不要强行将所有内容压平成同一种文本表示，而是为不同知识类型保留其原有结构，同时提供适合检索的文本视图。可以理解为：底层保留结构，上层构建可检索表示。这样既能支撑精准查询，也能支撑自然语言问答。</p>
+<p>在最终检索阶段，系统应根据问题类型选择不同知识类型。例如，用户询问“报销上限是多少”时，应优先检索表格与规则条款；询问“这个接口怎么调用”时，应优先检索代码块和技术说明；询问“类似故障如何处理”时，应优先检索历史工单和处理记录。知识类型识别越准确，检索结果越接近真实可用证据。</p>
+<hr />
+<h3 id="2136">21.3.6 检索评估<a class="headerlink" href="#2136" title="Permanent link">&para;</a></h3>
+<p>索引与检索策略设计完成后，还需要回答一个关键问题：如何评估检索系统是否有效。很多团队只看向量检索的相似度分数或 top-k 命中率，但这些指标并不足以反映 RAG 系统的真实效果。因为 RAG 检索的目标不是找到“看起来相关”的文本，而是找到“足以支撑正确回答”的证据。</p>
+<p>因此，检索评估应至少包含三个层次。第一是相关性评估，即召回结果是否与用户问题相关；第二是可回答性评估，即召回结果是否包含回答问题所需的完整信息；第三是可引用性评估，即召回结果是否能够被用户验证和审计。相关性评估可以通过人工标注或标准问答集计算 recall@k、precision@k、MRR 等指标。可回答性评估则更接近 RAG 场景本身，需要判断被召回的片段是否足以生成正确答案。例如，一个片段可能与问题高度相关，但只包含背景说明，不包含最终答案；这种结果在传统检索指标中可能得分较高，但对 RAG 生成并不充分。</p>
+<p>可引用性评估则关注证据是否具有明确来源、页码、章节路径和版本信息。对于企业知识库而言，一个不能溯源的正确答案仍然存在信任问题。特别是在合规、财务、法律和医疗场景中，答案必须能够回到原文证据，否则系统无法支撑正式业务流程。</p>
+<p>表21-5汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-5：RAG 检索评估的核心指标</em></p>
+<table>
+<thead>
+<tr>
+<th>评估维度</th>
+<th>典型指标</th>
+<th>关注问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>相关性</td>
+<td>Recall@k、Precision@k、MRR</td>
+<td>是否找到了相关片段</td>
+</tr>
+<tr>
+<td>可回答性</td>
+<td>Answer Support Rate</td>
+<td>召回片段是否足以支持正确答案</td>
+</tr>
+<tr>
+<td>完整性</td>
+<td>Context Completeness</td>
+<td>条件、结论、例外是否齐全</td>
+</tr>
+<tr>
+<td>去冗余</td>
+<td>Duplicate Ratio</td>
+<td>是否召回大量重复片段</td>
+</tr>
+<tr>
+<td>时效性</td>
+<td>Freshness Accuracy</td>
+<td>是否优先召回最新有效版本</td>
+</tr>
+<tr>
+<td>权限安全</td>
+<td>Permission Match Rate</td>
+<td>是否过滤了无权限内容</td>
+</tr>
+<tr>
+<td>可引用性</td>
+<td>Citation Coverage</td>
+<td>是否能定位到原文证据</td>
+</tr>
+</tbody>
+</table>
+<p>检索评估最好与真实用户问题结合，而不仅依赖离线构造的问题集。因为真实用户问题往往更口语化、更模糊，也更容易暴露系统边界。例如，用户可能不会问“第 1.3 条的住宿标准是什么”，而会问“我下周去上海出差，公司酒店能报多少”。后者需要系统理解地点、差旅、住宿、报销标准之间的关系，并召回正确制度片段。因此，一个成熟的检索评估体系通常包括离线评测集、线上失败样本、人工抽检和周期性回归测试。每次调整切分策略、embedding 模型、rerank 模型或元数据过滤规则后，都应重新运行回归测试，避免局部优化导致其他问题退化。检索评估的最终目标，不是证明某个模型分数更高，而是判断当前索引与检索体系能否稳定支撑业务问题。只有当检索结果稳定、证据完整、引用可靠时，生成模型才有可能输出可信答案。</p>
+<hr />
+<h3 id="2137">21.3.7 本节小结<a class="headerlink" href="#2137" title="Permanent link">&para;</a></h3>
+<p>本节围绕 RAG 数据流水线中的索引构建与检索策略展开，讨论了从知识单元到检索系统的关键工程问题。可以看到，索引并不是简单地将 chunk 转为向量并写入数据库，而是将知识单元组织成可召回、可过滤、可排序、可追溯的系统结构。</p>
+<p>在索引粒度上，生产级系统通常需要采用父子索引与多粒度索引，以同时兼顾精确召回和上下文恢复。在检索方式上，向量检索、关键词检索和结构化检索各有边界，混合检索能够更好地应对真实业务问题。在排序阶段，rerank 模型可以将初始召回结果进一步转化为可用证据，但它无法替代上游文档工程和索引设计。对于表格、代码块、结构化字段等非普通文本知识，系统不能简单地将其压平成文本，而应保留底层结构，同时构建适合检索的自然语言表示。只有这样，RAG 系统才能处理复杂企业知识，而不仅仅是普通段落问答。</p>
+<p>本节的核心结论是：RAG 检索的目标不是找到相似文本，而是找到能够支撑正确回答的证据。索引与检索策略的设计，应始终围绕“证据可用性”展开。下一节将进一步讨论如何对检索与生成结果进行评测、回灌和知识更新，使 RAG 系统从一次性构建走向持续优化。</p>
+<h2 id="214">21.4 评测、回灌与知识更新<a class="headerlink" href="#214" title="Permanent link">&para;</a></h2>
+<h3 id="2141-rag">21.4.1 为什么 RAG 系统必须建立评测闭环<a class="headerlink" href="#2141-rag" title="Permanent link">&para;</a></h3>
+<p>在完成数据接入、文档解析、结构化清洗、chunk 构建、索引与检索策略设计之后，RAG 系统已经具备了从知识库中召回证据并生成回答的基本能力。然而，系统能够运行，并不意味着系统已经可靠；系统能够在演示问题上回答正确，也不意味着它能够在真实业务环境中长期稳定。</p>
+<p>在生产环境中，RAG 系统面对的用户问题往往具有高度开放性。用户不会按照文档原文提问，也不会总是提出边界清晰的问题。他们可能使用口语化表达，可能省略关键条件，可能把多个业务问题合并到一个问题中，也可能询问文档中并没有直接写明、但需要结合多个片段推理才能回答的问题。因此，RAG 系统上线后暴露的问题，往往比离线构建阶段更加复杂。</p>
+<p>与传统模型评测不同，RAG 系统的评测对象并不是一个单一模型，而是一条完整链路。一个错误答案可能来自数据源缺失，也可能来自文档解析错误；可能来自 chunk 切分不合理，也可能来自索引没有召回正确证据；可能是 rerank 阶段排序错误，也可能是生成模型没有正确使用上下文；甚至答案本身正确，但引用来源错误，也会影响用户信任。这意味着，RAG 评测不能只看最终答案是否正确，而必须拆解系统链路，判断每个环节是否完成了自己的职责。评测体系的核心目标，不只是给系统打一个分数，而是帮助团队定位问题来源，并将评测结果转化为可执行的优化动作。</p>
+<p>如果没有评测闭环，RAG 系统容易陷入“靠感觉调参”的状态。团队可能反复更换 embedding 模型、调整 top-k、改写 prompt 或升级大模型，但效果提升并不稳定，甚至在某些问题类型上出现退化。成熟的 RAG 系统，应当能够回答以下问题：哪些问题没有召回正确证据？哪些问题召回了证据但答案仍然错误？哪些知识已经过期？哪些用户反馈应该回流到数据处理流程？哪些错误属于数据问题，哪些属于检索问题，哪些属于生成问题？</p>
+<p>因此，RAG 的评测、回灌与知识更新，本质上是将系统从“一次性构建”升级为“持续演进”的关键环节。它使 RAG 不再只是一个静态问答系统，而是一个能够根据真实使用情况不断修复、补齐和优化的数据闭环系统。</p>
+<hr />
+<h3 id="2142">21.4.2 分层评测<a class="headerlink" href="#2142" title="Permanent link">&para;</a></h3>
+<p>RAG 系统的评测应当采用分层思路。最简单的做法是只评估最终答案，例如判断回答是否正确、是否流畅、是否符合用户意图。但这种做法无法解释错误来源。当系统回答错误时，如果不知道是检索失败还是生成失败，后续优化就会缺乏方向。</p>
+<p>因此，生产级 RAG 系统通常至少需要评估三个层次：检索层、上下文层和生成层。</p>
+<p>检索层评测关注系统是否找到了正确证据。这里的“正确证据”不是简单相关文本，而是能够支撑答案的内容。传统检索指标如 Recall@k、Precision@k、MRR 等仍然有价值，但在 RAG 场景中还不够（Manning, Raghavan and Schütze 2008）。因为一个片段可能与问题语义相关，却不足以回答问题。例如，用户问“试用期员工是否可以申请差旅补贴”，系统召回了“差旅补贴标准”，但没有召回“适用人群限制”，这类结果只能算相关，不能算可回答。</p>
+<p>上下文层评测关注被送入模型的上下文是否完整、无冲突、可引用。RAG 系统不是把所有召回结果都交给模型，而是需要在有限上下文窗口内选择证据。如果上下文包含过多重复片段，会浪费 token；如果包含版本冲突内容，会干扰模型判断；如果缺少来源信息，答案即使正确也难以验证。因此，上下文评测应关注证据充分性、冗余度、冲突率和引用覆盖率。</p>
+<p>生成层评测关注模型是否基于证据生成了正确答案。这里需要特别注意“基于证据”这一点。一个答案可能事实正确，但并不是依据召回证据生成，而是来自模型内部知识；这种回答在开放领域中可能可以接受，但在企业知识库场景中存在风险。因为企业用户通常要求答案可追溯、可审计、可验证，而不是仅仅“听起来正确”。</p>
+<p>表21-6汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-6：RAG 系统分层评测指标</em></p>
+<table>
+<thead>
+<tr>
+<th>评测层次</th>
+<th>核心问题</th>
+<th>典型指标</th>
+<th>常见失败表现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>检索层</td>
+<td>是否找到正确证据</td>
+<td>Recall@k、MRR、Evidence Hit Rate</td>
+<td>没有召回关键片段，召回语义相近但不可回答的内容</td>
+</tr>
+<tr>
+<td>上下文层</td>
+<td>证据是否完整可用</td>
+<td>Context Completeness、Duplicate Ratio、Conflict Rate</td>
+<td>条件缺失、版本冲突、重复片段占满上下文</td>
+</tr>
+<tr>
+<td>生成层</td>
+<td>是否基于证据正确回答</td>
+<td>Answer Correctness、Faithfulness、Citation Accuracy</td>
+<td>幻觉、过度概括、引用错误、遗漏约束</td>
+</tr>
+<tr>
+<td>用户层</td>
+<td>是否满足真实需求</td>
+<td>Satisfaction Rate、Follow-up Rate、Correction Rate</td>
+<td>用户追问、点踩、人工接管、重新提问</td>
+</tr>
+</tbody>
+</table>
+<p>这个表格说明，RAG 评测不是单点判断，而是多层诊断。检索层解决“有没有找到”，上下文层解决“找到的是否可用”，生成层解决“是否正确使用”，用户层解决“是否满足需求”。只有这些层次共同工作，系统优化才有明确方向。例如，如果检索层 Evidence Hit Rate 很低，说明问题主要在数据覆盖、索引策略或 query 改写；如果检索命中率较高但 Answer Correctness 较低，说明问题可能在上下文选择或生成阶段；如果答案正确但 Citation Accuracy 较低，说明引用锚点、证据绑定或输出格式存在问题。</p>
+<p>通过分层评测，团队可以避免把所有问题都归因于模型能力不足。很多 RAG 系统的优化收益，并不是来自更换更大的生成模型，而是来自修复检索证据、补全元数据、优化 chunk 粒度或改进 rerank 策略。</p>
+<hr />
+<h3 id="2143">21.4.3 评测数据集构建<a class="headerlink" href="#2143" title="Permanent link">&para;</a></h3>
+<p>评测体系能否发挥作用，取决于评测数据集是否能够代表真实问题分布。在 RAG 场景中，评测数据通常不应只包含“问题—答案”，还应包含“问题—标准答案—证据来源—问题类型—适用条件”等信息。因为 RAG 的关键不是生成一个答案，而是基于指定知识源生成可验证答案。一个高质量的 RAG 评测样本，至少应包含四类字段。第一是用户问题，即自然语言 query；第二是标准答案，用于判断最终回答是否正确；第三是标准证据，即答案对应的文档、章节、页码或 chunk；第四是问题标签，例如事实查询、规则查询、流程查询、表格查询、跨文档查询等。问题标签的价值在于帮助团队分析系统在哪类问题上表现较差。</p>
+<p>在构建评测集时，常见方法有三种。第一种是人工构建，由业务专家或数据团队从核心文档中提取问题。这类样本质量高，适合作为黄金测试集，但成本较高，规模有限。第二种是模型辅助生成，即基于文档内容自动生成问题和答案，再由人工抽检。这类方法可以快速扩展覆盖面，但需要防止生成问题过于模板化。第三种是线上日志回收，即从真实用户问题中筛选代表性样本。这类样本最贴近真实使用场景，尤其适合发现系统边界。</p>
+<p>三类数据应当组合使用。人工黄金集用于稳定回归测试，模型生成集用于扩大覆盖范围，线上失败样本用于驱动系统迭代。只依赖人工黄金集，容易覆盖不足；只依赖模型生成集，容易脱离真实用户表达；只依赖线上样本，则可能缺乏标准答案和证据标注。</p>
+<p>表21-7汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-7：RAG 评测数据来源与适用场景</em></p>
+<table>
+<thead>
+<tr>
+<th>数据来源</th>
+<th>优点</th>
+<th>局限</th>
+<th>适用用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>人工黄金集</td>
+<td>质量高、证据准确、适合回归</td>
+<td>成本高、规模有限</td>
+<td>核心能力评测、版本回归</td>
+</tr>
+<tr>
+<td>模型生成评测集</td>
+<td>覆盖快、成本低、可扩展</td>
+<td>可能模板化、需抽检</td>
+<td>扩展问题类型、压力测试</td>
+</tr>
+<tr>
+<td>线上真实问题</td>
+<td>贴近用户、暴露真实缺陷</td>
+<td>标注成本高、噪声较多</td>
+<td>错误分析、系统迭代</td>
+</tr>
+<tr>
+<td>专项挑战集</td>
+<td>针对表格、版本、权限等难点</td>
+<td>覆盖范围窄</td>
+<td>验证高风险能力</td>
+</tr>
+</tbody>
+</table>
+<p>评测集还应覆盖不同难度层级。基础问题通常只需要单个片段即可回答，例如“差旅报销需要哪些材料”；中等难度问题需要结合条件，例如“试用期员工是否适用该标准”；高难度问题则可能需要跨文档、跨版本或表格推理，例如“新版制度相比旧版，住宿标准有哪些变化”。如果评测集只包含基础问题，系统上线后容易在复杂场景中失败。</p>
+<p>此外，评测数据需要持续更新。随着知识库内容变化，旧评测样本可能失效；随着用户问题变化，原有评测集可能无法覆盖新需求。因此，评测集本身也应纳入版本管理。每次知识库大版本更新后，都应检查评测样本中的证据是否仍然有效，必要时更新标准答案和引用来源。</p>
+<hr />
+<h3 id="2144">21.4.4 在线反馈与错误归因<a class="headerlink" href="#2144" title="Permanent link">&para;</a></h3>
+<p>离线评测能够帮助团队在上线前发现问题，但无法完全覆盖真实用户环境。RAG 系统优化动力，来自上线后的在线反馈。用户的每一次提问、追问、点击、纠错和放弃，都可能是系统改进的信号。</p>
+<p>在线反馈可以分为显式反馈和隐式反馈。显式反馈包括点赞、点踩、文字纠错、人工标注“答案错误”或“引用错误”等；隐式反馈则来自用户行为，例如用户是否继续追问、是否点击引用来源、是否复制答案、是否重新改写问题、是否转人工处理。显式反馈信号更清晰，但数量往往有限；隐式反馈规模更大，但需要结合上下文解释。例如，用户点踩通常表示答案存在问题，但问题可能来自不同环节：可能是答案事实错误，可能是没有回答到重点，可能是引用不可信，也可能只是表达不够清楚。如果系统只记录“点踩”，而不记录当时的 query、召回证据、上下文、最终答案和用户后续行为，就很难进行有效归因。</p>
+<p>因此，如图21-9所示，在线反馈必须与全链路日志结合。对于每次问答，系统应记录用户问题、query 改写结果、召回候选、rerank 排序、最终上下文、生成答案、引用来源、用户反馈和后续行为。只有这样，团队才能在问题发生后回放完整链路，判断错误来源。错误归因通常可以分为几类。第一类是数据覆盖问题，即知识库中缺少相关内容；第二类是解析或清洗问题，即原文存在但结构被破坏；第三类是切分问题，即答案被拆散到多个 chunk 中；第四类是检索问题，即正确 chunk 没有被召回；第五类是排序问题，即正确 chunk 被召回但排名过低；第六类是生成问题，即证据正确但模型回答错误；第七类是引用问题，即答案正确但引用不准确。这些错误类型对应不同修复路径。数据覆盖问题需要补充知识源；解析问题需要优化 parser；切分问题需要调整 chunk 策略；检索问题需要优化 embedding、query 改写或混合检索；排序问题需要改进 rerank；生成问题需要调整 prompt 或模型；引用问题需要修复 citation anchor。</p>
+<p><a class="glightbox" href="../../../images/part7/Du-Chap21-Fig09-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图21-9：RAG 系统的评测、反馈与优化闭环" src="../../../images/part7/Du-Chap21-Fig09-EN.svg" /></a></p>
+<p><em>图21-9：RAG 系统的评测、反馈与优化闭环</em></p>
+<p>这个闭环的核心价值在于，它将用户反馈从零散意见转化为可操作的数据资产。反馈不再只是“用户不满意”，而是可以进入失败样本库、评测集、知识更新队列和系统优化任务。随着反馈不断积累，系统能够逐步覆盖真实问题分布，并形成持续改进能力。</p>
+<hr />
+<h3 id="2145">21.4.5 知识更新与版本治理<a class="headerlink" href="#2145" title="Permanent link">&para;</a></h3>
+<p>RAG 系统的一个重要优势，是能够通过外部知识库更新来保持答案时效性。但这一优势只有在知识更新机制健全时才成立。如果知识库更新不及时，或者新旧版本管理混乱，RAG 系统反而会放大过期信息的风险。</p>
+<p>知识更新并不是简单地把新文档加入索引。真实场景中，一条新知识可能替代旧知识，也可能只适用于部分业务范围；一个制度版本更新后，旧版本可能需要归档但不能再用于默认回答；一个产品功能在新版中上线，但旧版客户仍然使用旧规则。这些情况都要求系统具备版本治理能力。知识更新通常包括四个动作：新增、修改、废弃和回滚。新增指引入新的文档或知识单元；修改指已有文档内容发生变化，需要重新解析、切分和索引；废弃指某些知识不再适用，应从默认检索空间移除；回滚则用于新版本上线后发现问题时恢复旧版本。</p>
+<p>在工程实现上，知识更新应尽可能采用增量机制。系统需要识别哪些文档发生变化，哪些 chunk 受到影响，哪些索引需要重建，而不是每次全量重跑。增量更新不仅节省成本，也减少系统不稳定窗口。</p>
+<p>此外，知识更新还需要处理冲突。当不同文档对同一问题给出不一致答案时，系统不能简单地把它们都交给模型，而应通过元数据和业务规则确定优先级。例如，最新版本优先于旧版本，正式制度优先于会议纪要，总部规则优先于地方补充规则，特定部门规则优先于通用规则。若冲突无法自动解决，应进入人工审核队列。</p>
+<hr />
+<h3 id="2146">21.4.6 本节小结<a class="headerlink" href="#2146" title="Permanent link">&para;</a></h3>
+<p>本节围绕 RAG 系统的评测、回灌与知识更新展开，讨论了系统从上线运行到持续演进所需的关键机制。与传统模型不同，RAG 系统不是单一模型，而是由数据、索引、检索、排序、上下文组装和生成共同构成的复杂链路。因此，RAG 评测必须采用分层方法，分别检查检索是否命中证据、上下文是否完整可用、生成是否忠实可靠、引用是否可追溯。</p>
+<p>评测数据集是闭环优化的基础。高质量评测集不应只包含问题和答案，还应包含标准证据、问题类型和适用条件。人工黄金集、模型生成评测集、线上真实问题和专项挑战集各有价值，应共同构成覆盖不同难度和场景的评测体系。</p>
+<p>在线反馈则使 RAG 系统能够接触真实问题分布。通过记录用户行为、显式反馈和全链路日志，团队可以将用户侧问题转化为可归因、可复盘、可修复的数据资产。错误归因进一步将“回答不对”拆解为数据覆盖、解析、切分、检索、排序、生成和引用等不同类型，从而指导具体优化动作。</p>
+<p>知识更新与版本治理决定了 RAG 系统能否长期保持可信。生产级系统必须支持新增、修改、废弃和回滚，能够处理新旧版本、权限边界和知识冲突，并在更新后通过评测集进行回归验证。</p>
+<p>本节的核心结论是：RAG 系统不是一次性上线完成的问答工具，而是一个需要持续评测、持续回灌、持续更新的知识闭环系统。只有当用户反馈能够回到数据、索引、检索和生成链路中，系统才会随着真实使用不断变得更可靠。</p>
+<h2 id="215-checklist-rag">21.5 企业案例与工程 Checklist：从文档流水线到生产级 RAG<a class="headerlink" href="#215-checklist-rag" title="Permanent link">&para;</a></h2>
+<h3 id="2151-rag">21.5.1 为什么需要用真实复杂文档验证 RAG 流水线<a class="headerlink" href="#2151-rag" title="Permanent link">&para;</a></h3>
+<p>在前几节中，我们已经从文档工程、数据采集、结构化清洗、语义切分、索引构建、混合检索、rerank 以及评测回灌等角度，系统讨论了 RAG 数据流水线的关键环节。到这里，一个完整的工程问题随之出现：如何判断前面这些方法是否能够支撑生产系统？</p>
+<p>最直接的方式，是将它们应用到真实复杂文档场景中进行验证。因为 RAG 系统在普通纯文本场景下表现良好，并不意味着它已经具备生产能力。真实企业文档往往不是干净、平整、单一格式的文本，而是包含标题层级、表格、图示、脚注、版本说明、权限边界和跨页结构的复杂知识载体。只有当系统能够处理这类复杂文档，并在真实用户问题下稳定返回可验证答案时，才能说明其数据流水线具备生产价值（Sculley et al. 2015）。</p>
+<p>许多 RAG 项目在原型阶段失败得并不明显。团队可能用几份简单 FAQ 或产品说明书完成演示，系统也能回答“这个功能怎么用”“某流程需要哪些材料”等基础问题。但一旦进入企业知识库、制度问答、财务报表解读或运维手册检索等场景，系统问题会迅速暴露：表格信息无法正确解析，章节上下文丢失，旧版本内容被误召回，答案没有引用来源，用户追问时系统前后不一致。</p>
+<p>因此，生产级 RAG 系统必须通过复杂文档案例进行端到端验证。这个验证不是单独测试模型能力，而是测试整条数据流水线是否能够完成以下目标：能否正确接入文档，能否还原版面结构，能否将表格和正文组织成知识单元，能否建立带元数据的索引，能否根据用户问题召回正确证据，能否生成带引用的答案，并在用户反馈后回流到数据更新流程（Huyen 2022）。</p>
+<p>本节将以一个企业内部“差旅费用管理制度与报销说明”文档为例，展示如何从复杂文档出发，构建一条生产级 RAG 数据流水线，并给出工程 checklist，帮助读者将前文方法落地为可复用的实施框架。</p>
+<hr />
+<h3 id="2152">21.5.2 复杂文档案例：企业差旅制度问答系统<a class="headerlink" href="#2152" title="Permanent link">&para;</a></h3>
+<p>假设某企业希望构建一个内部知识问答系统，用于回答员工关于差旅、报销、审批和费用标准的问题。知识源包括《差旅费用管理制度》《报销流程操作手册》《城市等级与住宿标准表》《财务共享中心 FAQ》《审批权限说明》等文档。</p>
+<p>这些文档具有典型的复杂文档特征。首先，它们不是单一文本，而是由制度条款、流程说明、费用表格、审批图示和 FAQ 组成。其次，它们存在明显的版本差异。例如，2023 版和 2024 版制度在住宿标准、审批流程和特殊费用处理规则上可能不同。再次，它们包含大量条件性规则，例如“试用期员工是否适用”“一线城市和二线城市标准是否不同”“超过标准是否需要额外审批”等。最后，这些文档具有权限要求，部分审批权限说明和财务异常处理规则只允许特定部门查看。</p>
+<p>如果使用简单的 RAG 原型方案，处理流程可能是：将所有 PDF 转成纯文本，按固定长度切分，向量化后写入向量库。这个方案在回答简单问题时可能可用，例如：</p>
+<blockquote>
+<p>“差旅报销需要哪些材料？”</p>
+</blockquote>
+<p>但面对更复杂的问题时，就会出现明显缺陷。例如：</p>
+<blockquote>
+<p>“试用期员工去上海出差，住宿费超过标准但有部门负责人审批，可以报销吗？”</p>
+</blockquote>
+<p>这个问题同时涉及员工身份、城市等级、住宿标准、超标处理和审批权限。如果系统只召回某个包含“住宿标准”的 chunk，而没有召回“试用期员工适用范围”和“超标审批规则”，模型容易生成不完整甚至错误的回答。</p>
+<p>再比如：</p>
+<blockquote>
+<p>“2024 版制度中，一线城市住宿标准相比 2023 版是否提高？”</p>
+</blockquote>
+<p>这个问题需要系统识别版本、定位两个版本中的表格，并进行对比。如果文档解析阶段没有保留表格结构，或者元数据中没有版本字段，系统将很难正确回答。</p>
+<p>因此，这类场景适合检验 RAG 数据流水线的完整性。它要求系统不仅能“找到相似文本”，还要能理解文档结构、保留表格语义、识别版本差异、应用权限过滤，并返回可追溯答案。</p>
+<hr />
+<h3 id="2153">21.5.3 端到端处理流程：从制度文档到可检索知识资产<a class="headerlink" href="#2153" title="Permanent link">&para;</a></h3>
+<p>针对上述复杂文档，生产级处理流程可以分为六个阶段：数据接入、文档解析、结构化清洗、知识单元构建、索引与检索、评测与回灌。</p>
+<p>第一阶段是数据接入。系统需要从企业文档库、财务系统和 FAQ 数据库中同步相关资料，并为每个数据源建立登记信息。例如，制度文件需要记录文件名、版本号、生效时间、发布部门、适用范围和权限等级；FAQ 数据需要记录问题分类、更新时间、维护人和审核状态；表格数据需要记录口径、单位和来源文档。</p>
+<p>第二阶段是文档解析。对于 PDF 制度文件，系统需要识别标题、条款、表格、页码、脚注和审批流程图。对于表格，系统不能只抽取文字，而要保留行列结构、表头、单位和备注。对于流程图，系统至少应提取图题、图注、节点名称和流程顺序。如果涉及扫描件，还需要 OCR 与人工抽检机制。</p>
+<p>第三阶段是结构化清洗。系统需要删除重复页眉页脚，剔除无关模板说明，修复跨页表格，合并被分页打断的段落，并补全元数据。例如，对于“住宿标准表”，系统应将“城市等级”“住宿标准”“交通补贴”“餐饮补贴”等字段结构化，同时保留表格来源页码。</p>
+<p>第四阶段是知识单元构建。系统应根据文档结构生成多种知识单元：条款型 chunk、表格型 chunk、FAQ 型 chunk 和流程型 chunk。每个知识单元都应携带 <code>doc_id</code>、<code>version</code>、<code>chapter_path</code>、<code>page_range</code>、<code>content_type</code>、<code>access_level</code> 和 <code>citation_anchor</code> 等字段。</p>
+<p>第五阶段是索引与检索。系统不应只建立向量索引，还应同时建立关键词索引、元数据过滤索引和表格字段索引。对于“上海住宿标准”这类问题，系统应通过城市等级字段、费用类型字段和版本字段进行结构化过滤，再结合向量检索召回相关说明。对于“超过标准是否可以报销”这类规则问题，则需要同时召回制度条款和审批流程说明。</p>
+<p>第六阶段是评测与回灌。上线后，系统需要记录用户问题、召回片段、最终答案、引用来源和用户反馈。对于错误回答，应进入失败样本库，并标注错误来源：是数据缺失、解析错误、切分错误、检索失败、排序失败，还是生成错误。后续根据错误类型分别触发数据补充、解析规则修复、chunk 调整、索引更新或 prompt 优化。</p>
+<hr />
+<h3 id="2154-schema">21.5.4 知识单元 Schema 与代码清单<a class="headerlink" href="#2154-schema" title="Permanent link">&para;</a></h3>
+<p>在复杂文档 RAG 系统中，知识单元 schema 是整个流水线的核心接口。它连接了解析、清洗、索引、检索、生成和回灌。一个设计良好的 schema，能够让系统在不同模块之间传递稳定、完整、可追溯的信息；一个设计粗糙的 schema，则会导致后续系统不断用补丁修复数据缺陷。</p>
+<p>以差旅制度文档为例，一个知识单元可以采用如下结构：</p>
+<p>代码清单21-2给出了JSON Schema 示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;chunk_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;travel_policy_2024_sec_1_3_table_row_1&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;doc_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;travel_policy_2024&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;doc_title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;公司差旅管理制度&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;document_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-03-15&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;source_system&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;内部制度门户&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">&quot;content_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;表格行&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">&quot;chapter_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;第一章 &gt; 第1.3节 差旅费用标准&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">&quot;page_range&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">12</span><span class="p">,</span><span class="w"> </span><span class="mi">13</span><span class="p">],</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">&quot;access_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;内部可见&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span><span class="nt">&quot;business_domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;财务管理&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="nt">&quot;chunk_text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;一线城市的住宿标准为每日800元，交通补贴为每日300元，餐饮补贴为每日150元。&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">  </span><span class="nt">&quot;structured_fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="nt">&quot;city_tier&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;一线城市&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">    </span><span class="nt">&quot;accommodation_standard&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">800</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nt">&quot;transportation_allowance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="nt">&quot;meal_allowance&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">150</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="nt">&quot;currency&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;人民币&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="nt">&quot;unit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;元/日&quot;</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span><span class="nt">&quot;citation_anchor&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">    </span><span class="nt">&quot;page&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="nt">&quot;table_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;table_1_3&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">    </span><span class="nt">&quot;row_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">  </span><span class="nt">&quot;quality_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.94</span><span class="p">,</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span><span class="nt">&quot;updated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-03-15T10:30:45Z&quot;</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单21-2：JSON Schema 示例</em></p>
+<p>这个 schema 中同时保留了自然语言文本、结构化字段和引用锚点。<code>chunk_text</code> 用于语义检索和生成上下文，<code>structured_fields</code> 用于精确过滤和数值判断，<code>citation_anchor</code> 用于答案溯源，<code>access_level</code> 用于权限控制，<code>quality_score</code> 用于排序和质量监控。</p>
+<p>下面给出一个简化的 Python 示例，展示如何将解析后的表格行转化为知识单元。实际生产系统会更加复杂，但这个示例可以帮助理解核心逻辑。</p>
+<p>代码清单21-3给出了流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">class</span><span class="w"> </span><span class="nc">KnowledgeUnit</span><span class="p">:</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">chunk_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">doc_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="n">doc_title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">document_version</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">source_system</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">chapter_path</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">page_range</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">access_level</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="n">business_domain</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="n">chunk_text</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="n">structured_fields</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span class="n">citation_anchor</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="n">quality_score</span><span class="p">:</span> <span class="nb">float</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="n">updated_at</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="k">def</span><span class="w"> </span><span class="nf">stable_id</span><span class="p">(</span><span class="o">*</span><span class="n">parts</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="s2">&quot;::&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">12</span><span class="p">]</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_travel_table_unit</span><span class="p">(</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span class="n">doc_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    <span class="n">doc_title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    <span class="n">chapter_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>    <span class="n">page</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>    <span class="n">row</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    <span class="n">row_id</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KnowledgeUnit</span><span class="p">:</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    <span class="n">city_tier</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;city_tier&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>    <span class="n">accommodation</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;accommodation_standard&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>    <span class="n">transport</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;transportation_allowance&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="n">meal</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;meal_allowance&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>    <span class="n">chunk_text</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>        <span class="sa">f</span><span class="s2">&quot;在《</span><span class="si">{</span><span class="n">doc_title</span><span class="si">}</span><span class="s2">》的“</span><span class="si">{</span><span class="n">chapter_path</span><span class="si">}</span><span class="s2">”中，&quot;</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">city_tier</span><span class="si">}</span><span class="s2">的差旅费用标准为：&quot;</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>        <span class="sa">f</span><span class="s2">&quot;住宿标准每日</span><span class="si">{</span><span class="n">accommodation</span><span class="si">}</span><span class="s2">元，&quot;</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>        <span class="sa">f</span><span class="s2">&quot;交通补贴每日</span><span class="si">{</span><span class="n">transport</span><span class="si">}</span><span class="s2">元，&quot;</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>        <span class="sa">f</span><span class="s2">&quot;餐饮补贴每日</span><span class="si">{</span><span class="n">meal</span><span class="si">}</span><span class="s2">元。&quot;</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    <span class="p">)</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>    <span class="n">chunk_id</span> <span class="o">=</span> <span class="n">stable_id</span><span class="p">(</span><span class="n">doc_id</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">chapter_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">page</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">row_id</span><span class="p">))</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>    <span class="k">return</span> <span class="n">KnowledgeUnit</span><span class="p">(</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>        <span class="n">chunk_id</span><span class="o">=</span><span class="n">chunk_id</span><span class="p">,</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>        <span class="n">doc_id</span><span class="o">=</span><span class="n">doc_id</span><span class="p">,</span>
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>        <span class="n">doc_title</span><span class="o">=</span><span class="n">doc_title</span><span class="p">,</span>
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>        <span class="n">document_version</span><span class="o">=</span><span class="n">version</span><span class="p">,</span>
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>        <span class="n">source_system</span><span class="o">=</span><span class="s2">&quot;内部制度门户&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a>        <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;表格行&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a>        <span class="n">chapter_path</span><span class="o">=</span><span class="n">chapter_path</span><span class="p">,</span>
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>        <span class="n">page_range</span><span class="o">=</span><span class="p">[</span><span class="n">page</span><span class="p">],</span>
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a>        <span class="n">access_level</span><span class="o">=</span><span class="s2">&quot;内部可见&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a>        <span class="n">business_domain</span><span class="o">=</span><span class="s2">&quot;财务管理&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a>        <span class="n">chunk_text</span><span class="o">=</span><span class="n">chunk_text</span><span class="p">,</span>
+<a id="__codelineno-2-68" name="__codelineno-2-68" href="#__codelineno-2-68"></a>        <span class="n">structured_fields</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-2-69" name="__codelineno-2-69" href="#__codelineno-2-69"></a>            <span class="s2">&quot;city_tier&quot;</span><span class="p">:</span> <span class="n">city_tier</span><span class="p">,</span>
+<a id="__codelineno-2-70" name="__codelineno-2-70" href="#__codelineno-2-70"></a>            <span class="s2">&quot;accommodation_standard&quot;</span><span class="p">:</span> <span class="n">accommodation</span><span class="p">,</span>
+<a id="__codelineno-2-71" name="__codelineno-2-71" href="#__codelineno-2-71"></a>            <span class="s2">&quot;transportation_allowance&quot;</span><span class="p">:</span> <span class="n">transport</span><span class="p">,</span>
+<a id="__codelineno-2-72" name="__codelineno-2-72" href="#__codelineno-2-72"></a>            <span class="s2">&quot;meal_allowance&quot;</span><span class="p">:</span> <span class="n">meal</span><span class="p">,</span>
+<a id="__codelineno-2-73" name="__codelineno-2-73" href="#__codelineno-2-73"></a>            <span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;人民币&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-74" name="__codelineno-2-74" href="#__codelineno-2-74"></a>            <span class="s2">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;元/日&quot;</span>
+<a id="__codelineno-2-75" name="__codelineno-2-75" href="#__codelineno-2-75"></a>        <span class="p">},</span>
+<a id="__codelineno-2-76" name="__codelineno-2-76" href="#__codelineno-2-76"></a>        <span class="n">citation_anchor</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-2-77" name="__codelineno-2-77" href="#__codelineno-2-77"></a>            <span class="s2">&quot;page&quot;</span><span class="p">:</span> <span class="n">page</span><span class="p">,</span>
+<a id="__codelineno-2-78" name="__codelineno-2-78" href="#__codelineno-2-78"></a>            <span class="s2">&quot;table_id&quot;</span><span class="p">:</span> <span class="s2">&quot;travel_expense_standard&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-79" name="__codelineno-2-79" href="#__codelineno-2-79"></a>            <span class="s2">&quot;row_id&quot;</span><span class="p">:</span> <span class="n">row_id</span>
+<a id="__codelineno-2-80" name="__codelineno-2-80" href="#__codelineno-2-80"></a>        <span class="p">},</span>
+<a id="__codelineno-2-81" name="__codelineno-2-81" href="#__codelineno-2-81"></a>        <span class="n">quality_score</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+<a id="__codelineno-2-82" name="__codelineno-2-82" href="#__codelineno-2-82"></a>        <span class="n">updated_at</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+<a id="__codelineno-2-83" name="__codelineno-2-83" href="#__codelineno-2-83"></a>    <span class="p">)</span>
+<a id="__codelineno-2-84" name="__codelineno-2-84" href="#__codelineno-2-84"></a>
+<a id="__codelineno-2-85" name="__codelineno-2-85" href="#__codelineno-2-85"></a>
+<a id="__codelineno-2-86" name="__codelineno-2-86" href="#__codelineno-2-86"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-87" name="__codelineno-2-87" href="#__codelineno-2-87"></a>    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-2-88" name="__codelineno-2-88" href="#__codelineno-2-88"></a>        <span class="s2">&quot;city_tier&quot;</span><span class="p">:</span> <span class="s2">&quot;一线城市&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-89" name="__codelineno-2-89" href="#__codelineno-2-89"></a>        <span class="s2">&quot;accommodation_standard&quot;</span><span class="p">:</span> <span class="mi">800</span><span class="p">,</span>
+<a id="__codelineno-2-90" name="__codelineno-2-90" href="#__codelineno-2-90"></a>        <span class="s2">&quot;transportation_allowance&quot;</span><span class="p">:</span> <span class="mi">300</span><span class="p">,</span>
+<a id="__codelineno-2-91" name="__codelineno-2-91" href="#__codelineno-2-91"></a>        <span class="s2">&quot;meal_allowance&quot;</span><span class="p">:</span> <span class="mi">150</span>
+<a id="__codelineno-2-92" name="__codelineno-2-92" href="#__codelineno-2-92"></a>    <span class="p">}</span>
+<a id="__codelineno-2-93" name="__codelineno-2-93" href="#__codelineno-2-93"></a>
+<a id="__codelineno-2-94" name="__codelineno-2-94" href="#__codelineno-2-94"></a>    <span class="n">unit</span> <span class="o">=</span> <span class="n">build_travel_table_unit</span><span class="p">(</span>
+<a id="__codelineno-2-95" name="__codelineno-2-95" href="#__codelineno-2-95"></a>        <span class="n">doc_id</span><span class="o">=</span><span class="s2">&quot;travel_policy_2024&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-96" name="__codelineno-2-96" href="#__codelineno-2-96"></a>        <span class="n">doc_title</span><span class="o">=</span><span class="s2">&quot;公司差旅管理制度&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-97" name="__codelineno-2-97" href="#__codelineno-2-97"></a>        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;2024-03-15&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-98" name="__codelineno-2-98" href="#__codelineno-2-98"></a>        <span class="n">chapter_path</span><span class="o">=</span><span class="s2">&quot;第一章 &gt; 第1.3节 差旅费用标准&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-99" name="__codelineno-2-99" href="#__codelineno-2-99"></a>        <span class="n">page</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+<a id="__codelineno-2-100" name="__codelineno-2-100" href="#__codelineno-2-100"></a>        <span class="n">row</span><span class="o">=</span><span class="n">row</span><span class="p">,</span>
+<a id="__codelineno-2-101" name="__codelineno-2-101" href="#__codelineno-2-101"></a>        <span class="n">row_id</span><span class="o">=</span><span class="mi">1</span>
+<a id="__codelineno-2-102" name="__codelineno-2-102" href="#__codelineno-2-102"></a>    <span class="p">)</span>
+<a id="__codelineno-2-103" name="__codelineno-2-103" href="#__codelineno-2-103"></a>
+<a id="__codelineno-2-104" name="__codelineno-2-104" href="#__codelineno-2-104"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">unit</span><span class="p">),</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div>
+<p><em>代码清单21-3：流程示例</em></p>
+<p>这段代码体现了一个重要思想：知识单元不是简单的文本片段，而是一个带结构、带上下文、带来源、带权限和带质量信息的数据对象。它既可以进入向量检索，也可以参与结构化过滤，还可以在生成答案时作为可引用证据。</p>
+<p>在真实工程中，这类代码通常不会单独运行，而会嵌入到解析与清洗流水线中。系统从解析器获得表格结构，再经过字段标准化、单位校验、版本挂载和权限判断，最终生成可索引的知识单元。对于段落、FAQ、流程图、代码块，也可以采用类似 schema，只是 <code>content_type</code> 和 <code>structured_fields</code> 不同。</p>
+<hr />
+<h3 id="2155-checklist-rag">21.5.5 工程 Checklist：生产级 RAG 数据流水线的验收标准<a class="headerlink" href="#2155-checklist-rag" title="Permanent link">&para;</a></h3>
+<p>为了将前述方法落地为可执行工程实践，可以建立一套 RAG 数据流水线 checklist。Checklist 的作用不是替代具体实现，而是帮助团队在上线前系统检查关键环节，避免系统只完成“能跑”，却没有达到“可信、可控、可维护”的生产标准。</p>
+<p>表21-8汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 21-8：生产级 RAG 数据流水线 Checklist</em></p>
+<table>
+<thead>
+<tr>
+<th>检查类别</th>
+<th>关键问题</th>
+<th>验收标准</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据接入</td>
+<td>是否记录来源、版本、负责人和权限</td>
+<td>每个数据源均有登记记录和维护责任人</td>
+</tr>
+<tr>
+<td>文档解析</td>
+<td>是否保留标题、表格、页码、图示等结构</td>
+<td>抽检复杂文档时结构还原准确</td>
+</tr>
+<tr>
+<td>表格处理</td>
+<td>是否保留行列关系、单位、备注和引用位置</td>
+<td>表格问答可返回准确数值与来源</td>
+</tr>
+<tr>
+<td>结构化清洗</td>
+<td>是否去除噪声并补全元数据</td>
+<td>chunk 具备来源、章节路径、版本和权限</td>
+</tr>
+<tr>
+<td>语义切分</td>
+<td>是否避免条件与结论分离</td>
+<td>规则类问题能召回完整证据</td>
+</tr>
+<tr>
+<td>索引构建</td>
+<td>是否支持向量、关键词和元数据过滤</td>
+<td>不同问题类型可走不同检索路径</td>
+</tr>
+<tr>
+<td>权限控制</td>
+<td>是否在索引和检索阶段执行权限过滤</td>
+<td>无权限用户无法召回敏感内容</td>
+</tr>
+<tr>
+<td>引用溯源</td>
+<td>是否能定位到原文页码、段落或表格</td>
+<td>答案引用可点击或可人工核查</td>
+</tr>
+<tr>
+<td>评测回归</td>
+<td>是否有黄金集与失败样本集</td>
+<td>每次更新后运行回归测试</td>
+</tr>
+<tr>
+<td>知识更新</td>
+<td>是否支持新增、修改、废弃和回滚</td>
+<td>旧版本知识不会误进入默认答案</td>
+</tr>
+</tbody>
+</table>
+<p>这个 checklist 可以作为上线前的最低验收标准。对于高风险场景，例如财务、法律、医疗、政务和合规知识库，还应增加人工审核、权限审计、敏感信息检测和灰度发布机制。</p>
+<p>需要强调的是，Checklist 的价值并不只在上线前检查，也在于团队协作。RAG 项目通常涉及算法、数据工程、平台、业务、法务和安全等多个角色。如果没有统一的检查框架，不同团队容易只关注自己负责的模块。例如，算法团队关注召回率，平台团队关注稳定性，业务团队关注答案是否正确，安全团队关注权限是否合规。Checklist 可以将这些目标统一到同一张工程验收表中，使问题暴露得更早，也更容易被定位。</p>
+<p>在项目早期，Checklist 可以帮助团队识别最小可行版本的边界。例如，如果只是内部低风险知识问答，可以暂时降低部分审计要求，但必须保证文档来源、chunk 元数据和引用锚点完整。如果进入正式业务流程，则必须补齐权限控制、版本治理和回归测试。如果系统面向外部客户，还需要额外考虑合规、隐私和责任边界。</p>
+<hr />
+<h3 id="2156-rag">21.5.6 从案例到方法：RAG 数据流水线的复用模式<a class="headerlink" href="#2156-rag" title="Permanent link">&para;</a></h3>
+<p>通过差旅制度问答案例可以看到，生产级 RAG 系统的关键并不在于某一个单点算法，而在于整条流水线是否可复用。复杂文档案例只是一个具体场景，但其背后的方法可以迁移到其他领域。</p>
+<p>在法务知识库中，复杂点可能不是费用表格，而是合同条款、定义引用、版本差异和适用范围。在医疗知识库中，复杂点可能是临床指南、药品说明、禁忌条件和证据等级。在运维知识库中，复杂点可能是故障码、日志模式、处理步骤和历史工单。在金融报表场景中，复杂点可能是表格、脚注、指标口径和跨期比较。</p>
+<p>这些场景表面不同，但 RAG 数据流水线的核心模式是相同的：首先识别知识类型，然后设计合适的解析策略；接着构建带上下文和元数据的知识单元；再根据问题类型选择索引与检索策略；最后通过评测和反馈持续修正。</p>
+<p>因此，一个成熟的 RAG 平台不应只为某个文档类型写死流程，而应提供可配置的数据处理框架。例如，平台可以允许用户为不同文档类型配置解析器、切分策略、元数据 schema、索引策略和质量检查规则。这样，当系统从制度文档扩展到合同、报表、手册或工单时，不需要重建整套架构，而是在同一流水线框架下扩展配置。</p>
+<p>这种可复用能力，正是 RAG 数据工程从项目制走向平台化的关键。单个项目可以依赖人工调参和定制脚本，但组织级 RAG 能力必须依赖标准化流水线、统一 schema、可观测指标和可复用组件。只有这样，企业才能在多个业务场景中持续构建知识应用，而不是每次都从零开始。</p>
+<hr />
+<h3 id="2157">21.5.7 本节小结<a class="headerlink" href="#2157" title="Permanent link">&para;</a></h3>
+<p>本节以企业差旅制度问答系统为例，展示了如何将前文讨论的 RAG 数据工程方法落地到真实复杂文档场景中。通过这个案例可以看到，生产级 RAG 系统面对的不是干净文本，而是包含制度条款、表格、流程、版本、权限和引用关系的复杂知识体系。</p>
+<p>在这类场景中，简单的“PDF 转文本—固定长度切分—向量入库”方案很难支撑稳定回答。系统必须完成从文档集合到知识资产的升级：在数据接入阶段记录来源与版本，在解析阶段还原结构与表格，在清洗阶段补全元数据，在知识单元构建阶段保留语义边界和引用锚点，在索引阶段支持混合检索，在评测阶段通过失败样本持续回灌。</p>
+<p>本节给出的知识单元 schema、代码示例和工程 checklist，旨在帮助读者将抽象方法转化为可执行实践。其核心思想可以概括为：生产级 RAG 的可靠性，来自可治理的数据对象，而不是来自松散的文本片段。</p>
+<hr />
+<h2 id="_6">本章小结<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本章论证了 RAG 系统的性能瓶颈通常并不在生成模型或检索算法，而在文档工程：当查询抵达模型时，答案质量的上限已被解析、清洗、切分与索引等前置环节决定。围绕这一判断，本章依次给出多源知识接入与知识源注册表的建立方式、异构动态数据向可检索可引用知识单元的结构化清洗路径、由向量与关键词与结构化字段与父子层级共同组成的多路索引及检索设计，以及把召回、rerank 与生成拆解开来定位错误来源的链路化评测方法。</p>
+<p>在评测之上，本章进一步将线上失败样本回灌与知识更新纳入流水线，使每一次错误都成为后续修复的输入，并通过企业复杂文档案例与工程 Checklist，检验上述方法在表格、版面、版本与权限交织的真实知识载体上的有效性。这些环节共同构成一条可追溯、可验证、可交付的生产级数据流水线。当知识从纯文本扩展到图像、表格与版面结构时，文本 RAG 的基本假设将不再成立，下一章转入多模态 RAG 与视觉检索。</p>
+<h2 id="_7">参考文献<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W-t, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459–9474. arXiv:2005.11401.</p>
+<p>Gao Y, Xiong Y, Gao X, Jia K, Pan J, Bi Y, Dai Y, Sun J, Wang M, Wang H (2023) Retrieval-Augmented Generation for Large Language Models: A Survey. arXiv preprint arXiv:2312.10997.</p>
+<p>Guu K, Lee K, Tung Z, Pasupat P, Chang M-W (2020) REALM: Retrieval-Augmented Language Model Pre-Training. In: Proceedings of the 37th International Conference on Machine Learning (ICML), pp 3929–3938.</p>
+<p>Izacard G, Grave E (2021) Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering. In: Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics (EACL), pp 874–880. https://doi.org/10.18653/v1/2021.eacl-main.74.</p>
+<p>Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision (ECCV). https://doi.org/10.1007/978-3-031-19815-1_29.</p>
+<p>Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery &amp; Data Mining, pp 1192–1200. https://doi.org/10.1145/3394486.3403172.</p>
+<p>Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091. https://doi.org/10.1145/3503161.3548112.</p>
+<p>Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003. https://doi.org/10.1109/iccv48922.2021.00103.</p>
+<p>Smock B, Pesala R, Abraham R (2022) PubTables-1M: Towards Comprehensive Table Extraction from Unstructured Documents. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp 4634–4642. https://doi.org/10.1109/cvpr52688.2022.00459.</p>
+<p>Liu N F, Lin K, Hewitt J, Paranjape A, Bevilacqua M, Petroni F, Liang P (2024) Lost in the Middle: How Language Models Use Long Contexts. Transactions of the Association for Computational Linguistics 12:157–173. https://doi.org/10.1162/tacl_a_00638.</p>
+<p>Karpukhin V, Oğuz B, Min S, Lewis P, Wu L, Edunov S, Chen D, Yih W-t (2020) Dense Passage Retrieval for Open-Domain Question Answering. In: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pp 6769–6781. https://doi.org/10.18653/v1/2020.emnlp-main.550.</p>
+<p>Reimers N, Gurevych I (2019) Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. In: Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing, pp 3982–3992. https://doi.org/10.18653/v1/d19-1410.</p>
+<p>Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150-158. https://doi.org/10.18653/v1/2024.eacl-demo.16.</p>
+<p>Niu C, Wu Y, Zhu J, Xu S, Shum K, Zhong R, Song J, Zhang T (2024) RAGTruth: A Hallucination Corpus for Developing Trustworthy Retrieval-Augmented Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL), pp 10862-10878. https://doi.org/10.18653/v1/2024.acl-long.585.</p>
+<p>Manning C D, Raghavan P, Schütze H (2008) Introduction to Information Retrieval. Cambridge University Press. https://doi.org/10.5860/choice.46-2715.</p>
+<p>Thakur N, Reimers N, Rücklé A, Srivastava A, Gurevych I (2021) BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.</p>
+<p>Jimeno Yepes A, You Y, Milczek J, Laverde S, Li R (2024) Financial Report Chunking for Effective Retrieval Augmented Generation. arXiv preprint arXiv:2402.05131.</p>
+<p>Johnson J, Douze M, Jégou H (2019) Billion-scale similarity search with GPUs. IEEE Transactions on Big Data 7(3):535–547.</p>
+<p>Borgeaud S, Mensch A, Hoffmann J, Cai T, Rutherford E, Millican K, van den Driessche G B, Lespiau J-B, Damoc B, Clark A, de Las Casas D, Guy A, Menick J, Ring R, Hennigan T, Huang S, Maggiore L, Jones C, Cassirer A, Brock A, Paganini M, Irving G, Vinyals O, Osindero S, Simonyan K, Rae J W, Elsen E, Sifre L (2022) Improving language models by retrieving from trillions of tokens. In: Proceedings of the 39th International Conference on Machine Learning (ICML), pp 2206–2240.</p>
+<p>Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval 3(4):333–389.</p>
+<p>Nogueira R, Cho K (2019) Passage Re-ranking with BERT. arXiv preprint arXiv:1901.04085.</p>
+<p>Khattab O, Zaharia M (2020) ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT. In: Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval, pp 39–48.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.</p>
+<p>Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O’Reilly Media.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

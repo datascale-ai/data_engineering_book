@@ -1,0 +1,1380 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part6/ch19_tool/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第19章：Tool-Use 与函数调用数据 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#19tool-use" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第19章：Tool-Use 与函数调用数据
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part6/ch19_tool/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part6/ch19_tool/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#191-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 为什么工具调用数据决定 Agent 的下限
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.1 为什么工具调用数据决定 Agent 的下限">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      函数调用与 Agent 的基础概念
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      从“会回答”到“会执行”的能力跃迁
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      会说不会做的根源常在工具数据而非模型本体
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      工具数据缺失最常见的四个位置
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      工具调用失败如何放大用户体验问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      连锁失败如何从局部错误演化为全局失效
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tool-Use 数据与纯文本指令数据的本质差异
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-use_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      为什么 Tool-Use 数据更适合按“轨迹”而不是按“单条样本”来理解
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#192-tool-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 Tool schema 与样本结构设计
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.2 Tool schema 与样本结构设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      工具描述、参数 schema、约束与错误码设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      schema 设计的核心：从“字段全”转向“语义稳”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      参数 schema 的可判定性与可学习性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      约束设计决定模型能否学会“合法且有用”的调用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      错误码与失败语义的分层设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      单工具、多工具、串行工具与并行工具样本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      工具组合方式本身也是一种能力标签
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      自然语言、函数调用、观测结果之间的统一格式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      统一格式的重点在角色语义，而不在外观整齐
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      观测结果不应被当成普通文本附属物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      调用日志结构：从训练样本到线上行为的桥梁
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      调用日志是数据回流的起点，而不是事后排障材料
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 成功轨迹、失败轨迹与恢复样本
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.3 成功轨迹、失败轨迹与恢复样本">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      成功调用样本的最小完整要素
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      成功轨迹中的“最小完整”：关键在闭环成立而非最短
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      成功轨迹需要显式呈现工具选择依据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      参数内容不仅是字段值，更是上下文压缩结果
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      参数错误、工具拒绝、超时、权限失败等恢复轨迹
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      失败类型：从标签清单通向恢复策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      恢复样本的核心：有条件地调整策略，而非机械重试
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      环境反馈：Agent 学习闭环的关键监督来源
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      原始反馈与抽象反馈应当并存
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      反馈的关键不在“看见”，而在“解释后行动”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      观察—决策—行动闭环样本的建模方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      结构化决策理由：补足状态转移信号，而非暴露思维链
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      闭环样本应覆盖继续、恢复与终止三类出口
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      调用日志如何回收失败样本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      从日志到样本，需要一次失败语义重建
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#194" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.4 评测、安全与治理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.4 评测、安全与治理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exact-matchexecution-successrecovery-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      exact match、execution success、recovery rate 等指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      高风险工具、越权调用与注入攻击防护
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      安全红线必须体现在样本中，而不是只写在制度里
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      工具版本升级带来的数据同步问题
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#195" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.5 工程案例与模式总结
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19.5 工程案例与模式总结">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_35" class="md-nav__link">
+    <span class="md-ellipsis">
+      搜索、数据库、日历、代码执行等工具场景案例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      企业内部 Agent 工具层的数据治理实践
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_36" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见模式：成功模板化，失败结构化，恢复规范化
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_37" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_38" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="19tool-use">第19章：Tool-Use 与函数调用数据<a class="headerlink" href="#19tool-use" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；张然；刘中一</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>工具调用（Tool-Use）与函数调用（function calling）数据，决定了智能体（Agent）从“会回答”走向“会执行”的能力下限。本章把工具调用界定为具备状态转移、环境反馈与风险边界的行动建模问题，而非附着于语言之上的格式生成问题。在数据对象层面，本章论述工具调用涵盖意图到动作的映射、动作到参数的实例化与结果到响应的消费三个连续环节，并指出训练数据在“是否调用”“参数实例化”“结果消费”“失败恢复”四个位置的系统性空洞如何在部署中被放大为连锁失效。在结构设计层面，本章给出工具描述、参数 schema、约束与错误码的可判定、可学习规范，主张以轨迹而非单条样本组织数据，并统一自然语言输入、函数调用动作与环境观测结果的表示格式，区分单工具、串行与并行调用结构。在轨迹层面，本章界定成功轨迹的最小闭环要素，并按参数错误、工具拒绝、超时、权限失败等类型构建分层的失败与恢复样本，强调有条件地调整策略而非机械重试。最后，本章讨论 exact match、execution success、recovery rate 等评测指标，以及高风险工具、越权调用、提示注入与敏感数据四类安全边界和工具版本演进带来的数据同步治理。</p>
+<p>当大模型从“能回答问题”走向“能完成任务”时，系统能力的决定因素就不再只是语言理解与生成本身，而是模型能否稳定地理解工具、选择工具、填写参数、读取反馈、识别失败并完成恢复。对于构建工具调用、API 交互和函数调用数据的团队而言，真正需要设计的对象，已经超出几组“函数调用示例”的范围，指向一整套围绕<strong>任务、环境、调用、观测、恢复与约束</strong>展开的数据工程体系。</p>
+<p>本章面向负责 Tool-Use 数据、函数调用样本、Agent 行为轨迹、调用日志治理与安全约束设计的团队成员，讨论工具调用数据为何决定 Agent 的下限，如何设计 tool schema 与样本结构，如何组织成功轨迹、失败轨迹与恢复轨迹，以及如何建立评测、安全与治理机制。需要强调的是，<strong>工具调用不能被理解为语言问题附带的一层表述形式，它更接近一个具备状态转移、环境反馈和风险边界的行动建模问题。</strong> 如果数据只覆盖“调用成功”的理想路径，模型上线后就会在真实世界中频繁暴露出参数不稳、上下文断裂、恢复无能和越权调用等缺陷。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>Tool-Use；函数调用；Agent 轨迹；工具 schema；失败恢复；安全治理</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够把工具调用界定为具备状态转移、环境反馈与风险边界的行动建模问题，识别“是否调用”“参数实例化”“结果消费”“失败恢复”四处系统性空洞。</li>
+<li>能够设计工具描述、参数 schema、约束与错误码的可判定可学习规范，并以轨迹而非单条样本统一自然语言输入、函数调用动作与环境观测的表示。</li>
+<li>能够区分单工具、串行与并行调用结构，界定成功轨迹的最小闭环要素，并按参数错误、工具拒绝、超时、权限失败等类型构建分层失败与恢复样本。</li>
+<li>能够运用 exact match、execution success 与 recovery rate 等评测指标，并治理高风险工具、越权调用、提示注入与工具版本演进带来的安全与数据同步问题。</li>
+</ul>
+<h2 id="191-agent">19.1 为什么工具调用数据决定 Agent 的下限<a class="headerlink" href="#191-agent" title="Permanent link">&para;</a></h2>
+<h3 id="agent">函数调用与 Agent 的基础概念<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h3>
+<p>在纯文本问答中，模型的主要任务是根据输入生成输出；而在 Tool-Use 场景中，模型面对的是一个更接近“感知—决策—执行—反馈”的闭环。这里的函数调用，不只是把自然语言翻译成 JSON 或参数列表，更是把用户意图映射为某种可执行动作。所谓 Agent，也不应被简单理解为“会连续说很多步话的模型”，而应理解为一个能够在外部环境中进行多轮观察、选择动作并根据反馈调整行为的系统 (Karpas et al. 2022)。</p>
+<p>从这个角度看，函数调用数据承担了两个作用。第一，它教会模型什么情况下该调用工具、调用哪个工具、如何填写参数、调用后应当怎样读取返回结果 (Schick et al. 2023)。第二，它教会模型如何把外部环境视为任务求解的一部分，而不是把一切问题都试图在语言空间内“直接说出来”。这也是为什么很多系统看起来“理解力不错”，但真正接入搜索 (Nakano et al. 2021)、数据库、代码执行、日历、邮件等工具后却表现不稳定 (Li et al. 2023; Qin et al. 2024)：问题往往不在模型不会说，而在模型没有被系统化地训练成会做。</p>
+<p>如果把这一过程拆开来看，函数调用至少涉及三个连续环节。首先是意图到动作的映射。用户说“帮我看看下周三下午有没有会”，系统要完成的也不只是提取出“会议”“下午”这几个关键词，还要判断这句话背后对应查询类动作，不能按生成类动作处理；对应日历工具，而非搜索工具；查询对象是时间段冲突，也非单个事件详情。其次是动作到参数的实例化。模型不仅要决定调用哪个函数，还要把含糊的时间表达还原为具体的日期区间、时区和查询范围。最后是结果到响应的消费。工具返回的结果通常还没有形成可直接交付给用户的自然语言答案，多为结构化反馈，模型还必须理解这些反馈在当前任务里的含义，并据此决定是直接回答、继续追问，还是触发下一次调用。</p>
+<p>这意味着，函数调用能力本质上超出单步格式生成能力的范围，更接近一种被嵌入执行链条中的任务推进能力 (Yao et al. 2025)。很多系统可以输出看起来完全合法的函数格式，但依然不能算真正具备 Tool-Use 能力，原因就在于它们只学会了“把一句话改写成某个调用”，却没有学会如何在调用前判断 (Huang et al. 2023)、在调用后消费 (Schick et al. 2023)、在异常时调整 (Shinn et al. 2023)。也就是说，函数调用并非附着在语言模型表面的一层模板技巧，它构成 Agent 执行能力的核心接口。</p>
+<p>从 Agent 的角度看，这一点尤其重要。Agent 与普通对话模型的根本差异，不在于它生成了更长的文本，也不在于它看起来更“主动”，而在于它具有把外部世界纳入求解过程的能力。对于一个只会文本生成的模型来说，世界是一个需要被描述的对象；而对于一个真正的 Agent 来说，世界是一个可以被查询、被操作、被反馈、被再次利用的环境。工具调用数据决定的，正是模型是否能够完成这种角色转变 (Schick et al. 2023)。</p>
+<h3 id="_4">从“会回答”到“会执行”的能力跃迁<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>在很多项目初期，团队往往会把工具调用理解为文本能力的自然延伸，仿佛只要模型足够强，它就会自动学会怎样调 API、怎样读数据库、怎样查日历。但相关研究也表明，从“会回答”到“会执行”并非一次平滑过渡，而呈现为较为明显的能力跃迁 (Parisi et al. 2022)。前者主要发生在语言空间中，依赖的是理解、组织和表达；后者则要求模型跨越语言空间与行动空间之间的边界，把抽象意图转化为外部系统中可落地的操作。</p>
+<p>这两类能力的评价标准也并不相同。对于纯文本任务，模型的回答往往存在一定容错空间。措辞不够精准、表述不够完整，甚至部分细节模糊，用户仍然可能接受这次输出，因为它在语义上大体可用。然而在工具调用任务中，很多错误没有“差不多正确”这一说。一个时间字段填错一天，一个数据库表名拼错一个字母，一个收件人地址少一个字符，一个写操作漏掉确认条件，结果都可能从“基本可接受”直接跌落为“彻底失败”。这说明工具调用任务对精确性、一致性和顺序性的要求远高于普通文本生成。</p>
+<p>也正因为如此，工具调用数据的训练目标不在于塑造更好看的回答风格，重点是形成一套可以稳定落地的执行行为。模型在这类数据中首先要学会的，是“怎样完成任务”，而非单纯“怎样解释问题”。一旦数据不能真实反映任务执行过程，模型就很容易停留在语言拟态层：解释听起来合理，动作看起来规范，但系统一接入真实环境就频繁失效。很多团队误以为这是推理模型不够强，其实往往是因为训练材料根本没有教会模型什么叫执行。</p>
+<h3 id="_5">会说不会做的根源常在工具数据而非模型本体<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>工程实践中常见一种误判：一旦 Agent 执行失败，就倾向于把问题归因于模型“推理不够强”或“基座不够大”。但很多失败案例并不源自复杂推理，而源自工具数据层的缺失。例如，样本里只教会模型“搜索天气”，却没有教会它在地名缺失、时间含糊、接口返回空值时如何补齐条件或请求澄清；又例如，样本只覆盖“数据库查询成功”的路径，却没有覆盖 SQL 语法错误、权限拒绝、字段不存在、分页截断等现实情形 (Li et al. 2023; Yao et al. 2025)。模型在训练中没有看到这些结构化失败，自然就难以在部署中形成稳定策略。</p>
+<p>更关键的是，纯文本任务中的错误通常体现为答案不够好，而工具任务中的错误往往直接体现为操作失败。前者更多影响内容质量，后者则直接影响任务完成率。这使得工具数据的缺陷在用户感知层面被成倍放大。用户不会因为 Agent 说得不够优雅而立即放弃，但很可能会因为一次下错参数、调用错工具或无法从失败中恢复，而迅速失去信任。</p>
+<p>所谓“会说不会做”，在 Tool-Use 场景中通常表现得非常具体。模型可能能准确解释某个工具的用途，却在真正调用时频繁漏掉必填字段；它可能能输出形式上完全合法的 JSON，却不知道两个字段之间存在互斥关系；它可能能读懂错误文本的大意，却不会基于错误类型选择合适的恢复动作。表面上看，这些问题都像是推理或理解出了偏差，但实际上更常见的原因是：训练数据没有把这些行为差异清晰地编码进去，模型只能在模糊经验中自行猜测。</p>
+<p>进一步说，模型本体决定的是它有多强的模式学习能力，而工具数据决定的是它究竟学到了什么模式。如果训练样本几乎都来自顺利案例，模型会默认用户输入完整、参数容易推断、工具始终可用、返回结果干净可用；真实部署中这些假设往往不成立。可是真实部署环境恰恰相反。用户表达常常不完整，字段映射经常不明确，工具接口偶尔会抖动，外部返回值也可能噪声很大。模型若长期只在理想路径上被训练，就会在真实环境中持续暴露出脆弱性。</p>
+<p>所以，许多失败并不是模型“不聪明”，而是数据没有把难点组织成模型可反复学习的结构。一个只在成功案例上训练出来的 Agent，看起来能完成任务，但本质上只是学会了在顺风条件下沿着模板前进。一旦环境偏离模板，它就很容易暴露出无从下手的状态。</p>
+<h3 id="_6">工具数据缺失最常见的四个位置<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>从数据工程视角复盘真实系统，工具调用失败最常见的原因，通常不是模型完全不会调某个工具；更常见的问题，是训练数据在若干关键位置上存在系统性空洞。第一类空洞出现在“是否调用”的判断阶段。很多数据只标注了应该怎样调用，却没有标注什么时候不该调用、什么时候应先澄清、什么时候仅靠文本回答即可。结果模型要么过度调用，把简单问题也变成工具链；要么过于保守，在本该访问外部环境时仍然试图硬答 (Zhuang et al. 2023; Huang et al. 2023)。</p>
+<p>第二类空洞出现在“参数实例化”阶段。大量数据集里的用户请求都过于规范，字段条件过于完备，几乎没有真实世界里常见的别名、简称、模糊时间、含糊对象、单位歧义和多轮补齐。模型在这种数据中学到的是“字段填写题”，而不是“缺信息条件下的参数构造题”。一旦进入真实系统，它就会频繁犯下那些离用户很近、却在线下数据中极少出现的错误。</p>
+<p>第三类空洞出现在“结果消费”阶段。很多函数调用样本把调用动作本身视为终点，仿佛只要工具返回成功，任务就已经完成了；ReAct 类工作强调的“动作—观测—再决策”链条 (Yao et al. 2023)，正是为了避免这种单步化理解。但在真实 Agent 中，调用成功往往只是中间步骤。数据库结果需要筛选，搜索结果需要判别可信度，日历结果需要判断冲突优先级，代码执行结果需要结合 stderr 和 exit code 做进一步决策。若数据不覆盖这一层，模型就会呈现出“会调不会用”的典型问题。</p>
+<p>第四类空洞出现在“失败恢复”阶段。训练语料中失败样本过少，或者失败样本没有明确区分类型，只统一表现为一句“调用失败，请重试”，都会让模型在真实部署中丧失恢复能力 (Li et al. 2023; Shinn et al. 2023; Ruan et al. 2024)。它可能对所有失败都采用同一种动作，例如机械重试，既浪费资源，也可能扩大风险。</p>
+<p>这四类空洞共同构成了 Agent 的下限。因为系统下限的决定因素，不是系统在最理想情况下能做多好，更多来自系统在最常见的异常条件下最容易在哪里断掉。工具数据如果不能覆盖这些关键断点，模型即使在演示环境中表现亮眼，也很难在生产场景中稳定工作。</p>
+<h3 id="_7">工具调用失败如何放大用户体验问题<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>工具调用失败之所以比文本回答错误更高风险，是因为它通常具有连锁效应。一次错误的参数填写，可能导致错误查询；错误查询带来错误观察；错误观察再驱动下一步错误决策，最终形成整条轨迹的偏航。尤其在多工具串行场景中，前一环节的小误差会被后续步骤不断放大。例如，搜索结果的时间范围填错，可能使数据库查询对象不对；数据库结果理解偏差，又会让日历写入或邮件回复落到错误目标上。</p>
+<p>这类失败还会带来一种用户体验上的不对称：系统一次成功调用未必能显著提升好感，但一次错误操作就足以破坏信任；ToolEmu 对高风险工具场景的测试也说明，工具型 Agent 的失败往往会被放大为现实风险 (Ruan et al. 2024)。因此，Tool-Use 数据不能只追求“平均成功率”，还必须关注失败路径上的损失控制能力。一个成熟 Agent 的标志不在于永远不犯错，而在于犯错后能及时发现、解释、修正，并避免风险继续扩大。</p>
+<p>用户对工具型 Agent 的预期，与对普通问答系统的预期并不一样。对于聊天型系统，用户默认它可能偶尔说错，因此会给它保留一定的解释空间；但对于具备搜索、读写、执行、调度能力的系统，用户更倾向于把它视为一个工作代理，甚至是流程执行者。此时，任何失败都会被理解为流程失败，而不只是回答失败。尤其是涉及写操作、调度操作和执行操作时，用户真正担心的不仅是“做不成”，更是“做错了以后会不会产生后果”。</p>
+<p>这种后果性使得工具失败具有比文本错误更强的破坏力。一个回答错误，用户往往可以自行判断和忽略；一个工具操作错误，却可能已经改写了外部世界。例如，错误地发出一封邮件、错误地修改一条日程、错误地执行一段脚本，都会留下需要后续补救的成本。Agent 一旦跨过“仅生成文字”的边界，进入真实环境操作层，其错误就从内容层问题转化为行动层问题。这也是为什么工具数据必须把失败控制作为核心目标之一，而不能只看成功路径。</p>
+<h3 id="_8">连锁失败如何从局部错误演化为全局失效<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>为了看清这种放大机制，可以把工具调用轨迹看成一条依赖链。链条中前一状态的输出，往往直接成为后一状态的输入。这样一来，局部错误就不再只是某一步“答得不好”，而会逐步演化为整条链的状态漂移。例如，在“搜索联系人—读取空闲时间—创建会议”这一流程里，如果第一步选错了同名联系人，那么后续两步即使都严格遵守了 schema，也仍然是在错误对象上执行。系统从局部看似乎每一步都正确，从整体看却是在稳定地完成错误任务。</p>
+<p>这说明，Agent 体验的核心并不只是每一步看起来是否合理，而是整段执行链是否保持语义一致 (Yao et al. 2025)。工具调用数据若只按单步任务来构造，而不关注状态在多步间的传递关系，就很容易训练出“局部都不错，整体却经常错”的系统。真正成熟的数据设计，会把跨步状态保持、关键变量继承、中间结果验证等信息显式纳入轨迹，使模型学会在长链条中维持目标一致性。</p>
+<h3 id="tool-use">Tool-Use 数据与纯文本指令数据的本质差异<a class="headerlink" href="#tool-use" title="Permanent link">&para;</a></h3>
+<p>纯文本指令数据的核心是输入与输出之间的映射，而 Tool-Use 数据的核心是<strong>状态与状态之间的转移</strong> (Shinn et al. 2023)。在文本任务中，样本通常可以被视为静态配对；在工具任务中，样本则往往是带有时间顺序的轨迹。这个轨迹至少包含四类元素：用户意图、环境状态、系统动作、动作后反馈。只有把这四类元素组织起来，模型才不只是学会“生成一个函数调用”，而是学会在动态环境中采取下一步最合适的动作。</p>
+<p>因此，构建工具调用数据时，团队面对的已经超出单一标注问题的范围，实质上是行动建模问题。它要求数据能够表达前提条件、工具可用性、参数约束、返回结果、不确定性、失败类型以及恢复策略。也正因如此，Tool-Use 数据的质量，往往直接决定了 Agent 能力的下限。</p>
+<p>更具体地说，纯文本数据的监督信号主要来自参考答案，而 Tool-Use 数据的监督信号同时来自参考轨迹与环境反馈。前者只要求模型把话说对，后者则要求模型既要把动作做对，又要能根据外部反馈修正后续动作。这意味着 Tool-Use 训练天然更接近交互式决策学习 (Yao et al. 2025)，而不只是静态模仿学习。数据集中若缺失环境反馈这一层，模型就只能学到动作外观，而学不到动作与环境之间的关系。</p>
+<p>此外，纯文本指令数据通常允许较强的表达多样性，因为不同措辞只要语义相近就都可能是好答案；但 Tool-Use 数据除了语言多样性之外，还必须维持行为一致性。同一个任务可以有不同自然语言表达，却不能因为表达变了就让工具选择、字段含义和风险边界也跟着漂移。也就是说，Tool-Use 数据同时追求“语言空间中的覆盖”和“行动空间中的规范”，其设计难度显著高于普通指令数据。</p>
+<h3 id="tool-use_1">为什么 Tool-Use 数据更适合按“轨迹”而不是按“单条样本”来理解<a class="headerlink" href="#tool-use_1" title="Permanent link">&para;</a></h3>
+<p>在传统问答场景中，一条问题对应一条答案，样本天然是以“单条”为单位组织的。但在 Tool-Use 场景中，单条调用记录往往并不足以承载真实能力。因为模型需要学习的重点不在某一次函数调用本身，而在整段“观察—决策—行动—反馈”的链条。换言之，真正的监督对象不应停留在孤立动作上，而应覆盖动作如何嵌入上下文、如何受到前序状态约束、如何被后续反馈验证。</p>
+<p>这意味着数据团队在构建、抽样和评测时，更应以轨迹为中心而不是以单步为中心。一条只包含“用户问题 + 函数调用”的样本，也许能训练格式输出，但难以训练任务推进；而一条包含失败、修正、再次调用、最终完成的轨迹，虽然更长、更复杂，却更接近真实 Agent 所需的能力结构 (Li et al. 2023;  Yao et al. 2025)。只有从轨迹视角理解 Tool-Use 数据，团队才会真正意识到：决定 Agent 下限的，往往不在它最会做的那一步，而在它最容易断掉的那一段。</p>
+<h2 id="192-tool-schema">19.2 Tool schema 与样本结构设计<a class="headerlink" href="#192-tool-schema" title="Permanent link">&para;</a></h2>
+<h3 id="schema">工具描述、参数 schema、约束与错误码设计<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h3>
+<p>工具 schema 不只是给开发者看的接口说明书翻版，更是给模型学习“行动语义”的行为规范 (Li et al. 2023;  Patil et al. 2024)。一个高质量 schema 至少需要清楚表达四件事：这个工具是做什么的，输入参数是什么，参数之间有哪些约束，以及出现错误时系统会如何反馈。若 schema 只写工具名称和参数名，模型即使能生成合法 JSON，也未必真正理解调用条件。</p>
+<p>下面的片段聚焦于一个“可训练”的 tool schema（含必填、枚举、互斥与错误码）。</p>
+<p>下面示例以“日历查询”工具为例，展示 schema 中哪些信息对模型学习最关键：字段类型、必填、枚举、时间范围约束、以及常见错误码语义。</p>
+<p>代码清单19-1给出了 JSON 数据示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calendar_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;查询指定时间范围内的日历事件，用于判断冲突与空闲时段。&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;object&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;start_time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;end_time&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;timezone&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">&quot;properties&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date-time&quot;</span><span class="p">},</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date-time&quot;</span><span class="p">},</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">      </span><span class="nt">&quot;timezone&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;examples&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Asia/Shanghai&quot;</span><span class="p">]},</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">      </span><span class="nt">&quot;participants&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;array&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;items&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">},</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]},</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">      </span><span class="nt">&quot;limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;integer&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;minimum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;maximum&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">},</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">      </span><span class="nt">&quot;include_cancelled&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">},</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">      </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;enum&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;events&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;freebusy&quot;</span><span class="p">],</span><span class="w"> </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;events&quot;</span><span class="p">}</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="nt">&quot;constraints&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="s2">&quot;end_time 必须晚于 start_time&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="s2">&quot;start_time/end_time 必须与 timezone 一致解释&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="s2">&quot;mode=freebusy 时建议填写 participants，否则返回结果意义不明确&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">  </span><span class="nt">&quot;error_codes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">    </span><span class="nt">&quot;missing_param&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;必填字段缺失&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">    </span><span class="nt">&quot;invalid_datetime&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;时间格式或范围非法&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="nt">&quot;permission_denied&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;无权限访问日历&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">    </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;服务超时，可缩小范围后重试&quot;</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单19-1：JSON 数据示例</em></p>
+<p>参数 schema 的设计要尤其重视可判定性，Berkeley Function Calling Leaderboard（BFCL） 等函数调用评测也把函数、参数和调用结构作为核心评价对象 (Patil et al. 2025)。参数名称应尽量避免语义重叠，字段类型要明确，是否必填、可选值范围、默认行为、互斥关系、依赖关系都应显式表达。例如，一个“搜索日历事件”的工具，若同时包含 <code>date</code>、<code>start_time</code>、<code>end_time</code>、<code>timezone</code> 等字段，就应明确它们的覆盖关系与缺失时的解释规则。否则模型很容易在相近字段间反复摇摆，形成表面合法、语义错误的调用。</p>
+<p>错误码设计也不应只服务后端调试，而应服务训练数据与恢复策略 (Li et al. 2023; Yao et al. 2025)。把“参数缺失”“权限不足”“资源不存在”“速率限制”“超时”“内部错误”等失败类型明确区分，能为失败样本和恢复样本提供稳定锚点。没有错误语义分层的系统，往往只能让模型从模糊报错文本里猜测原因，这会极大削弱恢复能力。</p>
+<p>schema 设计的关键，不只是让工具“能被调用”，而是让工具“能被模型稳定学会如何调用”。这要求 schema 兼具三种性质：一是可读性，即字段命名和说明足够清晰，使模型能够稳定建立语义映射；二是可执行性，即后端校验规则与字段结构一致，不会出现文档一套、真实行为一套的情况；三是可学习性，即相似情形下字段使用规律尽量稳定，避免过多依赖隐式约定。很多工具接口对工程师来说是可用的，但对模型来说却并不友好，因为它们包含太多默认规则、历史兼容字段或语义模糊命名。</p>
+<p>对于数据团队而言，tool schema 本身就是训练材料的一部分，而不是训练之外的背景说明 (Patil et al. 2024)。模型并不会像工程师那样通读接口文档再建立系统性理解，它主要通过样本中的反复出现来归纳规则。因此，schema 若写得过于抽象，样本又没有把关键约束反复显式呈现，模型就容易学出不稳定策略。结果往往是：离线示例里能调通，上线一遇到边界条件就开始漂移。</p>
+<h3 id="schema_1">schema 设计的核心：从“字段全”转向“语义稳”<a class="headerlink" href="#schema_1" title="Permanent link">&para;</a></h3>
+<p>很多团队在设计 tool schema 时会本能地追求信息完备，希望把所有可能用到的字段、选项和兼容参数都纳入定义中。但从模型学习角度看，字段越多并不自动意味着越好。一个字段体系若过于庞杂、语义边界不清、历史兼容关系复杂，反而会显著增加模型判断难度。模型面对的是连续决策任务，而非静态文档。它需要的是“在这个上下文里该填哪个字段、为什么填、和其他字段是什么关系”的稳定规则，而不是一个无限展开的参数列表。</p>
+<p>因此，schema 的关键往往不在于是否覆盖了所有可能性，而在于是否在高频场景中保持语义稳定；Gorilla 的 Retriever Aware Training 就把 API 文档检索与调用生成联系起来，强调接口说明变化对调用行为的影响 (Patil et al. 2024)。例如，同样表示地理位置，若系统中同时存在 <code>location</code>、<code>place</code>、<code>region</code>、<code>city_name</code> 等多个相近字段，而又没有清晰区分使用条件，模型就极易在训练中学出混乱映射。再如，一个字段在文档中标记为“可选”，但在某些操作里又几乎是事实上的必填，如果这种条件化约束不被明确表达，模型就很可能在最关键的场景里漏填。</p>
+<p>从这个意义上说，schema 设计应避免信息堆砌，转向语义压缩。团队需要把后端系统复杂的真实约束，压缩成模型可以稳定学习的、可判定的规则集合。谁能在这个层面上把接口设计清楚，谁就更可能训练出行为稳定的 Agent。</p>
+<h3 id="schema_2">参数 schema 的可判定性与可学习性<a class="headerlink" href="#schema_2" title="Permanent link">&para;</a></h3>
+<p>参数 schema 的设计质量，直接影响模型是否能在真实场景中稳定填参 (Li et al. 2023; Patil et al. 2025)。这里最关键的原则是：比起“字段越全越好”，更重要的是“字段含义越可判定越好”。所谓可判定，指的是模型在给定上下文时，能够较明确地判断某字段是否需要填写、应填什么类型、与其他字段有何关系。若字段边界模糊、命名重叠、依赖隐蔽，模型就很容易在格式合法的前提下产生语义错误。</p>
+<p>例如，一个工具同时存在 <code>location</code>、<code>region</code>、<code>city</code>、<code>place_name</code> 四类字段，却没有明确说明优先级和适用条件，那么模型很可能在不同样本中随意切换；又如，一个字段支持字符串和对象两种形式，但没有明确何时使用哪种形式，模型就可能学出不稳定的混合格式。这类问题在演示场景中不一定明显，但上线后会迅速演化为高频调用失败。</p>
+<p>从训练视角看，一个可学习的 schema 还应尽量减少隐式默认知识。凡是后端有默认行为但对任务结果可能产生重要影响的，都应考虑显式化。例如默认时区、默认排序方式、默认结果条数、默认时间范围等。因为模型并不知道这些“后端常识”，如果样本又没有反复呈现这些规则，它就会在关键场景下不断踩中隐式假设。</p>
+<p>参数可判定性还意味着字段之间的逻辑关系应当被直接表达，而不是让模型通过少量案例自行猜测。很多真实系统里的调用失败，问题常常不在字段值本身填错，而在字段组合关系错了。例如开始时间和结束时间顺序颠倒、日期与时区表达不一致、分页参数与查询模式冲突、写操作对象与权限范围不匹配。这类错误如果只靠后端兜底，再由模型阅读一条笼统报错信息去反推，学习效率会很低。更有效的做法，是在 schema 和样本中把这些约束变成可见规则，让模型更早地形成结构化判断。</p>
+<h3 id="_9">约束设计决定模型能否学会“合法且有用”的调用<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>在 Tool-Use 场景中，合法调用与有用调用并不总是同一件事 (Patil et al. 2025; Yao et al. 2025)。一个 JSON 可以完全符合字段类型约束，却仍然无法完成任务。例如时间范围合法但过宽，导致查询结果噪声极大；关键词合法但过于模糊，导致搜索几乎没有区分度；收件人字段格式正确，却因为缺乏身份确认而把消息发错对象。因此，schema 中的约束设计不能只停留在语法层，还必须尽可能包含语义层和业务层的信息。</p>
+<p>常见约束大致可以分为四类。第一类是格式约束，也就是字段类型、长度、枚举范围和基础校验规则，这是最底层的合法性保证。第二类是组合约束，即多个字段之间的互斥、依赖、覆盖与优先级关系，它决定了参数组合是否真正成立。第三类是业务约束，例如哪些写操作必须二次确认、哪些查询必须限制范围、哪些对象在某些身份下不可访问。第四类是风险约束，例如超时上限、资源配额、敏感字段脱敏、危险命令禁止执行等。这些约束一旦缺位，模型很可能学会“能调通”的调用，却学不会“能上线”的调用。</p>
+<p>因此，数据团队在设计样本时不能把约束当作后端的事情。后端当然可以在执行时拦截错误，但如果训练中从未显式出现这些边界，模型就永远学不会主动规避。真正成熟的 Tool-Use 数据，会让模型不仅知道“什么格式合法”，还知道“什么做法稳妥、什么边界不能碰、什么情况下宁可停下来也不能继续”。</p>
+<h3 id="_10">错误码与失败语义的分层设计<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>错误码设计也不应只服务后端调试，而应服务训练数据与恢复策略。把“参数缺失”“权限不足”“资源不存在”“速率限制”“超时”“内部错误”等失败类型明确区分，能为失败样本和恢复样本提供稳定锚点。没有错误语义分层的系统，往往只能让模型从模糊报错文本里猜测原因，这会极大削弱恢复能力。</p>
+<p>更进一步，错误码体系最好能同时满足三个目标：其一，便于系统执行侧定位问题；其二，便于数据侧按失败类型组织样本；其三，便于模型侧学习恢复分支。也就是说，错误码不应只是后端内部的技术编号，而应具有足够稳定的语义层级。例如，“参数错误”可以继续细分为缺失参数、类型不符、枚举非法、字段冲突；“权限失败”也可以区分为未认证、已认证但无权限、资源隔离导致不可访问。层级清楚的错误码体系，会直接决定失败样本能否被有效组织。</p>
+<p>在实践中，很多系统的错误文本来自底层服务，表达混乱且风格不一。若不在数据层做抽象归一，模型只能记住一些表面措辞，很难形成可泛化的恢复能力。因此，一个成熟的数据工程流程往往会同时保留“原始错误文本”和“标准化错误标签”两层表示：前者保留环境真实感，后者提供可学习的稳定结构。</p>
+<p>分层错误码的另一个价值，在于它可以把“是否继续尝试”这一决策提前结构化 (Shinn et al. 2023; Ruan et al. 2024)。并非所有失败都适合重试。超时类问题通常存在重试空间，参数类问题更适合修正后重试，权限类问题则常常应该终止并解释限制，注入风险或高危写操作冲突则可能需要直接中止流程。如果错误体系本身没有把这些语义差异表达出来，模型就容易对所有失败采用单一策略，导致恢复行为粗糙且不安全。</p>
+<h3 id="_11">单工具、多工具、串行工具与并行工具样本<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p>工具调用样本不应只覆盖最简单的单工具路径。现实任务中，很多操作都需要多工具协同完成，而且协同关系并不相同。有些任务是单工具完成的，例如查询天气；有些是串行工具完成的，例如先搜索联系人，再查询日历，再创建会议；还有些是并行工具完成的，例如同时查询多个数据源后进行结果汇总。</p>
+<p>不同结构的样本，教会模型的是不同层级的能力；MetaTool 与 BFCL 都把是否使用工具、选择哪个工具以及串行/并行调用作为重要评测维度 (Huang et al. 2023; Patil et al. 2025)。单工具样本主要训练“是否调用”与“如何填参”；多工具串行样本训练的是中间结果如何驱动后续调用；并行工具样本则训练模型如何在多个子任务之间共享原始意图、拆分参数并最终合并结果。如果数据里只大量存在单工具案例，模型上线后往往会表现出一个明显特征：每一步都像样，但整体任务无法闭环 (Yao et al. 2025)。</p>
+<p>因此，样本设计时不能只统计“调用次数”，更应统计“调用结构”。团队需要知道训练集中单工具、双工具、多工具、串行、并行、嵌套恢复等不同结构的比例，并使之与目标场景分布尽量一致。</p>
+<p>不同工具结构的样本，本质上对应着不同层级的执行能力。单工具样本重点解决局部执行问题，回答的是“该不该调、怎么调、调完如何说”；串行样本重点解决状态传递问题，回答的是“前一步得到的结果如何约束后一步动作”；并行样本重点解决任务分解与结果整合问题，回答的是“同一意图怎样拆成多个可并发处理的子任务，以及多个返回结果如何合成为一致结论”。如果数据集中这些结构严重失衡，模型就会在相应能力层级上表现出明显短板。</p>
+<h3 id="_12">工具组合方式本身也是一种能力标签<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>在很多团队的早期数据组织中，工具调用样本常常被统一放在一个篮子里，只要包含函数名和参数就算一条 Tool-Use 数据；但 API-Bank、ToolLLM 与 BFCL 的设计均显示，工具调用能力需要在规划、选择、调用、执行结果等不同层面拆开评测 (Li et al. 2023;  Patil et al. 2025)。但从能力建模的角度看，工具组合方式本身就应该被视为一种重要标签。因为单工具、串行、多工具并行、带恢复分支的多步轨迹，并不是同一种难度、也不是同一种能力。它们分别对应局部执行、流程推进、任务拆分、异常恢复等不同层面的要求。</p>
+<p>一旦团队用这种方式重新理解数据，就会发现很多过去被忽略的问题。例如，某个模型在单工具查询上准确率很高，但在双工具串行上经常丢失中间变量；另一个模型能够并行检索多个源，却不会在结果冲突时做优先级判断。若没有调用结构层面的标签，这些差异很容易被总体成功率掩盖，看起来系统“还不错”，实际却在关键工作流上较为脆弱。</p>
+<p>因此，在训练集与评测集设计中，把调用结构作为显式维度记录下来，通常比单纯增加样本数量更有价值。它能帮助团队更清楚地回答一个问题：模型到底是在哪一层执行能力上出了问题，而不是只知道“它平均上不太稳定”。</p>
+<h3 id="_13">自然语言、函数调用、观测结果之间的统一格式<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>Tool-Use 数据的难点，不在于是否使用 JSON，而在于是否存在一套统一且可扩展的表示格式，能够稳定地承载自然语言输入、函数调用动作和环境反馈结果。一个成熟的数据格式，通常需要把以下几层信息放在同一轨迹中：用户请求、系统当前可用工具、模型决策、函数参数、调用结果、下一步观察、最终响应 (Schick et al. 2023; Qin et al. 2024)。</p>
+<p>下面的片段聚焦于统一轨迹格式（messages + tool_call + tool_result）。</p>
+<p>下面给出一条“成功闭环”样本：先查询日程，再基于冲突结果给出可执行建议。重点是把工具结果作为<strong>环境反馈</strong>单独入轨，而不是混成普通文本 (Shinn et al. 2023)。</p>
+<p>代码清单19-2给出了JSON 工具使用轨迹示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;messages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;你是日程助手。需要查询时先调用工具，再基于返回结果给出结论。&quot;</span><span class="p">},</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;帮我看看下周三下午2点到4点有没有会？在上海时区。&quot;</span><span class="p">},</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">&quot;tool_call&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calendar_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="nt">&quot;arguments&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">          </span><span class="nt">&quot;start_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-29T14:00:00&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">          </span><span class="nt">&quot;end_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-29T16:00:00&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">          </span><span class="nt">&quot;timezone&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Asia/Shanghai&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">          </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;events&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">          </span><span class="nt">&quot;limit&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">      </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool_result&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;calendar_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">        </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ok&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">        </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">          </span><span class="p">{</span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;例会&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;start&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-29T15:00:00&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;end&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-29T15:30:00&quot;</span><span class="p">}</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">      </span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">      </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;14:00-15:00 空闲；15:00-15:30 有一场“例会”；15:30-16:00 空闲。你希望我帮你改到14点开始，还是16点之后？&quot;</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单19-2：JSON 工具使用轨迹示例</em></p>
+<p>如果这几层信息散落在不同样本体系中，模型训练时就容易出现断层。例如，自然语言理解数据放在一处，函数调用格式数据放在一处，错误恢复数据放在另一处，结果是模型学会了各局部能力，却无法在同一上下文内把它们衔接起来。统一格式的价值，在于让模型看到“从语言到动作、从动作到观测、从观测再到动作”的连续过程 (Schick et al. 2023)。</p>
+<p>在实践中，很多团队会采用消息序列形式来组织样本，用 <code>user</code>、<code>assistant</code>、<code>tool_call</code>、<code>tool_result</code>、<code>assistant_followup</code> 等角色标记不同状态。这种方式的优势不只是贴近推理接口，更重要的是便于表达时间顺序和环境反馈 (Shinn et al. 2023)。</p>
+<p>真正重要的统一，不能理解为把所有工具都压成同一种表面外观，关键在于让角色边界和时序关系保持清晰。模型需要明确知道哪一段是用户请求，哪一段是系统动作，哪一段是环境反馈，哪一段是反馈后的响应。如果这些角色在样本中混杂不清，模型就会把原本应当被区别对待的信息混为一谈。例如把工具返回值当作普通自然语言继续生成，或者把外部环境中的文本错误地当成用户新指令。表面上看这是理解问题，实际上却是格式设计没有把信息来源分层。</p>
+<h3 id="_14">统一格式的重点在角色语义，而不在外观整齐<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>很多团队讨论 Tool-Use 表示格式时，很快会把焦点放在 JSON 结构、字段嵌套方式或消息外观上，仿佛只要格式足够统一，模型就能自然学会调用。但从训练角度看，真正关键的地方不在外观是否整齐，而在角色语义是否稳定。因为模型并非只是在阅读一份漂亮的数据表；它需要不断归纳“谁在说话、谁在行动、谁在反馈、当前处于哪一步”这些决策前提。</p>
+<p>因此，统一格式的重点不应放在让所有工具结果长得一样上，而应放在让所有轨迹中的角色关系都足够清楚上。用户输入就是用户输入，工具调用就是系统动作，工具结果就是环境反馈 (Yao et al. 2023)，后续解释就是对反馈的消费 (Shinn et al. 2023)。只要这几类角色在长期样本中保持稳定边界，模型就更容易形成跨工具泛化能力。相反，若不同样本在角色表达上时常切换，模型就会把本应是通用模式的部分学得较为脆弱。</p>
+<h3 id="_15">观测结果不应被当成普通文本附属物<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>在不少数据集中，工具返回结果只是被简单拼接到上下文里，像是又多了一段需要模型阅读的文本。但从 Agent 学习角度看，观测结果不能被当作普通上下文材料处理，它具有环境地位的反馈信号 (Shinn et al. 2023)。它告诉模型外部世界发生了什么、当前动作是否成功、下一步动作空间是否发生变化。若这类反馈没有被单独建模，模型就很难真正学会基于环境状态调整行为。</p>
+<p>这在检索、网页浏览、数据库查询和代码执行等工具中尤为明显。搜索返回的是候选证据，不等同于答案本身 (Nakano et al. 2021)；数据库返回的是待解释的数据行，不等同于最终结论 (Li et al. 2023)；代码执行返回的 stdout、stderr 和 exit code 共同构成了当前执行状态 (Yang et al. 2024)。若模型只是把它们当作普通文本继续“读一读”，而不是把它们视为行动后的环境观察，它就无法建立真正的闭环行为。</p>
+<p>因此，一个成熟的统一格式应当让观测结果具有独立地位。它不应只是附在调用后面的一段字符串，而应被表达为具有明确来源、明确结构和明确决策价值的环境信号。只有这样，模型才可能逐步学会“基于反馈行动”，而不是“读到什么就顺着继续写什么”。</p>
+<h3 id="_16">调用日志结构：从训练样本到线上行为的桥梁<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>调用日志结构是 Tool-Use 数据工程中经常被忽视、却极其关键的一层。它连接了线下构造的训练样本与线上真实发生的调用行为。没有良好的日志结构，团队就无法从部署环境中系统性回收失败案例，也无法分析模型到底是“不会选工具”“不会填参数”“不会读结果”还是“不会恢复”。</p>
+<p>用于数据回流的调用日志，至少应记录任务/会话 ID、步骤编号、用户原始请求、工具名称、输入参数、校验结果、执行状态、返回摘要、错误码、耗时、重试次数、恢复动作和最终任务状态。日志并不要求完整记录所有内部推理细节，但必须能够复原“这一步为什么发生、发生了什么、出了什么错、后续怎么处理”的最小链条。</p>
+<p>从数据工程角度看，日志不能只被看作单纯的运维数据，它还是失败样本、恢复样本与安全样本的重要来源。一个没有结构化日志的 Agent 系统，即使线上积累了大量交互，也很难沉淀成真正可训练的数据资产。</p>
+<p>调用日志的意义，还在于它为数据团队提供了一个从真实世界反观模型行为的稳定窗口。离线构造的训练样本再完善，也很难穷尽线上所有表达变体、接口边界和交互噪声。日志能够持续揭示模型在真实环境里最脆弱的点：是字段映射出了问题，还是工具选择策略不稳；是恢复动作过于单一，还是某个版本的接口升级破坏了旧的调用习惯。没有这些结构化记录，团队看到的只会是“系统有点不稳定”，却很难定位到具体机制。</p>
+<h3 id="_17">调用日志是数据回流的起点，而不是事后排障材料<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>在很多系统里，日志被默认为运维资产：出问题了就去查，没问题时就长期沉睡。但对于 Tool-Use 数据工程来说，日志不应只是事后排障材料，而应被视为持续生产训练样本和评测样本的起点。尤其是失败轨迹和恢复轨迹，往往最难在线下靠人工想象完整覆盖，却最容易在线上真实出现。只要日志结构设计得足够好，团队就可以把这些高价值案例稳定地回收到数据流水线中。</p>
+<p>例如，线上日志可以自动筛出“首次参数错误、一次修正后成功”的样本，作为恢复学习的高价值材料；也可以筛出“同类请求频繁在两个工具之间摇摆”的案例，用来定位工具选择不稳定问题；还可以把“权限失败后继续尝试高风险调用”的轨迹标为安全缺陷样本。这些都说明，日志已经从训练完成后的附属物，转变为训练迭代中的核心输入之一。</p>
+<p>也正因此，日志结构应当在样本结构设计阶段就同步规划，而不能等到系统上线后再临时补字段。因为一旦关键状态没有被记录，后续再想从真实行为中复原训练所需轨迹就会较为困难。对 Tool-Use 团队来说，样本格式与日志格式最好从一开始就按同一套状态观组织，这样线下与线上之间才真正可打通。不同工具类型对应的典型任务、核心输入字段、环境反馈字段与恢复相关字段如表 19-1 所示。</p>
+<p><em>表 19-1：工具类型与样本字段表</em></p>
+<table>
+<thead>
+<tr>
+<th>工具类型</th>
+<th>典型任务</th>
+<th>核心输入字段</th>
+<th>核心环境反馈字段</th>
+<th>恢复相关字段</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>搜索类工具</td>
+<td>网页搜索、文档检索、知识查询</td>
+<td>query、filters、top_k、time_range</td>
+<td>hits、source、snippet、empty_result</td>
+<td>reformulated_query、fallback_source</td>
+<td>需重视 query 改写与空结果恢复</td>
+</tr>
+<tr>
+<td>数据库工具</td>
+<td>SQL 查询、向量检索、键值读取</td>
+<td>db_name、query/embedding、table、limit</td>
+<td>rows、schema_hint、execution_status</td>
+<td>retry_query、permission_check</td>
+<td>需覆盖语法错误与权限错误</td>
+</tr>
+<tr>
+<td>日历/事务工具</td>
+<td>查日程、创建事件、修改提醒</td>
+<td>date、participants、location、timezone</td>
+<td>matched_events、conflicts、write_status</td>
+<td>clarify_slot、retry_write</td>
+<td>写操作风险高，需显式确认边界</td>
+</tr>
+<tr>
+<td>通信工具</td>
+<td>发邮件、发消息、通知</td>
+<td>recipient、subject、body、channel</td>
+<td>send_status、delivery_error</td>
+<td>draft_mode、recipient_check</td>
+<td>高风险场景应加入二次校验</td>
+</tr>
+<tr>
+<td>代码执行工具</td>
+<td>执行脚本、计算、文件处理</td>
+<td>code、runtime、input_files、timeout</td>
+<td>stdout、stderr、exit_code、artifacts</td>
+<td>patch_code、safe_abort</td>
+<td>必须考虑沙箱与资源限制</td>
+</tr>
+<tr>
+<td>文件工具</td>
+<td>读取、写入、转换、解析</td>
+<td>file_id、path、mode、format</td>
+<td>content_preview、parse_error</td>
+<td>fallback_parser、permission_check</td>
+<td>文件权限与格式兼容性常见</td>
+</tr>
+<tr>
+<td>外部 API 工具</td>
+<td>第三方服务调用</td>
+<td>endpoint、method、payload、auth</td>
+<td>response_body、status_code、quota</td>
+<td>retry_backoff、auth_refresh</td>
+<td>需记录版本与配额信息</td>
+</tr>
+</tbody>
+</table>
+<p>从表中可以看出，所谓“统一样本结构”并不意味着所有工具都应使用完全相同的字段，而是意味着不同工具应在共享的轨迹框架下暴露各自最关键的执行信息。搜索类工具更关注查询表达与空结果反馈，数据库工具更关注 schema 感知与执行状态，日历和通信类工具更强调对象对齐、冲突识别和写入风险，代码执行工具则必须额外暴露运行环境和安全中止信号。不同工具类型的这些差异，属于模型形成可迁移执行能力的必要材料，不应被当成样本设计中的噪声。</p>
+<p>参考工具字段表时，不应把它当成固定字段清单，而应把它看作不同工具在轨迹中需要暴露的关键状态集合。谁能够把这些关键状态设计得既充分又不混乱，谁就更可能构建出既统一又有效的 Tool-Use 数据集。</p>
+<p><a class="glightbox" href="../../../images/part6/Yu-Chap19-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图19-1：Tool-Use 数据构造状态机图" src="../../../images/part6/Yu-Chap19-Fig01-EN.svg" /></a></p>
+<p><em>图19-1：Tool-Use 数据构造状态机图</em></p>
+<p>把 Tool-Use 数据构造成状态机，比把它看作一组独立函数调用更有利于描述真实执行过程。如图 19-1 所示，用户请求进入系统后，并不会直接跳到“生成某个函数调用”这一步，而是会依次经过任务理解、是否需要工具的判断、工具选择、参数生成、参数校验、调用执行、环境反馈解析和结果整合等阶段。每一个阶段都对应一种可观察状态，也对应一组潜在的失败方式。当状态和转移关系在数据中被写清楚时，模型更容易学到稳定执行路径，而不只是模仿局部调用格式。</p>
+<p>状态机视角最重要的价值，在于它把成功轨迹、失败轨迹和恢复轨迹放进了同一套框架中 (Yao et al. 2025; Shinn et al. 2023)。对于真实 Agent 而言，失败不能被当成可以忽略的边缘情况，它是系统运行中的常见组成部分。参数错误意味着状态从“参数生成”转移到了“校验失败”；超时意味着状态从“调用执行”转移到了“执行异常”；权限不足意味着系统不应继续推进主路径，而应转入解释限制或安全终止。若训练数据只保留主路径，不显式表达这些失败转移，模型就无法真正学会异常情形下的行为选择。</p>
+<p>从数据构造角度看，状态机并不要求每条样本都覆盖全部节点，而是要求数据集整体能够覆盖关键状态与主要转移。例如，一类样本重点覆盖“任务理解—工具选择—成功调用”的标准路径，另一类样本重点覆盖“参数校验失败—参数修正—再次调用成功”的恢复路径，还有一类样本则覆盖“权限失败—停止调用—向用户解释限制”的安全路径。通过这种方式，模型学到的就不再是一个个彼此孤立的调用实例，而是一套围绕状态变化不断调整动作的执行规律。</p>
+<p>这种表示方法还有一个重要作用，就是帮助团队发现数据缺口究竟出现在什么位置。如果线上系统经常把工具选错，问题很可能出在“任务理解—工具判定—工具选择”这一段状态转移没有学稳，而非函数格式训练不足；如果系统能成功调用却仍然给出错误结论，说明“环境反馈解析—结果整合”这一段状态表达不足；如果系统一遇到错误就反复重试，往往意味着失败状态被记录了，但失败到恢复的转移没有被充分建模。换言之，状态机的价值不在画图本身，而在把 Tool-Use 数据中的行为结构拆解为可分析、可补样、可评测的具体单元。</p>
+<p>对于构建 Agent 数据的团队来说，这一点关键。因为 Tool-Use 数据真正要教给模型的，重点不在某一个工具的调用格式，而在“在什么状态下采取什么动作、动作后如何根据环境反馈转入下一个状态”的规律。只要这种规律没有被稳定地写进数据，模型就很容易停留在模板层；而一旦这种规律被显式组织起来，模型才可能逐步具备接近真实 Agent 的执行能力。</p>
+<h2 id="193">19.3 成功轨迹、失败轨迹与恢复样本<a class="headerlink" href="#193" title="Permanent link">&para;</a></h2>
+<h3 id="_18">成功调用样本的最小完整要素<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>很多团队在构建函数调用数据时，会把“用户问题 + 正确函数调用”当作一个完整样本 (Li et al. 2023; Qin et al. 2024)。但从 Agent 训练角度看，这通常还不够。一个真正可用的成功样本，至少应包含六类要素：用户意图、工具选择依据、参数内容、执行结果、结果解释、最终响应 (Li et al. 2023; Patil et al. 2025)。只有这样，模型才能学到这次调用不仅格式正确，而且语义合理、执行有效、结果可被正确消费。</p>
+<p>如果只保留调用动作本身，而省略结果消费过程，模型就可能学会“会调不会用”。这类模型能发出漂亮的工具请求，却不知道如何根据返回结果继续决策。例如，搜索工具返回多个候选项时，模型可能不知道该如何选取最相关结果；日历工具返回时间冲突时，模型可能不知道应当建议替代时段还是继续创建事件。成功轨迹的价值，不只是证明调用成功，更是定义“成功之后应当如何把结果转化为任务完成” (Li et al. 2023; Yao et al. 2025)。</p>
+<p>从数据建模的角度看，“成功”不能等同于某个函数返回了 200 状态码，也不能等同于某条工具调用在语法上完全符合 schema；它要求一次调用链真正把任务向前推进，直到用户目标被满足。因此，成功样本的最小完整性不能只停留在工具层，而必须延伸到任务层。模型不仅要看到“调用是怎样发生的”，还要看到“调用之后任务状态发生了什么变化”。只有这样，它学到的才会超出局部动作模式，形成一种完整的执行逻辑。</p>
+<p>这一点在多步任务中尤其明显。假设用户请求“帮我找出下周最空的一天下午，并约一个半小时的讨论会”，其中包含日历检索、候选时段比较、冲突判断和会议创建等多个环节。如果训练样本只保留“检索日历”这一步，那么模型学到的只是一个中间动作；只有当样本继续展示它如何比较不同返回结果、如何选定候选时段、如何调用创建事件接口并向用户反馈最终安排时，模型才真正学会了“任务完成”而不是“调用成功”。</p>
+<h3 id="_19">成功轨迹中的“最小完整”：关键在闭环成立而非最短<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>很多团队在追求样本规模时，习惯于把成功样本压缩到尽可能短，认为只要保留最关键字段即可。但 Tool-Use 场景中的“最小完整”，并不等于“最短表示”，而是指闭环所需的信息不能缺失 (Yao et al. 2025)。也就是说，一条样本可以不冗长，却必须能够回答以下几个问题：模型为什么选择这个工具，这个参数是如何得到的，工具返回的核心信息是什么，这些返回意味着什么，系统最终如何把这些结果转化为对用户可用的输出。</p>
+<p>如果这些问题中有任意一个环节缺失，样本在训练中就会留下断层。例如，若只给模型看到“用户请求—函数调用—最终答案”，它可能学不会如何消费中间结果；若只保留“用户请求—函数调用—工具返回”，它又可能学不会如何把结构化结果转成用户真正关心的结论。所谓最小完整，本质上是一种闭环最小性，而不是字段最小性。</p>
+<p>从工程实践看，很多“离线表现不错、上线后不稳定”的系统，恰恰是因为成功样本被裁得过短，以至于模型看到了调用动作，却没有看到任务完成的机制。这样的样本在单步格式学习上是高效的，在真实 Agent 能力塑形上却是不足的。</p>
+<h3 id="_20">成功轨迹需要显式呈现工具选择依据<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>在成功样本中，工具选择依据是一个经常被省略、但实际上需要重点关注的部分 (Huang et al. 2023)。模型不仅要知道“最后用了哪个工具”，还应尽可能知道“为什么在当前上下文下应该用这个工具，而不是另一个工具或纯文本回答”。这种依据不一定要写成冗长解释，但至少应以某种结构化方式体现在样本中，例如通过决策标签、上下文约束字段、工具选择理由摘要等形式表达。</p>
+<p>这是因为工具选择本身就是 Tool-Use 的关键能力之一。若训练数据总是直接给出正确工具，而不展示选择过程，模型就容易把工具调用学成条件反射：看到某类表达就盲目调用某个函数。可一旦真实环境中出现意图混合、信息不充分或多个工具均可部分满足需求的情况，模型就会迅速暴露出工具判定不稳的问题。因此，成功轨迹不仅应展示“做了什么”，还应展示“为什么这样做”。</p>
+<h3 id="_21">参数内容不仅是字段值，更是上下文压缩结果<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>很多时候，团队把参数内容理解为字段和值的集合，好像只要最终参数正确就足够了。但对模型而言，参数并不是天生存在的，它们是从用户表达、多轮上下文、系统默认规则和业务约束中压缩出来的。比如“明天下午晚一点”需要被转化为具体时间范围，“上次那个客户”需要映射为某个联系人标识，“帮我发个简短提醒”需要对应到通信工具中的主题、正文和目标对象。参数的生成本质上是一种语义压缩与结构化映射过程 (Schick et al. 2023; Patil et al. 2025)。</p>
+<p>因此，高质量成功样本最好不要把参数视为凭空出现的最终答案，而应尽可能在轨迹中体现参数来源。例如，通过前文上下文、澄清问题、工具结果继承或默认值展开，让模型看到这些参数受任务约束，并非随意填写。只有这样，模型在真实部署中才更可能在不完整信息下学会稳定补全，而不是在样本外大量猜测。</p>
+<h3 id="_22">参数错误、工具拒绝、超时、权限失败等恢复轨迹<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>失败样本不应被视为低质量数据的副产品，而应被视为 Agent 能力学习中最有价值的部分之一(Li et al. 2023; Ruan et al. 2024)。因为真实系统的韧性，不来自“从不失败”，而来自“知道不同失败意味着什么，并能采取不同恢复动作”。这要求数据对失败类型进行明确分层(Yao et al. 2025; Ruan et al. 2024)。</p>
+<p>参数错误通常意味着输入不合法、字段缺失或字段组合冲突，对应的恢复策略是参数修正、补齐缺失值或向用户请求澄清。工具拒绝往往意味着当前请求不满足业务规则，例如写权限不足、对象状态不允许修改，这时继续重试通常无效，更合理的恢复是解释限制并提供可行替代。超时则可能对应网络波动、服务拥塞或复杂查询，此时合适的恢复方式可能是重试、缩小范围、降低结果数量或切换数据源。权限失败更需要谨慎，因为它不仅是技术错误，也可能是安全边界信号，恢复策略应优先考虑停止越权尝试，而不是让模型“想办法绕过去”。</p>
+<p>如果训练数据不区分这些失败，只把它们都写成“调用失败，请重试”，模型上线后就会出现恢复动作单一化的问题：无论什么失败都机械重试，既浪费资源，也可能触碰安全红线 (Ruan et al. 2024; Debenedetti et al. 2024)。</p>
+<p>在 Agent 系统里，失败并不只是“没有成功”的另一面，它本身就是一种高密度监督信号。因为一次失败往往清楚地揭示了系统在何处理解错了、选择错了、参数错了或边界判断错了。与成功样本相比，失败样本更能暴露模型的真实薄弱点。对于数据团队而言，失败轨迹最重要的价值，不是证明系统“不够好”；它更适合用来训练系统学会“在不理想条件下仍然能继续做对的事”。</p>
+<h3 id="_23">失败类型：从标签清单通向恢复策略<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p>在很多粗糙的数据集中，失败类型只是被当作一种标注结果，例如把样本分成“参数错误”“超时”“权限失败”几类后就结束了。但对 Agent 训练来说，失败类型真正重要的原因在于，它们决定了后续恢复动作应该如何分化 (Shinn et al. 2023; Ruan et al. 2024)。失败分类的目的并非统计好看，核心是把不同失败映射到不同恢复路径。</p>
+<p>例如，参数缺失最常见的恢复方式是补齐信息或发起澄清；字段冲突则往往需要重新解释约束并修正组合；空结果并不一定意味着失败，有时只是查询表达太宽泛或太模糊，需要改写 query 或切换筛选条件；权限失败通常不应继续重试，而应进入限制解释与安全终止；工具拒绝则往往意味着当前对象状态或业务规则不允许这次动作，需要考虑替代方案。只有当这些分支在训练数据中被清楚表达，模型才会逐渐形成“看到什么失败，就知道下一步应该进入哪类恢复模式”的能力。</p>
+<p>从这个意义上说，失败样本的质量并不主要体现在失败本身，而体现在失败之后的动作是否合理。一个成熟的数据集，不会满足于记录“这里失败了”，而会进一步记录“为什么会失败”“这类失败该如何处理”“处理后结果如何”。这才是真正能提升系统韧性的恢复监督。</p>
+<h3 id="_24">恢复样本的核心：有条件地调整策略，而非机械重试<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p>真实系统中的恢复，不应被简化为“失败了再试一次”。恢复之所以重要，正是因为它要求系统基于失败原因改变策略，而不是机械重复原动作 (Shinn et al. 2023; Ruan et al. 2024)。参数错误后的恢复应当伴随参数修正，空结果后的恢复应当伴随查询改写或范围调整，工具不可用时的恢复应当考虑切换工具或推迟动作，权限失败时的恢复则往往是终止而不是继续。</p>
+<p>恢复样本要训练模型根据失败类型选择动作：不同失败对应不同处理方式，也对应不同风险边界。若训练数据把所有失败后的下一步都写成“retry”，模型就会学会一种较为脆弱的恢复观：把失败理解为暂时波动，把所有问题都寄托于重复调用。这样的系统不仅效率低，也很危险，因为某些失败本就不应继续推进。</p>
+<p>高质量恢复样本往往具有一个共同特征，即它们显式体现了“策略变化”。模型在前一步失败后，没有简单重复原调用，而会改变参数、改变范围、改变工具、改变交互方式，甚至改变是否继续执行的判断。只有这种变化被稳定写进数据，恢复能力才会真正形成。</p>
+<h3 id="agent_1">环境反馈：Agent 学习闭环的关键监督来源<a class="headerlink" href="#agent_1" title="Permanent link">&para;</a></h3>
+<p>环境反馈是 Tool-Use 数据中与纯文本任务最不相同的一部分 (Shinn et al. 2023)。模型在文本世界里主要依赖语言监督，而在工具世界里，它还必须学会理解环境返回的结构化信息。环境反馈既包括显式返回值，例如 <code>status_code</code>、<code>rows</code>、<code>stdout</code>、<code>error_message</code>，也包括隐式状态变化，例如资源是否被创建、任务是否真正完成、外部世界是否发生了预期更新。</p>
+<p>很多系统之所以看似“会调用”，却始终不够可靠，就是因为它们把环境反馈当作流水账，而没有把它建模为决策监督。正确的数据构造方式，应当让模型在样本中明确看到：这一步返回了什么，这个返回意味着什么，因此下一步该做什么。只有在数据中明确写出“反馈—解释—下一动作”的关系，模型才更容易形成闭环能力。</p>
+<p>从数据标注角度看，环境反馈最好同时保留原始结果与抽象标签 (Li et al. 2023; Ruan et al. 2024)。原始结果用于训练模型读懂真实接口格式，抽象标签用于稳定化失败分类与恢复策略。例如，一条数据库报错原文可以保留，但同时应标注为“syntax_error”或“permission_denied”。这样既保留真实感，又便于模型形成可泛化的恢复模式。</p>
+<p>环境反馈很重要，因为它会改变 Tool-Use 数据的监督信号。普通文本任务中，模型通常只需对齐一份参考答案；但在工具任务中，模型的动作是否合理，往往要依赖环境返回来确认。也就是说，环境反馈不仅告诉模型“刚才发生了什么”，还在不断重写“接下来应该做什么”。若训练样本没有把这种重写关系表达清楚，模型就难以形成真正的闭环决策能力。</p>
+<h3 id="_25">原始反馈与抽象反馈应当并存<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<p>环境反馈的建模，不能只保留其中一种表示。若只保留原始反馈，模型会接触到真实接口风格，但可能难以在跨工具、跨版本、跨场景时形成稳定恢复模式；若只保留抽象标签，模型又会失去对真实环境噪声和接口多样性的适应能力。因此，更合理的做法通常是让原始反馈与抽象反馈同时存在。</p>
+<p>例如，一条数据库错误可以同时以两层方式呈现：一层是原始返回内容，如具体报错文本、状态码、失败位置；另一层是抽象解释，如“syntax_error”或“permission_denied”。再如，一次搜索空结果可以同时保留真实的 hits 为空的返回结构，以及“empty_result”这一规范标签。这样一来，模型既能学习如何读懂真实世界里的返回格式，又能学习如何把这些多样化返回归入少数可决策的恢复类型。</p>
+<p>这类双层反馈设计的价值，在于它为模型提供了“真实感”与“可泛化性”的平衡。前者让系统不会在实际接口前显得陌生，后者让系统不会被表层措辞牵着走而失去迁移能力。</p>
+<h3 id="_26">反馈的关键不在“看见”，而在“解释后行动”<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<p>很多系统已经能够把工具返回结果放进上下文，因此从表面上看似乎并不缺少环境反馈。但问题在于，“看见反馈”和“基于反馈行动”是两回事。一个模型可以读到返回值，却未必真正知道它意味着什么，更未必知道应当因此采取什么动作。比如，搜索工具返回十个候选项，模型是否知道该比较可信度、时间和相关性？代码执行返回 stderr，模型是否知道这是语法问题、环境问题还是权限问题？日历接口返回冲突事件列表，模型是否知道该提出候选时段而不是继续硬写入？</p>
+<p>因此，环境反馈的核心，应从把结果塞进上下文，转向把“结果解释—动作选择”的关系稳定写进样本 (Shinn et al. 2023)。只有这样，模型才会超出把工具结果当文本素材继续生成的层次，真正学习如何根据环境状态调整策略。</p>
+<h3 id="_27">观察—决策—行动闭环样本的建模方式<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>观察—决策—行动闭环，是 Tool-Use 数据区别于静态指令数据的核心 (Yao et al. 2023)。所谓观察，不只是用户最初输入，还包括工具返回的环境反馈；所谓决策，不只是是否调用工具，还包括是否继续、是否恢复、是否终止；所谓行动，则包括函数调用、参数修正、澄清提问和安全中止等多种类型。</p>
+<p>因此，样本建模时不能只记录“最终成功路径”，而应尽量保留每一步观察对应的决策理由。这里并不要求暴露冗长的自由思维文本，重点是在数据中至少保留一个能够表达决策依据的结构层。例如，可以用简短标签表示“因结果为空，选择改写 query 重试”；也可以用规范化字段表示“由于权限不足，转入终止并解释限制”。这样的结构化决策说明，有助于模型学习状态转移规则，而不是死记某个接口格式 (Yao et al. 2023)。</p>
+<p>闭环样本设计的重点，在于让每一步动作都可以回溯到前一步观察。也就是说，数据中应尽可能形成一种因果可见性：模型之所以这样做，是因为它看到了某种输入或某种反馈；它之所以改变策略，是因为前一步结果暴露了某种问题；它之所以终止，是因为环境已经给出了不能继续推进的信号。没有这种因果链，样本就会退化为一连串表面相邻、实际上断裂的动作。</p>
+<h3 id="_28">结构化决策理由：补足状态转移信号，而非暴露思维链<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h3>
+<p>在构建这类闭环样本时，团队常常担心：如果加入决策理由，会不会变成冗长的思维链数据，既难标又不稳定。实际上，这里的关键，并非要求模型输出完整自由推理过程；更重要的是，样本中至少存在一层足够简洁、足够稳定的决策信号，用来表达状态为什么会从 A 转到 B。</p>
+<p>这种信号可以很短，例如“empty_result → reformulate_query”“permission_denied → explain_and_stop”“timeout → retry_with_narrower_scope” (Shinn et al. 2023; Ruan et al. 2024)。它的作用不在替代模型推理，而在让状态转移规律显式可学。对 Tool-Use 数据来说，这种轻量级决策标记通常比冗长自然语言解释更稳定，也更适合在大规模样本中保持一致。</p>
+<p>从训练效果看，若没有这层结构化决策理由，模型常常会学到动作表面，却学不到动作之间的逻辑条件。结果就是在相似失败前采取不一致动作，在不同失败前采取相同动作。加入简洁的决策信号，正是为了减少这种不稳定性。</p>
+<h3 id="_29">闭环样本应覆盖继续、恢复与终止三类出口<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h3>
+<p>很多团队在设计闭环样本时，关注的主要是“如何继续推进任务”，于是成功与恢复样本较多，而终止样本明显不足。但对于真实 Agent 来说，继续、恢复与终止是三类同等重要的出口 (Yao et al. 2025; Ruan et al. 2024)。系统并不是每次都应该往前走，有时应该修复后继续，有时则应当在识别到边界后停止。</p>
+<p>因此，高质量闭环样本不能只覆盖“调用后继续下一步”的路径，还应系统性包含“失败后恢复”的路径，以及“识别风险或越权后安全终止”的路径。特别是在高风险工具场景里，终止并解释限制本身就是一种正确行为，而不是系统能力不足的表现。若样本中缺乏这类轨迹，模型就容易把“尽量完成任务”错误理解为“无论如何都不要停”，这会直接侵蚀系统的安全边界。</p>
+<h3 id="_30">调用日志如何回收失败样本<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h3>
+<p>线上系统的失败样本回收，不应依赖人工在海量日志中手工挑选，而应依赖事先设计好的调用日志结构。只要日志中存在步骤编号、调用参数、执行状态、错误码、重试链与最终结果，团队就可以按失败类型自动切分出可训练的样本簇。例如，把所有“参数校验失败但通过一次修正成功”的案例汇总为一类恢复样本；把所有“连续重试仍因权限失败而终止”的案例汇总为另一类安全终止样本。这样，日志就不再只是排障材料，而成为持续迭代数据集的生产线入口。</p>
+<p>日志回收失败样本的关键，不在于“把失败都存下来”，而在于“把失败变成可训练、可分层、可评测的结构化资产”。如果线上日志只是零散记录报错文本，团队很难自动识别哪些失败值得保留、哪些恢复轨迹具有代表性、哪些安全中止案例暴露了潜在风险。只有当日志中同时具备步骤上下文、参数快照、失败类型、恢复动作和最终结果时，失败样本才真正具备进入数据流水线的条件。</p>
+<p>进一步看，日志回流最大的价值在于它能持续提供“线下很难想全、线上却频繁发生”的样本。比如，某些参数别名只在少数用户群体中出现，某些接口冲突只在特定版本组合下触发，某些恢复动作看似合理却在真实用户交互中始终不被接受。若没有日志，团队很难系统性发现这些模式；若有结构化日志，团队就可以把这些线上长尾失败稳定沉淀为下一轮训练与评测的高价值数据。</p>
+<h3 id="_31">从日志到样本，需要一次失败语义重建<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h3>
+<p>需要注意的是，调用日志本身并不天然等于训练样本。日志记录的是系统发生了什么，而训练样本要求的是“模型应当学会什么”。因此，从日志回收失败样本时，通常需要做一次失败语义重建：把原始日志中的步骤、报错、重试和结果重新组织成适合训练的轨迹单元。</p>
+<p>例如，一串日志里可能包含三次连续失败调用、一次澄清提问和一次最终成功。对运维来说，这是一段问题排查记录；对数据团队来说，它更像一条完整的恢复样本，需要重新提炼出关键观察、失败类型、决策变化和最终结果。又如，一次权限失败日志可能本身并不长，但若能识别出它对应的是“应该立即终止而非继续尝试”的模式，它就具有很高的安全训练价值。从调用失败到诊断、修正与最终恢复的完整流程如图 19-2 所示。</p>
+<p>也就是说，日志回流不能停留在简单导出层面，本质上是一次面向学习目标的重构过程。谁能把这一步做得结构化、自动化，谁就更容易把真实线上问题转化为可持续积累的数据资产。</p>
+<p><a class="glightbox" href="../../../images/part6/Yu-Chap19-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图19-2：调用失败恢复流程图" src="../../../images/part6/Yu-Chap19-Fig02-EN.svg" /></a></p>
+<p><em>图19-2：调用失败恢复流程图</em></p>
+<p>把失败恢复过程单独抽象成流程，而不是把它散落在若干失败样本里，有助于数据团队清楚识别恢复能力到底由哪些节点组成。一次工具失败并不是一个不可再分的事件，它通常至少包含失败检测、失败归因、恢复动作选择、恢复执行与恢复结果判断几个环节。若这些环节在数据中被混成一句“失败后重试”，模型就很难学到恢复的内在结构；相反，若流程被清晰展开，模型就更容易形成“不同失败进入不同分支、不同分支对应不同动作、不同动作再导向继续或终止”的行为规律。</p>
+<p>这类流程尤其重要的地方在于，它把“失败后的正确行为”从一种模糊经验变成了可表达、可重复、可评测的结构。参数错误不应与权限失败走同一条恢复路径，空结果不应与工具拒绝采用同一种处理方式，返回结果冲突也不应简单等同于超时重试。对数据团队来说，把这些差异明确组织进恢复流程，实际上是在为模型提供一张失败后的行为地图。模型学到的将不再是“遇到问题时试试看”，而是“识别当前失败属于哪一类，并进入与之相匹配的恢复或终止分支”。</p>
+<p>从样本设计角度看，失败恢复流程图所对应的，不应只是少数复杂案例，而应成为恢复样本组织的总体骨架。每一类恢复样本都可以被看成这张流程图中某一条具体路径的实例化：有的路径从参数错误进入参数修正并最终成功，有的路径从空结果进入 query 改写后成功，有的路径从权限失败直接进入解释与终止。这样一来，恢复样本就不再是零散个案的堆积，而会逐渐形成结构清晰、可覆盖、可补样的恢复数据体系。</p>
+<p>对于 Agent 来说，恢复能力本质上是一种“在错误条件下维持任务可控性”的能力。它并不要求系统永远把失败挽回为成功，而是要求系统在面对失败时采取合适动作：能修的修，不能修的停，能解释的解释，能换路的换路。调用失败恢复流程之所以值得被单独呈现，正因为它把这种能力拆解成了可学习的具体环节，也把“失败并不可怕，错误恢复才是能力分水岭”这一点明确地写进了数据结构之中。</p>
+<h2 id="194">19.4 评测、安全与治理<a class="headerlink" href="#194" title="Permanent link">&para;</a></h2>
+<h3 id="exact-matchexecution-successrecovery-rate">exact match、execution success、recovery rate 等指标<a class="headerlink" href="#exact-matchexecution-successrecovery-rate" title="Permanent link">&para;</a></h3>
+<p>Tool-Use 数据的评测不能只看函数名和参数是否“长得像标准答案” (Li et al. 2023; Patil et al. 2025)。在很多场景中，exact match 只是最低层指标，它用于衡量模型输出是否与参考调用在表面结构上匹配；BFCL 进一步使用 抽象语法树（Abstract Syntax Tree，AST）等方式评价函数调用结构，而 τ-bench 则关注对话结束后的数据库状态是否达到目标状态 (Patil et al. 2025; Yao et al. 2025)。但真实系统更关心 execution success，也就是调用是否真的执行成功、返回结果是否有效。再进一步，还应关注 task completion，即工具调用是否真正推动了用户任务完成。</p>
+<p>对于 Agent 场景，recovery rate 是尤其重要的指标 (Yao et al. 2025; Ruan et al. 2024)。因为失败在真实系统中不可避免，关键在于模型能否在错误发生后恢复到正确轨道。因此，评测集不应只包含理想路径，还应包含参数错误、工具不可用、结果为空、返回冲突等异常样本，并统计不同失败类型上的恢复成功率。只有这样，团队才能判断系统是“看起来会调”，还是“在真实环境中真正可用”。</p>
+<h3 id="_32">高风险工具、越权调用与注入攻击防护<a class="headerlink" href="#_32" title="Permanent link">&para;</a></h3>
+<p>所有工具都不是同等风险的 (Ruan et al. 2024; Debenedetti et al. 2024)。搜索和读取类工具，主要风险在结果污染和误导；写入和执行类工具，则可能直接影响真实外部环境。发送邮件、写数据库、执行代码、修改日历、调用企业内部系统等，都属于高风险工具。对于这类工具，训练数据中必须明确体现安全边界，而不能一味追求“自动化程度更高”。</p>
+<p>越权调用是一个典型风险 (Ruan et al. 2024)。用户可能通过含糊表达诱导系统访问其无权访问的资源，或要求执行本不允许的写操作。若数据中缺乏明确的拒绝样本和约束说明，模型很容易把“尽量完成任务”误解为“尽量绕过限制” (Ruan et al. 2024; Greshake et al. 2023)。此外，工具场景还经常面临注入攻击问题 (Greshake et al. 2023; Liu et al. 2023; Debenedetti et al. 2024)。检索到的网页、文档、邮件内容中，可能包含伪造指令，诱导 Agent 忽略原始任务、泄露信息或执行危险操作。对此，数据必须教会模型区分“用户指令”“系统约束”和“外部内容中的不可信文本”，而不能把环境内容一概当作新的高优先级指令 (Greshake et al. 2023; Debenedetti et al. 2024)。</p>
+<p>进一步说，安全样本不能只把风险抽象成“危险调用”，而应显式拆分为高风险工具、越权调用、提示注入和敏感数据四类边界。高风险工具强调动作本身可能产生真实后果，例如写文件、删数据、发邮件、下单、执行代码或修改企业系统状态，因此样本中应覆盖二次确认、只读降级、范围限定和安全终止。越权调用强调调用主体、目标资源和操作权限之间是否匹配，数据中需要出现“用户想做但系统不能代做”的拒绝与解释。提示注入强调外部内容不具备改变系统目标和安全规则的权限，训练样本要让模型学会把网页、邮件、文档、检索片段中的伪指令当作不可信内容处理。敏感数据则强调最小必要原则：工具参数、观测结果、日志和最终回复中都不应无约束暴露凭证、密钥、个人身份信息、内部业务数据或用户隐私，必要时应采用脱敏、摘要化、字段级过滤和不落日志策略。只有把这四类风险分别组织成可判定、可拒绝、可恢复、可评测的样本，安全约束才会从外部规则变成模型可学习的行动边界。</p>
+<h3 id="_33">安全红线必须体现在样本中，而不是只写在制度里<a class="headerlink" href="#_33" title="Permanent link">&para;</a></h3>
+<p>很多团队拥有一套很完整的安全规范文档，但模型行为仍然频繁越界，原因在于安全红线没有被真正编码进训练样本。模型学习的重点不在制度本身，而在制度在具体情境中的可执行形式 (Ruan et al. 2024; Debenedetti et al. 2024)。如果样本中从未出现“应拒绝调用”的实例，模型就很难学会在灰色场景中主动收缩行为。</p>
+<p>因此，安全红线应当体现在三类数据中。第一类是直接拒绝样本，即明确告诉模型哪些请求不应触发工具。第二类是约束执行样本，即允许调用，但必须加入确认、脱敏、范围限制、只读模式等约束。第三类是终止恢复样本，即当系统检测到权限不足、风险过高、外部内容可疑时，不继续尝试，而是解释原因并安全结束。真正有效的安全治理，不只是拦截危险调用，更是让模型在训练中习得“何时不做”和“如何体面地不做”。各类安全风险的典型表现、可能后果、约束机制与对应的数据样本要求如表 19-2 所示。</p>
+<h3 id="_34">工具版本升级带来的数据同步问题<a class="headerlink" href="#_34" title="Permanent link">&para;</a></h3>
+<p>工具层并不是静止的。工具名称会调整，字段会新增或废弃，错误码会变化，默认行为也可能随版本升级而改变。若数据集与真实工具版本不同步，模型就会在训练中学到过时的 schema，部署后出现稳定性问题；Gorilla 对检索式 API 文档适配和版本变化问题的处理，正说明工具文档与调用样本同步的重要性 (Patil et al. 2024)。工具升级带来的麻烦，并不只在推理接口兼容性上，更在于样本语义漂移：曾经正确的参数组合，可能在新版本中已不再合法；曾经的错误码语义，也可能在新版本中发生拆分或合并。</p>
+<p>因此，工具数据治理必须包含版本管理机制。训练样本需要标记工具版本；评测集要跟随线上版本滚动更新；调用日志也应保留实际执行时的版本信息。否则，团队会陷入一种常见误区：明明模型在离线评测上表现良好，线上却持续出现无法解释的调用失败，实际原因只是训练数据与真实工具已经不在同一语义层上。</p>
+<p><em>表 19-2：安全风险与约束机制表</em></p>
+<table>
+<thead>
+<tr>
+<th>风险类型</th>
+<th>典型表现</th>
+<th>可能后果</th>
+<th>约束机制</th>
+<th>数据样本要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>越权访问</td>
+<td>请求读取无权限资源、修改受限对象</td>
+<td>数据泄露、合规风险</td>
+<td>权限校验、只读模式、显式拒绝</td>
+<td>必须有拒绝调用与安全解释样本</td>
+</tr>
+<tr>
+<td>注入攻击</td>
+<td>外部网页/文档中嵌入伪指令</td>
+<td>偏离原任务、执行危险动作</td>
+<td>指令优先级隔离、内容降权、来源标记</td>
+<td>必须有“忽略外部伪指令”样本</td>
+</tr>
+<tr>
+<td>危险写操作</td>
+<td>发信、删库、改日程、执行命令</td>
+<td>真实环境被破坏</td>
+<td>二次确认、范围限制、操作白名单</td>
+<td>必须有确认样本与中止样本</td>
+</tr>
+<tr>
+<td>参数滥用</td>
+<td>超大范围查询、超长运行、资源滥用</td>
+<td>成本飙升、服务阻塞</td>
+<td>参数上限、配额控制、超时终止</td>
+<td>必须覆盖资源限制错误与恢复</td>
+</tr>
+<tr>
+<td>敏感信息泄露</td>
+<td>在参数或响应中暴露凭证、隐私数据</td>
+<td>隐私风险、账户风险</td>
+<td>脱敏、最小必要返回、日志遮盖</td>
+<td>必须有脱敏前后对照样本</td>
+</tr>
+<tr>
+<td>重试失控</td>
+<td>无差别重复调用失败工具</td>
+<td>资源浪费、放大错误</td>
+<td>指数退避、最大重试次数、失败分类</td>
+<td>必须有“停止重试”样本</td>
+</tr>
+<tr>
+<td>版本漂移</td>
+<td>schema 更新后仍按旧格式调用</td>
+<td>执行失败、结果异常</td>
+<td>版本标记、兼容层、样本同步更新</td>
+<td>必须维护多版本样本与回归测试</td>
+</tr>
+</tbody>
+</table>
+<h2 id="195">19.5 工程案例与模式总结<a class="headerlink" href="#195" title="Permanent link">&para;</a></h2>
+<h3 id="_35">搜索、数据库、日历、代码执行等工具场景案例<a class="headerlink" href="#_35" title="Permanent link">&para;</a></h3>
+<p>不同工具场景虽然都属于 Tool-Use，但它们面对的主要难点并不相同。搜索工具的核心难点在于 query 改写、结果筛选与空结果恢复 (Nakano et al. 2021)；数据库工具更强调 schema 感知、参数精确性与执行结果解释 (Li et al. 2023; Qin et al. 2024)；日历类和通信类工具则更强调写操作风险、时间与对象对齐、冲突处理与确认机制 (Yao et al. 2025; Ruan et al. 2024)；代码执行工具除了参数与结果解释外，还必须额外处理运行环境、资源约束和沙箱安全 (Yang et al. 2024; Ruan et al. 2024)。</p>
+<p>因此，样本库不应试图用一套抽象模板覆盖所有工具，而应在统一轨迹格式之下，为不同工具类型保留其特有字段与失败模式。工程上最忌讳的是把所有工具都压扁成“名称 + 参数 + 输出”三元组。那样虽然形式统一，却会牺牲最关键的领域差异，最终导致模型在具体工具上始终学不扎实。</p>
+<h3 id="agent_2">企业内部 Agent 工具层的数据治理实践<a class="headerlink" href="#agent_2" title="Permanent link">&para;</a></h3>
+<p>企业内部 Agent 的工具层治理，通常要比公开演示系统更复杂 (Ruan et al. 2024; Debenedetti et al. 2024)。原因在于内部工具往往涉及权限体系、部门边界、审计要求和快速迭代的业务接口。一个成熟的治理实践，通常包含四层机制：第一层是 schema 注册与版本管理，确保所有工具有统一描述与可追踪演进；第二层是日志标准化，确保线上所有调用都能回流分析；第三层是失败样本与安全样本的持续沉淀，确保模型能从真实错误中迭代；第四层是评测与灰度机制，确保新版本模型和新版本工具在上线前经过充分回归验证。</p>
+<p>这里最值得强调的一点是，工具层数据治理本质上不能等同于标注工作外包，它是一项跨模型、平台、后端与安全团队的协同工程。只要其中任何一层断裂，Tool-Use 数据就会退化为零散案例堆积，而无法形成稳定生产能力。</p>
+<h3 id="_36">常见模式：成功模板化，失败结构化，恢复规范化<a class="headerlink" href="#_36" title="Permanent link">&para;</a></h3>
+<p>从大量工具调用项目中可以总结出一个很有用的经验：成功样本需要模板化，失败样本需要结构化，恢复样本需要规范化 (Li et al. 2023; Yao et al. 2025; Ruan et al. 2024)。所谓成功模板化，是指对常见高频任务建立稳定表示，降低模型在标准路径上的格式波动；所谓失败结构化，是指明确区分失败类型，而不是把所有失败压成一句“调用失败”；所谓恢复规范化，是指为不同失败类型建立相对固定的恢复动作集合，让模型学会在错误出现时沿着可预测轨道修复。</p>
+<p>这种模式的价值在于，它既避免了成功路径数据过于松散，也避免了失败路径数据沦为不可泛化的个例堆砌。对于数据团队而言，这比盲目追求样本数量更重要。因为 Tool-Use 能力的关键，不在于看过多少函数名，而在于是否掌握了一套稳定的状态转移规律。</p>
+<h2 id="_37">本章小结<a class="headerlink" href="#_37" title="Permanent link">&para;</a></h2>
+<p>Tool-Use 与函数调用数据，是 Agent 从“会回答”走向“会执行”的关键桥梁 (Karpas et al. 2022; Parisi et al. 2022)。它主要决定系统可用性的下限，而非模型能力的上限。一个缺乏高质量工具数据的 Agent，往往会呈现出“语言能力看似很强，执行能力却很脆弱”的典型特征。</p>
+<p>本章强调，构建工具调用数据时，不能把问题简化为函数名和参数格式匹配，而必须把它视为一个包含状态、环境反馈、失败恢复与安全约束的行动建模问题。围绕这一点，我们讨论了工具 schema 的表达方式、成功与失败轨迹的最小要素、调用日志结构、环境反馈建模、恢复样本设计、评测指标、安全红线与版本治理问题。对于真正面向生产环境的数据团队而言，这些内容共同构成了 Tool-Use 数据工程的基础框架。</p>
+<p>从后续实践出发，最值得持续建设的能力有三项：其一，是让线上调用日志能够稳定回流为失败样本与恢复样本；其二，是让安全红线真正进入训练样本，而不是停留在制度文本中；其三，是让工具版本演进与数据版本演进保持同步。只有这样，Tool-Use 数据才能从“演示函数调用”升级为“支撑 Agent 稳定执行”的核心资产。</p>
+<h2 id="_38">参考文献<a class="headerlink" href="#_38" title="Permanent link">&para;</a></h2>
+<p>Karpas E, Abend O, Belinkov Y, et al. (2022) MRKL Systems: A Modular, Neuro-Symbolic Architecture That Combines Large Language Models, External Knowledge Sources and Discrete Reasoning. arXiv:2205.00445.</p>
+<p>Parisi A, Zhao Y, Fiedel N (2022) TALM: Tool Augmented Language Models. arXiv:2205.12255.</p>
+<p>Nakano R, Hilton J, Balaji S, et al. (2021) WebGPT: Browser-Assisted Question-Answering with Human Feedback. arXiv:2112.09332.</p>
+<p>Yao S, Zhao J, Yu D, et al. (2023) ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations. arXiv:2210.03629.</p>
+<p>Schick T, Dwivedi-Yu J, Dessì R, et al. (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. Advances in Neural Information Processing Systems, 36. arXiv:2302.04761.</p>
+<p>Li M, Zhao Y, Yu B, et al. (2023) API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 3102–3116. https://doi.org/10.18653/v1/2023.emnlp-main.187.</p>
+<p>Qin Y, Liang S, Ye Y, et al. (2024) ToolLLM: Facilitating Large Language Models to Master 16000+ Real-World APIs. International Conference on Learning Representations.</p>
+<p>Patil S G, Zhang T, Wang X, Gonzalez J E (2024) Gorilla: Large Language Model Connected with Massive APIs. Advances in Neural Information Processing Systems, 37. arXiv:2305.15334.</p>
+<p>Zhuang Y, Yu Y, Wang K, et al. (2023) ToolQA: A Dataset for LLM Question Answering with External Tools. Advances in Neural Information Processing Systems, 36. https://doi.org/10.52202/075280-2180.</p>
+<p>Huang Y, Shi J, Li Y, et al. (2023) MetaTool Benchmark for Large Language Models: Deciding Whether to Use Tools and Which to Use. arXiv:2310.03128.</p>
+<p>Patil S G, Mao H, Yan F, et al. (2025) The Berkeley Function Calling Leaderboard (BFCL): From Tool Use to Agentic Evaluation of Large Language Models. Proceedings of the 42nd International Conference on Machine Learning, Proceedings of Machine Learning Research, 267, 48371–48392.</p>
+<p>Yao S, Shinn N, Razavi P, Narasimhan K (2025) τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains. International Conference on Learning Representations.</p>
+<p>Shinn N, Cassano F, Gopinath A, et al. (2023) Reflexion: Language Agents with Verbal Reinforcement Learning. Advances in Neural Information Processing Systems, 36. arXiv:2303.11366.</p>
+<p>Yang J, Jimenez C E, Wettig A, et al. (2024) SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. Advances in Neural Information Processing Systems, 37. https://doi.org/10.52202/079017-1601.</p>
+<p>Ruan Y, Dong H, Wang A, et al. (2024) Identifying the Risks of LM Agents with an LM-Emulated Sandbox. International Conference on Learning Representations.</p>
+<p>Greshake K, Abdelnabi S, Mishra S, et al. (2023) Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, 79–90. https://doi.org/10.1145/3605764.3623985.</p>
+<p>Liu Y, Deng G, Li Y, et al. (2023) Prompt Injection Attack against LLM-Integrated Applications. arXiv:2306.05499.</p>
+<p>Debenedetti E, Zhang J, Balunović M, et al. (2024) AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents. Advances in Neural Information Processing Systems, 37.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

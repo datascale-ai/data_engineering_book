@@ -1,0 +1,872 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part1/1_1_data_change/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第 1 章: 大規模言語モデル時代のデータ変換 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第 1 章: 大規模言語モデル時代のデータ変換
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章の概要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      シナリオの紹介
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1 スケーリングの法則の影響: 「ビッグデータ」から「高品質データ」へのパラダイムシフト
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 スケーリングの法則の影響: 「ビッグデータ」から「高品質データ」へのパラダイムシフト">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.1 スケーリング則とは何ですか?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.2 データ品質の「隠れた変数」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-phi" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.3 質と量: Phi シリーズの極端な実験
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.4 データ エンジニアの中核となる使命
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2 LLM データの全ライフサイクル
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 LLM データの全ライフサイクル">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-4-sft-rlhf-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 4 段階パラダイム: プレトレーニング → SFT → RLHF → RAG
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 データフローの「ファネルモデル」
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3 課題と機会: 異種マルチモーダルのゲーム、著作権コンプライアンス、および計算コスト
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 課題と機会: 異種マルチモーダルのゲーム、著作権コンプライアンス、および計算コスト">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.1 課題 1: 異種マルチモーダル データの処理の複雑さ
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.2 課題 2: 著作権コンプライアンスのグレーゾーン
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.3 課題 3: コンピューティング コストの「隠れたキラー」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.4 機会: 障壁を下げる 3 つのトレンド
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4 よくある誤解と落とし穴ガイド
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 よくある誤解と落とし穴ガイド">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      誤解 1: 「データは多ければ多いほど良い」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      誤解 2: 「すべてのデータを一度処理する」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      誤解 3: 「トレーニング前のデータのみに注目する」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      誤解 4: 「オープンソース データはすぐに使用できる」
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5 章の概要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      さらに読む
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      次の章のプレビュー
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="1">第 1 章: 大規模言語モデル時代のデータ変換<a class="headerlink" href="#1" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">章の概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>大規模言語モデル (LLM) の台頭により、人工知能のパラダイムが再形成されました。ただし、モデル アーキテクチャの革新は収束しており、モデルの機能の上限を真に決定するのは <strong>データ品質</strong> です。この章では、スケーリング則の観点から「コア資産としてのデータ」という概念を確立し、LLM データのライフサイクル全体を体系的に紹介し、異種マルチモーダル データ、著作権コンプライアンス、コンピューティング コストなどの実際的な課題を検討します。</p>
+<hr />
+<h2 id="_2">シナリオの紹介<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>あなたは AI スタートアップ企業のデータ リードです。チームは、公開 Web から 50TB の中国語テキストをクロールするのに 3 か月を費やし、自信を持って 7B パラメーターの基本モデルの事前トレーニングを開始しています。</p>
+<p>しかし、トレーニングを開始して 2 週間が経過すると、ある時点で損失曲線が突然「平坦」になり、モデルの出力は広告コピー、反復的な SEO のジャンクで埋め尽くされ、特定の Web サイトのユーザー同意書さえも引用されるようになります。事後会議で、上級エンジニアが鋭い質問をしました。「トレーニング用のコンピューティングに 100 万ドルを費やした後、私たちは言語モデルを構築するのでしょうか、それともインターネットのゴミの圧縮されたインデックスを構築するのでしょうか?」</p>
+<p>このシナリオは捏造されたものではありません。 OpenAI、Google、Meta、その他のトップラボはすでにコンセンサスに達しています。モデル アーキテクチャが収束する時代においては、データ品質がモデルのインテリジェンスの上限を決定する中心的な変数です。</p>
+<hr />
+<h2 id="11">1.1 スケーリングの法則の影響: 「ビッグデータ」から「高品質データ」へのパラダイムシフト<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<h3 id="111">1.1.1 スケーリング則とは何ですか?<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>2020 年、OpenAI は画期的な論文 <em>神経言語モデルのスケーリング則</em> を発表し、単純だが奥深い規則性を明らかにしました。つまり、モデルのパフォーマンス (損失で測定) は、モデル パラメーター数 <span class="arithmatex">\(N\)</span>、データセット サイズ <span class="arithmatex">\(D\)</span>、および計算 <span class="arithmatex">\(C\)</span> という 3 つの核となる要素とのべき乗則の関係に従います。</p>
+<div class="arithmatex">\[
+L(N, D, C) \およそ \left(\frac{N_c}{N}\right)^{\alpha_N} + \left(\frac{D_c}{D}\right)^{\alpha_D} + \left(\frac{C_c}{C}\right)^{\alpha_C}
+\]</div>
+<p>ここで、<span class="arithmatex">\(L\)</span> はモデルのクロスエントロピー損失、<span class="arithmatex">\(N_c、D_c、C_c\)</span> は定数、<span class="arithmatex">\(\alpha\)</span> はべき乗則指数です。簡単に言うと、モデルをよりスマートにするには、モデルのスケールを増やすか、より多くのデータを追加するか、より多くのコンピューティングに投資するかのいずれかになります。これら 3 つの要素が相互に制約し、LLM 時代の「不可能な三角形」を形成します。</p>
+<p>この発見は学界と産業界に衝撃を与えました。これ以前は、深層学習の開発は「錬金術」に似ており、研究者は直感と経験に頼ってモデル アーキテクチャを調整し、偶然のブレークスルーを期待していました。スケーリング則の出現により、大規模モデルのトレーニングが芸術から工学科学に初めて移行し、企業は正確な数学モデルに基づいてリソースの投資と期待される成果を計画できるようになりました。</p>
+<h3 id="112">1.1.2 データ品質の「隠れた変数」<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>しかし、元のスケーリング法には重大な盲点がありました。それは、すべてのデータの「品質」が均一であることを前提としていたからです。この仮定は明らかに現実には当てはまりません。インターネット上のテキストの品質は、注意深く書かれた学術論文からタイプミスだらけのコメントまで多岐にわたり、データ間の価値の違いは桁違いに及ぶ場合があります。</p>
+<p>2022 年、DeepMind のチンチラ論文はこの仮定を打ち破りました。研究チームは大規模な実験を実施しました。同じコンピューティング予算の下で、異なるモデル サイズとデータ量比率の効果を比較しました。この結果は業界に衝撃を与えました。Gopher のパラメータのわずか 4 分の 1 であるチンチラ (70B パラメータ) は、4 倍の高品質トレーニング データ (1.4T トークン) を使用することで、ほぼすべての評価タスクで 280B パラメータ Gopher を上回りました。</p>
+<table>
+<thead>
+<tr>
+<th>モデル</th>
+<th>パラメータ</th>
+<th>トレーニングトークン</th>
+<th>最終パフォーマンス</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ホリネズミ</td>
+<td>280B</td>
+<td>300B トークン</td>
+<td>ベースライン</td>
+</tr>
+<tr>
+<td><strong>チンチラ</strong></td>
+<td><strong>70B</strong></td>
+<td><strong>1.4T トークン</strong></td>
+<td><strong>Gopher を上回るパフォーマンス</strong></td>
+</tr>
+</tbody>
+</table>
+<p>この調査により、長年無視されてきた事実が明らかになりました。つまり、業界はこれまで、データ量を過小評価しながらモデル規模で過剰適合していたということです。 Chinchilla の論文では、追加パラメータごとに、トレーニング データの約 20 トークンを割り当てる必要があるという「最適な比率」を推奨しています。これは、7B モデルのトレーニングには理論的には約 140B トークンの高品質コーパスが必要であることを意味します。これは、多くのチームが当初予想していた数をはるかに超えています。</p>
+<h3 id="113-phi">1.1.3 質と量: Phi シリーズの極端な実験<a class="headerlink" href="#113-phi" title="Permanent link">&para;</a></h3>
+<p>Chinchilla が「データ量が過小評価されていた」ことを証明したとすれば、Microsoft の Phi シリーズはさらに過激な見解を示しました。つまり、データの品質がスケーリングの法則を無効にする可能性があるということです。</p>
+<p>2023 年に、Microsoft Research は Phi-1 モデルをリリースしました。これは、わずか 13 億のパラメーターを備えた「小規模」モデルで、わずか 70 億のトークンでトレーニングされています。これは、数千億、さらには数兆のトークンを使用する当時の主流のアプローチとはまったく対照的です。しかし、一見「栄養失調」に見えるこのモデルは、コード生成タスクにおいて 10 倍のパラメータで競合他社を上回りました。</p>
+<p>Phi-1 の秘密兵器は、クロールされた大量のデータではなく、教育的価値のある慎重に設計された合成データでした。研究者らは GPT-4 を使用して、基本的な構文から高度なアルゴリズムに至るまで、大量の構造化された段階的なプログラミング チュートリアルを生成し、完全な「人工教科書」を形成しました。これらの合成データには、ノイズがなく、エラーがなく、論理が明確で、難易度が段階的に上がるという、実際の Web データにはほとんど匹敵しない利点がありました。これらの「人工教科書」で訓練された小さなモデルは、実際のプログラミング問題を解決する際に驚くべき能力を示しました。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig01-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-1: データ品質の比較" src="../../../images/part1/Yu-Chap01-Fig01-ZH.png" /></a></p>
+<p><em>図 1-1: データ品質とモデルのパフォーマンスの関係 — クレンジング後の低品質データ (40% ノイズ) は高品質データ (5% ノイズ) になります</em></p>
+<p>Phi シリーズの成功により、業界では「合成データ」に関する激しい議論が巻き起こりました。慎重に設計された合成データがこれほど優れた結果を生み出すことができるのであれば、従来の「クロール - クリーン トレイン」パラダイムを覆す必要があるでしょうか?第 7 章では、合成データの方法論とベスト プラクティスについて詳しく説明します。</p>
+<h3 id="114">1.1.4 データ エンジニアの中核となる使命<a class="headerlink" href="#114" title="Permanent link">&para;</a></h3>
+<p>上記の調査を総合すると、LLM 時代のデータ エンジニアの中核となる使命が抽出できます。従来の通念では、「データは多いほど良い」と考えられていました。新しいパラダイムでは、データ品質がパフォーマンスの上限を決定し、ノイズの多いデータは役に立たないだけでなく有害であることが強調されています。以前は、「モデル アーキテクチャが競争上の優位性の中核である」と信じられていました。現在、アーキテクチャは統合されており、データが主要な差別化要因となっています。 「クリーニングは小さな前処理ステップである」という古い見方は時代遅れであり、データ クリーニングは現在、成功するモデル トレーニングの基礎とみなされています。同様に、「人間によるアノテーションはかけがえのないものである」という伝統的な信念は崩れました。高品質の合成データは、特定のシナリオでは実際のデータを超えることがあります。</p>
+<p>「量より質」を「質のみで量は含まない」と誤解してはならないことを強調することが重要です。スケーリングの法則は依然として有効であり、同じコンピューティング予算の下での優先事項はデータ品質への投資であるべきです。極端な例: 100 個の完全なデータ ポイントでトレーニングされたモデルは、1T の高品質データ ポイントでトレーニングされたモデルを超えることはできません。質と量は対立するものではありません。実際の制約の下で最適なバランスを見つける必要があります。</p>
+<hr />
+<h2 id="12-llm">1.2 LLM データの全ライフサイクル<a class="headerlink" href="#12-llm" title="Permanent link">&para;</a></h2>
+<p>「誕生」から「展開」まで、大規模な言語モデルは複数のトレーニング段階を経ますが、それぞれの段階で明確に異なるデータ要件があります。このライフサイクル全体を理解することが、資格のあるデータ エンジニアになるための第一歩です。</p>
+<h3 id="121-4-sft-rlhf-rag">1.2.1 4 段階パラダイム: プレトレーニング → SFT → RLHF → RAG<a class="headerlink" href="#121-4-sft-rlhf-rag" title="Permanent link">&para;</a></h3>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig02-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-2: LLM データのライフサイクル" src="../../../images/part1/Yu-Chap01-Fig02-ZH.png" /></a></p>
+<p><em>図 1-2: LLM トレーニング データ パイプライン — TB レベルの事前トレーニングから KB レベルの RAG まで、データ量は減少しますが、品質要件は増加します</em></p>
+<p><strong>事前トレーニング</strong>は、大型モデルの人生の開始点です。この段階で、モデルは大量のラベルのないテキストから、文法構造、常識知識、世界の仕組みなど、言語の本質を学習します。事前トレーニング データのスケールは通常、TB レベルであり、Web ページ、書籍、コード、学術論文、その他のテキスト タイプからのソースを含む数兆のトークンが含まれます。この段階における主な課題は、重複排除、ノイズ除去、品質フィルタリング、および多様性のバランスです。一般的な事前トレーニング データセットには、Common Crawl、The Pile、RefinedWeb などがあります。</p>
+<p><strong>教師あり微調整 (SFT)</strong> は、モデルが「指示に従う」ことを学習する重要な期間です。事前トレーニングされたモデルは強力な言語理解能力を持っていますが、人間と効果的に対話する方法を知りません。 SFT ステージでは、命令と応答のペアのデータを使用して、ユーザーの意図を理解し、役立つ応答を提供するようにモデルを学習します。この段階でのデータ規模は GB レベルにまで低下し、慎重に作成された数十万から数百万の対話サンプルが含まれます。主な課題には、指示の多様性、応答の質、フォーマットの標準化の確保などが含まれます。 Alpaca、ShareGPT、および OpenAssistant は、この段階で一般的に使用されるデータセットです。</p>
+<p><strong>人間のフィードバックからの強化学習 (RLHF/DPO)</strong> は、モデルの出力を人間の好みに合わせてより「調整」することを目的としています。調整とは、モデルをより安全にする (有害なコンテンツを生成しない)、より役立つ (実際にユーザーの問題を解決する)、より正直にする (事実を捏造しない) ことを意味します。この段階では、ヒューマン・アノテーターが 2 つの応答候補のうちより良いものを選択する嗜好比較データが使用されます。データの規模はさらに数万から数十万サンプルに縮小しますが、アノテーションの品質要件は非常に高くなります。アノテーター間の合意、好みシグナルの精度、サンプル分布の範囲はすべて、慎重に制御する必要がある要素です。</p>
+<p><strong>RAG (RAG)</strong> は、モデルの知識の更新と幻覚に対処します。事前トレーニングがどれほど徹底されていても、モデルの知識には期限があり、「ナンセンスを話しながらも権威があるように聞こえる」ことを完全に避けることはできません。 RAG は、モデルに「外部ソースを参照」させることにより、エンタープライズ ナレッジ ベースや最新のドキュメントなどの外部情報を生成プロセスに挿入します。この段階のデータ ソースは通常、PDF ドキュメント、データベース レコード、Web コンテンツ、その他の構造化データまたは半構造化データを含む企業プライベートです。主な課題には、ドキュメントの解析、セマンティック Chunking、ベクトル化、検索精度の最適化などがあります。</p>
+<h3 id="122">1.2.2 データフローの「ファネルモデル」<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>データのライフサイクルを理解するためのもう 1 つの視点は、「ファネル モデル」です。生の Web データからトレーニングに使用できる最終的な高品質コーパスに至るまで、データ量が大幅に削減されます。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig03-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-3: データ ファネル モデル" src="../../../images/part1/Yu-Chap01-Fig03-ZH.png" /></a></p>
+<p><em>図 1-3: データ濾過ファネル — 100PB の生データから 10GB SFT データまで、保持率はわずか 0.00001%</em></p>
+<p>一般的なトレーニング前のデータ処理ワークフローの場合: Common Crawl から 100PB の生の Web データを取得すると仮定します。 URL 重複排除と正確なコンテンツ重複排除の後、データ量は 30PB (保持率 30%) に低下する可能性があります。次に、言語識別と品質フィルタリング (対象外の言語、ポルノ/暴力コンテンツ、極端に短いテキスト、文字化けテキストを削除) により、データがさらに 5PB (保持率 5%) に削減されます。次に、複雑さ、繰り返し率、情報密度、その他の指標を使用したより詳細な品質評価により、おそらくわずか 1PB (保持率 1%) の最終的な事前トレーニング コーパスが得られます。そして、そこから SFT データを抽出または構築する必要がある場合、最終的な出力はわずか 10GB になる可能性があり、生データと比較して、保持率は 10 万分の 1 にまで低くなります。</p>
+<p>実際のエンジニアリングでは、この比率を理解することが重要です。これは、クロール スケールの計画、ストレージ コストの予算編成、および処理パイプラインの設計に直接影響します。多くのチームはプロジェクト開始時にこの「消耗率」を過小評価しており、データの確保が不十分になり、プロジェクトの途中でやり直しが発生しました。</p>
+<hr />
+<h2 id="13">1.3 課題と機会: 異種マルチモーダルのゲーム、著作権コンプライアンス、および計算コスト<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<h3 id="131-1">1.3.1 課題 1: 異種マルチモーダル データの処理の複雑さ<a class="headerlink" href="#131-1" title="Permanent link">&para;</a></h3>
+<p>GPT-4V、Gemini、Sora などのマルチモーダル モデルの出現により、データ エンジニアリングの複雑さは飛躍的に増大しました。純粋なテキストの時代では、すべてのデータは UTF-8 でエンコードされた文字列でした。処理ツールチェーンは成熟し、標準化されました。マルチモーダル時代では、データ形式が爆発的に増加しました。画像には JPEG、PNG、WebP があります。ビデオには MP4、AVI、MKV があります。オーディオには WAV、MP3、FLAC があります。ドキュメントには PDF、Word、HTML があります。各形式には独自の解析方法と品質評価基準があります。</p>
+<table>
+<thead>
+<tr>
+<th>寸法</th>
+<th>純粋なテキストの時代</th>
+<th>マルチモーダル時代</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>データ形式</strong></td>
+<td>統一された UTF-8 テキスト</td>
+<td>複数のフォーマット: 画像、ビデオ、オーディオ、ドキュメント、Web ページ</td>
+</tr>
+<tr>
+<td><strong>ストレージ要件</strong></td>
+<td>結核レベル</td>
+<td>PB レベル (画像/ビデオが優勢)</td>
+</tr>
+<tr>
+<td><strong>位置合わせの難しさ</strong></td>
+<td>なし (純粋なテキストは位置合わせを必要としません)</td>
+<td>非常に高い (画像とテキストの配置、オーディオとビデオの同期、クロスモーダルのセマンティック一貫性)</td>
+</tr>
+<tr>
+<td><strong>ツールチェーンのクリーニング</strong></td>
+<td>成熟した (FastText、KenLM)</td>
+<td>断片化 (各モダリティには独立したツールチェーンがあります)</td>
+</tr>
+<tr>
+<td><strong>品質評価</strong></td>
+<td>複雑さ、重複排除率</td>
+<td>美的スコア、CLIP-Score、OCR精度、ASRエラー率など</td>
+</tr>
+</tbody>
+</table>
+<p>さらに困難なのは、クロスモーダル調整の問題です。画像とキャプションを組み合わせる - テキストが画像の内容を正確に説明していることを確認するにはどうすればよいでしょうか?ビデオ内の音声とビジュアルはどのようにして正確に同期されているのでしょうか?これらの位置合わせの問題は純粋なテキストの時代には存在しませんでしたが、マルチモーダル データ エンジニアリングにおける中心的な課題です。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig04-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-4: マルチモーダル処理の複雑さ" src="../../../images/part1/Yu-Chap01-Fig04-ZH.png" /></a></p>
+<p><em>図 1-4: マルチモーダル データ処理の複雑さ — 線の太さは処理の難しさを示し、ビデオ (5/5) と PDF (4/5) が最も複雑です</em></p>
+<p>エンジニアリング実践の観点から見ると、マルチモーダル データ処理にはモジュラー設計が必要です。各モダリティは、クロスモーダル調整の前に個別に処理されます。同時に、下流の処理の複雑さを軽減するために、WebDataset、TFDS などの統一データ形式標準を優先する必要があります。モダリティを意識した品質評価システムを確立することも重要です。画像には美的スコアと CLIP の類似性が必要で、音声には ASR の精度と話者分離品質が必要で、PDF には OCR の精度とレイアウト分析の精度が必要です。</p>
+<h3 id="132-2">1.3.2 課題 2: 著作権コンプライアンスのグレーゾーン<a class="headerlink" href="#132-2" title="Permanent link">&para;</a></h3>
+<p>大規模なモデルのトレーニング データに関する著作権の問題は、技術的な議論から法的な戦場へと発展しました。 2023年、ゲッティイメージズは、Stable Diffusionのトレーニングに数百万枚の著作権で保護された画像を不正使用したとして、Stability AIを訴えた。 2024 年、<em>ニューヨーク タイムズ</em> は、GPT モデルが著作権を侵害しているとして OpenAI と Microsoft を訴えました。複数の国の規制当局は、AI 企業にトレーニング データ ソースの開示を要求し始めています。</p>
+<p>これらの訴訟の結果は、AI 業界の発展の方向性に重大な影響を与えることになりますが、データ エンジニアにとって、問題の解決を待つのは明らかに賢明ではありません。現在のコンプライアンス戦略は、いくつかの側面から進めることができます。まず、ソースのトレーサビリティ - URL、クロール時間、元の著作権宣言などを含む、各トレーニング データ ポイントの完全なソース メタデータを記録します。 2 番目に、ライセンス フィルタリング - CC0、CC-BY、その他のオープン ライセンス コンテンツなど、AI トレーニングの使用に対する明示的な許可を持つデータを優先します。第三に、robots.txt プロトコルを尊重し、Web サイト所有者のクローラー制限宣言を尊重します。 4 番目に、データの機密保護を解除します。個人のプライバシーに関わるコンテンツを匿名化または削除します。</p>
+<p>AI トレーニング シナリオにおける「フェアユース」の境界は依然として明確ではなく、適用される法的基準は国によって異なることに注意してください。したがって、法的環境が明確になったらデータ処理戦略を迅速に調整できるように、データ パイプラインに著作権フィルタリング インターフェイスを予約しておくことをお勧めします。</p>
+<h3 id="133-3">1.3.3 課題 3: コンピューティング コストの「隠れたキラー」<a class="headerlink" href="#133-3" title="Permanent link">&para;</a></h3>
+<p>データ処理のコンピューティング コストは、多くの場合大幅に過小評価されます。多くのチームは、モデルのトレーニング コストの予算を立てるときに GPU トレーニング時間を計算するだけですが、データの前処理で同等以上のリソースが消費される可能性があることを無視しています。</p>
+<p>10TB の生の Web データを処理するという実際的なシナリオを考えてみましょう。各データ ポイントには、HTML 解析、テキスト抽出、言語識別、品質スコアリング、重複排除チェックという平均 5 つのステップが必要であると仮定します。各ステップには項目ごとに 100 ミリ秒かかります (すでにかなり高速です)。合計処理時間はおよそ次のようになります: 10TB ÷ 10KB/アイテム × 0.5 秒/アイテム ≈ 150 万 GPU 時間。クラウド プロバイダーの価格では、これは数十万ドルを意味する可能性があり、モデルのトレーニング費用自体に匹敵します。</p>
+<table>
+<thead>
+<tr>
+<th>シナリオ</th>
+<th>トレーニング データの量</th>
+<th>トレーニング費用 (A100 時間)</th>
+<th>モデルのパフォーマンス</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>重複排除なし、直接トレーニング</td>
+<td>10Tトークン</td>
+<td>10,000時間</td>
+<td>ベースライン (繰り返しによる「リピーター」の問題を含む)</td>
+</tr>
+<tr>
+<td>重複排除後のトレーニング</td>
+<td>7Tトークン</td>
+<td>7,000時間</td>
+<td>ベースラインよりも優れています (データが繰り返されると学習効率が低下します)</td>
+</tr>
+<tr>
+<td><strong>純利益</strong></td>
+<td>-</td>
+<td><strong>3,000 時間の節約 + より優れたモデル</strong></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>ただし、別の観点から見ると、データ エンジニアリングの投資収益率は非常に高くなる可能性があります。上の表は単純化したケースを示しています。データ重複排除にリソースを投資することで、トレーニング コストの 30% が節約されるだけでなく、モデルのパフォーマンスも向上します。これはデータ エンジニアリングの「レバレッジ効果」です。現在のコンピューティング価格 (A100 ～ 2 ドル/時間) では、1 時間のデータ処理作業で 10 時間の非効率なトレーニングを削減でき、20 倍の ROI が得られます。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig05-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-5: データ品質とトレーニング効率" src="../../../images/part1/Yu-Chap01-Fig05-ZH.png" /></a></p>
+<p><em>図 1-5: データ品質とトレーニング効率の関係 — 緑色の曲線 (厳選されたデータ) が最も効率的で、30 ～ 70% の品質範囲で最大の ROI が得られます</em></p>
+<h3 id="134-3">1.3.4 機会: 障壁を下げる 3 つのトレンド<a class="headerlink" href="#134-3" title="Permanent link">&para;</a></h3>
+<p>課題はあるものの、データ エンジニアにとっては今が絶好の参入時期です。 3 つの主要なトレンドにより、大規模モデルのデータ エンジニアリングへの障壁が大幅に下がります。</p>
+<p>1 つ目のトレンドは、オープンソースの高品質データセットの出現です。初期の非公開の商用データとは異なり、近年では高品質のオープンソースの事前トレーニング データセットが数多く登場しています。 HuggingFace の FineWeb は、慎重にクリーニングされた 15T トークンの英語 Web データを提供します。 RedPajama は、LLaMA トレーニング データの完全な複製をオープンソース化しました。 DCLM は、ドメインに最適化されたデータセットを提供します。これらのオープンソース データセットにより、中小規模のチームが事前トレーニング コーパスを構築するコストが大幅に削減され、以前は大企業のみがアクセスできたリソースが手の届くところにできるようになります。</p>
+<p>2 番目のトレンドは、AI ネイティブのデータ ツールの成熟です。従来のビッグ データ ツール (Hadoop、Spark など) は成熟していますが、AI トレーニング シナリオ向けに設計されていません。近年、LLM データ エンジニアリング用に設計された一連のツールが成熟してきました。 Alibaba の Data-Juicer は、すぐに使える数十のクリーニング オペレーターを備えたモジュール式のデータ処理パイプラインを提供します。 Dolma は、事前トレーニング データの最適化のために Allen AI が開発した大規模なテキスト処理ツールキットです。これらのツールを使用すると、データ エンジニアはゼロから構築することなく、巨人の肩の上に立つことができます。</p>
+<p>3 番目のトレンドは、合成データの主流化です。前述したように、Microsoft Phi シリーズの成功は、合成データの巨大な可能性を実証しました。現在、GPT-4 などの強力なモデルを使用して、クロードがトレーニング データを生成することが業界標準になっています。この「強-先行-弱」戦略により、高品質のデータ取得が人間の注釈に完全に依存することがなくなり、データ準備の効率が大幅に向上します。ただし、合成データは新たな課題ももたらします。それは、モデルの崩壊をどのように回避するかということです。データの多様性を確保するにはどうすればよいでしょうか?これらの質問については、後続の章で詳しく説明します。</p>
+<hr />
+<h2 id="14">1.4 よくある誤解と落とし穴ガイド<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>特定の技術的な実践に入る前に、いくつかのよくある誤解を明確にする必要があります。こうした誤解は、良くてもリソースの無駄につながり、最悪の場合はプロジェクトの失敗につながる可能性があります。</p>
+<h3 id="1_1">誤解 1: 「データは多ければ多いほど良い」<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h3>
+<p>これは最も一般的で最も有害な誤解です。プロジェクトを開始するときの多くのチームの最初の反応は、「できるだけ多くのデータをクロールする」ことです。ただし、前述したように、生データの保持率は通常、わずか 5 ～ 20% です。データ量をやみくもに追求すると、クロール、ストレージ、初期処理コストの 80% 以上が無駄になります。さらに悪いことに、後続の品質フィルタリングが十分に厳密でなく、低品質のデータがトレーニング セットに混入した場合、モデルのパフォーマンスに悪影響を及ぼす可能性があります。</p>
+<p>正しいアプローチ: 最初に小規模データを使用して処理パイプライン全体の有効性を検証し、品質基準とフィルタリング戦略を確認してから、大規模なデータ収集に進みます。 「品質が第一、量が二番目」はデータ エンジニアリングの基本原則である必要があります。</p>
+<h3 id="2">誤解 2: 「すべてのデータを一度処理する」<a class="headerlink" href="#2" title="Permanent link">&para;</a></h3>
+<p>データ処理は、1 回限りのタスクではなく、反復的なプロセスです。モデルのトレーニングによりデータの問題が明らかになり (例: 特定の種類の過剰なサンプルが偏りにつながる)、評価結果がデータ フィルタリング戦略の指針となる (例: 特定のドメインのデータを増強する必要がある)、法的コンプライアンス要件が変更される可能性があります (例: 特定のソースからデータを削除する必要がある)。</p>
+<p>したがって、データ処理パイプラインは、再現可能な実行、増分更新、バージョンのロールバックを考慮して設計する必要があります。第 2 章では、データのバージョン管理に DVC、LakeFS などのツールを使用する方法について詳しく説明します。</p>
+<h3 id="3">誤解 3: 「トレーニング前のデータのみに注目する」<a class="headerlink" href="#3" title="Permanent link">&para;</a></h3>
+<p>確かにトレーニング前のデータは LLM の基礎ですが、後続の段階のデータを無視することも同様に危険です。大規模なコーパスで十分に事前トレーニングされた基本モデルは、SFT データの品質が低い場合、平凡な対話モデルを生成する可能性があります。同様に、RLHF 設定データに一貫性のない注釈がある場合、モデルは不安定な動作を示す可能性があります。</p>
+<p>ライフサイクル全体のデータ品質管理も同様に重要です。事前トレーニング、SFT、RLHF、および RAG データには、それぞれ独自の品質基準と評価システムが必要です。</p>
+<h3 id="4">誤解 4: 「オープンソース データはすぐに使用できる」<a class="headerlink" href="#4" title="Permanent link">&para;</a></h3>
+<p>オープンソース データセットは参入障壁を大幅に下げますが、二次レビューなしでオープンソース データを直接使用するのは危険です。オープンソース データセットには、古いデータ (以前にクロールされた、最新の知識が欠けている)、バイアス (不均一なデータ分布)、ノイズ (一部のサンプルが品質基準を満たしていない)、著作権リスク (不明確なライセンス) がある可能性があります。</p>
+<p>正しいアプローチは、オープンソース データを「完成品」ではなく「原材料」として扱うことです。オープンソース データの価値を最大化するには、独自のタスク要件に基づいた二次的なフィルタリング、拡張、およびバランシングが必要です。</p>
+<hr />
+<h2 id="15">1.5 章の概要<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>この章では、LLM 時代のデータ エンジニアリングの中核概念をスケーリング則の観点から体系的に説明しました。私たちはまず、チンチラの最適比率からファイ シリーズの極端な実験まで、「量より質」のパラダイム シフトを調査し、モデルのパフォーマンスにおける高品質データの決定的な役割を実証しました。</p>
+<p>次に、LLM データ ライフサイクルの 4 つの段階 (事前トレーニング、SFT、RLHF、RAG) を導入しました。各ステージには、TB レベルのラベルなしテキストから数万のプリファレンス比較データ ポイントに至るまで、明確に異なるデータ要件があります。データ量は減少しますが、品質要件は増加します。この「ファネル モデル」を理解することが、データ リソースを計画するための基礎となります。</p>
+<p>課題と機会のセクションでは、マルチモーダルな複雑さ、著作権コンプライアンス、コンピューティング コストという 3 つの実際的な問題を分析するとともに、オープンソース データセット、AI ネイティブ ツール、合成データという 3 つのトレンドからの機会も確認しました。</p>
+<p>最後に、4 つのよくある誤解を明確にすることで、量よりも質、1 回限りではなく反復、フルサイクル管理、オープンソース データの二次処理という、データ エンジニアリングの正しい考え方を読者に確立しました。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig06-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 1-6: 知識構造マインド マップ" src="../../../images/part1/Yu-Chap01-Fig06-ZH.png" /></a></p>
+<p><em>図 1-6: 第 1 章 知識構造 — 4 つの主要テーマをカバー: スケーリングの法則、データ ライフサイクル、課題と機会</em></p>
+<hr />
+<h2 id="_3">さらに読む<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p><strong>コアペーパー</strong></p>
+<p><em>神経言語モデルのスケーリング則</em>、Kaplan et al. (2020) は、大規模モデルのリソース割り当てを理解するための基礎的な研究です。この OpenAI の論文では、モデルのスケール、データ量、コンピューティングの間のべき乗則の関係が初めて体系的に明らかにされ、その後の大規模モデル開発に理論的な指針が提供されました。</p>
+<p><em>Training Compute-Optimal Large Language Models</em> (Chinchilla 論文)、Hoffmann et al. DeepMind の (2022) は、業界に広く蔓延している「過剰パラメータ化」問題を指摘し、コンピューティングに最適なモデルとデータの比率に関する推奨事項を提供しました。</p>
+<p><em>必要なのは教科書だけ</em> (Gunasekar 他著) Microsoft Research の (2023) は、Phi シリーズの先駆的な研究であり、高品質の合成データによって小型モデルが大型モデルのパフォーマンスに匹敵することを可能にすることを証明しています。</p>
+<p><strong>オープンソース データセット</strong></p>
+<p>PenedoらによってリリースされたFineWeb HuggingFace のオープンソースの大規模で高品質な英語 Web データセットで、約 15T のトークンが含まれており、事前トレーニングのベース コーパスとして適しています。 Together AI によってリリースされた RedPajama は、LLaMA トレーニング データのオープンソースの複製であり、LLaMA トレーニング プロセスを再現したいチームにとって貴重です。</p>
+<hr />
+<h2 id="_4">次の章のプレビュー<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>次の章 <em>データ インフラストラクチャの選択</em> では、概念レベルからエンジニアリング レベルに移行します。適切なストレージ ソリューション (S3 対 MinIO)、コンピューティング フレームワーク (Spark 対 Ray)、データ形式 (Parquet 対 JSONL 対 WebDataset)、およびバージョン管理ツール (DVC 対 LakeFS) を選択する方法を学びます。</p>
+<p>この質問を次の章に取り入れてください。リソースが限られている中で、スムーズに拡張しながら現在のニーズをサポートできるデータ インフラストラクチャをどのように設計しますか?</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

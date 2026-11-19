@@ -1,0 +1,2092 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1800"
+   height="1050"
+   viewBox="0 0 1800 1050"
+   role="img"
+   aria-labelledby="title desc"
+   version="1.1"
+   id="svg205"
+   sodipodi:docname="ch36_08_deletion_request_full_path_cleanup.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview205"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.81428571"
+     inkscape:cx="1059.8246"
+     inkscape:cy="490.61404"
+     inkscape:window-width="1920"
+     inkscape:window-height="1111"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg205" />
+  <title
+     id="title">End-to-End Data Deletion Propagation Flow</title>
+  <desc
+     id="desc">Eight vertical stages show request entry, identity validation, lineage resolution, task distribution, deletion execution, verification, audit logging, and user notification.</desc>
+  <defs
+     id="defs3">
+    <marker
+       id="blueArrow"
+       markerWidth="14"
+       markerHeight="14"
+       refX="12"
+       refY="7"
+       orient="auto"
+       markerUnits="userSpaceOnUse">
+      <path
+         d="M0 0L14 7L0 14Z"
+         fill="#247daf"
+         id="path1" />
+    </marker>
+    <marker
+       id="greenArrow"
+       markerWidth="14"
+       markerHeight="14"
+       refX="12"
+       refY="7"
+       orient="auto"
+       markerUnits="userSpaceOnUse">
+      <path
+         d="M0 0L14 7L0 14Z"
+         fill="#32a867"
+         id="path2" />
+    </marker>
+    <marker
+       id="redArrow"
+       markerWidth="14"
+       markerHeight="14"
+       refX="12"
+       refY="7"
+       orient="auto"
+       markerUnits="userSpaceOnUse">
+      <path
+         d="M0 0L14 7L0 14Z"
+         fill="#d93838"
+         id="path3" />
+    </marker>
+  </defs>
+  <rect
+     width="1800"
+     height="1050"
+     fill="#ffffff"
+     id="rect3" />
+  <text
+     x="900"
+     y="38"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="23"
+     fill="#17364d"
+     id="text3">Enterprise-grade Data Governance</text>
+  <text
+     x="900"
+     y="86"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="39"
+     font-weight="700"
+     fill="#102f48"
+     id="text4">End-to-End Data Deletion Propagation Flow (DSAR / Right to Erasure)</text>
+  <!-- Vertical stage bands: preserve the original infographic layout -->
+  <g
+     id="g11">
+    <rect
+       x="14"
+       y="126"
+       width="145"
+       height="744"
+       rx="14"
+       fill="#eef4f8"
+       id="rect4" />
+    <rect
+       x="310"
+       y="126"
+       width="146"
+       height="744"
+       rx="14"
+       fill="#eef4f8"
+       id="rect5" />
+    <rect
+       x="470"
+       y="126"
+       width="280"
+       height="744"
+       rx="14"
+       fill="#eaf2f7"
+       id="rect6" />
+    <rect
+       x="765"
+       y="126"
+       width="270"
+       height="744"
+       rx="14"
+       fill="#eaf2f7"
+       id="rect7" />
+    <rect
+       x="1048"
+       y="126"
+       width="220"
+       height="744"
+       rx="14"
+       fill="#edf8ef"
+       id="rect8" />
+    <rect
+       x="1281"
+       y="126"
+       width="135"
+       height="744"
+       rx="14"
+       fill="#eef4f8"
+       id="rect9" />
+    <rect
+       x="1429"
+       y="126"
+       width="164"
+       height="744"
+       rx="14"
+       fill="#eaf2f7"
+       id="rect10" />
+    <rect
+       x="1606"
+       y="126"
+       width="180"
+       height="744"
+       rx="14"
+       fill="#eef4f8"
+       id="rect11" />
+  </g>
+  <!-- Stage titles -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     fill="#17202a"
+     font-weight="700"
+     id="g29">
+    <text
+       x="86"
+       y="163"
+       font-size="19"
+       id="text12"><tspan
+         x="86"
+         id="tspan11">Stage 1</tspan><tspan
+         x="86"
+         dy="23"
+         id="tspan12">Request Entry</tspan></text>
+    <text
+       x="383"
+       y="163"
+       font-size="19"
+       id="text15"><tspan
+         x="383"
+         id="tspan13">Stage 2</tspan><tspan
+         x="383"
+         dy="23"
+         id="tspan14">Identity &amp;</tspan><tspan
+         x="383"
+         dy="21"
+         id="tspan15">Validation</tspan></text>
+    <text
+       x="610"
+       y="163"
+       font-size="19"
+       id="text18"><tspan
+         x="610"
+         id="tspan16">Stage 3</tspan><tspan
+         x="610"
+         dy="23"
+         id="tspan17">Data Lineage Resolution</tspan><tspan
+         x="610"
+         dy="21"
+         id="tspan18">Core</tspan></text>
+    <text
+       x="900"
+       y="163"
+       font-size="19"
+       id="text20"><tspan
+         x="900"
+         id="tspan19">Stage 4</tspan><tspan
+         x="900"
+         dy="23"
+         id="tspan20">Task Distribution</tspan></text>
+    <text
+       x="1158"
+       y="163"
+       font-size="19"
+       id="text22"><tspan
+         x="1158"
+         id="tspan21">Stage 5</tspan><tspan
+         x="1158"
+         dy="23"
+         id="tspan22">Execution</tspan></text>
+    <text
+       x="1348"
+       y="163"
+       font-size="18"
+       id="text24"><tspan
+         x="1348"
+         id="tspan23">Stage 6</tspan><tspan
+         x="1348"
+         dy="22"
+         id="tspan24">Verification</tspan></text>
+    <text
+       x="1511"
+       y="163"
+       font-size="18"
+       id="text26"><tspan
+         x="1511"
+         id="tspan25">Stage 7</tspan><tspan
+         x="1511"
+         dy="22"
+         id="tspan26">Audit Logging</tspan></text>
+    <text
+       x="1696"
+       y="163"
+       font-size="18"
+       id="text29"><tspan
+         x="1696"
+         id="tspan27">Stage 8</tspan><tspan
+         x="1696"
+         dy="22"
+         id="tspan28">User</tspan><tspan
+         x="1696"
+         dy="21"
+         id="tspan29">Notification</tspan></text>
+  </g>
+  <!-- Stage 1: request channels -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g37">
+    <rect
+       x="54"
+       y="225"
+       width="65"
+       height="89"
+       rx="7"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect29" />
+    <rect
+       x="60"
+       y="237"
+       width="53"
+       height="60"
+       fill="#ffffff"
+       id="rect30" />
+    <circle
+       cx="86.5"
+       cy="305"
+       r="4"
+       fill="#185d87"
+       id="circle30" />
+    <text
+       x="86"
+       y="335"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text30">App</text>
+    <rect
+       x="38"
+       y="360"
+       width="96"
+       height="70"
+       rx="6"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect31" />
+    <line
+       x1="38"
+       y1="378"
+       x2="134"
+       y2="378"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line31" />
+    <rect
+       x="49"
+       y="389"
+       width="32"
+       height="27"
+       fill="#9fc8dc"
+       id="rect32" />
+    <line
+       x1="90"
+       y1="391"
+       x2="123"
+       y2="391"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line32" />
+    <line
+       x1="90"
+       y1="403"
+       x2="123"
+       y2="403"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line33" />
+    <text
+       x="86"
+       y="453"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text33">Web</text>
+    <path
+       d="M38 522 C38 497 58 481 80 487 C91 463 128 469 132 498 C154 500 158 536 134 542 H61 C47 542 38 534 38 522Z"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path33" />
+    <circle
+       cx="88"
+       cy="518"
+       r="18"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="5"
+       id="circle33" />
+    <path
+       d="M88 490V499M88 537V546M60 518H69M107 518H116M68 498L75 505M101 531L108 538M108 498L101 505M75 531L68 538"
+       stroke="#185d87"
+       stroke-width="4"
+       id="path34" />
+    <text
+       x="86"
+       y="572"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text34">API</text>
+    <rect
+       x="30"
+       y="604"
+       width="112"
+       height="44"
+       rx="8"
+       fill="#d93838"
+       id="rect34" />
+    <text
+       x="86"
+       y="632"
+       font-size="17"
+       font-weight="700"
+       fill="#ffffff"
+       id="text35">delete</text>
+    <rect
+       x="30"
+       y="661"
+       width="112"
+       height="44"
+       rx="8"
+       fill="#247daf"
+       id="rect35" />
+    <text
+       x="86"
+       y="689"
+       font-size="17"
+       font-weight="700"
+       fill="#ffffff"
+       id="text36">correct</text>
+    <rect
+       x="30"
+       y="718"
+       width="112"
+       height="44"
+       rx="8"
+       fill="#247daf"
+       id="rect36" />
+    <text
+       x="86"
+       y="746"
+       font-size="17"
+       font-weight="700"
+       fill="#ffffff"
+       id="text37">access</text>
+  </g>
+  <!-- Privacy request system between stage 1 and 2 -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g42">
+    <path
+       d="M159 472 H178"
+       stroke="#247daf"
+       stroke-width="8"
+       marker-end="url(#blueArrow)"
+       id="path37" />
+    <rect
+       x="188"
+       y="420"
+       width="88"
+       height="105"
+       rx="6"
+       fill="#247daf"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect37" />
+    <rect
+       x="199"
+       y="435"
+       width="66"
+       height="20"
+       fill="#dcecf4"
+       id="rect38" />
+    <rect
+       x="199"
+       y="463"
+       width="66"
+       height="20"
+       fill="#dcecf4"
+       id="rect39" />
+    <rect
+       x="199"
+       y="491"
+       width="66"
+       height="20"
+       fill="#dcecf4"
+       id="rect40" />
+    <path
+       d="M246 482 L259 489 L259 505 C259 517 253 524 246 528 C239 524 233 517 233 505 V489Z"
+       fill="#32a867"
+       stroke="#ffffff"
+       stroke-width="2"
+       id="path40" />
+    <path
+       d="M239 504L245 510L254 498"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="path41" />
+    <text
+       x="232"
+       y="558"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text42"><tspan
+         x="232"
+         id="tspan41">Privacy Request</tspan><tspan
+         x="232"
+         dy="19"
+         id="tspan42">System</tspan></text>
+    <path
+       d="M276 472 H303"
+       stroke="#247daf"
+       stroke-width="8"
+       marker-end="url(#blueArrow)"
+       id="path42" />
+  </g>
+  <!-- Stage 2: identity and request validation -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g49">
+    <path
+       d="M346 312 C346 287 366 270 388 275 C398 250 430 255 435 282"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="4"
+       id="path43" />
+    <circle
+       cx="384"
+       cy="324"
+       r="25"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="5"
+       id="circle43" />
+    <path
+       d="M350 374 C354 342 414 342 418 374"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="5"
+       id="path44" />
+    <path
+       d="M340 273 H327 V302 M428 273 H441 V302 M340 382 H327 V353 M428 382 H441 V353"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="4"
+       id="path45" />
+    <text
+       x="383"
+       y="408"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text45">User Authentication</text>
+    <rect
+       x="337"
+       y="444"
+       width="92"
+       height="68"
+       rx="5"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect45" />
+    <line
+       x1="337"
+       y1="461"
+       x2="429"
+       y2="461"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line45" />
+    <circle
+       cx="407"
+       cy="493"
+       r="24"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       id="circle45" />
+    <line
+       x1="423"
+       y1="511"
+       x2="439"
+       y2="527"
+       stroke="#247daf"
+       stroke-width="7"
+       id="line46" />
+    <text
+       x="383"
+       y="555"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text47"><tspan
+         x="383"
+         id="tspan46">Request</tspan><tspan
+         x="383"
+         dy="19"
+         id="tspan47">Validation</tspan></text>
+    <rect
+       x="328"
+       y="598"
+       width="110"
+       height="35"
+       fill="#ffffff"
+       stroke="#185d87"
+       stroke-width="2"
+       stroke-dasharray="5 4"
+       id="rect47" />
+    <text
+       x="425.42725"
+       y="560.84814"
+       font-size="9.93455px"
+       font-weight="700"
+       fill="#185d87"
+       id="text48"
+       transform="scale(0.90313715,1.1072515)"
+       style="stroke-width:0.999998">TRACE_ID: DSAR-12345</text>
+    <text
+       x="411.11823"
+       y="614.36426"
+       font-size="14.8937px"
+       font-weight="700"
+       fill="#17202a"
+       id="text49"
+       transform="scale(0.9308549,1.0742813)"
+       style="stroke-width:1"><tspan
+         x="411.11823"
+         id="tspan48"
+         style="stroke-width:1">Generate request ID</tspan><tspan
+         x="411.11823"
+         dy="17.686243"
+         id="tspan49"
+         style="stroke-width:1">and validated scope</tspan></text>
+  </g>
+  <!-- Main transition to lineage core -->
+  <path
+     d="M456 472 H468"
+     stroke="#247daf"
+     stroke-width="8"
+     marker-end="url(#blueArrow)"
+     id="path49" />
+  <!-- Stage 3: lineage resolution core -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g91">
+    <!-- source datasets -->
+    <ellipse
+       cx="523"
+       cy="275"
+       rx="34"
+       ry="13"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse49" />
+    <path
+       d="M489 275 V340 C489 357 557 357 557 340 V275"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path50" />
+    <ellipse
+       cx="523"
+       cy="340"
+       rx="34"
+       ry="13"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse50" />
+    <text
+       x="523"
+       y="385"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text51"><tspan
+         x="523"
+         id="tspan50">Source</tspan><tspan
+         x="523"
+         dy="19"
+         id="tspan51">Datasets</tspan></text>
+    <!-- derived graph -->
+    <circle
+       cx="683"
+       cy="271"
+       r="11"
+       fill="#32a867"
+       id="circle51" />
+    <circle
+       cx="650"
+       cy="309"
+       r="11"
+       fill="#32a867"
+       id="circle52" />
+    <circle
+       cx="716"
+       cy="309"
+       r="11"
+       fill="#32a867"
+       id="circle53" />
+    <circle
+       cx="683"
+       cy="348"
+       r="11"
+       fill="#32a867"
+       id="circle54" />
+    <ellipse
+       cx="683"
+       cy="240"
+       rx="22"
+       ry="9"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse54" />
+    <path
+       d="M661 240V271C661 281 705 281 705 271V240"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path54" />
+    <ellipse
+       cx="650"
+       cy="338"
+       rx="22"
+       ry="9"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse55" />
+    <path
+       d="M628 338V369C628 379 672 379 672 369V338"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path55" />
+    <ellipse
+       cx="716"
+       cy="338"
+       rx="22"
+       ry="9"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse56" />
+    <path
+       d="M694 338V369C694 379 738 379 738 369V338"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path56" />
+    <path
+       d="M683 280V337M674 279L658 300M692 279L708 300M660 318L676 341M706 318L690 341"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path57" />
+    <text
+       x="683"
+       y="407"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text58"><tspan
+         x="683"
+         id="tspan57">Derived Datasets</tspan><tspan
+         x="683"
+         dy="19"
+         id="tspan58">Features, Labels, Models</tspan></text>
+    <!-- metadata hub -->
+    <circle
+       cx="594"
+       cy="514"
+       r="35"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="4"
+       id="circle58" />
+    <circle
+       cx="594"
+       cy="514"
+       r="12"
+       fill="#185d87"
+       id="circle59" />
+    <circle
+       cx="522"
+       cy="490"
+       r="11"
+       fill="#32a867"
+       id="circle60" />
+    <circle
+       cx="535"
+       cy="558"
+       r="11"
+       fill="#32a867"
+       id="circle61" />
+    <circle
+       cx="653"
+       cy="558"
+       r="11"
+       fill="#32a867"
+       id="circle62" />
+    <circle
+       cx="666"
+       cy="490"
+       r="11"
+       fill="#32a867"
+       id="circle63" />
+    <line
+       x1="559"
+       y1="503"
+       x2="533"
+       y2="494"
+       stroke="#185d87"
+       stroke-width="4"
+       id="line63" />
+    <line
+       x1="566"
+       y1="539"
+       x2="544"
+       y2="553"
+       stroke="#185d87"
+       stroke-width="4"
+       id="line64" />
+    <line
+       x1="622"
+       y1="539"
+       x2="644"
+       y2="553"
+       stroke="#185d87"
+       stroke-width="4"
+       id="line65" />
+    <line
+       x1="629"
+       y1="503"
+       x2="655"
+       y2="494"
+       stroke="#185d87"
+       stroke-width="4"
+       id="line66" />
+    <text
+       x="594"
+       y="598"
+       font-size="17"
+       font-weight="700"
+       fill="#17202a"
+       id="text66">Metadata Center</text>
+    <!-- logs and external data -->
+    <rect
+       x="663"
+       y="468"
+       width="53"
+       height="72"
+       fill="#ffffff"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect66" />
+    <line
+       x1="673"
+       y1="488"
+       x2="706"
+       y2="488"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line67" />
+    <line
+       x1="673"
+       y1="503"
+       x2="706"
+       y2="503"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line68" />
+    <line
+       x1="673"
+       y1="518"
+       x2="700"
+       y2="518"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line69" />
+    <text
+       x="689"
+       y="565"
+       font-size="15"
+       font-weight="700"
+       fill="#17202a"
+       id="text70"><tspan
+         x="689"
+         id="tspan69">Logs &amp;</tspan><tspan
+         x="689"
+         dy="18"
+         id="tspan70">Caches</tspan></text>
+    <rect
+       x="661"
+       y="627"
+       width="59"
+       height="55"
+       fill="#ffffff"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect70" />
+    <path
+       d="m 680.92136,681.30088 h 39 v -28 m 0,0 -13,13 m 13,-13 -13,-13"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="4"
+       id="path70" />
+    <text
+       x="690"
+       y="714"
+       font-size="15"
+       font-weight="700"
+       fill="#17202a"
+       id="text72"><tspan
+         x="690"
+         id="tspan71">External</tspan><tspan
+         x="690"
+         dy="18"
+         id="tspan72">Data</tspan></text>
+    <!-- core lineage arrows -->
+    <path
+       d="m 579.52632,478.92134 -31,-69.27421"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="4"
+       marker-end="url(#blueArrow)"
+       id="path72" />
+    <path
+       d="m 613.97372,479.9306 37.63152,-49.07736"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="4"
+       marker-end="url(#blueArrow)"
+       id="path73" />
+    <path
+       d="M627 514 H655"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="4"
+       marker-end="url(#blueArrow)"
+       id="path74" />
+    <path
+       d="M620 544 L661 633"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="4"
+       marker-end="url(#blueArrow)"
+       id="path75" />
+    <!-- lineage graph at bottom -->
+    <g
+       stroke="#56788d"
+       stroke-width="2"
+       fill="none"
+       id="g84">
+      <line
+         x1="485.68542"
+         y1="724.94843"
+         x2="521.14423"
+         y2="698.04578"
+         id="line75"
+         style="stroke-width:2" />
+      <line
+         x1="521.14423"
+         y1="698.04578"
+         x2="558.42151"
+         y2="730.32898"
+         id="line76"
+         style="stroke-width:2" />
+      <line
+         x1="558.42151"
+         y1="730.32898"
+         x2="597.51709"
+         y2="694.45874"
+         id="line77"
+         style="stroke-width:2" />
+      <line
+         x1="597.51709"
+         y1="694.45874"
+         x2="641.15875"
+         y2="725.84521"
+         id="line78"
+         style="stroke-width:2" />
+      <line
+         x1="521.14423"
+         y1="698.04578"
+         x2="597.51709"
+         y2="694.45874"
+         id="line79"
+         style="stroke-width:2" />
+      <line
+         x1="485.68542"
+         y1="724.94843"
+         x2="558.42151"
+         y2="730.32898"
+         id="line80"
+         style="stroke-width:2" />
+      <line
+         x1="558.42151"
+         y1="730.32898"
+         x2="641.15875"
+         y2="725.84521"
+         id="line81"
+         style="stroke-width:2" />
+      <line
+         x1="521.14423"
+         y1="698.04578"
+         x2="511.14304"
+         y2="764.40564"
+         id="line82"
+         style="stroke-width:2" />
+      <line
+         x1="558.42151"
+         y1="730.32898"
+         x2="565.69507"
+         y2="777.85699"
+         id="line83"
+         style="stroke-width:2" />
+      <line
+         x1="597.51709"
+         y1="694.45874"
+         x2="620.24713"
+         y2="767.09595"
+         id="line84"
+         style="stroke-width:2" />
+    </g>
+    <ellipse
+       cx="489.98367"
+       cy="723.72034"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="2"
+       id="circle84"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <ellipse
+       cx="521.14423"
+       cy="698.04578"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="2"
+       id="circle85"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <ellipse
+       cx="558.42151"
+       cy="730.32898"
+       fill="#d94848"
+       id="circle86"
+       style="stroke-width:0.999997"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <ellipse
+       cx="597.51709"
+       cy="694.45874"
+       fill="#f0b64d"
+       id="circle87"
+       style="stroke-width:0.999997"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <circle
+       cx="643.5614"
+       cy="735.4035"
+       r="10"
+       fill="#d94848"
+       id="circle88" />
+    <circle
+       cx="509.1579"
+       cy="774.7193"
+       r="10"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="2"
+       id="circle89" />
+    <ellipse
+       cx="565.69507"
+       cy="777.85699"
+       fill="#d94848"
+       id="circle90"
+       style="stroke-width:0.999997"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <ellipse
+       cx="620.24713"
+       cy="767.09595"
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="2"
+       id="circle91"
+       rx="9.0920086"
+       ry="8.9675512" />
+    <text
+       x="630.63049"
+       y="790.16803"
+       font-size="20.8326px"
+       font-weight="700"
+       fill="#17202a"
+       id="text91"
+       transform="scale(0.96317698,1.0382308)"
+       style="stroke-width:1">Visualize as lineage graph</text>
+  </g>
+  <!-- Transition to task distributor -->
+  <path
+     d="M750 472 H763"
+     stroke="#247daf"
+     stroke-width="8"
+     marker-end="url(#blueArrow)"
+     id="path91" />
+  <!-- Stage 4: central distributor and target systems -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g116">
+    <circle
+       cx="826"
+       cy="500"
+       r="42"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="4"
+       id="circle92" />
+    <ellipse
+       cx="826"
+       cy="500"
+       rx="19"
+       ry="42"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse92" />
+    <ellipse
+       cx="826"
+       cy="500"
+       rx="42"
+       ry="17"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="3"
+       id="ellipse93" />
+    <path
+       d="M826 444V427M826 556V573M770 500H753M882 500H899M787 461L775 449M865 539L877 551M865 461L877 449M787 539L775 551"
+       stroke="#185d87"
+       stroke-width="4"
+       id="path93" />
+    <circle
+       cx="826"
+       cy="500"
+       r="8"
+       fill="#185d87"
+       id="circle93" />
+    <!-- target systems -->
+    <g
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="g98">
+      <ellipse
+         cx="954"
+         cy="232"
+         rx="27"
+         ry="10"
+         id="ellipse94" />
+      <path
+         d="M927 232V272C927 284 981 284 981 272V232"
+         id="path94" />
+      <ellipse
+         cx="954"
+         cy="272"
+         rx="27"
+         ry="10"
+         id="ellipse95" />
+      <rect
+         x="926"
+         y="326"
+         width="56"
+         height="61"
+         rx="4"
+         id="rect95" />
+      <rect
+         x="926"
+         y="431"
+         width="56"
+         height="54"
+         rx="5"
+         id="rect96" />
+      <rect
+         x="925"
+         y="539"
+         width="58"
+         height="42"
+         rx="4"
+         id="rect97" />
+      <rect
+         x="929"
+         y="641"
+         width="50"
+         height="56"
+         rx="4"
+         fill="#ffffff"
+         id="rect98" />
+    </g>
+    <line
+       x1="936"
+       y1="342"
+       x2="972"
+       y2="342"
+       stroke="#ffffff"
+       stroke-width="4"
+       id="line98" />
+    <line
+       x1="936"
+       y1="355"
+       x2="972"
+       y2="355"
+       stroke="#ffffff"
+       stroke-width="4"
+       id="line99" />
+    <line
+       x1="936"
+       y1="368"
+       x2="966"
+       y2="368"
+       stroke="#ffffff"
+       stroke-width="4"
+       id="line100" />
+    <text
+       x="954"
+       y="306"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text100">Data Warehouse</text>
+    <text
+       x="954"
+       y="412"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text101">Feature Store</text>
+    <text
+       x="954"
+       y="510"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text102">ML Systems</text>
+    <text
+       x="954"
+       y="606"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text103">Cache Systems</text>
+    <text
+       x="954"
+       y="722"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text104">Logging Systems</text>
+    <text
+       x="954"
+       y="848"
+       font-size="14"
+       font-weight="700"
+       fill="#17202a"
+       id="text105">Third-Party Systems</text>
+    <text
+       x="954"
+       y="464"
+       font-size="15"
+       font-weight="700"
+       fill="#ffffff"
+       id="text106">ML</text>
+    <text
+       x="954"
+       y="566"
+       font-size="14"
+       font-weight="700"
+       fill="#ffffff"
+       id="text107">CACHE</text>
+    <line
+       x1="938"
+       y1="657"
+       x2="970"
+       y2="657"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line107" />
+    <line
+       x1="938"
+       y1="670"
+       x2="970"
+       y2="670"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line108" />
+    <line
+       x1="938"
+       y1="683"
+       x2="966"
+       y2="683"
+       stroke="#247daf"
+       stroke-width="3"
+       id="line109" />
+    <path
+       d="M926 787 C926 770 941 760 956 765 C965 747 991 752 993 773 C1010 775 1012 800 994 804 H943 C932 804 926 797 926 787Z"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path109" />
+    <path
+       d="M951 774 V797 M941 786 L951 797 L961 786"
+       fill="none"
+       stroke="#32a867"
+       stroke-width="3"
+       id="path110" />
+    <!-- fan-out arrows -->
+    <path
+       d="M852 466 C872 380 891 274 919 252"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path111" />
+    <path
+       d="M862 480 C887 421 900 366 918 356"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path112" />
+    <path
+       d="M868 495 C891 473 901 458 918 458"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path113" />
+    <path
+       d="M868 510 C892 529 901 560 917 560"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path114" />
+    <path
+       d="M858 526 C883 585 900 669 921 669"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path115" />
+    <path
+       d="M843 536 C860 680 889 785 918 785"
+       fill="none"
+       stroke="#247daf"
+       stroke-width="5"
+       marker-end="url(#blueArrow)"
+       id="path116" />
+  </g>
+  <!-- Stage 5: parallel execution tracks -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g173">
+    <g
+       stroke="#32a867"
+       stroke-width="5"
+       marker-end="url(#greenArrow)"
+       fill="none"
+       id="g122">
+      <path
+         d="M981 252 H1070"
+         id="path117" />
+      <path
+         d="M982 356 H1070"
+         id="path118" />
+      <path
+         d="M982 458 H1070"
+         id="path119" />
+      <path
+         d="M983 560 H1070"
+         id="path120" />
+      <path
+         d="M979 669 H1070"
+         id="path121" />
+      <path
+         d="m 1006.2807,787.45614 h 76"
+         id="path122" />
+    </g>
+    <!-- repeated delete / cleanup / impact pattern -->
+    <g
+       fill="#9fc8dc"
+       stroke="#185d87"
+       stroke-width="3"
+       id="g128">
+      <ellipse
+         cx="1097"
+         cy="240"
+         rx="19"
+         ry="7"
+         id="ellipse122" />
+      <path
+         d="M1078 240V268C1078 276 1116 276 1116 268V240"
+         id="path123" />
+      <ellipse
+         cx="1097"
+         cy="344"
+         rx="19"
+         ry="7"
+         id="ellipse123" />
+      <path
+         d="M1078 344V372C1078 380 1116 380 1116 372V344"
+         id="path124" />
+      <ellipse
+         cx="1097"
+         cy="446"
+         rx="19"
+         ry="7"
+         id="ellipse124" />
+      <path
+         d="M1078 446V474C1078 482 1116 482 1116 474V446"
+         id="path125" />
+      <ellipse
+         cx="1097"
+         cy="548"
+         rx="19"
+         ry="7"
+         id="ellipse125" />
+      <path
+         d="M1078 548V576C1078 584 1116 584 1116 576V548"
+         id="path126" />
+      <ellipse
+         cx="1097"
+         cy="657"
+         rx="19"
+         ry="7"
+         id="ellipse126" />
+      <path
+         d="M1078 657V685C1078 693 1116 693 1116 685V657"
+         id="path127" />
+      <ellipse
+         cx="1097"
+         cy="773"
+         rx="19"
+         ry="7"
+         id="ellipse127" />
+      <path
+         d="M1078 773V801C1078 809 1116 809 1116 801V773"
+         id="path128" />
+    </g>
+    <g
+       stroke="#d93838"
+       stroke-width="5"
+       id="g134">
+      <path
+         d="M1080 234L1114 274M1114 234L1080 274"
+         id="path129" />
+      <path
+         d="M1080 338L1114 378M1114 338L1080 378"
+         id="path130" />
+      <path
+         d="M1080 440L1114 480M1114 440L1080 480"
+         id="path131" />
+      <path
+         d="M1080 542L1114 582M1114 542L1080 582"
+         id="path132" />
+      <path
+         d="M1080 651L1114 691M1114 651L1080 691"
+         id="path133" />
+      <path
+         d="M1080 767L1114 807M1114 767L1080 807"
+         id="path134" />
+    </g>
+    <g
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="g139">
+      <circle
+         cx="1158"
+         cy="254"
+         r="20"
+         id="circle134" />
+      <circle
+         cx="1158"
+         cy="358"
+         r="20"
+         id="circle135" />
+      <circle
+         cx="1158"
+         cy="460"
+         r="20"
+         id="circle136" />
+      <circle
+         cx="1158"
+         cy="562"
+         r="20"
+         id="circle137" />
+      <circle
+         cx="1158"
+         cy="671"
+         r="20"
+         id="circle138" />
+      <circle
+         cx="1158"
+         cy="787"
+         r="20"
+         id="circle139" />
+    </g>
+    <g
+       stroke="#185d87"
+       stroke-width="4"
+       id="g144">
+      <path
+         d="M1146 254H1170M1158 242V266"
+         id="path139" />
+      <path
+         d="M1146 358H1170M1158 346V370"
+         id="path140" />
+      <path
+         d="M1146 460H1170M1158 448V472"
+         id="path141" />
+      <path
+         d="M1146 562H1170M1158 550V574"
+         id="path142" />
+      <path
+         d="M1146 671H1170M1158 659V683"
+         id="path143" />
+      <path
+         d="M1146 787H1170M1158 775V799"
+         id="path144" />
+    </g>
+    <g
+       fill="#f3c768"
+       stroke="#185d87"
+       stroke-width="3"
+       id="g150">
+      <path
+         d="M1201 237L1235 254L1201 271Z"
+         id="path145" />
+      <path
+         d="M1201 341L1235 358L1201 375Z"
+         id="path146" />
+      <path
+         d="M1201 443L1235 460L1201 477Z"
+         id="path147" />
+      <path
+         d="M1201 545L1235 562L1201 579Z"
+         id="path148" />
+      <path
+         d="M1201 654L1235 671L1201 688Z"
+         id="path149" />
+      <path
+         d="M1201 770L1235 787L1201 804Z"
+         id="path150" />
+    </g>
+    <g
+       font-size="12"
+       font-weight="700"
+       fill="#17202a"
+       id="g167">
+      <text
+         x="1097"
+         y="298"
+         id="text150">Deletion</text>
+      <text
+         x="1158"
+         y="298"
+         id="text151">Cleanup</text>
+      <text
+         x="1218"
+         y="298"
+         id="text152">Impact</text>
+      <text
+         x="1097"
+         y="402"
+         id="text153">Deletion</text>
+      <text
+         x="1158"
+         y="402"
+         id="text154">Cleanup</text>
+      <text
+         x="1218"
+         y="402"
+         id="text155">Impact</text>
+      <text
+         x="1097"
+         y="504"
+         id="text156">Deletion</text>
+      <text
+         x="1158"
+         y="504"
+         id="text157">Cleanup</text>
+      <text
+         x="1218"
+         y="504"
+         id="text158">Impact</text>
+      <text
+         x="1097"
+         y="606"
+         id="text159">Deletion</text>
+      <text
+         x="1158"
+         y="606"
+         id="text160">Cleanup</text>
+      <text
+         x="1218"
+         y="606"
+         id="text161">Impact</text>
+      <text
+         x="1097"
+         y="715"
+         id="text162">Deletion</text>
+      <text
+         x="1158"
+         y="715"
+         id="text163">Cleanup</text>
+      <text
+         x="1218"
+         y="715"
+         id="text164">Impact</text>
+      <text
+         x="1097"
+         y="831"
+         id="text165">Deletion</text>
+      <text
+         x="1158"
+         y="831"
+         id="text166">Cleanup</text>
+      <text
+         x="1218"
+         y="831"
+         id="text167">Impact</text>
+    </g>
+    <!-- convergence -->
+    <g
+       stroke="#32a867"
+       stroke-width="5"
+       fill="none"
+       marker-end="url(#greenArrow)"
+       id="g172">
+      <path
+         d="M1236 254 C1266 254 1266 394 1295 425"
+         id="path167" />
+      <path
+         d="M1236 358 C1263 358 1268 426 1295 455"
+         id="path168" />
+      <path
+         d="M1236 460 C1260 460 1268 476 1295 485"
+         id="path169" />
+      <path
+         d="M1236 562 C1260 562 1268 534 1295 515"
+         id="path170" />
+      <path
+         d="M1236 671 C1264 671 1268 578 1295 545"
+         id="path171" />
+      <path
+         d="M1236 787 C1268 787 1268 624 1295 575"
+         id="path172" />
+    </g>
+  </g>
+  <!-- Stage 6 verification -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g179">
+    <rect
+       x="1299"
+       y="396"
+       width="98"
+       height="103"
+       rx="6"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect173" />
+    <path
+       d="M1318 425L1327 434L1342 417M1318 451L1327 460L1342 443"
+       fill="none"
+       stroke="#32a867"
+       stroke-width="4"
+       id="path173" />
+    <line
+       x1="1350"
+       y1="428"
+       x2="1382"
+       y2="428"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line173" />
+    <line
+       x1="1350"
+       y1="454"
+       x2="1382"
+       y2="454"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line174" />
+    <circle
+       cx="1380"
+       cy="486"
+       r="22"
+       fill="#32a867"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="circle174" />
+    <path
+       d="M1369 486L1378 495L1394 476"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="5"
+       id="path174" />
+    <text
+       x="1348"
+       y="533"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text175"><tspan
+         x="1348"
+         id="tspan174">Aggregate</tspan><tspan
+         x="1348"
+         dy="18"
+         id="tspan175">Results</tspan></text>
+    <rect
+       x="1305"
+       y="572"
+       width="86"
+       height="65"
+       fill="#ffffff"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect175" />
+    <path
+       d="M1317 618L1335 596L1350 614L1378 588"
+       fill="none"
+       stroke="#32a867"
+       stroke-width="4"
+       id="path175" />
+    <text
+       x="1348"
+       y="667"
+       font-size="15"
+       font-weight="700"
+       fill="#17202a"
+       id="text177"><tspan
+         x="1348"
+         id="tspan176">Check Completion</tspan><tspan
+         x="1348"
+         dy="18"
+         id="tspan177">Status</tspan></text>
+    <path
+       d="M1348 714L1384 780H1312Z"
+       fill="#d94848"
+       stroke="#a72525"
+       stroke-width="3"
+       id="path177" />
+    <text
+       x="1348"
+       y="760"
+       font-size="34"
+       font-weight="700"
+       fill="#ffffff"
+       id="text178">!</text>
+    <text
+       x="1348"
+       y="813"
+       font-size="15"
+       font-weight="700"
+       fill="#17202a"
+       id="text179">Flag Failures</text>
+  </g>
+  <path
+     d="M1416 472 H1427"
+     stroke="#247daf"
+     stroke-width="8"
+     marker-end="url(#blueArrow)"
+     id="path179" />
+  <!-- Stage 7 audit logging -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g188">
+    <rect
+       x="1458"
+       y="318"
+       width="106"
+       height="122"
+       rx="8"
+       fill="#247daf"
+       stroke="#185d87"
+       stroke-width="3"
+       id="rect179" />
+    <rect
+       x="1476"
+       y="337"
+       width="70"
+       height="82"
+       fill="#dcecf4"
+       id="rect180" />
+    <circle
+       cx="1490"
+       cy="357"
+       r="4"
+       fill="#32a867"
+       id="circle180" />
+    <line
+       x1="1500"
+       y1="357"
+       x2="1536"
+       y2="357"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line180" />
+    <circle
+       cx="1490"
+       cy="378"
+       r="4"
+       fill="#32a867"
+       id="circle181" />
+    <line
+       x1="1500"
+       y1="378"
+       x2="1536"
+       y2="378"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line181" />
+    <circle
+       cx="1490"
+       cy="399"
+       r="4"
+       fill="#32a867"
+       id="circle182" />
+    <line
+       x1="1500"
+       y1="399"
+       x2="1536"
+       y2="399"
+       stroke="#185d87"
+       stroke-width="3"
+       id="line182" />
+    <rect
+       x="1532"
+       y="389"
+       width="38"
+       height="34"
+       rx="5"
+       fill="#32a867"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="rect182" />
+    <text
+       x="1511"
+       y="473"
+       font-size="16"
+       font-weight="700"
+       fill="#17202a"
+       id="text183"><tspan
+         x="1511"
+         id="tspan182">Immutable &amp;</tspan><tspan
+         x="1511"
+         dy="19"
+         id="tspan183">Auditable</tspan></text>
+    <text
+       x="1450"
+       y="525"
+       text-anchor="start"
+       font-size="14"
+       fill="#17202a"
+       id="text188"><tspan
+         x="1450"
+         id="tspan184">• Trace_ID</tspan><tspan
+         x="1450"
+         dy="28"
+         id="tspan185">• Affected datasets</tspan><tspan
+         x="1450"
+         dy="28"
+         id="tspan186">• Completion time</tspan><tspan
+         x="1450"
+         dy="28"
+         id="tspan187">• Anomalies / retries</tspan><tspan
+         x="1450"
+         dy="28"
+         id="tspan188">• Evidence links</tspan></text>
+  </g>
+  <path
+     d="M1593 472 H1604"
+     stroke="#247daf"
+     stroke-width="8"
+     marker-end="url(#blueArrow)"
+     id="path188" />
+  <!-- Stage 8 notification -->
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     id="g194">
+    <path
+       d="M1632 328 H1760 V421 H1632 Z M1632 328L1696 378L1760 328 M1632 421L1673 372 M1760 421L1719 372"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="3"
+       id="path189" />
+    <circle
+       cx="1702.465"
+       cy="495.92136"
+       r="25"
+       fill="#32a867"
+       id="circle189" />
+    <path
+       d="m 1690.465,495.92136 10,10 18,-22"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="6"
+       id="path190" />
+    <text
+       x="1696.4479"
+       y="543.62909"
+       font-size="15px"
+       font-weight="700"
+       fill="#17202a"
+       id="text191"><tspan
+         x="1696.4479"
+         id="tspan190">Completion /</tspan><tspan
+         x="1696.4479"
+         dy="18"
+         id="tspan191">Partial completion</tspan></text>
+    <circle
+       cx="1701.2192"
+       cy="610.07019"
+       r="25"
+       fill="#d94848"
+       id="circle191" />
+    <path
+       d="m 1688.2193,597.07018 26,26 m 0,-26 -26,26"
+       stroke="#ffffff"
+       stroke-width="6"
+       id="path191" />
+    <text
+       x="1696.4479"
+       y="652.97101"
+       font-size="15px"
+       font-weight="700"
+       fill="#17202a"
+       id="text193"><tspan
+         x="1696.4479"
+         id="tspan192">Failure /</tspan><tspan
+         x="1696.4479"
+         dy="18"
+         id="tspan193">Delay notice</tspan></text>
+  </g>
+  <!-- Failure feedback loop -->
+  <path
+     d="M1348 814 V902 H900 V866"
+     fill="none"
+     stroke="#d93838"
+     stroke-width="4"
+     marker-end="url(#redArrow)"
+     id="path195" />
+  <text
+     x="1125"
+     y="927"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="15"
+     font-weight="700"
+     fill="#b52525"
+     id="text195">Failed tasks return to execution under the same trace ID</text>
+  <!-- Special paths block under stages 1-2 -->
+  <rect
+     x="14"
+     y="884"
+     width="442"
+     height="106"
+     rx="12"
+     fill="#edf8ef"
+     stroke="#aad7b6"
+     stroke-width="2"
+     id="rect195" />
+  <text
+     x="234.38597"
+     y="904.63159"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="18px"
+     font-weight="700"
+     fill="#17202a"
+     id="text196">Special Paths</text>
+  <g
+     font-family="Arial, Helvetica, sans-serif"
+     text-anchor="middle"
+     fill="#17202a"
+     id="g201">
+    <path
+       d="m 68.179605,934.66746 c 0,-10.91258 10.878735,-16.68983 22.534522,-14.12216 6.993474,-10.91258 26.419783,-7.703 27.973893,5.13533 12.43284,1.28383 13.98695,16.0479 0.77705,18.61557 H 80.612445 c -7.770526,0 -12.43284,-3.85149 -12.43284,-9.62874 z"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="2"
+       id="path196" />
+    <text
+       x="96.974358"
+       y="965.31628"
+       font-size="11px"
+       id="text197"><tspan
+         x="96.974358"
+         id="tspan196">Third-party</tspan><tspan
+         x="96.974358"
+         dy="14"
+         id="tspan197">coordinated deletion</tspan></text>
+    <ellipse
+       cx="236.51967"
+       cy="934.39484"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="2"
+       id="circle197"
+       rx="22.611963"
+       ry="21.526493" />
+    <path
+       d="m 213.9077,934.39488 h 45.22393 m -22.61197,-21.5265 v 43.05299 m -16.28061,-35.30345 c 10.85374,9.47166 10.85374,18.08226 0,27.55391 m 32.56123,-27.55391 c -10.85374,9.47166 -10.85374,18.08226 0,27.55391"
+       fill="none"
+       stroke="#185d87"
+       stroke-width="2"
+       id="path197" />
+    <text
+       x="234.13162"
+       y="968.35553"
+       font-size="11px"
+       id="text199"><tspan
+         x="234.13162"
+         id="tspan198">Cross-border</tspan><tspan
+         x="234.13162"
+         dy="14"
+         id="tspan199">extended propagation</tspan></text>
+    <path
+       d="m 339.34188,913.22393 h 50 v 39 h -50 z"
+       fill="#dcecf4"
+       stroke="#185d87"
+       stroke-width="2"
+       id="path199" />
+    <path
+       d="m 365.64445,916.44786 14,6 v 12 c 0,8 -6,13 -14,17 -8,-4 -14,-9 -14,-17 v -12 z"
+       fill="#32a867"
+       stroke="#ffffff"
+       stroke-width="2"
+       id="path200" />
+    <text
+       x="363.90768"
+       y="967.92139"
+       font-size="11px"
+       id="text201"><tspan
+         x="363.90768"
+         id="tspan200">High sensitivity</tspan><tspan
+         x="363.90768"
+         dy="14"
+         id="tspan201">stricter audit</tspan></text>
+  </g>
+  <!-- Key concept ribbon -->
+  <rect
+     x="470"
+     y="952"
+     width="1316"
+     height="76"
+     rx="12"
+     fill="#eef4f8"
+     id="rect201" />
+  <text
+     x="1107.6224"
+     y="988.08472"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="26.1761px"
+     font-weight="700"
+     fill="#17202a"
+     id="text202"
+     transform="scale(1.0120244,0.98811845)"
+     style="stroke-width:0.999999">Key Concepts</text>
+  <text
+     x="839.76184"
+     y="957.27612"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="22.81px"
+     fill="#17202a"
+     id="text203"
+     transform="scale(0.95220478,1.0501943)"
+     style="stroke-width:1">Deletion propagates via lineage</text>
+  <text
+     x="1146.7323"
+     y="977.47174"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="20.6213px"
+     fill="#17202a"
+     id="text204"
+     transform="scale(0.97167841,1.0291471)"
+     style="stroke-width:1">No orphan data</text>
+  <text
+     x="1543.806"
+     y="964.44727"
+     text-anchor="middle"
+     font-family="Arial, Helvetica, sans-serif"
+     font-size="21.5566px"
+     fill="#17202a"
+     id="text205"
+     transform="scale(0.95904122,1.042708)"
+     style="stroke-width:1">Full lifecycle cleanup</text>
+</svg>

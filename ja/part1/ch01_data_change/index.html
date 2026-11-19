@@ -1,0 +1,1182 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part1/ch01_data_change/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第1章：大语言模型时代的数据革命 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第1章：大语言模型时代的数据革命
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part1/ch01_data_change/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part1/ch01_data_change/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1 开篇：一个训练项目为何受制于数据质量
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 开篇：一个训练项目为何受制于数据质量">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.1 场景引入：当算力投入未能转化为有效能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.2 表现：数据问题如何被误判为模型问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1.3 训练指标、评测指标与业务目标为何背离
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2 从模型中心到数据中心的范式迁移
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.2 从模型中心到数据中心的范式迁移">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-scaling-laws-chinchilla" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1 定量规律：Scaling Laws 的起源与 Chinchilla 对数据配比的重塑
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-phi" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2 高质量数据与合成数据：Phi 系列的启示
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.3 核心基石：规模、质量与多样性的工程权衡
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124-ai-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.4 传统 AI 生命周期链路与 LLM 数据管线的主要差异
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3 LLM 项目中的角色重组与协作接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.3 LLM 项目中的角色重组与协作接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.1 全新协作：从数据接力到"数据飞轮"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.2 团队能力模型与岗位演进
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4 全生命周期地图与十四篇制导读
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.4 全生命周期地图与十四篇制导读">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.1 十四篇制如何覆盖各阶段痛点
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5 本书学习路径与后续章节承接
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.5 本书学习路径与后续章节承接">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.1 不同角色的阅读路径建议
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.2 避免本位主义的常见误区
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.3 承先启后：下一章我们探讨什么？
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="1">第1章：大语言模型时代的数据革命<a class="headerlink" href="#1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；陈长汶；王柯</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章说明大模型研发为何从以模型结构为中心，转向由数据、算力和基础设施共同约束的系统工程。章节首先通过一个匿名化复合案例说明，低质量语料、重复样本和基准污染会被误判为优化器、并行训练或模型结构问题，并在训练、评测和业务指标之间形成脱钩。随后，本章回顾 Scaling Laws、Chinchilla 法则、Phi 系列和合成数据实践所揭示的规律：数据规模、数据质量和数据多样性共同决定模型能力边界，且三者之间存在成本与工程约束。最后，本章给出大模型数据工程中的角色接口、数据飞轮和全书十四篇结构，为后续质量评估、基础设施、预训练数据、多模态数据、对齐数据、RAG、DataOps 和合规治理章节建立统一坐标。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>大模型数据工程；Scaling Laws；数据质量；数据飞轮；基准污染；数据基础设施；模型训练生命周期</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>理解大模型研发从模型中心转向数据中心的主要原因。</li>
+<li>区分训练指标、评测指标和业务指标之间的常见脱钩方式。</li>
+<li>掌握规模、质量和多样性三者之间的工程权衡。</li>
+<li>了解大模型数据工程中的关键角色、接口和全书结构。</li>
+</ul>
+<h2 id="11">1.1 开篇：一个训练项目为何受制于数据质量<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>在系统性地讨论大模型数据工程体系之前，先看一个匿名化复合案例。该案例综合了公开技术报告、社区复盘和工业项目中反复出现的共性问题，用来说明低质量数据如何在训练、评测和上线阶段逐层放大。</p>
+<h3 id="111">1.1.1 场景引入：当算力投入未能转化为有效能力<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>以下为匿名化复合场景，用于说明数据质量问题的工程排查路径；其中参数规模、算力配置和故障现象综合了一线项目中常见模式，不对应任何具体公开事件。某 AI 创业公司数据团队在完成融资后，花费三个月时间，利用数百台服务器组成的分布式爬虫集群，从公网爬取并集成了近 50TB 的中文网页语料、1TB 的 GitHub 开源代码以及 500GB 的 Reddit 讨论数据。团队随后启动千卡 A100 集群，利用 Megatron-LM 框架预训练一个约 70B 参数量级的基座模型。整个算法和工程团队在基础设施搭建（如远程直接内存访问，Remote Direct Memory Access，RDMA 网络调优）、并行训练策略（3D 混合并行架构）和算力节点容错调度上，投入了大量精力。</p>
+<p>然而，训练运行约两周后，监控面板开始出现异常。在 Loss（交叉熵损失）曲线接近阶段性平台期时，下降趋势明显放缓，并伴随小幅震荡。在研发团队进行早期的 Checkpoint 评估（Interactive Evaluation）时，模型输出也出现了多类质量问题：</p>
+<ol>
+<li><strong>垃圾内容注入</strong>：当给定的 Prompt 是关于“如何保养汽车”时，模型顺畅地生成了前两句专业说明，随即话锋一转，输出了一段与主题毫无关联的低质搜索引擎优化（Search Engine Optimization，SEO）推广文案——这是训练语料中混入大量商业引流页面所留下的“记忆残留”。</li>
+<li><strong>重复生成</strong>：当模型生成 Python 代码时，在写完第一个 <code>def</code> 函数后，开始大量重复 <code>\n\n\n\n\n</code> 或 <code>return return return</code>，直至达到最大序列长度。</li>
+<li><strong>强背诵弱推理</strong>：给模型输入一道简单的鸡兔同笼变形题，它居然一字不差地默写出了某年 GMAT 考试的长篇阅读原题以及尾部的版权声明，而面对简单的 3 位数加法却一错再错。</li>
+</ol>
+<p>在紧急叫停训练的复盘会议上，团队分歧严重。算法工程师怀疑是学习率预热（Warmup）步数不够或 AdamW 优化器参数设置不当；分布式计算工程师怀疑是少量异常设备导致通信梯度同步出现 NaN 并污染全局权重；数据工程师则在抽检最近一次输入批次后发现，低质 SEO 页面、重复模板代码和公开题库内容在训练样本中占比异常。这个结论改变了排障方向：问题不只是模型如何训练，而是训练数据是否具备可学习的信号。</p>
+<p>这类问题并非单一团队的偶发事故。在 2023 年以来的大模型训练实践中，语料重复、网页噪声、评测集污染和数据血缘缺失，都被反复证明会显著影响模型能力和训练成本。</p>
+<h3 id="112">1.1.2 表现：数据问题如何被误判为模型问题<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>在传统后端软件开发中，系统崩溃通常伴随着明确的堆栈报错（Stack Trace），指向引发 Bug 的确切代码行。但在以神经网络黑盒为主的数据驱动范式中，<strong>数据质量缺陷往往会表现为模型架构或优化器问题</strong>，从而增加排障难度。</p>
+<p>我们总结了实战中最容易相互混淆的三大症状：</p>
+<ol>
+<li>
+<p><strong>梯度爆炸/消失 vs. 数据严重异常</strong></p>
+<ul>
+<li><strong>排查误区</strong>：当监控看板探测到 Loss 剧烈抖动、或者梯度范数（Gradient Norm）瞬间飙升发散为 NaN 时，算法人员通常的第一反应是调整学习率（Learning Rate）或将梯度裁剪（Gradient Clipping）的阈值调严。</li>
+<li><strong>可能根因</strong>：往往是数据集清洗不彻底导致的。例如，数据集中混入了未擦除干净的大段超文本标记语言（HyperText Markup Language，HTML）/可扩展标记语言（eXtensible Markup Language，XML）标签树、极长无意义的 base64 图片编码字符串或特殊控制字符。这些数据在送入分词器（Tokenizer）后，可能被切分成大量罕见 Token 甚至单字符序列，导致注意力机制（Attention Mechanism）在计算指数部分时出现数值溢出（Overflow），从而污染整个批次的梯度。</li>
+</ul>
+</li>
+<li>
+<p><strong>生成退化（“复读机”） vs. 注意力崩塌</strong></p>
+<ul>
+<li><strong>排查误区</strong>：当模型生成陷入死循环或反复输出相同字词时，算法层面可能会归结为推理阶段温度参数（Temperature）设置过低，或者是惩罚因子（Repetition Penalty）失效，进而怀疑是多头注意力机制（Multi-Head Attention）坍缩并集中在了某几个固定的 Query-Key 映射上。</li>
+<li><strong>可能根因</strong>：这类生成退化通常指向<strong>未经过严格去重（Deduplication）的训练集</strong>。互联网上存在大量模板代码、导航栏文本和被机器大量转载的 SEO 文章。当大模型在预训练时反复暴露于这些高度雷同的文本段落时，其概率分布预测（Logits）会向低价值模式偏移。在推理时，只要碰到类似的上下文前缀，模型就容易进入重复生成模式。</li>
+</ul>
+</li>
+<li>
+<p><strong>“幻觉（Hallucination）”严重 vs. 世界知识构建失败</strong></p>
+<ul>
+<li><strong>排查误区</strong>：对于模型在特定实体领域内的“一本正经胡说八道”，很多团队将其视为大模型固有的基因缺陷，并寄希望于在预训练结束后，通过堆砌大量的领域 SFT 补丁或者外接 RAG (Lewis et al. 2020) 系统来外挂式修复。</li>
+<li><strong>可能根因</strong>：如果基础清洗管线未能有效过滤低信噪比的网络噪声，例如重复灌水内容、事实错误明显的伪科普文章，或内部逻辑自相矛盾的劣质语料，基座模型的世界模型（World Model）从训练早期就会受到干扰。此时模型学到的可能是错误相关性，而非稳定的事实与推理关系；后续对齐阶段的少量微调很难完全弥补这一基础缺陷。</li>
+</ul>
+</li>
+</ol>
+<h3 id="113">1.1.3 训练指标、评测指标与业务目标为何背离<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<p>如果进一步分析这个失败案例，会发现一个更值得注意的现象：在大规模训练的早期监控中，Validation Loss 可能随训练步数平滑下降；模型在部分评估平台上的得分也可能较高，但在真实业务的人工盲测中表现明显不足。
+这种指标脱钩说明，数据工程缺陷可能同时影响训练监控、离线评测和业务评估之间的对应关系。</p>
+<ul>
+<li><strong>训练指标（Loss）的解释风险</strong>：在缺乏正确数据分离机制的情况下，如果用于计算 Validation Loss 的保留测试语料与训练语料来自同一个未经去重和去污染的池子，那么会导致严重的<strong>数据分布同质性重叠</strong>。模型在测试集上的低 Loss 不一定意味着它掌握了泛化推理能力，也可能只是记忆了训练集和验证集共同包含的低质量数据或高频重复样本。</li>
+<li><strong>基准测试污染（Benchmark Contamination）</strong>：这是预训练工程中隐蔽且影响严重的数据质量问题之一。团队可能在公开基准测试（如小学数学推理评测集 Grade School Math 8K，GSM8K (Cobbe et al. 2021)，以及大规模多任务语言理解评测集 Massive Multitask Language Understanding，MMLU (Hendrycks et al. 2021)）上取得较高分数，但在真实业务场景的人工盲测中表现平平。事后的数据溯源审计往往指向同一根因：爬虫管线曾不加区分地抓取包含公开评测题库及其解答的代码仓库或网页，由于缺乏 N-gram 级别的去污染检测，相关题目混入了预训练语料。此时模型展示的并非真正的推理泛化能力，而是对已见题目的记忆匹配；一旦遇到分布之外的新问题，能力差距就会暴露。</li>
+</ul>
+<p>这次事故的教训不仅体现在算力账单上，也体现在产品节奏、团队信任和后续数据治理成本上。它说明了一个基本事实：当主流模型结构、并行训练框架和推理服务栈逐渐趋同时，数据来源、数据清洗、数据配比和数据质量验证会成为模型能力差异的重要来源。</p>
+<h2 id="12">1.2 从模型中心到数据中心的范式迁移<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>回顾前深度学习时代，在古典机器学习（如推荐系统或早期 CV 任务）中，“特征工程 + 结构各异的复杂算法（SVM、决策树组、胶囊网络等）”曾是主要路径。在 2012 年至 2020 年的深度学习快速发展阶段，研究者持续通过模型结构创新推动任务性能提升，从 AlexNet (Krizhevsky et al. 2012)、ResNet (He et al. 2016) 到 Transformer 及其变体 (Vaswani et al. 2017)，均体现了这一方向。
+然而，GPT-3 (Brown et al. 2020) 等大规模自回归语言模型（Autoregressive LM）的出现，使研究和工程投入进一步集中到规模化训练、数据组织和训练配方上。“数据中心主义（Data-centric AI）”并不是否定模型结构创新，而是强调：在相近模型架构下，数据规模、数据质量和数据混合策略对能力表现具有决定性影响。</p>
+<h3 id="121-scaling-laws-chinchilla">1.2.1 定量规律：Scaling Laws 的起源与 Chinchilla 对数据配比的重塑<a class="headerlink" href="#121-scaling-laws-chinchilla" title="Permanent link">&para;</a></h3>
+<p>如何理解大语言模型能力随规模增长的规律？2020 年，OpenAI 的研究员在论文《Scaling Laws for Neural Language Models》(Kaplan et al. 2020) 中给出了一个重要经验规律：大型语言模型的最终性能（以交叉熵损失表征的 Loss）与三个关键要素构成稳固的幂律（Power Law）制约关系——
+模型参数量 <span class="arithmatex">\(N\)</span>、投入训练的高质量数据集规模 <span class="arithmatex">\(D\)</span>、以及消耗的总算力 <span class="arithmatex">\(C\)</span>。</p>
+<p>其核心等价描述可以简化为：</p>
+<div class="arithmatex">\[
+L(N, D, C) \approx \left(\frac{N_c}{N}\right)^{\alpha_N} + \left(\frac{D_c}{D}\right)^{\alpha_D} + \left(\frac{C_c}{C}\right)^{\alpha_C}
+\]</div>
+<p>这个公式说明：在给定计算预算下，模型参数量、训练数据规模和计算量需要协同增长，模型性能才会持续改善。由此开始，大模型训练逐渐从依赖直觉试错的研发活动，转向可通过数据、算力和训练配方共同规划的系统工程。</p>
+<p><strong>Chinchilla 法则：对数据规模渴求的重估</strong>
+然而，在 Scaling Laws 发布初期，行业中存在一个重要认知偏差。许多团队优先追求扩大参数量（例如发布千亿甚至万亿参数规模的大模型，如早期 175B 参数的 GPT-3 (Brown et al. 2020) 以及后续追随者），并倾向于把模型规模直接等同于性能。
+但到了 2022 年，DeepMind 的一篇名为《Training Compute-Optimal Large Language Models》（即著名的 Chinchilla 论文）(Hoffmann et al. 2022) 的研究打破了这一幻觉。</p>
+<p>DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。结果显示：参数量为 70B（700 亿）的 Chinchilla 模型，在使用约 1.4T（1.4 万亿）Tokens 训练数据后，多项评测结果超过了此前参数量更大的 280B Gopher 模型 (Rae et al. 2021)。</p>
+<p>表1-1汇总了相应的对比和工程要点。</p>
+<p><em>表1-1：Gopher 与 Chinchilla 数据资源对比</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模型代号（发布方）</th>
+<th style="text-align: left;">参数量 <span class="arithmatex">\(N\)</span></th>
+<th style="text-align: left;">投入训练数据的 Token 数 <span class="arithmatex">\(D\)</span></th>
+<th style="text-align: left;">训练算力消耗占比估计</th>
+<th style="text-align: left;">推理侧表现特征</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Gopher</strong> (Rae et al. 2021)</td>
+<td style="text-align: left;">280B</td>
+<td style="text-align: left;">300B Tokens (约 0.3T)</td>
+<td style="text-align: left;">同等控制变量</td>
+<td style="text-align: left;">参数量较大，推理部署成本更高</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Chinchilla</strong> (Hoffmann et al. 2022)</td>
+<td style="text-align: left;"><strong>70B</strong></td>
+<td style="text-align: left;"><strong>1.4T Tokens</strong></td>
+<td style="text-align: left;">同等控制变量</td>
+<td style="text-align: left;">参数量较小，在多项综合评测中取得更优结果</td>
+</tr>
+</tbody>
+</table>
+<p>Chinchilla 法则指出：过去行业内的许多模型处于<strong>训练不足（Under-trained）</strong>状态。若想获取计算预算下的最大收益，模型参数量和训练数据所需的 Token 数，应当以大致相同的比例同步增加。一个常用经验口径是：</p>
+<blockquote>
+<p><strong>在 Chinchilla 计算最优近似口径下，模型每增加 1 个参数，通常需要配套约 20 个高质量 Token 的训练数据。</strong></p>
+</blockquote>
+<p>这意味着，如果某团队计划研发 7B 级别的开源基座模型，按 20 tokens/parameter 的粗略计算最优口径，其高质量训练语料规模通常需要达到约 140B Tokens 以上。若追求更高小模型性能，例如 LLaMA 3 8B，其训练数据规模达到约 15T Tokens (Grattafiori et al. 2024)。需要注意的是，这远超按上述口径粗略推算的 Chinchilla 最优点（约 160B Tokens），属于 Meta 刻意采用的过训练（Over-training）策略：用更多数据换取更低的推理部署成本，使小模型在同等推理预算下获得更强能力。这种趋势推动团队把注意力从单纯寻找模型结构创新，转向如何持续供给高质量训练数据。</p>
+<h3 id="122-phi">1.2.2 高质量数据与合成数据：Phi 系列的启示<a class="headerlink" href="#122-phi" title="Permanent link">&para;</a></h3>
+<p>在规模扩张之外，微软研究院的 Phi 系列工作提供了另一条重要路径：通过高度筛选和合成的高质量数据，提升小参数模型在特定任务上的能力表现。</p>
+<p>微软发布的 Phi-1 模型参数量仅为 1.3B，训练数据规模约为 7B Tokens。尽管规模远小于许多开源代码模型，Phi-1 在 HumanEval (Chen et al. 2021) 等代码评测上取得了具有竞争力的结果。</p>
+<p>Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 2023)：研究团队减少对低质量论坛内容和未筛选代码片段的依赖，转而利用 GPT-3.5/GPT-4 生成结构清晰、循序渐进、类似教材的高质量编程语料 (Li et al. 2023)。</p>
+<p>当训练数据具有更高信息密度、更少噪声和更清晰的任务结构时，小模型也可能在特定能力上获得显著提升。这说明，合成数据（Synthetic Data）和专家知识蒸馏不是规模扩张的替代品，但可以成为提高数据效率和降低训练成本的重要手段。</p>
+<h3 id="123">1.2.3 核心基石：规模、质量与多样性的工程权衡<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>从上述研究脉络可以看到，在大模型数据工程范式下，真正制约模型能力边界的不是单一维度，而是<strong>规模（Scale）、质量（Quality）与多样性（Diversity）</strong>之间的组合权衡。三者在有限预算和有限时间内很难同时达到最优，每一项的极端化通常会带来另外两项或工程成本上的代价。</p>
+<p>表1-2汇总了相应的对比和工程要点。</p>
+<p><em>表1-2：规模、质量与多样性的成本约束矩阵</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">核心维度</th>
+<th style="text-align: left;">主要数据处理手段</th>
+<th style="text-align: left;">直接收益</th>
+<th style="text-align: left;">主要约束</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>规模 (Scale)</strong></td>
+<td style="text-align: left;">依托 Common Crawl、自建爬虫、代码仓库镜像和授权语料库进行大规模采集，并使用 MinHash 局部敏感哈希（Locality-Sensitive Hashing，LSH）、语言识别和基础质量过滤完成第一轮筛选。</td>
+<td style="text-align: left;">提供广泛世界知识和多领域语言模式，是模型进入 Scaling Laws 有效区间的必要条件。</td>
+<td style="text-align: left;">存储、网络和预处理成本快速上升；如果规模扩张缺少质量闸门，低价值 Token 会直接转化为训练算力浪费。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>质量 (Quality)</strong></td>
+<td style="text-align: left;">使用规则过滤、困惑度（Perplexity，PPL）打分、质量分类器、事实核验、专家标注和合成数据审计等机制提升信噪比。</td>
+<td style="text-align: left;">降低生成退化、事实错误和格式混乱的风险，在代码、数学、专业问答等高精度任务中尤为关键。</td>
+<td style="text-align: left;">高质量数据稀缺，自动评估和人工审计成本高；过度清洗还可能削弱覆盖度和模型泛化。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>多样性 (Diversity)</strong></td>
+<td style="text-align: left;">通过语种、领域、模态、任务类型和难度层级的混合配比，构建可持续迭代的数据混合策略（Data Mixing Schedule）。</td>
+<td style="text-align: left;">减少灾难性遗忘和领域偏置，提高模型在长尾场景、多语言场景和新任务上的适应能力。</td>
+<td style="text-align: left;">多样性要求更复杂的解析器、采样策略、数据版本管理和跨团队协调，容易增加平台复杂度。</td>
+</tr>
+</tbody>
+</table>
+<p>由于无法同时把规模、质量和多样性推到高要求，数据工程负责人需要在预算、训练目标、上线时间和风险边界之间做权衡。成熟的数据设计不是简单地扩大语料，而是在三个变量之间找到可解释、可复现、可迭代的平衡点。</p>
+<h3 id="124-ai-llm">1.2.4 传统 AI 生命周期链路与 LLM 数据管线的主要差异<a class="headerlink" href="#124-ai-llm" title="Permanent link">&para;</a></h3>
+<p>对于长期从事推荐系统、搜索排序或工业视觉任务的工程团队来说，转向大语言模型训练时常会遇到方法论迁移困难。传统数据仓库和机器学习流水线主要处理结构化表格、日志特征和有限标签空间，而大模型训练面对的是非结构化文本、代码、文档、多模态长序列和开放式生成目标。因此，许多抽取、转换与加载（Extract, Transform, Load，ETL）经验仍然有价值，但不能直接替代面向 LLM 的数据清洗、去重、污染检测、配比、版本管理和训练输入/输出（Input/Output，I/O）优化。</p>
+<p>表1-3汇总了相应的对比和工程要点。</p>
+<p><em>表1-3：传统机器学习数据链路与 LLM 原生数据体系对照</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">对比维度</th>
+<th style="text-align: left;">传统机器学习数据流水线（以推荐系统为例）</th>
+<th style="text-align: left;">大语言模型原生数据体系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心数据类型载体</strong></td>
+<td style="text-align: left;">以用户行为表、业务事件表、传感器日志和特征宽表为主，结构较稳定。</td>
+<td style="text-align: left;">以网页文本、代码、论文、PDF、图文对、音视频和交互日志为主，格式多样且边界不稳定。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>底层吞吐计算数据物理体量</strong></td>
+<td style="text-align: left;">通常处于 GB 到 TB 级，主要依赖 SQL、Spark、Hive 或特征平台处理。</td>
+<td style="text-align: left;">常扩展到 TB、PB 乃至更高规模，并同时受 CPU 清洗、对象存储、网络带宽和训练 DataLoader 吞吐约束。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>质量风控博弈点</strong></td>
+<td style="text-align: left;">关注缺失值、异常值、标签错误、类别不平衡和特征泄漏。</td>
+<td style="text-align: left;">关注文本重复、网页噪声、基准污染、版权与个人身份识别信息（Personally Identifiable Information，PII）、领域偏置、时效衰败和跨模态错位。</td>
+</tr>
+</tbody>
+</table>
+<p>从上述对比可以看到，LLM 数据工程的关键挑战并不是把传统数据平台扩大一两个数量级，而是重新定义数据的生产目标、质量指标和训练接口。在很多一线团队中，研究人员和工程人员的大量工作已经转向数据配方、清洗规则、评测集隔离、合成数据审计和训练吞吐优化。数据工程由此从辅助环节变为模型研发的核心能力。</p>
+<h2 id="13-llm">1.3 LLM 项目中的角色重组与协作接口<a class="headerlink" href="#13-llm" title="Permanent link">&para;</a></h2>
+<p>由于数据在整个训练链路中的战略地位升格，原有的组织架构面临重估。传统的“数据部门搞数据仓库，算法部门搞模型训练，工程部门搞上线”的线性流水线模式，已经无法适应大模型迭代的节奏。</p>
+<h3 id="131">1.3.1 全新协作：从数据接力到"数据飞轮"<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>在 LLM 研发体系中，角色的融合与接口定义的清晰变得前所未有的重要。此时不再是单向移交数据的流水线，而是必须构建首尾相连的"<strong>数据飞轮（Data Flywheel）</strong>"。</p>
+<p>所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的交互行为（如对回答的赞/踩、修改建议、放弃率等）会被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮基于人类反馈的强化学习（Reinforcement Learning from Human Feedback，RLHF）(Ouyang et al. 2022) 的偏好对比集；新的偏好数据进入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据。</p>
+<p>图1-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图1-1：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口" src="../../../images/part1/Yu-Chap01-Fig01.svg" /></a></p>
+<p><em>图1-1：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口</em></p>
+<p>这个飞轮得以高速运转的前提，是每个角色之间存在<strong>清晰、可执行的数据交接服务级别协议（Service Level Agreement，SLA）</strong>。否则，一旦某个接口模糊（例如"产品侧说反馈数据给数据团队，但格式和字段没有约定"），飞轮就会在最脆弱的环节停滞。表 1-4 将这种协作关系展开为六类常见角色、上下游接口和可验收交付物，便于团队在立项阶段形成统一责任边界。</p>
+<p><em>表1-4：LLM 项目核心角色与数据接口职责</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">角色</th>
+<th style="text-align: left;">核心数据职责</th>
+<th style="text-align: left;">向上游索取的数据</th>
+<th style="text-align: left;">向下游交付的数据</th>
+<th style="text-align: left;">关键 SLA 指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>平台架构师 / 机器学习工程运维（Machine Learning Operations，MLOps）</strong></td>
+<td style="text-align: left;">建设并运维底层算力调度、分布式文件系统（如 Lustre / Hadoop 分布式文件系统，Hadoop Distributed File System，HDFS）、训练集群稳定性</td>
+<td style="text-align: left;">数据工程师提交的数据包路径、格式规范、大小预估</td>
+<td style="text-align: left;">稳定的 GPU/TPU 训练集群访问接口、DataLoader 优化建议</td>
+<td style="text-align: left;">以项目基线定义训练稳定性、I/O 等待时间和 GPU 利用率目标</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>大模型数据工程师</strong></td>
+<td style="text-align: left;">原始语料采集（爬虫/应用程序编程接口，Application Programming Interface，API）、多阶段清洗（去重、去噪、脱敏）、数据配比与混合采样、数据版本管理</td>
+<td style="text-align: left;">算法团队的领域权重配比需求、安全合规的黑名单规则、标注团队的 SFT 样本反馈</td>
+<td style="text-align: left;">通过质量评分卡验收的 Parquet/JSONL 格式数据包；数据血缘文档</td>
+<td style="text-align: left;">每批数据需提供质量评分、抽检记录、血缘记录和交付时间承诺</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>算法 / 预训练研究员</strong></td>
+<td style="text-align: left;">设计 Tokenizer 词表、制定训练数据配比策略（Data Mixture Recipe）、关注 Loss 曲线与 Eval 基准变化</td>
+<td style="text-align: left;">清洗后的标准化数据包；数据集统计报告（领域分布、去重率、PPL 分布）</td>
+<td style="text-align: left;">数据配比权重需求文档；新增的 Eval 套件定义；消融实验结论（某类数据对哪个基准有多大提升）</td>
+<td style="text-align: left;">消融实验周期和数据增量需求应写入项目排期，而不是口头约定</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>AI 标注 / 提示词专家</strong></td>
+<td style="text-align: left;">设计符合人类偏好的 SFT 样本指令集、制定 RLHF 打分规范、精编 RAG 知识库问答（Question Answering，QA）样本</td>
+<td style="text-align: left;">数据工程师提供的原始文本供筛选；算法团队的模型弱点报告（哪类指令失效）</td>
+<td style="text-align: left;">高质量的（Prompt, Response）对；偏好打分集（chosen/rejected）；RAG 标准评测集</td>
+<td style="text-align: left;">标注吞吐、专家复核率和一致性指标需由任务难度与领域风险共同确定</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>模型产品 / 应用层</strong></td>
+<td style="text-align: left;">收集线上真实用户反馈、定义业务场景覆盖需求、提供线上异常监控代理指标</td>
+<td style="text-align: left;">算法团队提供的模型 API 及性能报告；数据团队提供的覆盖度分析</td>
+<td style="text-align: left;">线上负样本（用户负反馈、修改后的回答）；新场景的数据需求规格书；线上幻觉异常 case 汇总报告</td>
+<td style="text-align: left;">线上异常汇总和新场景需求应形成固定节奏的书面交付物</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>安全与合规专员</strong></td>
+<td style="text-align: left;">源语料版权溯源审计、PII 个人隐私数据监控、毒性内容与偏见评估拦截</td>
+<td style="text-align: left;">所有即将入库语料的来源元信息（URL、抓取时间戳、许可证类型）；SFT 样本的最终版本</td>
+<td style="text-align: left;">版权合规评估报告；PII 过滤规则集更新；毒性/偏见评估分数；合规通过的 Green-light 证明</td>
+<td style="text-align: left;">高风险来源、敏感数据和公开发布数据需设置独立审查与阻断机制</td>
+</tr>
+</tbody>
+</table>
+<p><strong>数据飞轮的完整时序：一次教学性示例</strong></p>
+<p>下面的时序用于说明角色接口和交付物关系，数字仅为便于阅读的项目管理口径，不代表公开项目的实测收益。真实项目必须以预注册的评测集、灰度分流和统计检验报告为准。</p>
+<p>代码清单1-1给出了一个最小可行数据飞轮周期的时序示例，展示反馈、数据清洗、合规审查、偏好训练和灰度发布如何衔接。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>[T+0  周] 算法团队在评测中发现模型对长篇法律问答存在系统性幻觉缺陷
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>              ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>[T+0  周] 产品团队从线上收集用户对相关 case 的踩踏和修改记录（形成一批负反馈样本）
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>              ↓
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>[T+1  周] 数据工程师接收负反馈数据，清洗成标准 JSONL 格式，分类整理为&quot;事实性错误&quot;和&quot;格式问题&quot;
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>              ↓
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>[T+1  周] 标注专家挑选高置信事实性错误 case，并为每条写出质量更高的 chosen 答案
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>              ↓
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>[T+2  周] 安全合规审查新增 SFT 数据（无版权来源风险、无 PII 泄露）→ 通过
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>              ↓
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>[T+2  周] 数据工程师将成对的（rejected, chosen）数据打包，追加写入偏好对比数据库
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>              ↓
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>[T+3  周] 算法团队使用新增偏好数据进行直接偏好优化（Direct Preference Optimization，DPO）(Rafailov et al. 2023) 微调，并记录训练配置与数据版本
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>              ↓
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>[T+4  周] 新模型版本在冻结评测集和人工盲测中达到上线门槛，进入小流量灰度
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>              ↓
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>[T+5  周] 产品团队确认关键问题样本复现率下降且无新增高风险回归 → 扩大发布，进入下一轮飞轮
+</code></pre></div>
+<p><em>代码清单1-1：最小可行数据飞轮周期的时序示例</em></p>
+<p>以上就是一个最小可行数据飞轮（MVP Data Flywheel）的完整时序。没有这种级别的角色分工与 SLA 约束，飞轮会在某个环节出现信息失真或时间拖延，最终使模型迭代周期从数周延长到数月。</p>
+<h3 id="132">1.3.2 团队能力模型与岗位演进<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>现代的<strong>大模型数据工程师（LLM Data Engineer）</strong>已经从传统数据工程、机器学习工程和平台工程之间分化出来。这个角色不再只负责 SQL 报表或离线 ETL，也不只是执行标注规范，而是处于模型研发链条的数据接口位置，需要同时具备以下四类能力：</p>
+<ol>
+<li><strong>大规模分布式计算能力</strong>：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免几个超大 Shard 文件阻塞整个作业。</li>
+<li><strong>算法感知度（ML-Awareness）</strong>：需要深刻理解 Tokenization 的底层原理（如字节对编码，Byte Pair Encoding，BPE，以及 Unigram LM），懂得如何解读 Perplexity（困惑度）曲线来判断数据质量好坏，知道如何利用 KenLM (Heafield 2011) 这样的 N-gram 语言模型为候选数据打出"信息密度评分"，从而在算力成本和语料质量之间做出精确权衡。他们有时需要与算法研究员一起设计"消融实验"（Ablation Study），通过"数据集 A vs 数据集 B"的对照组，探明某类语料对某项基准测试提升的真实贡献率。</li>
+<li><strong>数据治理与版本控制工程</strong>：像 Git 控制代码版本一样，用 LakeFS 或数据版本控制（Data Version Control，DVC）管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将低质量数据的源头精确定位到某次配比调整或某一批爬取数据。</li>
+<li><strong>大语言模型生态嗅觉与工具链整合</strong>：熟悉各类主流开源数据集（如 The Pile (Gao et al. 2020)、RefinedWeb (Penedo et al. 2023)、FineWeb-Edu (Lozhkov et al. 2024)、Dolma (Soldaini et al. 2024)、DCLM-Baseline (Li et al. 2024)），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer (Chen et al. 2024)、datatrove (Penedo et al. 2024)、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。</li>
+</ol>
+<p>表1-5汇总了相应的对比和工程要点。</p>
+<p><em>表1-5：LLM 与传统 ML 数据工程师能力边界</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">能力维度</th>
+<th style="text-align: left;">传统 ML 数据工程师</th>
+<th style="text-align: left;">LLM 数据工程师</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心技术栈</strong></td>
+<td style="text-align: left;">SQL / Pandas / Spark ETL / BI 报表</td>
+<td style="text-align: left;">Ray Data / datatrove / MinHash / KenLM / LakeFS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数据体量经验</strong></td>
+<td style="text-align: left;">GB ~ TB（结构化表格为主）</td>
+<td style="text-align: left;">TB ~ PB（非结构化文本 / 代码 / 图文混排）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>质量评判能力</strong></td>
+<td style="text-align: left;">判断缺失值、离群点、类别失衡</td>
+<td style="text-align: left;">判断文本重复率、PPL 分布异常、基准污染、毒性和偏见</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>算法接口深度</strong></td>
+<td style="text-align: left;">几乎不需理解模型内部机制</td>
+<td style="text-align: left;">需理解 Tokenizer、Attention 计算、Loss 曲线与数据分布的关系</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>合规意识</strong></td>
+<td style="text-align: left;">了解《通用数据保护条例》（General Data Protection Regulation，GDPR）基础脱敏要求</td>
+<td style="text-align: left;">需具备版权法律认知、PII 检测能力（命名实体识别，Named Entity Recognition，NER + 正则）、robots.txt 合规观</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数据版本习惯</strong></td>
+<td style="text-align: left;">数据库 Schema 版本 / 定时快照备份</td>
+<td style="text-align: left;">数据集 Git 化：LakeFS commit / DVC pipeline 追踪</td>
+</tr>
+</tbody>
+</table>
+<p>对于刚进入该方向的工程师，可以把能力建设拆成三个阶段：第一阶段掌握大规模文本清洗、MinHash 去重、PPL 过滤和基础工具链；第二阶段参与真实数据流水线，补齐 DVC、LakeFS、数据版本和质量评分卡能力；第三阶段与算法、标注、产品和合规团队协作，把数据变更与模型指标、业务反馈和审计记录关联起来。这样的路径比单纯学习某个工具更稳健，因为 LLM 数据工程的核心不是单点脚本，而是可追溯、可复盘、可持续迭代的数据系统。</p>
+<hr />
+<h2 id="14">1.4 全生命周期地图与十四篇制导读<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>理解上述范式变革后，需要用一个全局地图来定位大模型数据工程的主要问题域。本书以系统工程视角将知识结构组织为十四篇。</p>
+<p>图1-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap01-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图1-2：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构" src="../../../images/part1/Yu-Chap01-Fig02.svg" /></a></p>
+<p><em>图1-2：全书十四篇制生命周期地图</em></p>
+<p>该图展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构。</p>
+<h3 id="141">1.4.1 十四篇制如何覆盖各阶段痛点<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>第一篇（总论与基础设施）</strong>：确立问题意识、质量语言与基础设施坐标。</li>
+<li><strong>第二篇（文本预训练数据工程）</strong>：覆盖采集、清洗、去重、分词、序列化和高效加载。</li>
+<li><strong>第三篇（多模态数据工程）</strong>：处理图文对、文档 OCR、视频音频和跨模态对齐。</li>
+<li><strong>第四至第六篇（对齐、合成与推理数据）</strong>：<ul>
+<li><strong>第四篇（指令微调与偏好数据）</strong>讨论 SFT、偏好数据、奖励信号和标注 QA。</li>
+<li><strong>第五篇（合成数据工程）</strong>讨论如何用强模型、规则验证和数据审计构建可控的合成数据工厂。</li>
+<li><strong>第六篇（推理与 Agent 数据工程）</strong>关注思维链（Chain-of-Thought，CoT）、Tool-Use、Agent 记忆和多轮交互数据。</li>
+</ul>
+</li>
+<li><strong>第七篇（应用级数据工程）</strong>：讨论 RAG、多模态检索、在线反馈和知识更新。</li>
+<li><strong>第八至第十一篇（系统、资产、Agent 与合规治理）</strong>：<ul>
+<li><strong>第八篇（DataOps、版本追踪与实验治理）</strong>讨论数据版本、实验追踪、可观测性和质量门禁。</li>
+<li><strong>第九篇（数据资产、数据产品与数据契约）</strong>讨论数据目录、元数据治理、数据产品化、契约和内部数据市场。</li>
+<li><strong>第十篇（智能化数据工程与 Data Engineering Agent）</strong>讨论数据工程 Agent 如何参与采集、清洗、标注、评测和安全协同。</li>
+<li><strong>第十一篇（隐私合规与数据安全）</strong>讨论隐私保护、合规审计、联邦学习和安全边界。</li>
+</ul>
+</li>
+<li><strong>第十二至第十四篇（专项数据集、开源配方与项目案例）</strong>：<ul>
+<li><strong>第十二篇（专项数据集与数据工程实践）</strong>用具体数据对象验证前文方法。</li>
+<li><strong>第十三篇（开源大模型数据工程配方与范式）</strong>抽象预训练、后训练、推理强化学习和多模态模型的数据配方。</li>
+<li><strong>第十四篇（项目案例研究）</strong>通过端到端项目展示从数据集设计到工程交付的完整路径。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h2 id="15">1.5 本书学习路径与后续章节承接<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>本书后续章节覆盖预训练数据、多模态数据、对齐数据、RAG 应用、平台治理、合规和项目实战。为避免篇幅在总论中过度展开，本节只给出三类读者的阅读优先级，具体工程细节将在相应章节中展开。</p>
+<h3 id="151">1.5.1 不同角色的阅读路径建议<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p><strong>路线 A：平台工程 / MLOps 导向。</strong> 平台工程师应优先阅读第1章至第3章，随后进入第二篇的分布式清洗与 DataLoader 优化内容，再系统阅读第八篇（DataOps 平台建设）和第九篇（数据资产与数据契约）。这一路线的目标是建立吞吐、版本、血缘和可观测性的基础设施视角。</p>
+<p><strong>路线 B：传统机器学习背景转型者。</strong> 具有推荐系统、搜索排序或传统机器学习经验的读者，应在第一篇完成范式迁移后，重点阅读第二篇（文本预训练数据工程）和第四篇（指令微调与偏好数据）。这一路线有助于把结构化特征工程经验迁移到非结构化语义清洗、去重、污染检测和样本设计中。</p>
+<p><strong>路线 C：全栈 LLM Data 专家。</strong> 需要主导数据工程决策的读者，可以按“第一篇基础框架 → 第二、三篇数据获取与处理 → 第四至第六篇对齐与推理数据 → 第七篇应用级数据工程 → 第八至第十一篇平台、资产、Agent 与合规治理 → 第十二至第十四篇专项数据集、开源配方与项目案例”的顺序阅读。该路线强调从数据来源、质量评估、平台接口到合规审计的端到端能力。</p>
+<p>表1-6汇总了相应的对比和工程要点。</p>
+<p><em>表1-6：各类型读者的章节优先级建议（1=低，5=高），评分为阅读路径建议而非实测评价</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">篇章</th>
+<th style="text-align: center;">平台/MLOps 工程师</th>
+<th style="text-align: center;">转型机器学习工程师</th>
+<th style="text-align: center;">全栈 LLM Data 专家</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">第一篇（本篇）范式与总纲</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第二篇 预训练文本数据</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第三篇 多模态数据</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第四篇 SFT 与偏好数据</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第五篇 合成数据工厂</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第六篇 CoT 与 Agent 数据</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第七篇 RAG 应用级数据栈</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第八篇 DataOps 平台</td>
+<td style="text-align: center;">5</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第九篇 数据资产与数据契约</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第十篇 数据工程 Agent</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第十一篇 隐私与合规</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第十二篇 专项数据集实践</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第十三篇 开源数据配方</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+<tr>
+<td style="text-align: left;">第十四篇 项目实战</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: center;">5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="152">1.5.2 避免本位主义的常见误区<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>在正式推开大门前，有三个特别容易被传统背景工程师触发的"本位主义误区"，必须提前规避：</p>
+<p><strong>误区一：只关注模型参数修改，忽视上游数据变化。</strong>
+当训练 Loss 发生抖动时，常见反应是调整学习率或优化器参数。但在 LLM 工程中，应首先检查最近一轮是否有新批次数据接入，数据打乱（Shuffle）逻辑是否因分布式节点数量变化而失效，或数据长度打包（Packing）策略是否因某批超长文本混入而打破原有分布。<strong>数据优先于参数</strong>，是 LLM 工程排障的基本原则。</p>
+<p><strong>误区二：轻视数据版本与运营体系，认为数据是"一次写成，永远可用"的静态资产。</strong>
+事实上，LLM 的训练数据集是一类持续演进的资产，而不是一次性完成的静态文件。版权和合规要求可能要求团队移除某个来源的语料；新的对抗 Prompt 被公开后，安全对齐数据需要及时更新；业务新增垂直领域需求时，也需要补充专域语料。没有严谨的数据质量评分机制和版本回滚能力，团队很难形成可持续的数据工程体系。</p>
+<p><strong>误区三：将"合成数据"与"低质数据"画等号。</strong>
+受早期低质量合成样本的影响，许多工程师容易低估合成数据的价值。然而，现代大模型时代的合成数据，尤其是以强模型带弱模型的知识蒸馏范式，已经不同于简单随机增强。精心设计的 Prompt、强模型生成、规则验证和人工审计相结合，可以产出在逻辑严密性和场景覆盖度上具有较高价值的样本。第五篇将系统讨论合成数据工厂的工程实践。</p>
+<h3 id="153">1.5.3 承先启后：下一章我们探讨什么？<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>第一章明确了大模型数据工程的基本问题、角色接口和全书地图。进入具体工程章节之前，还需要定义全链路共同认可的<strong>工程验收标准</strong>，即贯穿全书的数据质量语言。</p>
+<p>在下一章（<strong>第2章：LLM数据生命周期与质量评估框架</strong>）中，我们将建立大模型数据的质量字典：从统一的质量语言出发，逐一分析预训练、SFT、RLHF、RAG 四个阶段的质量标准，并引入数据发布评分卡（Data Release Scorecard），使质量评估从经验判断升级为可量化、可触发自动拦截的工程闸门。随后的第3章将讨论 Ray、Apache Iceberg、S3 / MinIO 对象存储等基础设施如何支撑这套数据质量治理体系。</p>
+<p>只有确立质量共识和底层平台基础，第二篇关于 Common Crawl、网页文本、代码和专业语料的预训练数据工程才有稳定的执行坐标。</p>
+<hr />
+<h2 id="_4">本章小结<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本章以一个匿名化复合案例开篇，说明数据质量问题会在训练、评测和业务上线之间持续放大。随后，本章结合 Scaling Laws 与 Chinchilla 法则，论证数据规模、质量和多样性共同决定模型能力边界，并通过对比表格揭示传统 AI 数据链路与大模型原生数据体系之间的差异。最后，本章定义了六类核心角色、数据交接 SLA、数据飞轮和差异化阅读路径，为后续章节讨论质量框架、基础设施和具体数据流水线奠定基础。</p>
+<p><strong>数据工程不是简单的数据搬运，而是影响大模型能力边界、成本结构和风险治理的核心系统。</strong> 带着这一认知，下一章将为整个体系建立统一的质量标准与治理语言。</p>
+<h2 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.</p>
+<p>Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. arXiv preprint arXiv:2203.15556.</p>
+<p>Rae J W, Borgeaud S, Cai T, Millican K, Hoffmann J, Song F, Aslanides J, Henderson S, Ring R, Young S, Rutherford E, Hennigan T, Menick J, Cassirer A, Powell R, van den Driessche G, Hendricks L A, Rauh M, Huang P S, Glaese A, Welbl J, Dathathri S, Huang S, Uesato J, Mellor J, Higgins I, Creswell A, McAleese N, Wu A, Elsen E, Jayakumar S, Buchatskaya E, Budden D, Sutherland E, Simonyan K, Paganini M, Sifre L, Martens L, Li X L, Kuncoro A, Nematzadeh A, Gribovskaya E, Donato D, Lazaridou A, Mensch A, Lespiau J B, Tsimpoukelli M, Grigorev N, Fritz D, Sottiaux T, Pajarskas M, Pohlen T, Gong Z, Toyama D, de Masson d'Autume C, Li Y, Terzi T, Mikulik V, Babuschkin I, Clark A, de Las Casas D, Guy A, Jones C, Bradbury J, Johnson M, Hechtman B, Weidinger L, Gabriel I, Isaac W, Lockhart W, Osindero S, Rimell L, Dyer C, Vinyals O, Ayoub K, Stanway J, Bennett L, Hassabis D, Kavukcuoglu K, Irving G (2021) Scaling Language Models: Methods, Analysis &amp; Insights from Training Gopher. arXiv preprint arXiv:2112.11446.</p>
+<p>Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J D, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. Advances in Neural Information Processing Systems 33:1877-1901.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.</p>
+<p>Li Y, Bubeck S, Eldan R, Del Giorno A, Gunasekar S, Lee Y T (2023) Textbooks Are All You Need II: phi-1.5 technical report. arXiv preprint arXiv:2309.05463.</p>
+<p>Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.</p>
+<p>Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data, and Web Data Only. arXiv preprint arXiv:2306.01116.</p>
+<p>Lozhkov A, Ben Allal L, von Werra L, Wolf T (2024) FineWeb-Edu: the finest collection of educational content the web has to offer. Hugging Face dataset. <a href="https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu">https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu</a>.</p>
+<p>Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, Bogin B, Chandu K, Dumas L, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.</p>
+<p>Li J, Fang A, Smyrnis G, Ivgi M, Jordan M, Gadre S, Bansal H, Guha E, Keh S, Arora K, Garg S, Xin R, Muennighoff N, Heckel R, Mercat J, Chen M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.</p>
+<p>Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.</p>
+<p>Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, Companion Volume, pp 120-134.</p>
+<p>Penedo G, Kydlíček H, Cappelli A, Sasko M, Wolf T (2024) DataTrove: large scale data processing. GitHub repository. <a href="https://github.com/huggingface/datatrove">https://github.com/huggingface/datatrove</a>.</p>
+<p>Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744.</p>
+<p>Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741.</p>
+<p>Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W T, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. Advances in Neural Information Processing Systems 33:9459-9474.</p>
+<p>Vaswani A, Shazeer N, Parmar N, Uszkoreit J, Jones L, Gomez A N, Kaiser L, Polosukhin I (2017) Attention Is All You Need. Advances in Neural Information Processing Systems 30.</p>
+<p>Krizhevsky A, Sutskever I, Hinton G E (2012) ImageNet Classification with Deep Convolutional Neural Networks. Advances in Neural Information Processing Systems 25:1097-1105.</p>
+<p>He K, Zhang X, Ren S, Sun J (2016) Deep Residual Learning for Image Recognition. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp 770-778.</p>
+<p>Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.</p>
+<p>Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.</p>
+<p>Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

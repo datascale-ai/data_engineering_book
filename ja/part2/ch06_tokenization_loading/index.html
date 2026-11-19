@@ -1,0 +1,1162 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part2/ch06_tokenization_loading/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第6章 分词、序列化与高效加载 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#6" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第6章 分词、序列化与高效加载
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part2/ch06_tokenization_loading/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part2/ch06_tokenization_loading/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      开篇：一次"数据管线比模型慢"的训练事故
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 为什么输入管道决定训练上限
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.1 为什么输入管道决定训练上限">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#611-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.1 GPU 空转的隐性成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#612-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.2 从数据格式到 GPU 的全链路延迟拆解
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 分词、序列化与数据格式权衡
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 分词、序列化与数据格式权衡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.1 分词算法：三大流派的工程选型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.2 词表设计与领域适配：不只是"够用就好"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.3 数据格式与序列化：性能决定性选择
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#624-shard-shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.4 Shard 策略与全局 Shuffle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#63-packingmixing-curriculum" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Packing、Mixing 与 Curriculum 策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.3 Packing、Mixing 与 Curriculum 策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#631-packing-padding" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.1 序列 Packing：消除 Padding 的"算力税"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#632" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.2 多源混采：温度权重与领域比例控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#633-curriculum-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.3 课程学习（Curriculum Learning）
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 高效加载、缓存与吞吐诊断
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 高效加载、缓存与吞吐诊断">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#641-dataloader" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.1 DataLoader 的关键配置
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#642" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.2 吞吐瓶颈诊断：三步系统化排查
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#643-smoke-test-30" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.3 训练前 Smoke Test：上线前 30 分钟的自动检验
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#644" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.4 多节点分布式读取：避免"数据孤岛"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#65" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5 工程案例与性能优化清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.5 工程案例与性能优化清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      图与案例
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jsonl-mds" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例：从 JSONL+在线分词 到 MDS+离线分词 的迁移收益
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#651" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5.1 输入管道优化检查清单
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="6">第6章 分词、序列化与高效加载<a class="headerlink" href="#6" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王柯；于璠；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本章讨论清洗后的文本如何被转换为可供大模型高效训练的输入管道，覆盖分词器设计、数据格式选择、序列 Packing、多源混采、DataLoader 配置、缓存策略和分布式读取。章节首先通过匿名化复合案例说明 输入输出（input/output，I/O）瓶颈如何导致图形处理器（GPU）空转和训练成本浪费，随后比较 字节对编码（Byte Pair Encoding，BPE）、WordPiece 与 SentencePiece 的工程特性，并分析词表大小、领域词表扩充和多语言平衡对训练效率与能力分布的影响。序列化部分比较 JSON Lines（JSONL）、Parquet、Arrow、Mosaic Data Shard（MDS）、WebDataset 与内存映射文件（memmap） 等格式，强调离线分词和二进制 shard 对吞吐的作用。后半章进一步讨论 Packing、温度采样、课程学习和 Smoke Test，并给出多节点读取的 rank-aware 配置。读者应能够为不同规模的预训练任务设计稳定、可诊断、成本可控的输入管道。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>分词；Tokenizer；序列化；DataLoader；MDS；Packing；数据混采；吞吐诊断</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够比较 BPE、WordPiece 和 SentencePiece 在大模型输入管道中的工程取舍。</li>
+<li>能够解释词表大小、领域词表扩充和多语言采样对模型训练的影响。</li>
+<li>能够选择适合预训练规模的数据格式、shard 策略和离线分词方案。</li>
+<li>能够通过 Smoke Test、GPU 利用率、I/O 监控和 Profiler 定位输入瓶颈。</li>
+<li>能够设计多节点分布式读取方案，避免重复读取、NFS 瓶颈和全局 shuffle 失效。</li>
+</ul>
+<h2 id="_4">开篇：一次"数据管线比模型慢"的训练事故<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以下为匿名化复合案例，用于说明输入管道瓶颈的排查路径；其中吞吐和利用率应在目标集群上压测，不应跨项目复用。某团队在启动中等规模基座模型预训练时，训练早期出现异常：<code>nvidia-smi</code> 显示 GPU 利用率长期低于项目基线。初步排查认为是模型配置问题，直到工程师打开 <code>iostat</code>、DataLoader wait time 和 profiler 监控，才发现磁盘 I/O 与在线分词成为瓶颈，DataLoader 追不上 GPU 的消费速度。</p>
+<p>根本原因很快被定位：团队将清洗好的语料存放在普通磁盘阵列上，每个 shard 是一个压缩的 <code>.jsonl.gz</code> 文件，DataLoader 需要在运行时实时解压和分词，导致 CPU 和磁盘双双成为瓶颈。最终，该团队暂停训练，重新对所有数据进行离线分词并序列化为 MDS 格式（Mosaic Data Shard），迁移到更高吞吐的存储介质后，GPU 利用率恢复到项目基线区间。</p>
+<p>这类事故的代价应按真实集群单价、暂停策略、排队时间和重处理成本重新核算。更重要的是，它完全可以在训练启动前的 smoke test 阶段被发现。</p>
+<p>这个案例说明了本章的核心命题：<strong>数据输入管道（Input Pipeline）的效率，是预训练中最容易被低估、一旦出问题代价最高的工程环节之一。</strong> 它处于"清洗已完成，训练还没开始"的灰色地带——既不属于数据工程的关注重点，也不属于训练系统的调优范围，结果往往被双方忽视，直到真实的算力浪费产生才被迫正视。</p>
+<hr />
+<h2 id="61">6.1 为什么输入管道决定训练上限<a class="headerlink" href="#61" title="Permanent link">&para;</a></h2>
+<h3 id="611-gpu">6.1.1 GPU 空转的隐性成本<a class="headerlink" href="#611-gpu" title="Permanent link">&para;</a></h3>
+<p>在大规模预训练场景下，GPU 集群的租用成本通常以小时计，且价格会因地区、供应商、实例规格和采购协议大幅波动。在这种成本结构下，"GPU 利用率"不再只是一个性能指标，而是直接换算为财务损耗的经济指标：任何由数据等待造成的低利用率，都会拉长达到同等有效训练 token 所需的时间。</p>
+<p>更精确的指标是 <strong>Model FLOPS Utilization，MFU</strong>。MFU 受模型结构、并行策略、通信拓扑、batch size、混合精度和 kernel 实现共同影响，不能用单一阈值判断好坏。如果 MFU 或 GPU utilization 长期低于项目历史基线，就需要同时排查 DataLoader wait time、存储吞吐、网络读取和在线预处理。</p>
+<h3 id="612-gpu">6.1.2 从数据格式到 GPU 的全链路延迟拆解<a class="headerlink" href="#612-gpu" title="Permanent link">&para;</a></h3>
+<p>数据从磁盘到 GPU 显存，需要经历以下环节，每个环节都可能成为瓶颈：</p>
+<p><strong>磁盘读取</strong>：从 HDD/SSD/网络存储（NFS/S3）读取 shard 文件的原始字节。不同介质与云厂商对象存储的吞吐差异很大，实际速度还会受到并发数、文件大小、网络拓扑和缓存命中率影响。因此，训练前应在目标集群上用与生产 shard 相同的文件格式做压测，而不是直接套用通用带宽数字。</p>
+<p><strong>解压与反序列化</strong>：如果数据以 <code>.gz</code> 或 <code>.zst</code> 压缩格式存储，需要 CPU 解压；如果存储为 <code>.jsonl</code> 等文本格式，还需要 JSON 解析。这两步都是计算密集型的 CPU 操作，在 DataLoader 的 worker 进程中占用大量时间。</p>
+<p><strong>在线分词（如果未离线分词）</strong>：在 DataLoader 时实时对文本进行分词，是最耗 CPU 的操作之一。<code>tiktoken</code> 或 SentencePiece 的单条文本处理耗时取决于字符串长度、语言分布、词表大小、CPU 型号和 worker 并发数；在高吞吐训练中，它足以成为显著瓶颈，必须通过 profiler 而不是经验数字确认。</p>
+<p><strong>CPU 到 GPU 传输（PCIe/NVLink）</strong>：将组装好的 tensor batch 从 CPU 内存传输到 GPU 显存。总线规格给出的峰值带宽通常高于训练中的有效吞吐；不合理的 tensor 布局（非连续内存）、同步拷贝和 worker 调度都会导致实际传输效率大幅下降。</p>
+<p>理解这条链路，是做出正确优化决策的前提。</p>
+<hr />
+<h2 id="62">6.2 分词、序列化与数据格式权衡<a class="headerlink" href="#62" title="Permanent link">&para;</a></h2>
+<h3 id="621">6.2.1 分词算法：三大流派的工程选型<a class="headerlink" href="#621" title="Permanent link">&para;</a></h3>
+<p>分词（Tokenization）是训练输入管道的起点，也是整个输入处理链路中唯一具有"不可逆"特性的环节——一旦词表和分词模型确定，就难以在不重新分词全部数据的前提下更换。因此，词表选型决策必须在正式开始大规模分词之前慎重做出。</p>
+<p>目前主流大模型采用的分词算法以三种为主：</p>
+<p><strong>BPE（Byte Pair Encoding）</strong> (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符（或字节）级别出发，反复合并出现频率最高的相邻 token 对。</p>
+<p>代码清单6-1展示了 BPE 合并过程的简化伪代码。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># BPE 合并原理伪代码</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">bpe_train</span><span class="p">(</span><span class="n">corpus</span><span class="p">,</span> <span class="n">num_merges</span><span class="p">):</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">vocab</span> <span class="o">=</span> <span class="n">get_initial_characters</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_merges</span><span class="p">):</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="n">pairs</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>  <span class="c1"># 统计所有相邻 token 对的频率</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">pairs</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="c1"># 选出频率最高的一对</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">vocab</span> <span class="o">=</span> <span class="n">merge_vocab</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">vocab</span><span class="p">)</span> <span class="c1"># 将其合并为一个新的 token</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">return</span> <span class="n">vocab</span>
+</code></pre></div>
+<p><em>代码清单6-1：BPE 合并过程简化伪代码</em></p>
+<p>该片段用于解释合并思想，非生产级 tokenizer 训练实现。注：传统 BPE 不感知词素边界；2025 年 MorphBPE (Asgari et al. 2025) 探索通过约束合并规则不跨越词素边界，改善形态丰富语言上的分词效率与训练表现。</p>
+<p>BPE 的字节级变体（Byte-level BPE，如 GPT-2 的 tiktoken）通过将原始字节而非 Unicode 字符作为起始单元，显著降低了 <code>&lt;UNK&gt;</code> 式未登录词风险，被 LLaMA 2/3、Mistral 等模型广泛采用。</p>
+<p><strong>WordPiece</strong> 是 BERT 的分词方案，与 BPE 较为相似，但合并标准并非绝对频率，而是<strong>基于语言模型的最大似然估计（Likelihood）</strong>。WordPiece 在合并 <span class="arithmatex">\(A\)</span> 和 <span class="arithmatex">\(B\)</span> 时，考察的是 <span class="arithmatex">\(\frac{P(AB)}{P(A)P(B)}\)</span> 的得分（类似互信息）。这意味着如果 <span class="arithmatex">\(A\)</span> 和 <span class="arithmatex">\(B\)</span> 各自单独出现的概率较低，但它们一起出现的概率较高，WordPiece 会倾向于将它们合并。</p>
+<p><strong>OOV（Out-of-Vocabulary）危机与未登录词问题</strong>：
+在传统的基于词级（Word-level）的旧时代分词器中，如果遇到未被记录在词表中的生僻字或罕见词，模型通常会抛出一个代表未知的 <code>&lt;UNK&gt;</code>（Out-of-Vocabulary）占位符。这在医学、法律等专业领域风险很高：一段含有复杂化学式的文本可能被大量 <code>&lt;UNK&gt;</code> 稀释。而 BPE 和 WordPiece 这种基于 Subword 的方案，在遇到未见过的单词时，会继续向下拆分为更基础的子词甚至单字母/单字节。字节级方案还可以退化到字节表示，从而减少信息被 <code>&lt;UNK&gt;</code> 直接替代的情况；代价是序列长度可能明显增加，且稀有字节片段的语义学习仍需要足够样本支持。</p>
+<p><strong>SentencePiece（Unigram）</strong> (Kudo and Richardson 2018) 则是 Google 推广的方案，它不走“从小到大合并”的路线，而是“从大到小裁剪”。Unigram 从超大基础词表出发，逐步计算并删除对整体语料似然度下降最小的 token。它对中文、日文等无显式词边界的语言更为友好。</p>
+<p>对于中文大模型，推荐以 <strong>Byte-level BPE</strong>（tiktoken 实现）为基础方案，词表大小建议在 <strong>64K-100K</strong> 之间——这一区间在中文字符覆盖率（中文汉字约 5 万字，基础常用字约 3500 字）和嵌入矩阵参数量之间取得了合理平衡。词表过小（32K）会导致大量中文汉字被切分为字节级别的多个 token，严重增加序列长度；词表过大（200K+）则会使嵌入矩阵参数量过于庞大，影响训练效率。</p>
+<p>代码清单6-2展示了使用 <code>tiktoken</code> 进行离线批量分词的示意实现。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 使用 tiktoken 进行离线批量分词（推荐用于预处理阶段）</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span><span class="o">,</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">get_encoding</span><span class="p">(</span><span class="s2">&quot;cl100k_base&quot;</span><span class="p">)</span>   <span class="c1"># GPT-4 的基础 BPE 词表</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">tokenize_document</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">    对单条文档进行分词，并附加元数据。</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">    返回 None 表示文档在分词后长度过短，不纳入训练集。</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">token_ids</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span> <span class="n">disallowed_special</span><span class="o">=</span><span class="p">())</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">:</span>        <span class="c1"># 过短文档过滤</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="s2">&quot;token_ids&quot;</span><span class="p">:</span> <span class="n">token_ids</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="s2">&quot;num_tokens&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">),</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="s2">&quot;quality_tier&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quality_tier&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">),</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="p">}</span>
+</code></pre></div>
+<p><em>代码清单6-2：离线批量分词示意代码</em></p>
+<p>生产环境应补充分片校验、失败重试、词表版本记录和输出一致性检查。</p>
+<h3 id="622">6.2.2 词表设计与领域适配：不只是"够用就好"<a class="headerlink" href="#622" title="Permanent link">&para;</a></h3>
+<p>词表（Vocabulary）是分词器的核心产出，也是大模型整体架构中唯一在训练开始后几乎无法更改的组件。一旦词表确定，后续所有的数据处理、模型嵌入矩阵、输出 logit 层都与之强绑定——更换词表意味着重新分词所有训练数据、重新初始化嵌入矩阵（丢失预训练权重的嵌入部分），代价极高。因此，词表设计决策必须在整个工程启动之前完成，而不是在训练中途发现问题再回来修正。</p>
+<p><strong>词表大小的权衡</strong>是首要决策。较大的词表（如 100K 量级）能够将更多高频词和领域专业术语保留为单个 token，减少序列长度，降低 Transformer 的计算量（因为 attention 复杂度是序列长度的平方）；但更大的嵌入矩阵会增加参数量，且稀有 token 在训练中见到的样本更少，嵌入质量较低。LLaMA-3 (Grattafiori et al. 2024) 将词表从 LLaMA-2 的 32K 大幅扩展至 128K，并在技术报告中把更大的词表列为改进多语言与代码能力的重要设计之一。嵌入层新增参数可按“新增 token 数 × hidden size”估算，显存开销还取决于参数精度、是否 tied embedding 以及优化器状态，不能脱离模型配置给出固定 GB 数。</p>
+<p><strong>领域词表扩充（Domain Vocabulary Extension）</strong> 是垂直领域大模型的常见需求。当基础词表对特定领域的专业术语覆盖不足时（如医学术语的分子式、法律术语的专有名称、代码语言的关键字组合），这些词会被切分为多个子 token，导致：一是序列长度增长，模型上下文窗口中能容纳的领域信息减少；二是模型需要从碎片化的 token 中重建语义，学习成本更高。</p>
+<p>领域词表扩充的常见方案是：收集目标领域的大量专业文本，统计在基础词表下分词后"切割比例最高"（即最常以多 token 表示）的词汇，选取 Top-K 词汇加入词表，并对应扩展嵌入矩阵（新增 token 的嵌入向量通常以其子 token 嵌入的均值初始化，以减少训练初期的分布偏移）。一些中文 LLaMA 衍生项目采用过在原始词表基础上新增中文汉字和词汇的策略；是否能提升中文生成质量和推理效率，需要通过目标任务的消融实验确认。</p>
+<p><strong>跨语言词表平衡</strong> 对多语言基座模型（如 BLOOM、mT5、Qwen）是另一个关键挑战。若词表直接在多语言语料上联合训练，高资源语言（英文）会因其高频率占据更多词表空间，低资源语言（如泰语、阿拉伯语）的词汇被严重压缩，出现所谓"词表诅咒"（Vocabulary Curse）——这些语言的文本在模型看来是一串几乎无意义的字节碎片，导致低资源语言的理解和生成能力远低于高资源语言。</p>
+<p>解决方案是在训练分词器时对不同语言的语料进行<strong>上采样均衡</strong>：将每种目标语言的训练文本采样到大致相同的 token 数量（或使用温度参数 T=3-5），确保每种语言都获得足够的词表"席位"；同时通过 SentencePiece 的 <code>character_coverage=0.9999</code> 参数，确保每种语言的基本字符集（哪怕频率很低）都被纳入词表。这是 mT5、BLOOM 等多语言模型词表设计中的常见工程实践。</p>
+<p>代码清单6-3展示了 SentencePiece 多语言词表训练的示意配置。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># SentencePiece 多语言词表训练（示意）</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceTrainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nb">input</span><span class="o">=</span><span class="s2">&quot;multilingual_corpus_balanced.txt&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">model_prefix</span><span class="o">=</span><span class="s2">&quot;tokenizer_multilingual_100k&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">vocab_size</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;bpe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">character_coverage</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span>   <span class="c1"># 确保每种语言基本字符集全覆盖</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">byte_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># Unicode 字符不在词表时退化为字节表示</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">pad_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unk_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bos_id</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eos_id</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="c1"># 对小语种上采样（权重文件中指定每行的采样权重）</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">input_sentence_size</span><span class="o">=</span><span class="mi">20_000_000</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">shuffle_input_sentence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单6-3：SentencePiece 多语言词表训练配置片段</em></p>
+<p>参数仅为配置示例，生产环境应通过语种覆盖、OOV/UNK 率和下游评测共同调参。</p>
+<h3 id="623">6.2.3 数据格式与序列化：性能决定性选择<a class="headerlink" href="#623" title="Permanent link">&para;</a></h3>
+<p>数据格式的选择对 DataLoader 的吞吐量有直接的数量级级别的影响。以下是主流格式的性能与工程权衡：</p>
+<p>表6-1汇总了相应的对比和工程要点。</p>
+<p><em>表6-1：数据格式、压缩与访问模式</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">格式</th>
+<th style="text-align: left;">类型</th>
+<th style="text-align: left;">顺序读速度</th>
+<th style="text-align: left;">随机访问</th>
+<th style="text-align: left;">压缩支持</th>
+<th style="text-align: left;">跨框架支持</th>
+<th style="text-align: left;">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>JSONL (.jsonl)</strong></td>
+<td style="text-align: left;">文本行</td>
+<td style="text-align: left;">慢（需 JSON 解析）</td>
+<td style="text-align: left;">不支持</td>
+<td style="text-align: left;">否（需 .gz 组合）</td>
+<td style="text-align: left;">极好</td>
+<td style="text-align: left;">数据交换、调试</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Parquet</strong></td>
+<td style="text-align: left;">列式二进制</td>
+<td style="text-align: left;">快（列裁剪）</td>
+<td style="text-align: left;">支持（行组级）</td>
+<td style="text-align: left;">支持：Snappy/Zstd</td>
+<td style="text-align: left;">很好（Spark/pandas）</td>
+<td style="text-align: left;">批处理分析、第5章输出</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Apache Arrow / Feather</strong></td>
+<td style="text-align: left;">行式二进制</td>
+<td style="text-align: left;">极快（零拷贝）</td>
+<td style="text-align: left;">支持</td>
+<td style="text-align: left;">支持：LZ4/Zstd</td>
+<td style="text-align: left;">好（PyArrow）</td>
+<td style="text-align: left;">CPU→GPU 中间层</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MDS（Mosaic）</strong></td>
+<td style="text-align: left;">Shard二进制</td>
+<td style="text-align: left;">极快</td>
+<td style="text-align: left;">Shard级</td>
+<td style="text-align: left;">支持：Zstd</td>
+<td style="text-align: left;">好（Streaming Datasets）</td>
+<td style="text-align: left;">流式多节点训练的候选方案</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>WebDataset (.tar)</strong></td>
+<td style="text-align: left;">Tar打包</td>
+<td style="text-align: left;">快（流式）</td>
+<td style="text-align: left;">Shard级</td>
+<td style="text-align: left;">支持：内部文件压缩</td>
+<td style="text-align: left;">好（Torchvision）</td>
+<td style="text-align: left;">多模态训练</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Raw .bin（Token IDs）</strong></td>
+<td style="text-align: left;">二进制整型</td>
+<td style="text-align: left;">极快（内存映射）</td>
+<td style="text-align: left;">支持（byte offset）</td>
+<td style="text-align: left;">否</td>
+<td style="text-align: left;">需自实现</td>
+<td style="text-align: left;">超大规模预训练</td>
+</tr>
+</tbody>
+</table>
+<p>对于需要对象存储流式读取和多节点弹性扩缩的 LLM 预训练场景，<strong>MDS 格式</strong> (Mosaic AI Research 2022) 是值得优先评估的候选方案——它专为流式多节点读取设计，支持多 GPU 节点并发读取同一数据集，内置 shuffle 缓冲区，并支持从 S3/GCS 等对象存储直接流式读取而无需完整下载。若训练集已经完成离线分词且主要依赖本地 NVMe，<strong>Raw .bin 内存映射格式</strong>（Megatron-LM 使用方案）同样常见：它将 token ID 数组直接写为二进制文件，读取时使用 <code>np.memmap</code> 进行内存映射，在本地高性能存储上可获得很低的解析开销。</p>
+<h3 id="624-shard-shuffle">6.2.4 Shard 策略与全局 Shuffle<a class="headerlink" href="#624-shard-shuffle" title="Permanent link">&para;</a></h3>
+<p>数据集应当被切分为大量等大小的 shard 文件，而不是存储为单个大文件。Shard 大小需要结合对象存储请求开销、文件系统元数据压力、单节点缓存容量和跨节点负载均衡压测决定：shard 过小会导致文件元数据（文件打开、seek）的开销占比过大；shard 过大会导致跨节点分配时的负载不均衡，且单 shard 损坏会导致更大量的数据不可用。</p>
+<p>Shuffle 是预训练数据准备中的另一个关键步骤。未经 shuffle 的数据按来源顺序排列，同一来源的数据集中出现，会导致模型在训练时遇到连续的"局部分布偏移"，影响 Loss 收敛的平滑性。全局 Shuffle（Global Shuffle）要求在所有 shard 之间进行随机打乱——这在单机上容易实现，但在分布式训练中需要专门的设计（MDS 格式内置支持跨 shard 的流式 shuffle 缓冲区，推荐使用）。</p>
+<hr />
+<h2 id="63-packingmixing-curriculum">6.3 Packing、Mixing 与 Curriculum 策略<a class="headerlink" href="#63-packingmixing-curriculum" title="Permanent link">&para;</a></h2>
+<h3 id="631-packing-padding">6.3.1 序列 Packing：消除 Padding 的"算力税"<a class="headerlink" href="#631-packing-padding" title="Permanent link">&para;</a></h3>
+<p>在标准的 DataLoader 实现中，一个 batch 内的所有样本被填充（Padding）到同一长度。当训练集中存在大量短文档时（如大量 QA 对、简短代码片段），Padding token 的比例可能显著升高，这意味着一部分 GPU 计算资源被浪费在对 <code>&lt;pad&gt;</code> token 做无效的注意力计算上。</p>
+<p><strong>序列 Packing（Sequence Packing）</strong> 是解决这一问题的标准工程手段：将多个短文档拼接在同一个序列中，用特殊的 <code>[EOS]</code> token 作为文档边界，提高每个序列中的有效 token 比例。Attention Mask 中对应地在 <code>[EOS]</code> 处切断跨文档的注意力（避免文档 A 的末尾影响文档 B 的开头的 attention），保持各文档的语义独立性。</p>
+<p>代码清单6-4展示了贪心序列 Packing 的示意实现。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">greedy_pack_sequences</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">token_id_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">max_seq_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">eos_token_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="sd">    贪心 Bin-Packing：将多个文档 token 列表打包到固定长度序列中。</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="sd">    返回每个 packed 序列及其 attention mask。</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">packed</span><span class="p">,</span> <span class="n">current_seq</span><span class="p">,</span> <span class="n">current_mask</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">doc_count</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">for</span> <span class="n">token_ids</span> <span class="ow">in</span> <span class="n">token_id_lists</span><span class="p">:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">token_ids</span> <span class="o">=</span> <span class="n">token_ids</span> <span class="o">+</span> <span class="p">[</span><span class="n">eos_token_id</span><span class="p">]</span>   <span class="c1"># 文档结束标记</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_seq</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_seq_len</span><span class="p">:</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>            <span class="k">if</span> <span class="n">current_seq</span><span class="p">:</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>                <span class="c1"># 用 0 (pad) 填充到 max_seq_len</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>                <span class="n">pad_len</span> <span class="o">=</span> <span class="n">max_seq_len</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_seq</span><span class="p">)</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>                <span class="n">packed</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>                    <span class="s2">&quot;input_ids&quot;</span><span class="p">:</span>      <span class="n">current_seq</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_len</span><span class="p">,</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>                    <span class="s2">&quot;attention_mask&quot;</span><span class="p">:</span> <span class="n">current_mask</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_len</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>                    <span class="s2">&quot;num_docs&quot;</span><span class="p">:</span>       <span class="n">doc_count</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>                <span class="p">})</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>            <span class="n">current_seq</span><span class="p">,</span> <span class="n">current_mask</span><span class="p">,</span> <span class="n">doc_count</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="mi">0</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="n">current_seq</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>        <span class="n">current_mask</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">))</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>        <span class="n">doc_count</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="k">return</span> <span class="n">packed</span>
+</code></pre></div>
+<p><em>代码清单6-4：贪心序列 Packing 示例</em></p>
+<p>对于包含大量短文档的训练集，启用 Packing 通常可以提高有效 Token 吞吐量（Tokens/s）。实际收益取决于文档长度分布、max sequence length、attention mask 实现和硬件配置，应在目标数据集上用 padding ratio 与 tokens/s 共同验证。</p>
+<h3 id="632">6.3.2 多源混采：温度权重与领域比例控制<a class="headerlink" href="#632" title="Permanent link">&para;</a></h3>
+<p>当训练数据来自多个异构来源（网页语料、代码、学术论文、书籍、企业数据）时，如何在训练过程中控制每种来源的采样比例，是一个直接影响模型能力分布的关键决策。</p>
+<p>最常用的方案是<strong>温度采样（Temperature Sampling）</strong>：将每个来源的数据量 <span class="arithmatex">\(n_i\)</span> 经过温度参数 <span class="arithmatex">\(T\)</span> 的幂次变换后，归一化为采样权重：</p>
+<div class="arithmatex">\[p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}\]</div>
+<p>当 <span class="arithmatex">\(T = 1\)</span> 时，权重与数据量等比，大来源完全主导；当 <span class="arithmatex">\(T \to \infty\)</span> 时，所有来源权重趋于均匀。实践中常用 <span class="arithmatex">\(T = 2\)</span>（mT5 (Xue et al. 2021) 的多语言采样设置），在上采样小来源的同时避免过度偏离原始数据分布。表6-2对比了常见采样与混采策略的收益和权衡。</p>
+<p><em>表6-2：采样与混采策略收益</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">混采策略</th>
+<th style="text-align: left;">原理</th>
+<th style="text-align: left;">优点</th>
+<th style="text-align: left;">缺点</th>
+<th style="text-align: left;">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>等比例采样</strong> (T=1)</td>
+<td style="text-align: left;">按原始数据量等比</td>
+<td style="text-align: left;">最接近真实数据分布</td>
+<td style="text-align: left;">小来源被大来源淹没，代码/论文等稀少</td>
+<td style="text-align: left;">通用语料预训练初期</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>均匀采样</strong> (T→∞)</td>
+<td style="text-align: left;">每个来源等概率</td>
+<td style="text-align: left;">充分覆盖所有来源</td>
+<td style="text-align: left;">模型偏向少数来源风格，通用能力下降</td>
+<td style="text-align: left;">特定覆盖率实验</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>温度采样</strong> (T=2)</td>
+<td style="text-align: left;">对数据量做幂次平滑</td>
+<td style="text-align: left;">平衡大小来源，增强多样性</td>
+<td style="text-align: left;">需要调参</td>
+<td style="text-align: left;">多语言、多领域混合（推荐）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>固定比例混采</strong></td>
+<td style="text-align: left;">手动设定每源配比</td>
+<td style="text-align: left;">完全可控，直接对应业务目标</td>
+<td style="text-align: left;">需要人工设计，配比调错代价大</td>
+<td style="text-align: left;">有明确业务目标的定制训练（推荐）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>课程学习（Curriculum）</strong></td>
+<td style="text-align: left;">先用简单/通用数据，后引入复杂数据</td>
+<td style="text-align: left;">收敛更稳，特定能力提升更高效</td>
+<td style="text-align: left;">需设计难度度量，实现复杂</td>
+<td style="text-align: left;">长期大规模训练</td>
+</tr>
+</tbody>
+</table>
+<h3 id="633-curriculum-learning">6.3.3 课程学习（Curriculum Learning）<a class="headerlink" href="#633-curriculum-learning" title="Permanent link">&para;</a></h3>
+<p>课程学习（Curriculum Learning）是一种在训练过程中<strong>动态调整数据配方</strong>的策略：模型训练的早期阶段使用更"简单"（句子更短、语言更通顺、领域更通用）的数据，随着训练进行逐步引入更长、更复杂的样本，以模拟"先易后难"的渐进式学习路径 (Bengio et al. 2009)。</p>
+<p>在工程实现上，课程学习的难度度量可以来自多个维度：token 序列长度（短→长）、困惑度分数（低困惑度→高困惑度）、质量层级（High→Medium→Low）。LLaMA-3 (Grattafiori et al. 2024) 的技术报告明确提到，在预训练的 Cooldown 阶段大幅提升高质量精选数据（代码、数学推理、书籍）的权重，这本质上正是一种<strong>数据质量课程</strong>——先用海量通用数据建立广泛的世界知识，再用高质量精选数据在最后阶段强化特定能力。</p>
+<hr />
+<h2 id="64">6.4 高效加载、缓存与吞吐诊断<a class="headerlink" href="#64" title="Permanent link">&para;</a></h2>
+<h3 id="641-dataloader">6.4.1 DataLoader 的关键配置<a class="headerlink" href="#641-dataloader" title="Permanent link">&para;</a></h3>
+<p>PyTorch 的 <code>DataLoader</code> 提供了多个直接影响 I/O 吞吐的参数，以下是对大规模预训练场景最有工程影响的几个：</p>
+<p><strong><code>num_workers</code></strong>：控制并行读取数据的子进程数量。这是最常见的调优点。可以从每 GPU 2-4 个 worker 或每节点 8-16 个 worker 的量级开始压测，但实际最优值必须由 CPU 核数、存储介质、shard 大小、batch size 和预处理开销共同决定。过多 worker 反而会因为进程管理开销和 IPC 争用而降低吞吐。</p>
+<p><strong><code>pin_memory=True</code></strong>：启用后，DataLoader 会在 CPU 端分配固定内存（Pinned Memory）用于存放 batch，使后续的 CPU→GPU 传输可以使用 DMA（直接内存访问），有机会提升 PCIe 传输效率。收益取决于 batch 大小、tensor 布局、CPU 内存压力和 GPU 拷贝调度，应通过 PyTorch Profiler 验证。</p>
+<p><strong><code>prefetch_factor</code></strong>：每个 worker 提前预加载的 batch 数量（默认为 2）。适当增大（如 4-8）可以隐藏磁盘读取延迟，但会增加 CPU 内存占用。</p>
+<p>代码清单6-5展示了基于 MosaicML Streaming Dataset 的 DataLoader 配置示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingDataset</span>  <span class="c1"># MosaicML Streaming Datasets</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">StreamingDataset</span><span class="p">(</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">local</span><span class="o">=</span><span class="s2">&quot;./data/shards/&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">remote</span><span class="o">=</span><span class="s2">&quot;s3://my-bucket/shards/&quot;</span><span class="p">,</span>   <span class="c1"># 支持从 S3 流式读取，边下边训</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">shuffle_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">dataset</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>        <span class="c1"># 根据 CPU 核数和 GPU 数量调整</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># 启用固定内存，加速 CPU→GPU 传输</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="n">prefetch_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>     <span class="c1"># 每 worker 预取 4 个 batch</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># 避免 epoch 间 worker 重启的开销</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单6-5：MosaicML Streaming Dataset 配置</em></p>
+<p>代码清单6-6展示了基于 <code>np.memmap</code> 的二进制 Token ID 数据集示意实现。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 应对千万级小文件 IO 优化的 Memmap 二进制加载器伪代码</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MemmapDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bin_path</span><span class="p">,</span> <span class="n">seq_len</span><span class="o">=</span><span class="mi">4096</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="c1"># 使用 np.memmap 映射大型二进制 .bin 文件 (Raw Token IDs)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="c1"># 完全避免了将整个数据集加载进内存，依靠 OS 的 Page Cache 极速随机读取</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span> <span class="o">=</span> <span class="n">seq_len</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">total_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_tokens</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="n">start_idx</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="c1"># 切片操作较轻量，由底层 C 代码和 OS 内存分页完成，吞吐较高</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>        <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span><span class="p">]</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+</code></pre></div>
+<p><em>代码清单6-6：基于 np.memmap 的 Token ID 数据集</em></p>
+<h3 id="642">6.4.2 吞吐瓶颈诊断：三步系统化排查<a class="headerlink" href="#642" title="Permanent link">&para;</a></h3>
+<p>当 GPU 利用率不达预期时，按以下系统化步骤排查。图6-1汇总了对应的吞吐瓶颈诊断流程。</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap06-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图6-1：吞吐瓶颈诊断流程图" src="../../../images/part2/Wang-Chap06-Fig01.svg" /></a></p>
+<p><em>图6-1：吞吐瓶颈诊断流程图</em></p>
+<p><strong>Step 1 - 确认 GPU 是否在等数据</strong>：运行 <code>nvidia-smi dmon -s u</code> 监控 SM 利用率；若 SM 利用率周期性下降且 <code>sm_active</code> 间歇性接近 0，说明 GPU 可能正在等待。同时检查 MFU（Model FLOPS Utilization）和 DataLoader wait time，判断问题是否来自数据管线。</p>
+<p><strong>Step 2 - 定位 I/O 层级</strong>：运行 <code>iostat -x 1</code> 监控磁盘 I/O；如果磁盘利用率、等待时间或队列长度长期高于项目基线，说明磁盘可能是瓶颈。同时用 <code>top</code> 或 <code>htop</code> 检查 DataLoader worker 进程的 CPU 占用，若 CPU 核心长期打满，说明在线分词/解压可能是瓶颈。</p>
+<p><strong>Step 3 - 检查 PCIe 传输</strong>：使用 PyTorch 的 Profiler 记录 <code>cudaMemcpyH2D</code> 的时间占比；若 H2D 传输在 step 时间中占比异常偏高，说明 PCIe 传输可能是瓶颈，需要启用 <code>pin_memory</code> 或优化 tensor 内存布局。</p>
+<h3 id="643-smoke-test-30">6.4.3 训练前 Smoke Test：上线前 30 分钟的自动检验<a class="headerlink" href="#643-smoke-test-30" title="Permanent link">&para;</a></h3>
+<p>在正式启动长周期预训练任务之前，强烈建议执行一个简短的 <strong>Smoke Test</strong>——用完整的数据管线（真实 shard 文件，真实 DataLoader 配置），但只运行 100-200 步训练，专门用于检验以下指标：</p>
+<ul>
+<li><strong>DataLoader 吞吐</strong>：Token/s 是否达到目标值（可根据 GPU 数量和 MFU 目标预计算）</li>
+<li><strong>GPU 利用率</strong>：是否达到项目基线，且不存在周期性等待数据的波动</li>
+<li><strong>Loss 初始值</strong>：是否在合理范围内（对于 LLM，随机初始化的 Loss 约等于 ln(vocab_size)，如 vocab 为 100K 则 Loss 初始值约 11.5）</li>
+<li><strong>无异常崩溃</strong>：DataLoader 没有 worker crash，CUDA 没有 OOM</li>
+</ul>
+<p>这类 Smoke Test 可以在正式训练前暴露大量配置问题，避免开篇案例中"训练跑起来后才发现管线是瓶颈"的高代价错误。</p>
+<h3 id="644">6.4.4 多节点分布式读取：避免"数据孤岛"<a class="headerlink" href="#644" title="Permanent link">&para;</a></h3>
+<p>当训练规模扩展到多机多卡（如 8 台服务器 × 8 GPU = 64 GPU）时，数据加载面临单机场景不会遇到的新挑战：<strong>如何让所有节点高效、无冲突地读取同一个数据集，同时保证全局数据分布的正确性（不重复、不遗漏、shuffle 随机性全局一致）？</strong></p>
+<p>最常见的错误做法是"共享 NFS 挂载"——所有节点挂载同一个 NFS 文件系统，每个节点的 DataLoader 直接从 NFS 读取 shard。这种方案配置简单，但在大规模并发读取时，NFS 服务器很快成为带宽瓶颈，且 NFS 随机访问的延迟通常高于本地 SSD，严重影响 DataLoader 的吞吐。</p>
+<p><strong>推荐方案一：本地 SSD + 数据预拷贝（Data Pre-staging）</strong>。在训练开始前，将 shard 文件预先分发（rsync 或 S3 批量下载）到每个节点的本地 NVMe SSD 上，训练期间各节点只读本地磁盘。这种方案的 I/O 性能较优，但需要额外的存储空间和预拷贝时间，耗时取决于数据量、网络带宽和拷贝并发。Shard 的分配策略推荐采用"静态分配+全局排列"：将所有 shard 按全局顺序打乱后，均匀分配给各节点（节点 0 取 shard 0, 8, 16..., 节点 1 取 shard 1, 9, 17...），确保每个节点的数据分片是全局 shuffle 后的等份。</p>
+<p><strong>推荐方案二：MosaicML Streaming 从 S3 流式读取</strong>。这是近年来大型团队越来越流行的方案——数据集存放在 S3/GCS 等对象存储上，每个节点在训练期间通过 <code>StreamingDataset</code> 按需下载 shard（下载一个 shard，训练完毕后删除，再下载下一个），本地磁盘只作为缓存层（缓存大小可配置）。这种方案的优势是数据集无需预先拷贝到各节点，新节点可以立即加入训练；局限是需要稳定的对象存储读取带宽和低抖动网络，不适合 shard 极小或对延迟敏感的场景。</p>
+<p>代码清单6-7展示了多节点分布式训练中的 DataLoader 配置示意。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 多节点分布式训练中的 DataLoader 配置</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedSampler</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingDataset</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># 初始化分布式</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># MosaicML Streaming：S3 流式读取，节点间自动协调 shard 分配</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">StreamingDataset</span><span class="p">(</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="n">local</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/nvme/cache/rank_</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>     <span class="c1"># 每节点独立的本地缓存目录</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="n">remote</span><span class="o">=</span><span class="s2">&quot;s3://my-bucket/pretrain_shards/&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">shuffle_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="n">num_canonical_nodes</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>         <span class="c1"># 按总节点数进行 shard 分发</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="p">)</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="c1"># 每个 rank 自动接收不重叠的 shard 子集</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="n">dataset</span><span class="p">,</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>          <span class="c1"># 每 GPU 的 micro-batch size</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单6-7：多节点分布式 DataLoader 配置</em></p>
+<p><strong>避免重复读取</strong>是多节点分布式 DataLoader 的一个常见易错点：如果各节点的 DataLoader 没有进行适当的 rank-aware 划分，每个节点会独立读取完整数据集，导致所有节点看到相同的数据顺序，梯度更新实际上是在重复数据上进行的——等效于 batch size 没有随着节点数增加而正确扩展。对于非 <code>StreamingDataset</code> 的自定义数据集，需要使用 <code>DistributedSampler</code>，并在每个 epoch 开始时调用 <code>sampler.set_epoch(epoch)</code> 以确保不同 epoch 之间的 shuffle 随机性。</p>
+<p><strong>全局 Token 计数一致性检验</strong>：在分布式训练中，每个 rank 实际处理的 token 数量应当接近。若各 rank 的 token 计数出现明显差异，说明数据分发或 DataLoader 配置存在问题，需要在 Smoke Test 阶段通过 <code>dist.all_reduce</code> 对各 rank 的 batch 计数进行汇总检验。</p>
+<hr />
+<h2 id="65">6.5 工程案例与性能优化清单<a class="headerlink" href="#65" title="Permanent link">&para;</a></h2>
+<h3 id="_5">图与案例<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>图6-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap06-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图6-2：训练输入管道分层图" src="../../../images/part2/Wang-Chap06-Fig02.svg" /></a></p>
+<p><em>图6-2：训练输入管道分层图</em></p>
+<h3 id="jsonl-mds">案例：从 JSONL+在线分词 到 MDS+离线分词 的迁移收益<a class="headerlink" href="#jsonl-mds" title="Permanent link">&para;</a></h3>
+<p>接续开篇匿名化复合案例，下面给出完成存储格式迁移后的压测对比模板。表中不写固定数值，是为了避免将某个集群的结果误读为通用收益；实际结果取决于硬件、存储、数据格式、batch size 和框架实现。</p>
+<p><strong>迁移前</strong>（JSONL.gz，HDD，在线分词）：</p>
+<ul>
+<li>记录磁盘读取速度、对象存储请求延迟和 DataLoader wait time。</li>
+<li>记录端到端 tokens/s、GPU utilization/MFU 和 CPU 解压/分词占用。</li>
+<li>记录每个 shard 的读取失败、重试和坏样本比例。</li>
+</ul>
+<p><strong>迁移后</strong>（MDS，NVMe SSD，离线预分词）：</p>
+<ul>
+<li>记录同一 batch size、同一模型配置下的端到端 tokens/s。</li>
+<li>记录 GPU wait time 是否下降，DataLoader 是否仍是瓶颈。</li>
+<li>记录迁移带来的额外存储成本、预处理耗时和数据校验成本。</li>
+</ul>
+<p><strong>核心收益的核算方式</strong>：比较迁移前后的端到端 tokens/s、DataLoader wait time、GPU wait time 和预处理总成本，再折算为达到同等训练 token 所需的 GPU 小时。只有在同一模型配置、同一 batch size 和同一训练目标下，迁移前后的收益才具备可比性。</p>
+<h3 id="651">6.5.1 输入管道优化检查清单<a class="headerlink" href="#651" title="Permanent link">&para;</a></h3>
+<p>以下是一份可直接使用的输入管道优化检查清单，建议在每个新训练任务启动前逐项核对：</p>
+<p><strong>存储与格式</strong></p>
+<ul>
+<li>[ ] 数据以二进制格式存储（MDS / .bin memmap），而非 JSONL</li>
+<li>[ ] 存储在高速设备（NVMe SSD / 高性能网络存储），而非 HDD 或 NFS</li>
+<li>[ ] Shard 大小已通过目标集群压测确定</li>
+<li>[ ] 数据已完成校验和（checksum）验证，确保无损坏 shard</li>
+</ul>
+<p><strong>分词与序列化</strong></p>
+<ul>
+<li>[ ] 分词已于预处理阶段离线完成，DataLoader 不做在线分词</li>
+<li>[ ] 序列已打包（Packing），padding token 比例低于项目基线</li>
+<li>[ ] 已启用全局 Shuffle（跨 shard 的随机性）</li>
+<li>[ ] 序列长度分布与目标 max_seq_len 匹配</li>
+</ul>
+<p><strong>DataLoader 配置</strong></p>
+<ul>
+<li>[ ] <code>num_workers</code> 已通过 Smoke Test 调参，而非直接套用固定倍数</li>
+<li>[ ] <code>pin_memory=True</code></li>
+<li>[ ] <code>persistent_workers=True</code>（避免 epoch 间重启开销）</li>
+<li>[ ] 已运行 Smoke Test，并确认 GPU util、MFU 和 DataLoader wait time 达到项目基线</li>
+</ul>
+<p><strong>监控与可观测性</strong></p>
+<ul>
+<li>[ ] 训练过程中持续记录 tokens/s、GPU util、DataLoader wait time</li>
+<li>[ ] 设置了 DataLoader 超时告警（如 batch 等待 &gt; 10s 触发告警）</li>
+<li>[ ] 保留了完整的数据来源元数据，支持问题回溯</li>
+</ul>
+<hr />
+<h2 id="_6">本章小结<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本章以一个匿名化复合案例说明 I/O 瓶颈如何导致 GPU 空转和成本浪费，系统建立了训练输入管道的完整技术认知。我们详细梳理了分词算法选型（BPE/SentencePiece 的工程权衡）、数据格式选择（从 JSONL 到 MDS/Arrow 的性能取舍）、Packing 策略（减少 Padding 带来的无效计算）、温度采样与课程学习的混采策略（表6-2），以及系统化的 I/O 瓶颈诊断三步法（图6-1）。附录中的"输入管道优化检查清单"可直接作为生产级预训练任务的启动前核验工具。</p>
+<p>本章与第3章成本治理的视角呼应：在 GPU 算力成本极高的预训练项目中，输入管道的工程质量会直接影响有效训练时间和总预算。进入下一章，我们将视角从"如何把数据送进模型"转向"如何评价模型用这些数据学到了什么"：<strong>第7章 数据评估、质量闭环与运营迭代</strong>。</p>
+<h2 id="_7">参考文献<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.</p>
+<p>Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D M, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. In: Advances in Neural Information Processing Systems 33, pp 1877-1901. arXiv:2005.14165.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Kudo T, Richardson J (2018) SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing. In: Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pp 66-71.</p>
+<p>Mosaic AI Research (2022) MosaicML Streaming. GitHub repository. <a href="https://github.com/mosaicml/streaming">https://github.com/mosaicml/streaming</a>.</p>
+<p>Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.</p>
+<p>Xue L, Constant N, Roberts A, Kale M, Al-Rfou R, Siddhant A, Barua A, Raffel C (2021) mT5: A Massively Multilingual Pre-trained Text-to-Text Transformer. In: Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics, pp 483-498.</p>
+<p>Asgari E, El Kheir Y, Javaheri M A S (2025) MorphBPE: A Morpho-Aware Tokenizer Bridging Linguistic Complexity for Efficient LLM Training Across Morphologies. arXiv preprint arXiv:2502.00894.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

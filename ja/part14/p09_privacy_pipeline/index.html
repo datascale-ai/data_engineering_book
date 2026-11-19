@@ -1,0 +1,2425 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p09_privacy_pipeline/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目九：隐私保护数据流水线 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目九：隐私保护数据流水线
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p09_privacy_pipeline/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p09_privacy_pipeline/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：隐私保护数据流水线的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）数据规模边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）场景边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）技术实现边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）治理能力边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p09" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P09 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从隐私规格到项目检查的处理流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从隐私规格到项目检查的处理流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：策略与边界定义层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：数据处理与控制执行层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：验证与运维闭环层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 工程前置：隐私流水线需要先明确哪些关键面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 工程前置：隐私流水线需要先明确哪些关键面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 合规目标与策略定义面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 数据处理与产物编排面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 安全运营与响应闭环面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 评估验证与验收面
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 关键面的前置性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 隐私规格层：规则先行的处理链
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 隐私规格层：规则先行的处理链">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 合规范围文件
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 分类策略的枢纽作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 访问策略的前置约束
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 原始记录与场景构造：小样本的治理覆盖
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 原始记录与场景构造：小样本的治理覆盖">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 小样本的结构覆盖能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 样本构造方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 场景样本的构造依据
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. PII 检测：识别规则作为处理入口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. PII 检测：识别规则作为处理入口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 规则法作为起点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 检测结果作为数据资产
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 当前检测分布说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-source-type-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 分类逻辑：source type 与 PII 的联合判定
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 分类逻辑：source type 与 PII 的联合判定">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 这段逻辑解决了什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-requires_quarantine" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 requires_quarantine 作为控制信号
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 当前结果说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 脱敏与去标识化：差异化去标识策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 脱敏与去标识化：差异化去标识策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-tokenizemask-remove" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 tokenize、mask 与 remove 的分工
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-hash_token" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 hash_token() 的意义是什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 策略差异的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 存储分区与隔离：结果与原始数据的分区控制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 存储分区与隔离：结果与原始数据的分区控制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-zone" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 为什么 zone 模型重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-quarantine_zone" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 为什么 quarantine_zone 是关键设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 隔离结果说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 审计与告警：行为证据链
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 审计与告警：行为证据链">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 告警是如何被建模的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 为什么审计日志和告警必须一起出现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 当前指标反映了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-preflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. preflight：运行前检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. preflight：运行前检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-preflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 preflight 检查项设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 当前结果说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-preflight" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.3 preflight 的独立价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-incident-simulation-postmortem" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. incident simulation 与 postmortem：异常响应闭环
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. incident simulation 与 postmortem：异常响应闭环">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 事件设计的完整性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 指标告诉了我们什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-incident-postmortem" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 incident 与 postmortem 的独立位置
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 评估脚本：指标的结构化生成
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 评估脚本：指标的结构化生成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 指标是如何从产物里算出来的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-has_direct_pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 为什么 has_direct_pii() 很关键
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 当前关键指标
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 代码—产物映射：脚本与交付物对应关系
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 代码—产物映射：脚本与交付物对应关系">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 分层映射的结构价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 交付物列表的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 检查脚本：代码、产物与报告的一致性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 检查脚本：代码、产物与报告的一致性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 检查脚本做了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 验证闭环的结构位置
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 这一节的模板价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 指标解读：闭环感作为核心信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 指标解读：闭环感作为核心信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 什么是闭环感
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 闭环感与吞吐量的区别
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 当前阶段判断
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-10-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 与 10-2 的对照：监督资产与控制资产
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 与 10-2 的对照：监督资产与控制资产">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 相同点：都强调工程闭环
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 不同点：一个核心是监督资产，一个核心是控制资产
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 对照分析的价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 后续扩展：走向更真实的工程系统
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 后续扩展：走向更真实的工程系统">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 从规则检测扩展到多层识别
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#202" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.2 从静态策略扩展到动态治理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#203" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.3 从文件级交付扩展到服务级控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#204-incident" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.4 从演练型 incident 扩展到持续演练
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 最小可复现运行链：完整案例的执行顺序
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 最小可复现运行链：完整案例的执行顺序">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 运行链单列的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-p09" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 方法复盘：P09 展示的系统能力
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：隐私流水线的运行手册视角
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：隐私流水线的运行手册视角">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、日常运行应先看什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、例外处理必须有明确入口
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、事故处置要围绕证据链展开
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：隐私治理的指标与长期演进
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：隐私治理的指标与长期演进">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、指标不应只看检测命中数
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、隐私系统更适合看“控制有效率”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、长期演进会从规则走向组合治理
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：数据主体请求与跨系统清理链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：数据主体请求与跨系统清理链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、主体请求真正困难的地方在于传播
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、跨系统清理需要血缘和责任同时存在
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">项目九：隐私保护数据流水线<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">刘中一；徐鑫；穆冠霖</div>
+
+<h2 id="_2">摘要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>P09 聚焦敏感数据进入训练、分析与共享链路之前的治理过程。章节重点不在单点脱敏技巧，而在把控制边界、敏感记录处理、运营响应和验收机制组织成一条完整的隐私保护数据流水线。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>控制边界与隐私规格：明确合规范围、分类策略、访问边界与技术选项。</li>
+<li>敏感记录处理链：完成 PII 检测、去标识化、隔离与存储分区。</li>
+<li>运营与响应闭环：把告警、审计、preflight、incident simulation 与 postmortem 纳入主流程。</li>
+<li>评估与验收机制：通过指标、交付物与检查脚本验证代码、产物和报告的一致性。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>合规范围定义 -&gt; 分类策略 -&gt; 访问边界 -&gt; 敏感记录处理 -&gt; 隔离与告警 -&gt; 运维预检 -&gt; 事故模拟 -&gt; 指标评估 -&gt; 项目检查</strong></p>
+<p>这一结构对应的核心目标，是把隐私治理从局部处理动作提升为可复现、可审阅、可验收的工程系统。</p>
+<hr />
+<h2 id="_3">关键词<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>隐私保护；PII 检测；去标识化；合规流水线；审计响应</p>
+<h2 id="_4">项目目标与读者收获<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本项目以“隐私保护数据流水线”为核心案例，目标是把 PII 检测、分类、脱敏、审计和检查组织成隐私保护处理链。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_5">场景约束与数据边界<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>以规则和示例数据验证治理链路，不替代法律意见、DPIA 或生产级隐私平台。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<p>本项目与<a href="../../appendix_b_compliance_and_release_checklist/">附录B：合规与上线检查清单</a>高度相关。P09 给出隐私处理链、审计日志、预检和事故复盘的项目级产物，附录B则把这些产物转化为发布门禁、撤回机制和责任分工清单。读者在复用 P09 时，应把本章的 <code>privacy_spec</code>、分类结果、脱敏产物、审计日志、preflight 结果和 postmortem 记录逐项映射到附录B，而不是只把它们视为实验输出。隐私治理边界可参考 GDPR (European Union 2016) 与 NIST Privacy Framework (NIST 2020)，技术选项则可结合差分隐私 (Dwork and Roth 2014) 与联邦学习综述 (Kairouz et al. 2021) 理解。</p>
+<h2 id="_6">架构决策<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本项目采用“隐私规格、PII 检测、风险分类、差异化脱敏、审计日志和项目检查”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P09-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>原始记录 -&gt; PII 检测 -&gt; 数据分类 -&gt; 脱敏/去标识化 -&gt; 风险标签 -&gt; 审计与检查报告
+</code></pre></div></p>
+<p><em>代码清单P09-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_7">核心实现片段<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_8">实验或验收指标<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>验收指标包括PII 检出率、误报漏报样本、脱敏字段覆盖、审计链完整性、策略命中率和检查通过率。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P09-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P09-1：隐私流水线出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>识别与处理</td>
+<td>PII 检出率、误报/漏报样本和脱敏字段覆盖</td>
+<td>每类敏感字段应有规则来源、处理动作和复核样例</td>
+</tr>
+<tr>
+<td>审计闭环</td>
+<td>策略命中率、审计日志完整性和 incident/postmortem 记录</td>
+<td>合规说明需能追踪到数据主体、处理依据和操作人</td>
+</tr>
+<tr>
+<td>发布门禁</td>
+<td>preflight 结果、版本冻结、撤回路径和责任 owner</td>
+<td>与附录B逐项对齐，确认发布、下线、撤回和复盘证据完整</td>
+</tr>
+<tr>
+<td>合规边界</td>
+<td>跨境传输、过度脱敏、权限误配和保留期限风险</td>
+<td>不把规则法原型表述为完整法规合规结论</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_9">成本、风险与合规边界<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>成本主要来自检测规则维护、人工复核和合规记录；风险集中在漏脱敏、过度脱敏、跨境传输和权限误配。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_10">常见失败模式<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_11">可复现资源说明<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="1">1. 项目背景：隐私保护数据流水线的必要性<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>随着训练数据、业务日志和分析型数据平台不断扩张，越来越多的团队会遇到同一个问题：原始数据里天然带有身份信息、财务信息、员工信息、医疗信息或其他高敏属性，但业务部门和算法部门又希望尽快把数据送进统一的平台进行分析、建模或共享。</p>
+<p>这时，风险并不只是“有没有把邮箱删掉”，而是更前面的链路是否被正确设计。比如：</p>
+<ul>
+<li>原始记录和脱敏记录是否放在同一个区域；</li>
+<li>哪些角色能接触原始数据，哪些角色只能读去标识化结果；</li>
+<li>当有人绕过常规流程发起导出时，系统是否能告警；</li>
+<li>如果出现越权访问尝试，系统是否有隔离与复盘机制；</li>
+<li>最终项目如何证明这些控制真的生效，而不是停留在 README 里。</li>
+</ul>
+<p>P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 的重点不是“做一次脱敏”，而是构建一条把分类、权限、脱敏、隔离、审计、预检和事故复盘组织在一起的隐私处理体系。它服务的是高度敏感记录进入训练或分析系统之前的安全控制需求。</p>
+<p>这类项目很有代表性，因为它展示的不是单点算法，而是一种<strong>治理型数据工程</strong>：</p>
+<blockquote>
+<p>真正成熟的隐私流水线，不是一个 regex 脚本，而是一套能明确责任边界、执行处理动作并输出验证证据的 operating model。</p>
+</blockquote>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立可解释的隐私规格层。</strong>
+先把场景域、合规目标、风险目标、分类等级、访问角色和技术选项写清楚，使项目不从“处理文本”开始，而从“定义控制边界”开始。</p>
+<p><strong>目标二：建立面向敏感记录的处理链路。</strong>
+从原始记录出发，完成分类、PII 检测、去标识化、隔离与告警，形成一条可复现的数据处理流程。</p>
+<p><strong>目标三：建立运维与事故响应闭环。</strong>
+通过 preflight、incident simulation 和 postmortem，让流水线不仅能“平时运行”，也能展示“事故发生时如何响应”。</p>
+<p><strong>目标四：形成可验证的工程交付。</strong>
+最终输出不仅包括处理后的 JSON/JSONL 产物，还包括指标文件、主报告、测试结果和项目检查报告，确保代码、产物与叙述一致。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了保持项目可复现性，本项目显式设置了若干边界。</p>
+<h4 id="1_1">1）数据规模边界<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h4>
+<p>当前项目使用的是一个小规模敏感记录样本集，总记录数为 8 条，重点用于展示方法链路，而不是证明大规模吞吐能力。</p>
+<h4 id="2_1">2）场景边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>项目当前主要覆盖三个代表性场景域：医疗支持、HR 薪资与金融 KYC。这些场景足以体现敏感数据治理中的典型问题，但尚未扩展到广告归因、跨国数据流、多租户 SaaS 或训练语料供应链等更复杂环境。</p>
+<h4 id="3">3）技术实现边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>项目纳入了差分隐私、TEE、FHE 等技术选项说明，但它们更多停留在“选项层”和“架构位点层”，并不意味着这些能力都已经被深度工程化实现。涉及 LLM 应用侧安全边界时，还应结合 OWASP LLM 应用风险清单 (OWASP Foundation 2025) 检查提示注入、数据泄露和工具误用风险。</p>
+<h4 id="4">4）治理能力边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>项目已经具备分类、隔离、审计、预检和事故恢复等治理链路，但在跨系统权限联动、复杂导出审批、持续监测与自动化例外管理方面仍有明显扩展空间。</p>
+<h3 id="23">2.3 边界说明的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>边界越明确，案例就越可信。真正需要的不是一个“什么都能做”的项目神话，而是一套可以回答下面这个问题的方法：</p>
+<blockquote>
+<p>在有限样本、有限时间和有限实现深度的前提下，如何把一个隐私项目做成完整闭环，而不是只停在概念说明？</p>
+</blockquote>
+<hr />
+<h2 id="3-p09">3. 项目定位：P09 的能力链位置<a class="headerlink" href="#3-p09" title="Permanent link">&para;</a></h2>
+<p>如果把整条大模型与数据工程能力链看成一个系统，那么 P09 所处的位置并不是训练本身，而是<strong>训练前治理</strong>与<strong>数据进入系统之前的安全控制</strong>。</p>
+<p>很多项目章节关注的是：</p>
+<ul>
+<li>如何构造训练数据；</li>
+<li>如何设计监督信号；</li>
+<li>如何做评估与偏好；</li>
+<li>如何做推理优化与业务接入。</li>
+</ul>
+<p>而 P09 则回答另一个经常被低估的问题：</p>
+<ul>
+<li>当数据本身带有隐私风险时，系统如何决定谁能看、哪些能出、哪些必须隔离、哪些要记录、出了问题如何追责？</li>
+</ul>
+<p>也就是说，本章要解决的不是“怎样把模型训得更强”，而是：</p>
+<blockquote>
+<p>当敏感数据进入智能系统时，数据治理链路要如何被设计成可执行、可验证、可解释的工程流程？</p>
+</blockquote>
+<p>这体现了 P09 作为隐私治理流水线的工程特征。</p>
+<hr />
+<h2 id="4_1">4. 整体架构：从隐私规格到项目检查的处理流水线<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h2>
+<p>图P09-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-1：P09 隐私保护数据流水线总体架构" src="../../../images/part14/p09/Liu-Project09-Fig01.svg" /></a>
+<em>图 P09-1：P09 隐私保护数据流水线总体架构</em></p>
+<p>从工程视角看，P09 可以拆成三层。</p>
+<h3 id="41">4.1 第一层：策略与边界定义层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层回答的是“系统到底要保护什么、按什么规则保护”。主要包括：</p>
+<ul>
+<li>合规范围定义（compliance scope）</li>
+<li>分类策略（classification policy）</li>
+<li>访问策略（access policy）</li>
+<li>隐私技术选项（privacy tech options）</li>
+</ul>
+<h3 id="42">4.2 第二层：数据处理与控制执行层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层回答的是“敏感数据进来以后具体发生什么”。主要包括：</p>
+<ul>
+<li>原始记录构造</li>
+<li>PII 检测</li>
+<li>敏感级别判定</li>
+<li>标识符去除、掩码与 token 化</li>
+<li>restricted 记录隔离</li>
+<li>告警与审计日志输出</li>
+</ul>
+<h3 id="43">4.3 第三层：验证与运维闭环层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层回答的是“系统是否真的可靠”。主要包括：</p>
+<ul>
+<li>preflight 检查</li>
+<li>事故模拟</li>
+<li>postmortem 报告</li>
+<li>metrics 评估</li>
+<li>项目检查脚本</li>
+</ul>
+<p>这一结构可以概括为三层：规则与范围定义层、处理与控制执行层、验证与交付闭环层。P09 的重点不在指令数据生产，而在从隐私规格生成、控制执行到治理证据沉淀的完整链路。 </p>
+<hr />
+<h2 id="5">5. 工程前置：隐私流水线需要先明确哪些关键面<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>隐私流水线不是单一脱敏脚本的线性放大，而是一条由控制目标、处理规则、运营机制和验收标准共同构成的治理链。</p>
+<h3 id="51">5.1 合规目标与策略定义面<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>这一层负责明确合规目标、敏感等级、访问边界和违规情形，使项目从控制目标出发，而不是从局部处理技巧出发。</p>
+<h3 id="52">5.2 数据处理与产物编排面<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>这一层负责流水线编排、JSON/JSONL 产物生成、目录标准化、处理逻辑落盘与评估脚本联动，保证处理链可以被复现和复核。</p>
+<h3 id="53">5.3 安全运营与响应闭环面<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>这一层负责告警、审计、预检、事故响应与复盘链路，保证控制措施不仅存在于处理逻辑中，也存在于日常运营流程中。</p>
+<h3 id="54">5.4 评估验证与验收面<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>这一层负责检查代码能否编译、报告与指标是否一致、产物是否完整、脱敏是否彻底，以及总体状态是否处于可接受范围。</p>
+<h3 id="55">5.5 关键面的前置性<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>隐私项目最常见的失败方式，往往不是正则或规则本身写错，而是关键控制面没有被显式固定下来：</p>
+<ul>
+<li>策略定义不清；</li>
+<li>权限模型缺少审核；</li>
+<li>例外流程无人承接；</li>
+<li>报告与产物无法对齐；</li>
+<li>出现问题后缺少可追溯的定位路径。</li>
+</ul>
+<p>这意味着隐私流水线首先是一条需要被完整定义的控制链，而不是若干脱敏动作的拼接。</p>
+<p>图P09-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-2：P09 隐私流水线关键工程面图" src="../../../images/part14/p09/Liu-Project09-Fig02.svg" /></a>
+<em>图 P09-2：P09 隐私流水线关键工程面图</em></p>
+<hr />
+<h2 id="6">6. 隐私规格层：规则先行的处理链<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>P09 的第一个脚本是 <code>src/build_privacy_specs.py</code>。这件事本身就很说明问题：项目不是先读数据，而是先生成隐私规格与策略。整体报告也明确给出了推荐执行顺序，第一步就是生成隐私规格与策略。</p>
+<h3 id="61">6.1 合规范围文件<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p>在很多项目里，“为什么要保护这些字段”会被隐含在代码注释里。但 P09 把这件事显式化成 <code>compliance_scope.json</code>。这样做有三个价值：</p>
+<ul>
+<li>让项目目标从一开始就对齐合规与风险语言；</li>
+<li>让后续评估可以直接引用作用域，而不是靠口头理解；</li>
+<li>让项目一开始就呈现出清晰的范围定义，而不是临时脚本式拼接。</li>
+</ul>
+<p>对应代码如下：</p>
+<p>代码清单P09-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_scope</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="s2">&quot;pipeline_goal&quot;</span><span class="p">:</span> <span class="s2">&quot;Build a reproducible privacy-preserving data processing pipeline for highly sensitive records.&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="s2">&quot;example_domains&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;healthcare_support&quot;</span><span class="p">,</span> <span class="s2">&quot;payroll_hr&quot;</span><span class="p">,</span> <span class="s2">&quot;financial_kyc&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="s2">&quot;compliance_targets&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>            <span class="s2">&quot;least_privilege&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>            <span class="s2">&quot;auditability&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>            <span class="s2">&quot;de-identification before analytics&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>            <span class="s2">&quot;incident response readiness&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="p">],</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="s2">&quot;risk_goals&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>            <span class="s2">&quot;prevent direct PII leakage to analytics consumers&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="s2">&quot;separate raw storage from redacted processing zones&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>            <span class="s2">&quot;log suspicious access and export attempts&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="p">],</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这段结构说明，P09 的起点不是脱敏动作，而是控制目标。</p>
+<h3 id="62">6.2 分类策略的枢纽作用<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>分类策略一旦定义清楚，后续很多控制动作就有了依据。比如：</p>
+<ul>
+<li>哪些 source type 默认是 restricted；</li>
+<li>哪些字段模式需要 tokenize；</li>
+<li>哪些字段更适合 mask 或直接 remove；</li>
+<li>没有识别到明确 PII 时是否还能沿用默认等级。</li>
+</ul>
+<p><code>build_classification_policy()</code> 把这些规则组织成结构化对象：</p>
+<p>代码清单P09-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_classification_policy</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="s2">&quot;sensitivity_levels&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>            <span class="p">{</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;restricted&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;direct PII, health identifiers, payroll details, bank data&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>            <span class="p">{</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;confidential&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;internal case details and support notes&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="p">{</span><span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;aggregate metrics and sanitized analytics outputs&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="p">],</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="s2">&quot;source_types&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>            <span class="p">{</span><span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;support_ticket&quot;</span><span class="p">,</span> <span class="s2">&quot;default_level&quot;</span><span class="p">:</span> <span class="s2">&quot;confidential&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            <span class="p">{</span><span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;employee_payroll&quot;</span><span class="p">,</span> <span class="s2">&quot;default_level&quot;</span><span class="p">:</span> <span class="s2">&quot;restricted&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>            <span class="p">{</span><span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;kyc_form&quot;</span><span class="p">,</span> <span class="s2">&quot;default_level&quot;</span><span class="p">:</span> <span class="s2">&quot;restricted&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="p">{</span><span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;analytics_export&quot;</span><span class="p">,</span> <span class="s2">&quot;default_level&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        <span class="p">],</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="s2">&quot;pii_rules&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="p">{</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;tokenize&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="p">{</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="s2">&quot;phone&quot;</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;mask&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="p">{</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="s2">&quot;ssn&quot;</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;remove&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="p">{</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="s2">&quot;bank_account&quot;</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;tokenize&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            <span class="p">{</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="s2">&quot;patient_id&quot;</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="s2">&quot;tokenize&quot;</span><span class="p">},</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="p">],</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="63">6.3 访问策略的前置约束<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<p>很多项目会先把数据处理完，再临时写一句“只有管理员可以访问原始数据”。但 P09 把 <code>access_policy.json</code> 也放在规格层生成，这意味着权限不是后补说明，而是先验约束。</p>
+<p>这一点关键，因为隐私控制里最昂贵的错误，往往不是“掩码没写完整”，而是“根本不该看到原始数据的人先看到了”。</p>
+<p>图P09-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-3：隐私规格层四类产物关系图" src="../../../images/part14/p09/Liu-Project09-Fig03.svg" /></a>
+<em>图 P09-3：隐私规格层四类产物关系图</em></p>
+<hr />
+<h2 id="7">7. 原始记录与场景构造：小样本的治理覆盖<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>项目当前原始记录只有 8 条。这个数字并不大，但它并不是随意拼凑出来的。整体报告显示，这 8 条记录横跨 3 个场景域、4 类数据源，并对应 5 类角色模型。</p>
+<h3 id="71">7.1 小样本的结构覆盖能力<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>因为本项目的目标不是做统计显著性，而是做<strong>方法演示</strong>。只要样本能覆盖：</p>
+<ul>
+<li>医疗支持中的 patient id、邮箱、电话；</li>
+<li>HR/薪资中的 SSN、薪资备注、工资周期；</li>
+<li>KYC 中的邮箱、银行账号与审核状态；</li>
+<li>analytics export 中相对低风险的聚合信息；</li>
+</ul>
+<p>那么它已经足以支撑一个最小可复现的隐私控制案例。</p>
+<h3 id="72">7.2 样本构造方式<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p><code>run_privacy_pipeline.py</code> 中的 <code>build_raw_records()</code> 直接给出了代表性数据：</p>
+<p>代码清单P09-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_raw_records</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="p">{</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>            <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;rec_001&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;support_ticket&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;healthcare_support&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>            <span class="s2">&quot;owner_team&quot;</span><span class="p">:</span> <span class="s2">&quot;care_ops&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="s2">&quot;Patient John Lee, patient id PT-483920, email john.lee@example.com, phone 415-555-2198 asked about claim denial.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="p">},</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="p">{</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>            <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;rec_002&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;employee_payroll&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;payroll_hr&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>            <span class="s2">&quot;owner_team&quot;</span><span class="p">:</span> <span class="s2">&quot;hr_ops&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="s2">&quot;Employee Marta Chen SSN 342-19-8842 salary adjustment note for payroll cycle 2026-04.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="p">},</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="p">{</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>            <span class="s2">&quot;record_id&quot;</span><span class="p">:</span> <span class="s2">&quot;rec_003&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>            <span class="s2">&quot;source_type&quot;</span><span class="p">:</span> <span class="s2">&quot;kyc_form&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>            <span class="s2">&quot;domain&quot;</span><span class="p">:</span> <span class="s2">&quot;financial_kyc&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>            <span class="s2">&quot;owner_team&quot;</span><span class="p">:</span> <span class="s2">&quot;fin_ops&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>            <span class="s2">&quot;payload&quot;</span><span class="p">:</span> <span class="s2">&quot;KYC form for beta@corp.test with bank account 998877665544 and risk review pending.&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        <span class="p">},</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P09-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这类写法的优点是，不必先下载外部数据集，也能完整理解流水线逻辑。它牺牲了一定的真实复杂度，换来更强的可复现性。</p>
+<h3 id="73">7.3 场景样本的构造依据<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<p>如果只说“准备了一些样本”，信息量其实很弱。更重要的是写清楚：这些样本为什么选这些域、覆盖哪些字段模式、服务于后续哪些控制动作。</p>
+<p>图P09-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-4：原始敏感记录场景覆盖图" src="../../../images/part14/p09/Liu-Project09-Fig04.svg" /></a>
+<em>图 P09-4：原始敏感记录场景覆盖图</em></p>
+<hr />
+<h2 id="8-pii">8. PII 检测：识别规则作为处理入口<a class="headerlink" href="#8-pii" title="Permanent link">&para;</a></h2>
+<p>隐私处理真正开始于 PII 检测。在 P09 里，这一步采用了规则驱动的方式：邮箱、电话、SSN、银行账号、patient id 分别使用独立正则进行匹配。</p>
+<h3 id="81">8.1 规则法作为起点<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>在这个案例里，规则法有三个明显优势：</p>
+<ul>
+<li>可解释：每个匹配项都知道是因为什么规则命中的；</li>
+<li>可控：误伤和漏检能被定位到具体 pattern；</li>
+<li>可复现：复制代码即可得到相同结果。</li>
+</ul>
+<p>代码如下：</p>
+<p>代码清单P09-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">EMAIL_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">PHONE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\b\d</span><span class="si">{3}</span><span class="s2">-\d</span><span class="si">{3}</span><span class="s2">-\d</span><span class="si">{4}</span><span class="s2">\b&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">SSN_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\b\d</span><span class="si">{3}</span><span class="s2">-\d</span><span class="si">{2}</span><span class="s2">-\d</span><span class="si">{4}</span><span class="s2">\b&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">BANK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\b\d{10,12}\b&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">PATIENT_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\bPT-\d{4,6}\b&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_pii</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">for</span> <span class="n">pattern_name</span><span class="p">,</span> <span class="n">regex</span> <span class="ow">in</span> <span class="p">[</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="n">EMAIL_RE</span><span class="p">),</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="p">(</span><span class="s2">&quot;phone&quot;</span><span class="p">,</span> <span class="n">PHONE_RE</span><span class="p">),</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="p">(</span><span class="s2">&quot;ssn&quot;</span><span class="p">,</span> <span class="n">SSN_RE</span><span class="p">),</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>        <span class="p">(</span><span class="s2">&quot;bank_account&quot;</span><span class="p">,</span> <span class="n">BANK_RE</span><span class="p">),</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="p">(</span><span class="s2">&quot;patient_id&quot;</span><span class="p">,</span> <span class="n">PATIENT_RE</span><span class="p">),</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="p">]:</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">regex</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>            <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">:</span> <span class="n">pattern_name</span><span class="p">,</span> <span class="s2">&quot;match&quot;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)})</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="k">return</span> <span class="n">detections</span>
+</code></pre></div></p>
+<p><em>代码清单P09-5：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="82">8.2 检测结果作为数据资产<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>很多项目会在代码里检测完就直接替换，不保留检测结构。但 P09 把 <code>pii_detections</code> 放进了分类结果里，使得后续评估可以统计字段分布，检查脚本也可以验证规则是否真的生效。</p>
+<p>这使项目从“做了脱敏”升级为“留下了检测证据”。</p>
+<h3 id="83">8.3 当前检测分布说明了什么<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，PII 检测覆盖了多种字段模式，其中 email=5、phone=3、patient_id=2、bank_account=2。 这说明即使在一个小规模数据集中，项目也已经具备跨字段模式的最小覆盖，而不是只处理单一类型的标识符。</p>
+<p>图P09-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-5：PII 检测规则与命中分布图" src="../../../images/part14/p09/Liu-Project09-Fig05.svg" /></a>
+<em>图 P09-5：PII 检测规则与命中分布图</em></p>
+<hr />
+<h2 id="9-source-type-pii">9. 分类逻辑：source type 与 PII 的联合判定<a class="headerlink" href="#9-source-type-pii" title="Permanent link">&para;</a></h2>
+<p>真正稳健的隐私分类，往往不是“只看字段内容”或“只看数据来源”，而是两者结合。P09 的 <code>classify_record()</code> 就体现了这一点。</p>
+<p>代码清单P09-6 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">classify_record</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">classification_policy</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">source_type_map</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="n">item</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">]:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;default_level&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">classification_policy</span><span class="p">[</span><span class="s2">&quot;source_types&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="p">}</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">detections</span> <span class="o">=</span> <span class="n">detect_pii</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">sensitivity</span> <span class="o">=</span> <span class="n">source_type_map</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s2">&quot;source_type&quot;</span><span class="p">],</span> <span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="k">if</span> <span class="n">detections</span><span class="p">:</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="n">sensitivity</span> <span class="o">=</span> <span class="s2">&quot;restricted&quot;</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="o">**</span><span class="n">record</span><span class="p">,</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="s2">&quot;sensitivity_level&quot;</span><span class="p">:</span> <span class="n">sensitivity</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="s2">&quot;pii_detections&quot;</span><span class="p">:</span> <span class="n">detections</span><span class="p">,</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="s2">&quot;requires_quarantine&quot;</span><span class="p">:</span> <span class="n">sensitivity</span> <span class="o">==</span> <span class="s2">&quot;restricted&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-6：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="91">9.1 这段逻辑解决了什么问题<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>它解决了两个常见错误。</p>
+<p>第一，只按 source type 判定会漏掉异常内容。比如一个本该较低风险的来源里，突然出现明确的邮箱或账号，如果仍然沿用默认级别，就会失控。</p>
+<p>第二，只看正则命中又会忽略业务语义。比如某些 payroll 或 KYC 数据即使当前文本里没有直接命中，也不应该轻易归入低敏等级。</p>
+<h3 id="92-requires_quarantine">9.2 <code>requires_quarantine</code> 作为控制信号<a class="headerlink" href="#92-requires_quarantine" title="Permanent link">&para;</a></h3>
+<p>很多项目把分类结果只写成一个标签，但 P09 进一步写出了控制动作信号 <code>requires_quarantine</code>。这意味着分类不是为了报告好看，而是为了驱动后续系统行为。</p>
+<p>这在工程上需要重点关注，因为：</p>
+<blockquote>
+<p>真正可用的分类，不只是告诉你“它是什么”，而是告诉系统“接下来应该怎么处理它”。</p>
+</blockquote>
+<h3 id="93">9.3 当前结果说明了什么<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，8 条原始记录中有 7 条被判定为 restricted，且 7 条都进入了隔离。 这与项目的场景选择是匹配的：样本集中大部分记录本来就带有高敏特征，目的是把治理链路展示清楚，而不是刻意制造大量低风险样本。</p>
+<p>图P09-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-6：分类判定与隔离触发关系图" src="../../../images/part14/p09/Liu-Project09-Fig06.svg" /></a>
+<em>图 P09-6：分类判定与隔离触发关系图</em></p>
+<hr />
+<h2 id="10">10. 脱敏与去标识化：差异化去标识策略<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>很多团队做脱敏时，最常见的简化就是“全部替换成 *** ”。这种做法虽然看上去安全，但会带来两个问题：</p>
+<ul>
+<li>丢失必要的分析结构；</li>
+<li>无法体现不同字段应有的不同处理强度。</li>
+</ul>
+<p>P09 在 <code>redact_payload()</code> 中使用了三种策略：tokenize、mask 与 remove。</p>
+<p>代码清单P09-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">redact_payload</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">detections</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">redacted</span> <span class="o">=</span> <span class="n">text</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="n">match</span> <span class="o">=</span> <span class="n">detection</span><span class="p">[</span><span class="s2">&quot;match&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="k">if</span> <span class="n">detection</span><span class="p">[</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="s2">&quot;bank_account&quot;</span><span class="p">,</span> <span class="s2">&quot;patient_id&quot;</span><span class="p">}:</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>            <span class="n">replacement</span> <span class="o">=</span> <span class="n">hash_token</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="k">elif</span> <span class="n">detection</span><span class="p">[</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;phone&quot;</span><span class="p">:</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="n">replacement</span> <span class="o">=</span> <span class="s2">&quot;***-***-&quot;</span> <span class="o">+</span> <span class="n">match</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="n">replacement</span> <span class="o">=</span> <span class="s2">&quot;[REMOVED_SSN]&quot;</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="n">redacted</span> <span class="o">=</span> <span class="n">redacted</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">replacement</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="k">return</span> <span class="n">redacted</span>
+</code></pre></div></p>
+<p><em>代码清单P09-7：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="101-tokenizemask-remove">10.1 tokenize、mask 与 remove 的分工<a class="headerlink" href="#101-tokenizemask-remove" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>tokenize</strong> 适合邮箱、银行账号、patient id 这类需要保留“同一实体一致性”但不应暴露原值的字段；</li>
+<li><strong>mask</strong> 适合电话这类保留末位有助于运维核对但不能保留全值的字段；</li>
+<li><strong>remove</strong> 适合 SSN 这类高度敏感、没有必要保留可回指结构的字段。</li>
+</ul>
+<h3 id="102-hash_token">10.2 <code>hash_token()</code> 的意义是什么<a class="headerlink" href="#102-hash_token" title="Permanent link">&para;</a></h3>
+<p>辅助脚本中使用 <code>sha256</code> 生成稳定 token：</p>
+<p>代码清单P09-8 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">hash_token</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;tok_</span><span class="si">{</span><span class="n">digest</span><span class="p">[:</span><span class="mi">12</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<p><em>代码清单P09-8：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这样做的好处在于，同一个原值会映射到相同 token，既能避免直接暴露原始标识符，也能支持后续做弱关联分析。</p>
+<h3 id="103">10.3 策略差异的必要性<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>因为隐私工程里最忌讳的，就是把所有问题都写成一个模糊的“脱敏处理”。真正有工程含义的写法，必须把不同字段的控制意图区分出来。</p>
+<p>图P09-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-7：不同 PII 类型的去标识化策略图" src="../../../images/part14/p09/Liu-Project09-Fig07.svg" /></a>
+<em>图 P09-7：不同 PII 类型的去标识化策略图</em></p>
+<hr />
+<h2 id="11">11. 存储分区与隔离：结果与原始数据的分区控制<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>隐私治理里，一个高频但又经常被低估的问题是：哪怕你做了去标识化，如果原始记录与处理结果仍然混放在同一逻辑区，很多风险依然存在。</p>
+<p>P09 通过 <code>build_isolation_plan()</code> 显式给出四类 zone：raw_zone、quarantine_zone、redacted_zone 和 audit_zone。</p>
+<p>代码清单P09-9 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_isolation_plan</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        <span class="s2">&quot;zones&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>            <span class="p">{</span><span class="s2">&quot;zone_name&quot;</span><span class="p">:</span> <span class="s2">&quot;raw_zone&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="s2">&quot;encrypted object storage&quot;</span><span class="p">,</span> <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;privacy_admin&quot;</span><span class="p">]},</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>            <span class="p">{</span><span class="s2">&quot;zone_name&quot;</span><span class="p">:</span> <span class="s2">&quot;quarantine_zone&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="s2">&quot;isolated secure bucket&quot;</span><span class="p">,</span> <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;privacy_admin&quot;</span><span class="p">,</span> <span class="s2">&quot;incident_responder&quot;</span><span class="p">]},</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>            <span class="p">{</span><span class="s2">&quot;zone_name&quot;</span><span class="p">:</span> <span class="s2">&quot;redacted_zone&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="s2">&quot;analytics warehouse&quot;</span><span class="p">,</span> <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;data_processor&quot;</span><span class="p">,</span> <span class="s2">&quot;analyst&quot;</span><span class="p">]},</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>            <span class="p">{</span><span class="s2">&quot;zone_name&quot;</span><span class="p">:</span> <span class="s2">&quot;audit_zone&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">:</span> <span class="s2">&quot;security log store&quot;</span><span class="p">,</span> <span class="s2">&quot;access&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;auditor&quot;</span><span class="p">,</span> <span class="s2">&quot;privacy_admin&quot;</span><span class="p">]},</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>        <span class="p">],</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="s2">&quot;deid_flow&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span class="s2">&quot;ingest raw restricted records&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span class="s2">&quot;classify and detect PII&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>            <span class="s2">&quot;write restricted originals to raw_zone&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>            <span class="s2">&quot;redact identifiers and emit sanitized records to redacted_zone&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>            <span class="s2">&quot;quarantine flagged export attempts and emit audit alerts&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="p">],</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>    <span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-9：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="111-zone">11.1 为什么 zone 模型重要<a class="headerlink" href="#111-zone" title="Permanent link">&para;</a></h3>
+<p>因为它把“谁能看什么”与“数据该放哪里”绑定起来。只有这样，权限边界才不是抽象声明，而是与存储对象、工作流动作和角色集合一起落地。</p>
+<h3 id="112-quarantine_zone">11.2 为什么 quarantine_zone 是关键设计<a class="headerlink" href="#112-quarantine_zone" title="Permanent link">&para;</a></h3>
+<p>很多项目只有 raw_zone 和 redacted_zone，但没有 quarantine_zone。问题在于：当发现异常访问或可疑导出时，系统就缺少一个“既不继续处理、又不直接丢弃”的中间状态。</p>
+<p>quarantine_zone 的意义在于：</p>
+<ul>
+<li>暂停风险扩散；</li>
+<li>为 incident responder 留出调查空间；</li>
+<li>保持证据链；</li>
+<li>让例外流程有一个明确落点。</li>
+</ul>
+<h3 id="113">11.3 隔离结果说明了什么<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，当前 restricted 记录为 7 条，隔离记录也是 7 条。 这表明隔离逻辑与分类逻辑保持一致，而不是“分类归分类，隔离另说”。</p>
+<p>图P09-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-8：存储分区与角色访问边界图" src="../../../images/part14/p09/Liu-Project09-Fig08.svg" /></a>
+<em>图 P09-8：存储分区与角色访问边界图</em></p>
+<hr />
+<h2 id="12">12. 审计与告警：行为证据链<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>一个只会“处理数据”的系统，并不等于一个可治理的系统。因为真正敏感的时刻，往往不是平时处理，而是有人试图绕过规则时。P09 把告警与审计单独建成产物，正是为了让系统留下可追溯证据。</p>
+<h3 id="121">12.1 告警是如何被建模的<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p><code>build_alerts()</code> 构造了两个典型告警：</p>
+<p>代码清单P09-10 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_alerts</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="k">return</span> <span class="p">[</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span class="p">{</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>            <span class="s2">&quot;alert_id&quot;</span><span class="p">:</span> <span class="s2">&quot;alert_priv_001&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>            <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>            <span class="s2">&quot;actor&quot;</span><span class="p">:</span> <span class="s2">&quot;analyst&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;unauthorized raw zone access attempt&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;resolved&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>        <span class="p">},</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>        <span class="p">{</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>            <span class="s2">&quot;alert_id&quot;</span><span class="p">:</span> <span class="s2">&quot;alert_priv_002&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>            <span class="s2">&quot;severity&quot;</span><span class="p">:</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>            <span class="s2">&quot;actor&quot;</span><span class="p">:</span> <span class="s2">&quot;data_processor&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;restricted export requested without approval&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;resolved&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        <span class="p">},</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="p">]</span>
+</code></pre></div></p>
+<p><em>代码清单P09-10：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这两个告警典型：一个是越权访问原始区，一个是未经批准请求导出 restricted 数据。它们恰好对应了隐私治理中最危险的两类动作。</p>
+<h3 id="122">12.2 为什么审计日志和告警必须一起出现<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>告警告诉系统“有风险动作发生了”，审计日志则告诉系统“谁在什么时候做了什么”。前者更偏实时控制，后者更偏事后追踪。少任何一个，治理链都会不完整。</p>
+<h3 id="123">12.3 当前指标反映了什么<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，当前项目共有告警 2 条、告警解决率 100%、审计事件 5 条。 这说明项目已经不是“生成了一些脱敏文件”，而是开始具备安全运营语义。</p>
+<p>图P09-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-9：告警、审计与事件响应关系图" src="../../../images/part14/p09/Liu-Project09-Fig09.svg" /></a>
+<em>图 P09-9：告警、审计与事件响应关系图</em></p>
+<hr />
+<h2 id="13-preflight">13. preflight：运行前检查<a class="headerlink" href="#13-preflight" title="Permanent link">&para;</a></h2>
+<p>许多数据项目只有处理主流程，没有运行前检查。但隐私流水线如果缺少 preflight，就容易出现一种假象：看起来文件都能输出，实际上条件并不满足。</p>
+<p>P09 在 <code>simulate_privacy_ops.py</code> 中先做 preflight，再做 incident simulation。这一顺序很有工程意味。</p>
+<p>代码清单P09-11 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">preflight</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="s2">&quot;checks&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;all records classified&quot;</span><span class="p">,</span> <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">classified</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="s2">&quot;sensitivity_level&quot;</span> <span class="ow">in</span> <span class="n">item</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">classified</span><span class="p">)},</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;restricted records isolated&quot;</span><span class="p">,</span> <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">all</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;requires_quarantine&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;sensitivity_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;restricted&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">classified</span><span class="p">)},</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;alerts wired&quot;</span><span class="p">,</span> <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">alerts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">},</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;role model present&quot;</span><span class="p">,</span> <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">access_policy</span><span class="p">[</span><span class="s2">&quot;roles&quot;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">},</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>        <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;privacy tech options documented&quot;</span><span class="p">,</span> <span class="s2">&quot;passed&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tech_options</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">},</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="p">]</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-11：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="131-preflight">13.1 preflight 检查项设计<a class="headerlink" href="#131-preflight" title="Permanent link">&para;</a></h3>
+<p>因为它们覆盖的是“流水线成立的最低前提”：</p>
+<ul>
+<li>有分类；</li>
+<li>restricted 真被隔离；</li>
+<li>告警不是空壳；</li>
+<li>角色模型不是缺失的；</li>
+<li>隐私技术选项不是空白的。</li>
+</ul>
+<h3 id="132">13.2 当前结果说明了什么<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，preflight pass rate 为 100%。 这意味着项目在运维模拟开始前，至少满足了最小前置条件。</p>
+<h3 id="133-preflight">13.3 preflight 的独立价值<a class="headerlink" href="#133-preflight" title="Permanent link">&para;</a></h3>
+<p>因为这体现了一种成熟的工程习惯：</p>
+<blockquote>
+<p>不是“跑完再看”，而是“先确认最低条件成立，再进入更高风险的处理和演练阶段”。</p>
+</blockquote>
+<p>图P09-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-10：preflight 检查流程图" src="../../../images/part14/p09/Liu-Project09-Fig10.svg" /></a>
+<em>图 P09-10：preflight 检查流程图</em></p>
+<hr />
+<h2 id="14-incident-simulation-postmortem">14. incident simulation 与 postmortem：异常响应闭环<a class="headerlink" href="#14-incident-simulation-postmortem" title="Permanent link">&para;</a></h2>
+<p>很多案例只讲成功路径，不讲失败路径。但隐私治理恰恰不能回避失败场景，因为真正决定体系是否可信的，往往是“有人越界时系统怎么响应”。</p>
+<p>P09 将 incident 场景写成结构化记录：分析师未经批准尝试导出 restricted 原始记录，其中 detection、containment、outcome 和 response_minutes 都被显式保留。</p>
+<p>代码清单P09-12 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">incident</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="s2">&quot;incident_id&quot;</span><span class="p">:</span> <span class="s2">&quot;privacy_inc_001&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="s2">&quot;scenario&quot;</span><span class="p">:</span> <span class="s2">&quot;analyst attempted to export restricted raw records without approval&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="s2">&quot;detection&quot;</span><span class="p">:</span> <span class="s2">&quot;access_alerts.jsonl high severity alert&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="s2">&quot;containment&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="s2">&quot;quarantine the export request&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="s2">&quot;lock the analyst session&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        <span class="s2">&quot;require privacy_admin review&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="p">],</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="s2">&quot;resolved with no confirmed external data leak&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    <span class="s2">&quot;response_minutes&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-12：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>对应的 postmortem 则继续记录 root cause、what_worked 和 follow_ups。</p>
+<h3 id="141">14.1 事件设计的完整性<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>因为它不是泛泛地写“发生了安全事件”，而是把事件链拆成：</p>
+<ul>
+<li>如何被发现；</li>
+<li>如何被遏制；</li>
+<li>为什么没有扩散；</li>
+<li>后续要做什么改进。</li>
+</ul>
+<h3 id="142">14.2 指标告诉了我们什么<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>整体报告显示，事故响应耗时 24 分钟，postmortem follow-up 数为 3。 这说明项目已经把运维和复盘写进了可计量结果，而不是只留一句“未来可扩展”。</p>
+<h3 id="143-incident-postmortem">14.3 incident 与 postmortem 的独立位置<a class="headerlink" href="#143-incident-postmortem" title="Permanent link">&para;</a></h3>
+<p>把 incident 和 postmortem 写进去，更容易看清一件事：隐私流水线并不是一条静态 ETL，而是一套包含异常响应能力的治理体系。</p>
+<p>图P09-11展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig11.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-11：事故响应与 postmortem 闭环图" src="../../../images/part14/p09/Liu-Project09-Fig11.svg" /></a>
+<em>图 P09-11：事故响应与 postmortem 闭环图</em></p>
+<hr />
+<h2 id="15">15. 评估脚本：指标的结构化生成<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>P09 的评估由 <code>src/evaluate_privacy_pipeline.py</code> 完成。它不是手工写一份总结，而是直接读取 processed 目录中的各类产物，计算统一指标并生成 <code>p9_metrics.json</code> 与 <code>p9_report.md</code>。</p>
+<h3 id="151">15.1 指标是如何从产物里算出来的<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>评估阶段会先读取 scope、classification、access、tech options、raw/classified/redacted/quarantined、alerts、audit、preflight、incident、postmortem 等全部产物，再计算关键结果。</p>
+<p>代码清单P09-13 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span class="s2">&quot;domain_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">scope</span><span class="p">[</span><span class="s2">&quot;example_domains&quot;</span><span class="p">]),</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="s2">&quot;compliance_target_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">scope</span><span class="p">[</span><span class="s2">&quot;compliance_targets&quot;</span><span class="p">]),</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="s2">&quot;source_type_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">classification</span><span class="p">[</span><span class="s2">&quot;source_types&quot;</span><span class="p">]),</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="s2">&quot;role_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">access</span><span class="p">[</span><span class="s2">&quot;roles&quot;</span><span class="p">]),</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="s2">&quot;privacy_tech_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tech_options</span><span class="p">),</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="s2">&quot;raw_record_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_records</span><span class="p">),</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="s2">&quot;restricted_record_count&quot;</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;sensitivity_level&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;restricted&quot;</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">classified</span><span class="p">),</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="s2">&quot;quarantine_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">quarantined</span><span class="p">),</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="s2">&quot;pii_detection_distribution&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">detection</span><span class="p">[</span><span class="s2">&quot;pattern_name&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">classified</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>        <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;pii_detections&quot;</span><span class="p">]</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>    <span class="p">)),</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="s2">&quot;direct_pii_removed_rate&quot;</span><span class="p">:</span> <span class="n">direct_pii_removed_rate</span><span class="p">,</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="s2">&quot;alert_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">alerts</span><span class="p">),</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    <span class="s2">&quot;resolved_alert_rate&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;resolved&quot;</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">alerts</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">alerts</span><span class="p">)),</span> <span class="mi">4</span><span class="p">),</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="s2">&quot;audit_event_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">audit_log</span><span class="p">),</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="s2">&quot;preflight_pass_rate&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">preflight</span><span class="p">[</span><span class="s2">&quot;passed_checks&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">preflight</span><span class="p">[</span><span class="s2">&quot;total_checks&quot;</span><span class="p">]),</span> <span class="mi">4</span><span class="p">),</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>    <span class="s2">&quot;incident_response_minutes&quot;</span><span class="p">:</span> <span class="n">incident</span><span class="p">[</span><span class="s2">&quot;response_minutes&quot;</span><span class="p">],</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>    <span class="s2">&quot;postmortem_follow_up_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">postmortem</span><span class="p">[</span><span class="s2">&quot;follow_ups&quot;</span><span class="p">]),</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><em>代码清单P09-13：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="152-has_direct_pii">15.2 为什么 <code>has_direct_pii()</code> 很关键<a class="headerlink" href="#152-has_direct_pii" title="Permanent link">&para;</a></h3>
+<p>评估脚本并不是简单统计文件数，还会再次用正则检查 redacted 结果中是否还残留直接 PII。这意味着评估不是“格式检查”，而是针对核心治理目标的结果验证。</p>
+<h3 id="153">15.3 当前关键指标<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>根据整体报告，目前项目关键结果包括：3 个场景域、4 个合规目标、4 类数据源、5 类角色；8 条原始记录中 7 条为 restricted 且 7 条被隔离；直接 PII 去除率 100%；preflight pass rate 100%；告警 2 条且解决率 100%；审计事件 5 条。</p>
+<p>这些指标共同指向一个判断：P09 的重点不在数据量，而在治理链是否闭合。整体报告对这一点也有明确说明。</p>
+<hr />
+<h2 id="16">16. 代码—产物映射：脚本与交付物对应关系<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>一个好章节不能只列脚本名字，更要把“脚本做什么、产出什么、被谁消费”写清楚。P09 的整体流程大致如下：</p>
+<ol>
+<li><code>build_privacy_specs.py</code> 生成范围、分类、访问与技术选项；</li>
+<li><code>run_privacy_pipeline.py</code> 处理原始记录，生成分类、脱敏、隔离、审计与告警产物；</li>
+<li><code>simulate_privacy_ops.py</code> 生成 preflight、incident、postmortem；</li>
+<li><code>evaluate_privacy_pipeline.py</code> 汇总指标与主报告；</li>
+<li><code>run_p9_checks.py</code> 执行命令级与数据级检查。</li>
+</ol>
+<h3 id="161">16.1 分层映射的结构价值<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>因为它让系统很容易被理解成一个逐层构建的闭环：先定义，再处理，再运维，再评估，再验收。它没有把所有逻辑塞进一个脚本里，因此结构清晰。</p>
+<h3 id="162">16.2 交付物列表的作用<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>整体报告列出了完整交付物，包括：</p>
+<ul>
+<li><code>compliance_scope.json</code></li>
+<li><code>classification_policy.json</code></li>
+<li><code>access_policy.json</code></li>
+<li><code>privacy_tech_options.json</code></li>
+<li><code>raw_sensitive_records.jsonl</code></li>
+<li><code>classified_records.jsonl</code></li>
+<li><code>redacted_records.jsonl</code></li>
+<li><code>quarantine_records.jsonl</code></li>
+<li><code>audit_log.jsonl</code></li>
+<li><code>access_alerts.jsonl</code></li>
+<li><code>isolation_plan.json</code></li>
+<li><code>preflight_checklist.json</code></li>
+<li><code>incident_simulation.json</code></li>
+<li><code>postmortem_report.json</code></li>
+<li><code>p9_report.md</code></li>
+<li><code>p9_metrics.json</code></li>
+<li><code>p9_test_results.json</code></li>
+<li><code>p9_test_report.md</code>。</li>
+</ul>
+<p>这份列表的重要性在于，它说明 P09 的完成标准不是跑一个 notebook，而是形成一套可审阅的文件资产。</p>
+<hr />
+<h2 id="17">17. 检查脚本：代码、产物与报告的一致性<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>很多项目写到最后，只说“运行成功了”。但这并不足以证明项目真的完成。P09 的 <code>run_p9_checks.py</code> 正是在解决这个问题。</p>
+<h3 id="171">17.1 检查脚本做了什么<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>它分成两类检查：</p>
+<ul>
+<li><strong>命令级检查</strong>：如 <code>py_compile</code> 和重新执行 <code>evaluate_privacy_pipeline.py</code>；</li>
+<li><strong>数据/产物级检查</strong>：如 required files 是否存在、角色与 zone 模型是否存在、记录是否都被分类、restricted 是否都被隔离、redacted 中是否移除了直接 PII、PII 规则是否存在等。</li>
+</ul>
+<p>从整体报告可知，总检查项为 13，全部通过，总体状态 PASS；其中命令级检查项 2 个，数据/产物级检查项 11 个。</p>
+<h3 id="172">17.2 验证闭环的结构位置<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p>10-2 特别强调“代码、产物、统计与报告彼此一致”才算项目真正验证。 P09 虽然任务不同，但继承的是同一种工程习惯：</p>
+<blockquote>
+<p>一个数据工程案例，不能只靠描述自证，而必须让检查脚本成为验收器。</p>
+</blockquote>
+<h3 id="173">17.3 这一节的模板价值<a class="headerlink" href="#173" title="Permanent link">&para;</a></h3>
+<p>因为很多团队真正缺的，不是“知道要做验证”，而是不知道要把验证写成什么样。P09 给出了一个适合作为模板的最小做法：</p>
+<ul>
+<li>能编译；</li>
+<li>能重跑评估；</li>
+<li>有文件；</li>
+<li>有内容；</li>
+<li>有指标；</li>
+<li>有一致性。</li>
+</ul>
+<hr />
+<h2 id="18">18. 指标解读：闭环感作为核心信号<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>从规模上看，P09 较为克制：只有 8 条原始记录，远谈不上生产级数据量。它仍然值得单独展开，是因为它呈现出了强烈的“闭环感”。</p>
+<h3 id="181">18.1 什么是闭环感<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<p>在这个项目里，闭环感体现在：</p>
+<ul>
+<li>有目标与边界；</li>
+<li>有分类与控制；</li>
+<li>有处理与隔离；</li>
+<li>有告警与审计；</li>
+<li>有预检与事故演练；</li>
+<li>有指标与检查脚本；</li>
+<li>有报告与测试结果。</li>
+</ul>
+<h3 id="182">18.2 闭环感与吞吐量的区别<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<p>一个小而完整的项目，往往比一个大而模糊的项目更有学习价值。因为可复用的往往是结构、分层、字段设计、控制逻辑和验证模式，而不是单次吞吐量。</p>
+<h3 id="183">18.3 当前阶段判断<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<p>P09 更像一套隐私处理 operating model，而不是单一脱敏脚本。同时，它也承认数据代表性有限、高级隐私技术尚未深度实现、跨系统治理仍可扩展。这说明项目处于一个方法完整、规模克制、局限清楚的阶段。</p>
+<hr />
+<h2 id="19-10-2">19. 与 10-2 的对照：监督资产与控制资产<a class="headerlink" href="#19-10-2" title="Permanent link">&para;</a></h2>
+<p>参考 10-2 来写 10-9，并不是简单套壳，而是要保留其最有价值的叙述骨架。</p>
+<h3 id="191">19.1 相同点：都强调工程闭环<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<p>10-2 讲的是法律领域 SFT 数据工厂，从种子知识、任务设计、QA、偏好对到训练交付和验证闭环层层展开。 P09 虽然不是 SFT 项目，但同样遵循：</p>
+<ul>
+<li>先定义边界；</li>
+<li>再进入主处理链；</li>
+<li>最后做评估与验收。</li>
+</ul>
+<h3 id="192">19.2 不同点：一个核心是监督资产，一个核心是控制资产<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<p>10-2 的核心产物是可训练数据、偏好对和 QA 记录；
+P09 的核心产物则是控制策略、处理结果、审计证据、运维文档和检查报告。</p>
+<p>也就是说：</p>
+<ul>
+<li>10-2 解决“模型该学什么”；</li>
+<li>10-9 解决“敏感数据该如何安全进入系统”。</li>
+</ul>
+<h3 id="193">19.3 对照分析的价值<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>因为它展示了一个更完整的能力图谱：行业 AI 工程不只是训练和推理，还包括数据进入系统之前的治理能力。</p>
+<hr />
+<h2 id="20">20. 后续扩展：走向更真实的工程系统<a class="headerlink" href="#20" title="Permanent link">&para;</a></h2>
+<p>当前已经能看到三个方向：扩展更多高风险场景、把高级隐私技术从规划推进到实现、增强自动化与异常访问检测。下面把这些方向进一步具体化。</p>
+<h3 id="201">20.1 从规则检测扩展到多层识别<a class="headerlink" href="#201" title="Permanent link">&para;</a></h3>
+<p>未来可以把 regex 层扩展为：</p>
+<ul>
+<li>词典与规则层；</li>
+<li>上下文分类层；</li>
+<li>NER/实体归一化层；</li>
+<li>风险组合判定层。</li>
+</ul>
+<h3 id="202">20.2 从静态策略扩展到动态治理<a class="headerlink" href="#202" title="Permanent link">&para;</a></h3>
+<p>当前 access policy 更偏静态描述。下一步可以引入：</p>
+<ul>
+<li>基于任务的临时授权；</li>
+<li>双人审批；</li>
+<li>导出限速与阈值；</li>
+<li>行为画像与异常检测。</li>
+</ul>
+<h3 id="203">20.3 从文件级交付扩展到服务级控制<a class="headerlink" href="#203" title="Permanent link">&para;</a></h3>
+<p>现在的交付物以 JSON/JSONL 和 Markdown 报告为主。下一阶段可以把策略服务化、审计实时化、例外流转化，把 P09 从 notebook/脚本项目推进成服务型系统。</p>
+<h3 id="204-incident">20.4 从演练型 incident 扩展到持续演练<a class="headerlink" href="#204-incident" title="Permanent link">&para;</a></h3>
+<p>可以把 incident simulation 发展为定期桌面演练、自动化故障注入和红蓝对抗式审计，以提升体系的真实韧性。</p>
+<hr />
+<h2 id="21_1">21. 最小可复现运行链：完整案例的执行顺序<a class="headerlink" href="#21_1" title="Permanent link">&para;</a></h2>
+<p>P09 的最小运行顺序可以概括为下面五步：</p>
+<p>代码清单P09-14 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>src/build_privacy_specs.py
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>python<span class="w"> </span>src/run_privacy_pipeline.py
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>python<span class="w"> </span>src/simulate_privacy_ops.py
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>python<span class="w"> </span>src/evaluate_privacy_pipeline.py
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>python<span class="w"> </span>src/run_p9_checks.py
+</code></pre></div></p>
+<p><em>代码清单P09-14：命令行运行示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>这五步分别对应：</p>
+<ol>
+<li>建立隐私规格；</li>
+<li>处理敏感记录；</li>
+<li>生成运维与事故文档；</li>
+<li>汇总评估指标；</li>
+<li>完成项目验收。</li>
+</ol>
+<p>这种结构的价值在于，不只便于理解案例，也便于按顺序复现案例。</p>
+<h3 id="211">21.1 运行链单列的作用<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>因为它把整章内容从“叙述”重新收束成“动作”。章节里最容易留下印象的，往往正是这种一步一步的执行链。</p>
+<p>图P09-12展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p09/Liu-Project09-Fig12.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P09-12：P09 最小可复现运行链图" src="../../../images/part14/p09/Liu-Project09-Fig12.svg" /></a>
+<em>图 P09-12：P09 最小可复现运行链图</em></p>
+<hr />
+<h2 id="22-p09">22. 方法复盘：P09 展示的系统能力<a class="headerlink" href="#22-p09" title="Permanent link">&para;</a></h2>
+<p>如果只看表面，P09 像是一个小型隐私保护项目；但从工程结构上看，它展示的是一种很完整的能力：</p>
+<ul>
+<li>它能先定义治理边界，而不是直接处理文本；</li>
+<li>它能把分类、去标识化、隔离、告警和审计连成一条控制链；</li>
+<li>它能把 preflight、incident 和 postmortem 纳入项目主流程；</li>
+<li>它能输出 metrics、report 和 checks，而不是停留在中间文件；</li>
+<li>它能用很小的样本，把“隐私工程应该如何被组织”这件事讲清楚。</li>
+</ul>
+<p>因此，这一章的价值并不在于证明某个技术点多先进，而在于展示：</p>
+<blockquote>
+<p>一个训练前的数据治理项目，如何被设计成一条可解释、可复现、可验收的工程流水线。</p>
+</blockquote>
+<p>这也是它适合作为工程案例的原因。</p>
+<hr />
+<h2 id="_12">专题：隐私流水线的运行手册视角<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>隐私保护项目写到最后，最容易缺失的部分往往不是技术结构，而是运行手册视角。也就是说，系统一旦进入日常运行状态，团队究竟应该按什么顺序检查、在什么节点阻断、由谁处理例外。没有这部分，项目就更像一组脚本；有了这部分，它才开始像一个可持续运行的治理系统。</p>
+<h3 id="_13">一、日常运行应先看什么<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>对 P09 这类流水线来说，日常运行最先看的不一定是最终指标，而是几个“前置健康信号”：</p>
+<ul>
+<li>新进入系统的记录是否都完成分级；</li>
+<li>restricted 与 redacted 区域是否按策略落盘；</li>
+<li>是否出现未被识别的直接 PII；</li>
+<li>最近一批运行中是否出现告警升高或预检失败；</li>
+<li>审计日志是否完整生成。</li>
+</ul>
+<p>这些信号的意义在于，它们能帮助团队在真正的数据泄露或合规问题发生前，尽早发现流程偏移。对隐私系统来说，很多风险一旦进入下游训练或应用，就很难再低成本修复，所以前置健康信号尤其重要。</p>
+<h3 id="_14">二、例外处理必须有明确入口<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>隐私治理里最危险的状态之一，是例外请求总是通过口头沟通解决。因为一旦没有显式入口，团队就很难区分“合理例外”和“风险绕过”。一个更成熟的运行手册，至少要明确：</p>
+<ul>
+<li>哪些情况允许申请临时例外；</li>
+<li>谁可以发起例外申请；</li>
+<li>谁拥有审批权；</li>
+<li>例外是否有时间范围和用途范围；</li>
+<li>例外结束后是否需要回收权限并补充审计记录。</li>
+</ul>
+<p>把这些流程显式写进运行手册，意义并不只是规范动作，更是保护团队。因为在高压场景下，如果没有制度化入口，很多风险动作最终会落到个人承担，而不是系统承担。</p>
+<h3 id="_15">三、事故处置要围绕证据链展开<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>一旦发生隐私相关异常，团队最需要的不是“谁先出来解释”，而是能迅速还原一条证据链。P09 已经保留了 preflight、incident 和 postmortem 这些对象，下一步更值得强调的是如何把它们串成运行手册中的动作顺序：</p>
+<ul>
+<li>先冻结相关版本或访问路径；</li>
+<li>再确认影响范围和数据区域；</li>
+<li>然后提取审计日志、告警记录和处理记录；</li>
+<li>最后形成 incident review 与整改动作。</li>
+</ul>
+<p>对隐私项目来说，处置顺序比措辞更重要。只要顺序正确，团队通常就能把风险收束在可管理范围内；如果顺序混乱，哪怕技术组件都在，也很容易出现二次风险。</p>
+<hr />
+<h2 id="_16">专题：隐私治理的指标与长期演进<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<p>P09 当前的规模很小，但它已经很适合用来说明一个更长期的问题：隐私治理到底应该如何度量。因为如果没有稳定指标，团队很容易把隐私工作理解成“尽量减少事故”；而实际上，成熟的隐私流水线应该能够被持续量化、持续对比和持续改进。</p>
+<h3 id="_17">一、指标不应只看检测命中数<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>很多团队在谈隐私指标时，最先想到的是“这次识别出多少敏感信息”。这当然有意义，但远远不够。因为命中数高，可能代表系统识别能力强，也可能只是输入风险更高。更有价值的指标通常还包括：</p>
+<ul>
+<li>记录分级覆盖率；</li>
+<li>restricted 数据隔离正确率；</li>
+<li>redacted 数据直接标识符残留率；</li>
+<li>预检失败率与失败原因分布；</li>
+<li>事故发现到处置完成的平均时长。</li>
+</ul>
+<p>这些指标组合起来，才能更真实地反映治理系统是否在发挥作用。</p>
+<h3 id="_18">二、隐私系统更适合看“控制有效率”<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>从治理角度看，P09 更核心的指标其实不是检测量，而是控制是否有效。所谓控制有效率，可以理解为：系统定义的控制点，有多少真的在关键时刻发挥了作用。</p>
+<p>例如：</p>
+<ul>
+<li>高风险记录是否真的被路由到 restricted 区；</li>
+<li>直接 PII 是否真的在 redacted 版本中被移除；</li>
+<li>预检是否真的阻断了不合格任务；</li>
+<li>告警是否真的触发了人工关注；</li>
+<li>incident review 是否真的形成了后续整改。</li>
+</ul>
+<p>如果这些控制点只是“存在于文档里”，而不是“存在于运行结果里”，那治理体系仍然是脆弱的。</p>
+<h3 id="_19">三、长期演进会从规则走向组合治理<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>P09 当前以规则、策略和运行流程为主，这很适合作为最小可复现起点。随着系统复杂度提高，长期演进通常会走向“组合治理”，也就是把多种能力组合起来共同承担风险控制：</p>
+<ul>
+<li>规则检测负责快速、高可解释的底线防护；</li>
+<li>上下文分类负责识别规则难以覆盖的隐含风险；</li>
+<li>权限与审批负责约束高风险动作；</li>
+<li>审计与 incident review 负责事后可追踪和制度改进；</li>
+<li>运营节奏负责让治理成为持续动作，而不是一次性项目。</li>
+</ul>
+<p>当这些能力开始协同工作时，隐私流水线就不再只是“把数据打码”，而是逐步成长为一套面向训练前治理、应用前治理和组织责任分配的完整系统。P09 当前最可贵的地方，就在于它已经把这条成长路径的骨架讲清楚了。</p>
+<hr />
+<h2 id="_20">专题：数据主体请求与跨系统清理链路<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
+<p>隐私项目在真实组织里还有一个很常见、但在很多技术案例中容易缺位的话题，就是数据主体请求。例如删除、更正、限制处理或访问说明等请求。一旦系统进入训练前后多个环节，主体请求就不再是单点动作，而会变成跨系统清理链路的问题。</p>
+<h3 id="_21">一、主体请求真正困难的地方在于传播<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>对单一数据库来说，删除一条记录可能并不复杂；但对数据工程系统来说，同一条敏感记录可能已经进入：</p>
+<ul>
+<li>原始接入区；</li>
+<li>受限处理区；</li>
+<li>去标识化副本；</li>
+<li>评测样本；</li>
+<li>审计与事件记录。</li>
+</ul>
+<p>这意味着主体请求的核心难点不是“要不要删”，而是“这条记录到底传播到了哪些地方”。也正因此，P09 里强调分区、审计和处理记录是很有必要的，因为它们天然为后续的删除传播与核查留下了抓手。</p>
+<h3 id="_22">二、跨系统清理需要血缘和责任同时存在<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>主体请求一旦出现，团队至少需要两类能力同时存在：</p>
+<ul>
+<li>血缘能力，帮助定位记录曾经过哪些处理环节、产生了哪些衍生物；</li>
+<li>责任能力，明确谁负责冻结、谁负责清理、谁负责复核、谁负责对外确认。</li>
+</ul>
+<p>如果只有血缘没有责任，系统知道问题在哪却没人真正处理；如果只有责任没有血缘，团队会知道必须处理，却不知道该处理到什么深度。真正可执行的清理链路，必须把这两者绑在一起。</p>
+<h2 id="_23">本章小结<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h2>
+<p>本章以“隐私保护数据流水线”为案例，展示了把 PII 检测、分类、脱敏、审计和检查组织成隐私保护处理链的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以规则和示例数据验证治理链路，不替代法律意见、DPIA 或生产级隐私平台。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_24">参考文献<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h2>
+<p>European Union (2016) Regulation (EU) 2016/679: General Data Protection Regulation. https://eur-lex.europa.eu/eli/reg/2016/679/oj.</p>
+<p>NIST (2020) NIST Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management, Version 1.0. https://doi.org/10.6028/nist.cswp.10.</p>
+<p>Dwork C, Roth A (2014) The Algorithmic Foundations of Differential Privacy. Foundations and Trends in Theoretical Computer Science.</p>
+<p>Kairouz P, McMahan H B, Avent B, Bellet A, Bennis M, Bhagoji A N, et al. (2021) Advances and Open Problems in Federated Learning. Foundations and Trends in Machine Learning.</p>
+<p>OWASP Foundation (2025) OWASP Top 10 for Large Language Model Applications. https://genai.owasp.org/llm-top-10/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

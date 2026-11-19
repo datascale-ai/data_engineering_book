@@ -1,0 +1,2172 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p04_synthetic_textbook/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目四：合成数学与代码教材工厂 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目四：合成数学与代码教材工厂
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p04_synthetic_textbook/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p04_synthetic_textbook/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：合成数学与代码教材工厂的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）学科边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）内容边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）验证边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）规模边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界设定的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p04" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P04 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从种子题到教材卷册的推理数据流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从种子题到教材卷册的推理数据流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：种子与章节规划层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：进化生成与 PoT 构造层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：验证、打包与交付层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 工程前置：教材工厂的关键面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 工程前置：教材工厂的关键面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 课程规划与章节设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 数据处理与接口维护
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 生成编排与任务扩展
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 验证、回退与质量控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 关键职责面的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 种子层：题目种子的必要性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 种子层：题目种子的必要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 为什么要保留问题、丢弃旧答案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 种子层要控制什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Evol-Instruct：题目进化机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Evol-Instruct：题目进化机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 从简单题到复杂应用题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 为什么“场景化”重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 为什么“增加难度”还要强调“保持可解性”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. PoT 选择：程序化推理路径
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. PoT 选择：程序化推理路径">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 CoT 的价值与局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 PoT 的工程优势
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 为什么 PoT 特别适合数学/代码教材
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 生成链路：从 prompt 到代码解法的具体实现
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 生成链路：从 prompt 到代码解法的具体实现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 第一步：题目进化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 第二步：PoT 生成
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 API 编排中的工程细节
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 失败重试为什么重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 沙箱验证：生成即验证的核心门槛
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 沙箱验证：生成即验证的核心门槛">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 不验证会发生什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 为什么先做代码提取
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 为什么必须设置执行超时
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 为什么这一步决定了“教材”与“幻觉文本”的分界线
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 教材打包：课程化资产组织
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 教材打包：课程化资产组织">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 教材不是样本堆
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 当前项目已经有哪些教材交付物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 为什么课程地图重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 教师指南为什么不是“锦上添花”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 训练封装：教材数据进入训练系统
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 训练封装：教材数据进入训练系统">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 训练侧需要什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 当前项目的训练资产
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-smoke-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 为什么 smoke test 必须单列
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 指标与结果：当前项目的结构性信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 指标与结果：当前项目的结构性信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 当前关键指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-100" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 为什么“100% 通过率”要谨慎解读
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.3 主题分布说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.4 难度分布说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-p04" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 工程效果：P04 解决的核心问题
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 工程效果：P04 解决的核心问题">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 解决了“思维链可信度不足”的问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 解决了“教材内容难组织”的问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 解决了“训练接入断层”的问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 解决了“项目可验收性”的问题
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 成本与优化：规模扩展前的瓶颈
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 成本与优化：规模扩展前的瓶颈">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 当前成本特征
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 真正的瓶颈在哪里
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 可以怎么扩展
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.4 为什么这里的优化重点不是“再便宜一点”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 关键交付物：当前产物清单
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-p04" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 方法复盘：P04 的方法价值
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：教材工厂的验收标尺
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：教材工厂的验收标尺">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、样本层验收：每条记录是否值得保留
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、卷册层验收：整本教材是否有教学结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、训练层验收：教材资产能否稳定进入训练
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：教材工厂的运营机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：教材工厂的运营机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、角色分工：谁对哪一段负责
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、版本节奏：为什么教材也需要发布周期
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、失败返工：把坏样本变成改进线索
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、人工抽检：为什么还需要人
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：从项目原型到学科平台的扩展路线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：从项目原型到学科平台的扩展路线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stem" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、从双学科扩展到 STEM 组合教材
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、从纯文本教材扩展到多模态教材
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、从离线教材生产扩展到学习反馈回流
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：教材版本发布前的检查清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：教材版本发布前的检查清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、发布前先核对三类一致性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、再核对教学可用性而不只是工程可用性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、最后确认问题台账是否被清空或显式继承
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：教材工厂中的编辑评审机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：教材工厂中的编辑评审机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、编辑评审重点看“是否值得学”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、评审机制让教材风格可以持续稳定
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">项目四：合成数学与代码教材工厂<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">徐鑫；杜文卓；於俊</div>
+
+<h2 id="_2">摘要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>P04 聚焦把数学题、代码题和程序化解题过程组织成可训练、可验证、可打包的教材型数据资产。章节重点不在单次题目生成，而在生成、执行验证、教材组织和训练接口之间的工程闭环。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>种子任务与课程结构设计：组织数学题、代码题和章节梯度。</li>
+<li>生成与执行验证：通过 PoT、沙箱执行和检查脚本约束解题过程。</li>
+<li>教材资产打包：把样本沉淀为卷册、练习、课程地图和配套材料。</li>
+<li>训练与交付接口：形成可被小模型训练和复现实验直接消费的成品数据。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>种子题采样 -&gt; 题目进化 -&gt; 程序化求解 -&gt; 执行验证 -&gt; 质量控制 -&gt; 教材打包 -&gt; 训练封装</strong></p>
+<p>这一结构对应的核心目标，是把 Generate then Verify 方法沉淀为可复用的教材数据工厂。</p>
+<hr />
+<h2 id="_3">关键词<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>合成教材；程序化验证；数学数据；代码数据；课程结构</p>
+<h2 id="_4">项目目标与读者收获<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本项目以“合成数学与代码教材工厂”为核心案例，目标是用可验证的题目进化和解题链路生成数学与代码教材型数据。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_5">场景约束与数据边界<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>聚焦数学、代码和程序化推理样本，不替代完整课程教材编写与专家审稿流程。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_6">架构决策<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本项目采用“种子题、Evol-Instruct、程序化推理、沙箱验证、难度分层和教材卷册组织”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P04-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>种子题 -&gt; 题目进化 -&gt; 解法生成 -&gt; 代码/公式验证 -&gt; 难度与主题标注 -&gt; 教材型样本
+</code></pre></div></p>
+<p><em>代码清单P04-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_7">核心实现片段<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_8">实验或验收指标<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>验收指标包括验证通过率、难度分布、主题覆盖、解法一致性、错误样本占比和卷册结构完整性。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P04-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P04-1：合成教材工厂出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据闭环</td>
+<td>种子题、进化题、PoT 解法、沙箱日志和教材卷册均可追溯</td>
+<td>抽检样本必须能回到原始种子与验证记录</td>
+</tr>
+<tr>
+<td>质量指标</td>
+<td>验证通过率、难度分布、主题覆盖和错误样本占比</td>
+<td>指标口径写入报告，不以单次 100% 通过率替代复核</td>
+</tr>
+<tr>
+<td>专家审稿</td>
+<td>教学解释、章节顺序、难度梯度、术语一致性和高风险样本复核记录</td>
+<td>专家复核意见应区分“答案正确”“解释可教”“适合入册”三个层次</td>
+</tr>
+<tr>
+<td>代码隔离</td>
+<td>可执行验证脚本、展示用不可执行代码、沙箱日志和依赖清单</td>
+<td>公开正文中的代码片段不得默认作为生产脚本执行，配套脚本需在隔离环境中验证</td>
+</tr>
+<tr>
+<td>决策边界</td>
+<td>保留代码安全、版权混入和专家审稿边界</td>
+<td>公开交付前确认题源授权、不可执行代码隔离和失败样本返工记录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_9">成本、风险与合规边界<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>成本主要来自生成调用、沙箱执行和错误样本复核；风险集中在伪正确答案、代码安全、题目重复和版权混入。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_10">常见失败模式<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_11">可复现资源说明<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。教材样本最终仍需要被组织成稳定的文本到文本或指令训练格式 (Raffel et al. 2020)，数据集管理、并行生成、实验追踪和质量检查可分别参考 Hugging Face Datasets (Hugging Face 2026)、Ray Data (Ray Project 2026)、MLflow (MLflow Authors 2026) 与 Great Expectations (Great Expectations Contributors 2026)。</p>
+<h2 id="1">1. 项目背景：合成数学与代码教材工厂的必要性<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>图P04-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-1：合成数学与代码教材工厂项目定位图" src="../../../images/part14/p04/Xu-Project04-Fig01.svg" /></a>
+<em>图 P04-1：合成数学与代码教材工厂项目定位图</em></p>
+<p>通用大模型已经能够回答很多基础数学问题，也能写出看起来像样的 Python 代码，但一旦我们真的把它们的输出当作训练数据，就会很快碰到三个问题。</p>
+<p>第一，<strong>表面正确不等于可验证正确</strong>。
+模型很擅长写出“表面上具有推理形式”的答案，但这些推理文本里经常混入隐式跳步、数值替换错误、变量定义不一致，或者前文说 12 后文却按 15 继续算。从表面上看，它们很像正确解法；对于训练系统来说，这类样本会把错误逻辑呈现为高质量解释。</p>
+<p>第二，<strong>普通 CoT 很难自动校验</strong>。
+如果一条样本只有自然语言思考过程，我们很难程序化判断它到底对不对。除非再引入人工审核，否则大规模生产时会迅速出现质量失控。相比之下，如果模型被要求输出可执行代码，我们就可以通过运行结果来判断关键步骤是否成立。</p>
+<p>第三，<strong>训练需要的是结构化课程资产，而不是零散样本</strong>。
+对于小模型（SLM）来说，训练材料如果只是一堆互不关联的题目，效果通常不稳定。更合理的方式是把它们整理成教材卷册、章节练习、课程地图和教师指南，让数据本身具有“教学顺序”和“难度梯度”。</p>
+<p>因此，P04 的目标不是简单“合成几百条数学题”，而是搭建一个<strong>带执行验证的教材数据工厂</strong>：</p>
+<blockquote>
+<p>从 GSM8K 和 MBPP 风格种子题出发，把数学问题和代码问题改写成更完整的课程化样本，并通过程序执行和检查脚本，把可训练的教材资产稳定沉淀出来。</p>
+</blockquote>
+<p>从方法论上说，这条流水线的重要性甚至超过具体题目本身。因为未来团队要扩展到物理、统计、金融建模、算法题或 STEM 多学科教材时，真正可复用的不是某一个 prompt，而是这套“种子采样—进化生成—程序验证—教材打包—训练封装”的工程方法。</p>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>图P04-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-2：P04 项目目标与边界示意图" src="../../../images/part14/p04/Xu-Project04-Fig02.svg" /></a>
+<em>图 P04-2：P04 项目目标与边界示意图</em></p>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立从题目种子到教材章节的转化链路。</strong><br />
+项目从数学与代码种子题出发，不直接生成单条 SFT 样本，而是先形成章节草稿与教材结构，再产出可用于训练的最终记录。其核心流程包括 <code>src/sampler.py</code>、<code>src/evol.py</code>、<code>src/sandbox.py</code>、<code>src/package_textbook.py</code> 与 <code>src/prepare_training_data.py</code> 等模块。</p>
+<p><strong>目标二：让“推理过程”从不可验证文本转成可执行程序。</strong><br />
+项目强调 PoT（Program of Thought）格式，不满足于“模型看起来解释得很完整”，而是要求模型在关键题型上给出 Python 解法，并在沙箱里执行，减少思维链幻觉。</p>
+<p><strong>目标三：把章节资产做成可课程化交付物。</strong><br />
+最终交付不是一个孤立的 JSONL，而是教材卷册、课程地图、教师指南和训练 manifest 等成套产物。项目最终形成两本教材卷册，并配套 curriculum volume 与 teacher guide。</p>
+<p><strong>目标四：形成训练侧可直接消费的数据资产。</strong><br />
+项目输出 <code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code> 与 <code>training_manifest.json</code> 等训练接口层文件，让教材数据不止能“展示”，还能“进入训练”。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了让本章保持可复现性，P04 也明确设置了边界。</p>
+<h4 id="1_1">1）学科边界<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h4>
+<p>当前项目只覆盖两个方向：<strong>数学</strong>与 <strong>Python 代码问题求解</strong>。种子来源集中在 GSM8K 与 MBPP 风格任务，意味着它更适合作为推理型教材工厂的原型，而不是一个全学科教育平台。</p>
+<h4 id="2_1">2）内容边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>当前内容覆盖以<strong>入门到进阶</strong>阶段为主，强调概念、例题、练习和验证片段，而不是完整的视频课程、交互习题系统或多模态教学平台。</p>
+<h4 id="3">3）验证边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>当前验证重点仍是<strong>代码执行正确性</strong>与部分检查脚本一致性。它已经能很好地过滤语法错误、变量幻觉和明显逻辑问题，但还没有完全扩展到“教学解释是否较优”“章节排序是否最优”“学生认知负担是否合适”这类更高阶教学质量维度。</p>
+<h4 id="4">4）规模边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>项目规模较小，但流程完整。它的价值不在于样本量特别大，而在于把从生成到交付的工程链条验证。因此更适合作为实践案例和小规模验证方案。</p>
+<h3 id="23">2.3 边界设定的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>因为教材工厂很容易被描述成“会生成题、会写代码、会自动出书”的万能系统。但真正可信、可复用的工程案例，应该说明：</p>
+<ul>
+<li>在什么学科范围内工作稳定；</li>
+<li>哪些验证已经做了，哪些还没覆盖；</li>
+<li>目前适合做方法演示，还是已经适合生产部署；</li>
+<li>数据资产能不能直接进入训练或只适合展示。</li>
+</ul>
+<p>把这些边界写清楚，比夸大规模更有价值。</p>
+<hr />
+<h2 id="3-p04">3. 项目定位：P04 的能力链位置<a class="headerlink" href="#3-p04" title="Permanent link">&para;</a></h2>
+<p>如果把整体大模型数据工程看成一条能力链，P04 解决的是其中关键的一段：</p>
+<blockquote>
+<p><strong>如何把“推理能力训练”从普通文本合成，升级为“可执行、可验证、可课程化”的数据生产能力。</strong></p>
+</blockquote>
+<p>前面的章节可能已经讨论过预训练清洗、行业 SFT、偏好数据和 QA 体系等方法；而本章强调的是另一类常被低估的数据资产：<strong>教材式推理数据</strong>。</p>
+<p>这类数据和普通问答数据不同，原因在于它同时承担三种任务：</p>
+<ul>
+<li>它要给模型提供题目和答案；</li>
+<li>它要给模型暴露一种可模仿的求解过程；</li>
+<li>它还要在样本层面体现知识组织结构与难度顺序。</li>
+</ul>
+<p>也就是说，本章最重要的不是说明“如何多生成几条数学题”，而是展示：</p>
+<ul>
+<li>为什么数学推理训练需要程序化验证；</li>
+<li>为什么教材内容要有卷册与课程地图，而不是散点问答；</li>
+<li>为什么质量控制要前置到数据生产，而不是训练后再补救；</li>
+<li>如何把生成、验证、教材打包和训练封装真正设计成一条持续生产能力。</li>
+</ul>
+<p>从这个意义上说，P04 不只是一个“推理数据小项目”，更像一个<strong>教育内容工厂的最小可复现原型</strong>。</p>
+<hr />
+<h2 id="4_1">4. 整体架构：从种子题到教材卷册的推理数据流水线<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h2>
+<p>图P04-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-3：P04 整体架构总览图" src="../../../images/part14/p04/Xu-Project04-Fig03.svg" /></a>
+<em>图 P04-3：P04 整体架构总览图</em></p>
+<p>从工程视角看，P04 可以拆成三层。</p>
+<h3 id="41">4.1 第一层：种子与章节规划层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“我们要教什么”。核心动作包括：</p>
+<ul>
+<li>从 GSM8K、MBPP 风格题目中抽取种子；</li>
+<li>形成题型分布与难度分布；</li>
+<li>将离散问题映射到章节计划与课程地图；</li>
+<li>保留题目来源，便于后续追踪。</li>
+</ul>
+<p>这一层不是简单随机采样，而是在为后续教材组织做准备。因为如果上游种子分布失衡，后续再怎么组织，整本教材都会偏科。</p>
+<h3 id="42-pot">4.2 第二层：进化生成与 PoT 构造层<a class="headerlink" href="#42-pot" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何把题目变成更有训练价值的教材内容”。主要包括：</p>
+<ul>
+<li>对原始题目做 Evol-Instruct 式改写；</li>
+<li>引入场景化、约束条件和多步推理；</li>
+<li>让模型输出 Python 代码而不是只给自然语言思考过程；</li>
+<li>将求解结果整理成统一 schema。</li>
+</ul>
+<p>这一层决定了数据最终学到的是“题目表层模式”，还是“程序化推理能力”。</p>
+<h3 id="43">4.3 第三层：验证、打包与交付层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些内容能不能放心进入训练”。主要包括：</p>
+<ul>
+<li>从模型输出中提取代码块；</li>
+<li>用沙箱执行并捕获报错、超时和返回值；</li>
+<li>清洗低质量样本并记录失败原因；</li>
+<li>打包成教材卷册、课程地图、教师指南与训练文件；</li>
+<li>通过检查脚本确认产物一致性。</li>
+</ul>
+<p>到这一步，项目才真正从“会生成题”升级成“会生产教材资产”的工程系统。当前项目共通过 10 项检查，其中命令级 2 项、数据/产物级 8 项，总体状态为 <code>PASS</code>。</p>
+<hr />
+<h2 id="5">5. 工程前置：教材工厂的关键面<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>图P04-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-4：教材工厂职责协同图" src="../../../images/part14/p04/Xu-Project04-Fig04.svg" /></a>
+<em>图 P04-4：教材工厂职责协同图</em></p>
+<p>教材工厂如果要稳定运转，更重要的不是强调单点生成动作，而是先把<strong>哪些职责面必须被覆盖</strong>界定清楚。至少有以下四类职责面需要显式存在。</p>
+<h3 id="51">5.1 课程规划与章节设计<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>这一层负责定义教材卷册、章节顺序、题型覆盖和难度梯度。它需要回答的是：</p>
+<ul>
+<li>什么题适合作为基础铺垫；</li>
+<li>什么题更能体现进阶推理；</li>
+<li>数学与代码内容如何形成互补而不是重复。</li>
+</ul>
+<h3 id="52">5.2 数据处理与接口维护<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>这一层负责种子采样、schema 设计、JSONL 落盘、去重与训练切分。它关注的是：</p>
+<ul>
+<li>每条样本来自哪里；</li>
+<li>字段是否统一；</li>
+<li>训练/验证集是否泄漏；</li>
+<li>中间产物是否可追踪。</li>
+</ul>
+<h3 id="53">5.3 生成编排与任务扩展<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>这一层负责 Evol prompt、PoT prompt、API 调用、失败重试和格式兼容。它连接“题目种子”和“教材章节草稿”，决定项目最终形成的是零散题目集合，还是具备课程组织能力的教材资产。</p>
+<h3 id="54">5.4 验证、回退与质量控制<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<p>这一层负责检查代码是否能跑、结果是否一致、失败样本是否需要返工，以及检查脚本是否覆盖关键交付物。它之所以重要，是因为教材场景里“看起来很像对”远远不够，必须把程序执行与质量回退一并纳入流程。</p>
+<h3 id="55">5.5 关键职责面的作用<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>很多团队卡住的地方，不是不会用模型，而是关键控制点没有被拆出来，最终导致：</p>
+<ul>
+<li>生成逻辑在变化，但课程结构没人维护；</li>
+<li>样本很多，但没有失败原因统计；</li>
+<li>书已经打包了，但训练集字段并不统一；</li>
+<li>指标看起来不错，但没人知道问题从哪一层产生。</li>
+</ul>
+<p>把这些职责面写清楚，本质上是在说明：<strong>教材数据工厂是一条带验证与交付闭环的生产线，而不是一个生成脚本。</strong></p>
+<hr />
+<h2 id="6">6. 种子层：题目种子的必要性<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>图P04-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-5：种子题到章节计划的映射图" src="../../../images/part14/p04/Xu-Project04-Fig05.svg" /></a>
+<em>图 P04-5：种子题到章节计划的映射图</em></p>
+<p>合成教材最常见的误区，是直接要求大模型“请帮我生成一本数学教材”。这种方式虽然快速，但通常有三个问题。</p>
+<p>第一，题目分布不可控。模型会在自己熟悉的模式上过度生成，导致大量题目看似不同，实则同构。</p>
+<p>第二，难度梯度不稳定。没有种子锚点时，模型很难持续保持“从基础到进阶”的顺序。</p>
+<p>第三，来源不可追踪。后面一旦发现某类题总是出错，很难回溯问题来自哪些上游模式。</p>
+<p>因此，本项目从种子题出发，在 <code>sample_data()</code> 中先对数据做采样，只保留问题本身作为后续进化的起点。当前流程明确提到从题目池中抽样并形成章节计划，再生成教材章节草稿。</p>
+<h3 id="61">6.1 为什么要保留问题、丢弃旧答案<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<p>现有实现里，项目保留 <code>seed_question</code>，并把原始答案单独留作参考，而不是直接把它作为最终标签。这一点很关键。</p>
+<p>因为经过 Evol-Instruct 改写后，题目的背景、约束条件甚至数值关系都可能变化。如果直接继承原答案，就会把旧标签错误地带入新题。现有章节原稿也明确强调：</p>
+<blockquote>
+<p>进化后的问题数值可能会发生变化，旧答案不再适用。</p>
+</blockquote>
+<p>这说明项目从一开始就把“种子题”和“最终监督真值”区分开了，而不是把改写题简单视作原题的表述变体。</p>
+<h3 id="62">6.2 种子层要控制什么<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>一个教材工厂的种子层至少要控制四件事：</p>
+<ul>
+<li><strong>领域覆盖</strong>：数学和代码两条线都要有；</li>
+<li><strong>难度层次</strong>：不能全是基础题或全是高难题；</li>
+<li><strong>主题分布</strong>：要覆盖 arithmetic、function design、lists、string algorithms 等不同主题；</li>
+<li><strong>可进化性</strong>：题目适合被扩展成更复杂情境。</li>
+</ul>
+<p>从当前结果看，项目已经形成 <code>math=30</code>、<code>code=18</code> 的两条教材线，并覆盖多类主题。</p>
+<hr />
+<h2 id="7-evol-instruct">7. Evol-Instruct：题目进化机制<a class="headerlink" href="#7-evol-instruct" title="Permanent link">&para;</a></h2>
+<p>图P04-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-6：Evol-Instruct 进化路径图" src="../../../images/part14/p04/Xu-Project04-Fig06.svg" /></a>
+<em>图 P04-6：Evol-Instruct 进化路径图</em></p>
+<p>如果只是把“火车行驶 240 英里需要多久”改写成另一句表述，训练价值并不会显著提升。项目真正需要的是让题目从“单步计算”进化成“多约束、多变量、可程序化求解”的问题。</p>
+<h3 id="71">7.1 从简单题到复杂应用题<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>在现有实现中，进化 prompt 明确要求模型做四件事：</p>
+<ol>
+<li>增加约束条件；</li>
+<li>增加推理深度；</li>
+<li>进行场景化改写；</li>
+<li>保持可解性。</li>
+</ol>
+<p>这几个要求看起来简单，但其实很贴合教材生成的核心目标。因为真正高质量的练习，不是把数字写得更大，而是让题目背后的关系链条更长、更像真实世界约束。</p>
+<h3 id="72">7.2 为什么“场景化”重要<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>数学训练中，很多原始题目都非常抽象，容易让模型记住形式模板而不理解关系。把问题放进商业、物流、库存、实验、预算或行程场景里，有两个好处：</p>
+<ul>
+<li>可以自然引入更多变量和边界条件；</li>
+<li>让后续 PoT 更像“求解真实问题”而不是“套公式”。</li>
+</ul>
+<p>这也是为什么项目在示例中会把简单苹果题改成水果店库存与损耗问题，把速度距离题改成列车停靠计划题。当前样例已经体现了这种改写方向。</p>
+<h3 id="73">7.3 为什么“增加难度”还要强调“保持可解性”<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<p>很多生成系统一旦追求难度，就会走向两个极端：</p>
+<ul>
+<li>把题目写得很绕，但其实信息不足；</li>
+<li>把题目加了太多条件，最后变成不一致或无唯一解。</li>
+</ul>
+<p>教材数据不能容忍这种失控。因为教学内容和开放写作不同，它必须可解、可验证、可复现。也正因此，进化只是前半步，后面还必须接程序执行验证。</p>
+<hr />
+<h2 id="8-pot">8. PoT 选择：程序化推理路径<a class="headerlink" href="#8-pot" title="Permanent link">&para;</a></h2>
+<p>图P04-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-7：CoT 与 PoT 对比图" src="../../../images/part14/p04/Xu-Project04-Fig07.svg" /></a>
+<em>图 P04-7：CoT 与 PoT 对比图</em></p>
+<h3 id="81-cot">8.1 CoT 的价值与局限<a class="headerlink" href="#81-cot" title="Permanent link">&para;</a></h3>
+<p>CoT（Chain of Thought）对于推理训练当然有价值，它可以让模型更显式地展示中间思路。但 CoT 的最大问题也较为明显：</p>
+<ul>
+<li>它很长，但不一定真；</li>
+<li>它看起来通顺，却不容易自动校验；</li>
+<li>它很容易夹带隐式跳步和细小数值错误。</li>
+</ul>
+<p>这意味着，纯 CoT 更像是“可阅读的推理痕迹”，却未必是“可验证的监督信号”。</p>
+<h3 id="82-pot">8.2 PoT 的工程优势<a class="headerlink" href="#82-pot" title="Permanent link">&para;</a></h3>
+<p>PoT（Program of Thought）把一部分推理转成代码，这样带来三个直接好处：</p>
+<p><strong>第一，可执行。</strong><br />
+样本不是只写“先算 A，再算 B”，而是真正把 A、B、C 写成变量和表达式。</p>
+<p><strong>第二，可验证。</strong><br />
+代码能验证，说明至少求解过程的结构是自洽的；结果正确，则进一步提升了监督可信度。</p>
+<p><strong>第三，可追踪错误。</strong><br />
+如果失败，我们能知道是 <code>SyntaxError</code>、<code>Timeout</code>、变量未定义，还是执行结果错误，而不是只知道“这段解释感觉不太对”。</p>
+<h3 id="83-pot">8.3 为什么 PoT 特别适合数学/代码教材<a class="headerlink" href="#83-pot" title="Permanent link">&para;</a></h3>
+<p>因为这类教材本身就希望模型学到：</p>
+<ul>
+<li>如何把题目转换成变量；</li>
+<li>如何把关系翻译成程序；</li>
+<li>如何从程序结果回到自然语言结论。</li>
+</ul>
+<p>从训练角度看，这比单纯记住某道题的答案更有泛化价值。项目把这件事做成了数据工厂的中心环节，而不是附属功能。</p>
+<hr />
+<h2 id="9-prompt">9. 生成链路：从 prompt 到代码解法的具体实现<a class="headerlink" href="#9-prompt" title="Permanent link">&para;</a></h2>
+<p>图P04-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-8：生成链路细化图" src="../../../images/part14/p04/Xu-Project04-Fig08.svg" /></a>
+<em>图 P04-8：生成链路细化图</em></p>
+<p>本项目的生成链路可以理解为两步。</p>
+<h3 id="91">9.1 第一步：题目进化<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>系统先把种子题改造成更复杂的问题。现有 prompt 要求模型扮演“数学竞赛命题专家”，并增加约束条件、推理深度和现实场景。这一步的目的是先让题目本身更有训练价值。</p>
+<h3 id="92-pot">9.2 第二步：PoT 生成<a class="headerlink" href="#92-pot" title="Permanent link">&para;</a></h3>
+<p>在题目进化之后，系统再要求模型输出程序化解法。也就是说，模型不能只说“应该这样算”，而要真正给出 Python 代码。</p>
+<p>这一步的价值在于把“看似会做”转成“真的能跑”。如果代码不能通过验证，那么前面的解释再漂亮也不能进入最终数据集。</p>
+<h3 id="93-api">9.3 API 编排中的工程细节<a class="headerlink" href="#93-api" title="Permanent link">&para;</a></h3>
+<p>项目当前使用 DeepSeek-V3 作为生成引擎。由于代码生成和长推理输出会显著拉长请求时间，因此在 <code>call_siliconflow</code> 中把 <code>max_tokens</code> 提高到 4096，并把 timeout 显式拉长到 180 秒。这样选择的原因，在于它在代码生成和数学推理上的性价比更适合当前流程。</p>
+<p>这类设置在小规模运行阶段看起来像细枝末节，但实际上是生成链路稳定性的关键。因为如果超时策略过短，系统会把大量“快生成完的长样本”误判为失败；如果 token 上限太低，代码又容易在一半被截断。</p>
+<h3 id="94">9.4 失败重试为什么重要<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>生成系统不可避免会遇到网络抖动、响应不完整或偶发 API 错误。项目在调用层加入多次重试和退避逻辑，能明显提升整体可用率。这说明项目已经从“单次试验脚本”升级为“可连续跑批的工程脚本”。</p>
+<hr />
+<h2 id="10">10. 沙箱验证：生成即验证的核心门槛<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>图P04-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-9：沙箱验证执行路径图" src="../../../images/part14/p04/Xu-Project04-Fig09.svg" /></a>
+<em>图 P04-9：沙箱验证执行路径图</em></p>
+<p>在 P04 里，沙箱不是附属组件，而是决定数据是否可信的<strong>生死线</strong>。</p>
+<h3 id="101">10.1 不验证会发生什么<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>如果没有执行验证，模型生成的代码很容易出现：</p>
+<ul>
+<li>代码块不完整；</li>
+<li>语法错误；</li>
+<li>变量名前后不一致；</li>
+<li>逻辑结构自相矛盾；</li>
+<li>依赖不存在；</li>
+<li>暴力穷举导致运行时间失控。</li>
+</ul>
+<p>这些问题并不总会在肉眼浏览时立刻暴露。很多代码甚至非常像“优秀答案”。也正因此，靠人工目测筛查并不现实。</p>
+<h3 id="102">10.2 为什么先做代码提取<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>模型输出往往不规整。有时用 <code>python 包裹，有时只是普通</code>。如果提取逻辑不做兼容，系统会把大量本来可用的代码误判成空输出。原始章节已经明确给出 <code>extract_python_code()</code> 的两级匹配逻辑，这就是典型的工程细节：不华丽，但关键。</p>
+<h3 id="103">10.3 为什么必须设置执行超时<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>在执行模型生成代码时，最大的风险不是单纯的报错，而是<strong>卡死</strong>。例如死循环、指数级枚举、递归失控，都会让整个流水线停住。因此项目用 <code>subprocess.run(..., timeout=5)</code> 控制执行时长，5 秒内跑不完就直接终止。</p>
+<p>这一步做对了，才能把失败样本清晰归因成：</p>
+<ul>
+<li><code>SyntaxError</code></li>
+<li><code>Timeout</code></li>
+<li><code>LogicError</code></li>
+<li>变量未定义或运行时异常</li>
+</ul>
+<p>当前示例显示，约 18% 的失败主要来自语法错误、超时和逻辑幻觉。虽然这一数字来自小规模跑测，但它已经足以说明验证环节不可省略。更重要的是，项目最终通过 10 项检查并得到 <code>PASS</code>，说明验证与产物层之间目前是一致的。</p>
+<h3 id="104">10.4 为什么这一步决定了“教材”与“幻觉文本”的分界线<a class="headerlink" href="#104" title="Permanent link">&para;</a></h3>
+<p>教材数据的关键风险是：内容看上去像老师讲义，但答案依据并不稳固。沙箱执行让项目能够在样本进入教材卷册之前，就先排除掉一批不可信内容。</p>
+<blockquote>
+<p>没有验证的教材，更像排版完整的文本；有验证的教材，才更接近可训练资产。</p>
+</blockquote>
+<hr />
+<h2 id="11">11. 教材打包：课程化资产组织<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>图P04-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-10：教材打包产物关系图" src="../../../images/part14/p04/Xu-Project04-Fig10.svg" /></a>
+<em>图 P04-10：教材打包产物关系图</em></p>
+<p>即便已经有了 <code>verified_textbook.jsonl</code>，项目也不应该在这里停止。因为训练和教学都需要更丰富的组织层。</p>
+<h3 id="111">11.1 教材不是样本堆<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>如果把所有验证通过的题目直接扔进训练集，当然能训练，但这不等于教材。教材还需要回答这些问题：</p>
+<ul>
+<li>哪些题先学，哪些题后学；</li>
+<li>数学和代码内容如何分卷；</li>
+<li>难度如何渐进；</li>
+<li>哪些题适合做 smoke 测试；</li>
+<li>教师或评审如何快速理解整套材料。</li>
+</ul>
+<h3 id="112">11.2 当前项目已经有哪些教材交付物<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>当前项目除了输出验证后的章节数据，还包括：</p>
+<ul>
+<li><code>curriculum_map.json</code></li>
+<li><code>textbook_catalog.json</code></li>
+<li><code>editorial_style_guide.md</code></li>
+<li>两本教材卷册：<code>foundations_of_quantitative_reasoning.md</code> 与 <code>python_problem_solving_workbook.md</code></li>
+<li><code>teacher_guide.md</code></li>
+</ul>
+<p>这说明项目已经从“单一数据文件”上升到了“课程资产集合”。</p>
+<h3 id="113">11.3 为什么课程地图重要<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<p>课程地图的存在，让训练数据不再只是扁平记录，而是具有章节依赖、主题分布与难度梯度。这对后续至少有三个价值：</p>
+<ul>
+<li>帮助评审快速理解覆盖面；</li>
+<li>帮助训练前做数据抽样与分层切分；</li>
+<li>帮助未来扩充新卷册时保持结构一致。</li>
+</ul>
+<h3 id="114">11.4 教师指南为什么不是“锦上添花”<a class="headerlink" href="#114" title="Permanent link">&para;</a></h3>
+<p>很多工程项目一谈教师指南就觉得像教学附属材料。但在教材型数据工厂里，教师指南其实有很强的工程意义：它是面向评审、标注、人工 QA 和训练运营人员的解释层。它能说明每本卷册教什么、如何使用、覆盖什么学习阶段，也能作为版本更新时的沟通接口。</p>
+<hr />
+<h2 id="12">12. 训练封装：教材数据进入训练系统<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<p>图P04-11展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p04/Xu-Project04-Fig11.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P04-11：训练封装接口图" src="../../../images/part14/p04/Xu-Project04-Fig11.svg" /></a>
+<em>图 P04-11：训练封装接口图</em></p>
+<p>项目最终目标之一，是把教材资产转成训练侧能直接消费的数据格式。</p>
+<h3 id="121">12.1 训练侧需要什么<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>训练系统并不关心这条数据最早来自哪道题，它更关心：</p>
+<ul>
+<li>样本 schema 是否统一；</li>
+<li>train / val / smoke 是否切分好；</li>
+<li>manifest 中是否记录了必要元信息；</li>
+<li>训练数据与教材产物是否一致。</li>
+</ul>
+<h3 id="122">12.2 当前项目的训练资产<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>当前训练侧的完整交付物包括：</p>
+<ul>
+<li><code>final_textbook_dataset.jsonl</code></li>
+<li><code>train.jsonl</code></li>
+<li><code>val.jsonl</code></li>
+<li><code>smoke_test.jsonl</code></li>
+<li><code>training_manifest.json</code></li>
+</ul>
+<p>这意味着项目没有把“做成教材”和“进入训练”割裂开，而是把两者打通了。</p>
+<h3 id="123-smoke-test">12.3 为什么 smoke test 必须单列<a class="headerlink" href="#123-smoke-test" title="Permanent link">&para;</a></h3>
+<p>在训练工程里，smoke test 的价值并不在于评估最终效果，而在于快速检查：</p>
+<ul>
+<li>基础 schema 是否正确；</li>
+<li>训练脚本是否能读数据；</li>
+<li>两个学科域是否都被覆盖；</li>
+<li>某次版本改动是否破坏了基本样本质量。</li>
+</ul>
+<p>当前检查项中也明确提到 <code>smoke_covers_both_domains</code>，这说明项目已经把 smoke 集合视为工程检查的一部分，而不是可有可无的附属文件。</p>
+<hr />
+<h2 id="13">13. 指标与结果：当前项目的结构性信号<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>对于教材工厂来说，最容易被误解的指标是“产出了多少章节”“生成了多少文本页数”。这些数字当然有展示价值，但真正更重要的是<strong>验证后的结构质量</strong>。</p>
+<h3 id="131">13.1 当前关键指标<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>当前关键结果包括：</p>
+<ul>
+<li>种子数 <code>48</code></li>
+<li>合成章节 <code>48</code></li>
+<li>验证通过章节 <code>48</code></li>
+<li>通过率 <code>100.00%</code></li>
+<li>学科分布 <code>math=30</code>、<code>code=18</code></li>
+<li>总 token 估算 <code>11039</code></li>
+<li>最终教材卷册 <code>2</code> 本</li>
+</ul>
+<p>这些指标共同说明，项目已经具备一个小而完整的教材数据闭环。</p>
+<h3 id="132-100">13.2 为什么“100% 通过率”要谨慎解读<a class="headerlink" href="#132-100" title="Permanent link">&para;</a></h3>
+<p>100% 看起来较好，但也要同时看到：这很大程度依赖于当前范围较小、模板约束较强。</p>
+<p>也就是说，这个指标表达的不是“此类问题已经被彻底解决”，而是：</p>
+<ul>
+<li>在当前规模下，验证链路是稳定的；</li>
+<li>章节、训练文件和报告之间是一致的；</li>
+<li>工厂雏形已经验证。</li>
+</ul>
+<p>这是一种工程可信度，而不是无限外推的通用结论。</p>
+<h3 id="133">13.3 主题分布说明了什么<a class="headerlink" href="#133" title="Permanent link">&para;</a></h3>
+<p>项目覆盖 arithmetic word problems、function design、lists and iteration、string algorithms 等多类主题，说明教材内容并不是单一题型的重写，而是横跨数学与编程不同结构。</p>
+<h3 id="134">13.4 难度分布说明了什么<a class="headerlink" href="#134" title="Permanent link">&para;</a></h3>
+<p>当前结果显示 <code>advanced=35</code> 明显最多，说明当前工厂更偏中高难度练习材料。</p>
+<p>这带来两个启发：</p>
+<ul>
+<li>一方面，它适合展示“推理增强”的价值；</li>
+<li>另一方面，也意味着未来若面向更广泛学习者，基础题和过渡题还需要补足。</li>
+</ul>
+<hr />
+<h2 id="14-p04">14. 工程效果：P04 解决的核心问题<a class="headerlink" href="#14-p04" title="Permanent link">&para;</a></h2>
+<p>如果用一句话概括，P04 实际解决的是：</p>
+<blockquote>
+<p><strong>把高风险的“推理型合成数据”从不可靠文本，变成了有执行验证支撑的结构化教材资产。</strong></p>
+</blockquote>
+<p>具体来说，它至少解决了四类工程问题。</p>
+<h3 id="141">14.1 解决了“思维链可信度不足”的问题<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>通过 PoT 和执行验证，项目不再完全依赖模型自然语言解释，而是把中间过程转换成程序与输出结果，从而显著提高监督信号的可核验性。</p>
+<h3 id="142">14.2 解决了“教材内容难组织”的问题<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>通过课程地图、卷册和教师指南，项目让教材不再只是题目合集，而是有顺序、有结构、有主题分布的交付物。</p>
+<h3 id="143">14.3 解决了“训练接入断层”的问题<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<p>项目不只做了中间产物，还输出 train / val / smoke / manifest，使训练侧可以直接对接。</p>
+<h3 id="144">14.4 解决了“项目可验收性”的问题<a class="headerlink" href="#144" title="Permanent link">&para;</a></h3>
+<p>当前共有 10 项检查全部通过，这意味着项目代码、产物与报告之间已经能形成较强的一致性证据链。</p>
+<hr />
+<h2 id="15">15. 成本与优化：规模扩展前的瓶颈<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<h3 id="151">15.1 当前成本特征<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>教学化示例运行可按以下量级估算：生成一条复杂样本（Evol + Code）可能需要 30–60 秒，1000 条高质量验证数据的 API 成本可能低于 1 美元。该数值仅用于说明成本分析方法，正式项目应以实际运行日志和 API 账单替换。</p>
+<h3 id="152">15.2 真正的瓶颈在哪里<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>真正的瓶颈通常来自三处：</p>
+<ul>
+<li>生成耗时长，吞吐不足；</li>
+<li>执行验证串行化，整体跑批速度慢；</li>
+<li>失败样本返工和重试会拉长总链路。</li>
+</ul>
+<h3 id="153">15.3 可以怎么扩展<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>结合当前实现，后续可以优先沿以下方向扩展：</p>
+<ol>
+<li><strong>并发生成</strong>：把单线程循环改为线程池、异步请求或任务队列；</li>
+<li><strong>任务分发</strong>：用 <code>Celery + RabbitMQ</code> 或更轻量的 worker 分发生成任务；</li>
+<li><strong>验证并行</strong>：让沙箱执行与生成脱钩，做成可并发的验证队列；</li>
+<li><strong>更细粒度检查</strong>：从“代码能跑”扩展到“解释是否清晰”“难度是否匹配”等多维质量控制；</li>
+<li><strong>课程资产扩充</strong>：增加更细的难度梯度、课程推荐路径和更多教师侧材料。</li>
+</ol>
+<h3 id="154">15.4 为什么这里的优化重点不是“再便宜一点”<a class="headerlink" href="#154" title="Permanent link">&para;</a></h3>
+<p>在本章示例估算下，API 成本不是主要瓶颈；正式项目仍需以实际账单、模型版本和重试率核算。更值得投入的，其实是：</p>
+<ul>
+<li>吞吐量；</li>
+<li>安全隔离；</li>
+<li>更细的质量控制；</li>
+<li>更丰富的课程结构。</li>
+</ul>
+<p>也就是说，这个项目下一阶段的主要挑战是<strong>工程成熟度</strong>，而不是单纯的 token 成本。</p>
+<hr />
+<h2 id="16">16. 关键交付物：当前产物清单<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>判断 P04 是否已经形成工程闭环，最直接的方式之一就是查看交付物链条。当前项目已经形成完整产物链，包括：</p>
+<ul>
+<li>种子与中间处理文件：<code>seed_pool.jsonl</code>、<code>chapter_plan.json</code>、<code>synthetic_textbook_chapters.jsonl</code></li>
+<li>验证与质量文件：<code>verified_textbook.jsonl</code>、<code>verification_failures.jsonl</code>、<code>execution_results.jsonl</code>、<code>quality_audit.jsonl</code></li>
+<li>课程组织文件：<code>curriculum_map.json</code>、<code>textbook_catalog.json</code>、<code>editorial_style_guide.md</code></li>
+<li>教材文件：两本卷册与教师指南</li>
+<li>训练文件：<code>final_textbook_dataset.jsonl</code>、<code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code>、<code>training_manifest.json</code></li>
+<li>报告文件：<code>p4_report.md</code>、<code>p4_metrics.json</code>、<code>p4_test_results.json</code>、<code>p4_test_report.md</code></li>
+</ul>
+<p>这组交付物说明项目已经具备三种能力：</p>
+<ul>
+<li>能生产内容；</li>
+<li>能验证内容；</li>
+<li>能把内容整理成训练和评审都可消费的资产。</li>
+</ul>
+<hr />
+<h2 id="17-p04">17. 方法复盘：P04 的方法价值<a class="headerlink" href="#17-p04" title="Permanent link">&para;</a></h2>
+<p>P04 的价值，不在于它生成了多少“看起来厉害”的推理文本，而在于它把一类高风险、高幻觉的数据生产任务，做成了一条可复现、可验证、可交付的工程流水线。</p>
+<p>如果把它放到更大的方法论框架里，它至少回答了三个重要问题：</p>
+<p>第一，<strong>推理数据为什么不能只看文本表面质量。</strong><br />
+没有验证的思维链，很容易只是更有说服力的幻觉。</p>
+<p>第二，<strong>为什么教材数据需要课程结构。</strong><br />
+训练材料不是样本堆，教材卷册、课程地图和教师指南会直接影响后续使用方式。</p>
+<p>第三，<strong>为什么小规模项目也能体现完整工程闭环。</strong><br />
+即使当前只有 48 条种子、48 个章节和 2 本卷册，只要采样、生成、验证、打包、训练和检查全部打通，它就已经形成了一套完整的工程闭环。</p>
+<p>从工程方法的角度看，这个案例最值得复用的，不是某个局部生成技巧，而是它背后的工作方式：</p>
+<blockquote>
+<p>先把推理变成程序，再把程序变成可验证的教材资产，最后把教材资产接入训练系统。</p>
+</blockquote>
+<p>这正是很多团队在做“推理增强”时最容易缺失、却又最关键的一步。</p>
+<hr />
+<h2 id="_12">专题：教材工厂的验收标尺<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>前文已经多次强调，P04 的真正价值不在“生成很多题”，而在“生成之后如何判断这些题能不能进入教材、能不能进入训练、能不能稳定复用”。因此，教材工厂不能只有执行通过率，还需要一套更细的验收标尺。</p>
+<p>如果没有这套标尺，团队很容易出现两种误判。第一种误判是把“代码能跑”当成“教材可用”。但真实情况是，代码即使验证，也可能存在题意不清、解释跳步、难度错位、章节重复等问题。第二种误判是把“章节写得像教材”当成“训练可用”。但训练侧真正关心的是 schema 一致性、切分策略、字段稳定性和分布平衡。两种误判叠加，最终会让项目停留在表面完成、实际上难以复用的状态。</p>
+<h3 id="_13">一、样本层验收：每条记录是否值得保留<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>样本层验收是最底层、也是最容易被忽略的一层。它要回答的问题不是“这条样本是不是能生成出来”，而是“这条样本是不是值得进入最终教材集”。</p>
+<p>一条可保留的教材样本，通常至少要同时满足以下几个条件：</p>
+<ul>
+<li>题面完整，没有缺失已知条件，也没有把关键单位、变量范围或输入输出约束藏在模糊表述里；</li>
+<li>解法与题面一致，不能出现题目在求总价、代码却在算平均值，或问题已经改写但程序仍沿用旧逻辑的情况；</li>
+<li>程序输出与最终答案一致，且在当前题型下具有可复核性；</li>
+<li>解释文字能够帮助学习，而不是只是在代码之外再写一遍同义句；</li>
+<li>语言风格与卷册定位一致，不会同一章里一会儿像课堂讲义，一会儿像竞赛解析，一会儿又像 API 文档。</li>
+</ul>
+<p>对教材型数据来说，样本层验收最容易出现的问题，不是“明显错”，而是“局部看起来没错，整体却不适合作为教学材料”。例如一道题代码求解正确，但解释中默认读者已经掌握比例换算；对进阶卷册来说这可能没有问题，对基础卷册就会形成认知跳跃。再比如一道代码题给出了完整函数实现，但没有解释为什么选择这个数据结构，这样的样本对训练“会写代码”有帮助，对训练“会教人写代码”帮助就很有限。</p>
+<p>因此，P04 的样本层验收更适合采用“三问法”来判断：</p>
+<ul>
+<li>这条记录能不能被机器验证；</li>
+<li>这条记录能不能被学习者读懂；</li>
+<li>这条记录能不能被训练系统稳定消费。</li>
+</ul>
+<p>只有同时回答“能”，它才真正具备进入最终数据集的资格。</p>
+<h3 id="_14">二、卷册层验收：整本教材是否有教学结构<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>教材工厂与普通样本工厂最大的不同，在于它不能只看单条正确率，还必须看卷册层结构是否成立。卷册层验收关注的是：整本教材是不是一本“能被顺着学”的材料，而不是一堆碰巧放在同一个文件里的题。</p>
+<p>卷册层通常需要检查以下几个方面：</p>
+<ul>
+<li>主题覆盖是否均衡，不能某一卷里大量重复算术改写题，却缺少函数设计、字符串处理或调试分析；</li>
+<li>难度梯度是否自然，不能一开始是一步四则运算，下一节突然跳到多约束优化，再下一节又退回基础题；</li>
+<li>章节依赖是否清楚，后文使用的技能，前文至少应该出现过铺垫或最小介绍；</li>
+<li>题型之间是否互补，而不是反复改写同一种模板；</li>
+<li>卷册标题、章节名称、练习安排和教师指南之间是否一致。</li>
+</ul>
+<p>从成书角度看，卷册层验收实际上是在检查“学习路径”。很多模型团队习惯用数据分布的语言讨论问题，但教材团队更习惯用“读者体验”的语言讨论。P04 的方法价值就在于，它把这两种语言接起来了。所谓主题覆盖，本质上是分布问题；所谓难度梯度，本质上是课程排序问题；所谓章节依赖，本质上是结构化前置知识问题。它们都可以写成工程检查项，而不必只停留在编辑经验层面。</p>
+<p>如果未来要把验收进一步自动化，可以考虑为卷册层补充如下结构化信号：</p>
+<ul>
+<li>每章的主题标签与难度标签；</li>
+<li>相邻章节的重复题型比例；</li>
+<li>基础概念在全书中的首次出现位置；</li>
+<li>每卷的数学题、代码题和综合题占比；</li>
+<li>教师指南与卷册目录之间的覆盖对齐度。</li>
+</ul>
+<p>这些信号不一定都能直接决定取舍，但它们能帮助团队从“感觉顺不顺”升级到“有证据地讨论是否顺”。</p>
+<h3 id="_15">三、训练层验收：教材资产能否稳定进入训练<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>教材卷册写出来，并不意味着训练问题已经解决。训练层验收关注的是另一组问题：这些教材资产在进入 SFT 或小模型蒸馏流程时，是否具备足够的工程稳定性。</p>
+<p>训练层常见的验收重点包括：</p>
+<ul>
+<li>schema 是否统一，字段命名、空值处理、分隔形式是否稳定；</li>
+<li>train、val、smoke 三套数据是否职责清楚，不会出现验证集泄漏或 smoke 集退化成展示样本；</li>
+<li>两个学科域是否都进入切分，避免训练只覆盖数学或只覆盖代码；</li>
+<li>训练 manifest 是否记录了足够的统计信息与版本来源；</li>
+<li>训练样本里的解释、代码、答案是否能够被同一模板可靠解析。</li>
+</ul>
+<p>这一层尤其值得强调的一点是：教材型数据往往比普通问答数据更复杂。因为它同时包含题面、解释、程序、答案、章节标签、难度标签和教材来源信息。只要模板稍微不稳，训练脚本就很容易在某个字段上读错、漏读或错误截断。所以，训练层验收不是附属动作，而是教材工厂是否完成闭环的关键组成。</p>
+<p>更进一步说，训练层验收还决定了教材工厂能否真正形成“版本升级能力”。如果一个版本的卷册很好看，但没有稳定 manifest、没有清楚的切分口径、没有保留版本来源，那么后续哪怕效果提升了，团队也很难说清到底是哪一批教材、哪一类题型、哪一种解释风格带来了收益。对于推理型数据来说，这种不可解释的改进，往往比暂时没改进更危险。</p>
+<hr />
+<h2 id="_16">专题：教材工厂的运营机制<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<p>当教材工厂开始连续产出时，团队很快会发现，真正拉开差距的并不是某个 prompt 技巧，而是有没有稳定的运营机制。没有运营机制，项目通常只能“一次性冲刺”；有了运营机制，才可能把 P04 变成持续迭代的能力。</p>
+<h3 id="_17">一、角色分工：谁对哪一段负责<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>教材工厂至少涉及五类职责面，而且这些职责面不能长期混在同一个人身上。</p>
+<ul>
+<li>学科策划角色：负责确定卷册定位、主题覆盖、章节顺序和难度梯度；</li>
+<li>生成工程角色：负责采样、prompt 编排、模型调用与失败重试；</li>
+<li>验证工程角色：负责代码提取、沙箱执行、异常捕获和验证统计；</li>
+<li>编辑与 QA 角色：负责语言风格、教学解释、章节组织与人工抽检；</li>
+<li>训练接入角色：负责最终数据切分、manifest、smoke test 与训练脚本对接。</li>
+</ul>
+<p>很多小团队一开始会把这几件事压缩在两三个人身上，这没有问题。但即使是小团队，也最好在职责上保持显式区分。因为一旦所有问题都落到“模型输出质量”这个大筐里，团队就很难区分：当前问题是学科规划问题、生成问题、验证问题，还是训练接入问题。</p>
+<h3 id="_18">二、版本节奏：为什么教材也需要发布周期<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>教材工厂和普通数据流水线一样，也需要节奏。一个可执行的最小节奏通常可以是：</p>
+<ul>
+<li>周初冻结种子池和章节计划；</li>
+<li>周中完成生成、验证与失败重试；</li>
+<li>周后半段完成人工抽检、卷册打包与训练封装；</li>
+<li>周末输出指标报告、问题列表和下周期调整建议。</li>
+</ul>
+<p>这样的节奏看起来有点“传统出版”，但它对工程稳定性有价值。因为教材型数据不是单纯追求吞吐量，而是要同时兼顾结构、质量和可训练性。如果没有冻结点，章节计划会在生成过程中不断变化；如果没有抽检点，问题会一路带到训练侧；如果没有统一报告点，团队就只能凭印象说“这版好像更好了”。</p>
+<p>更重要的是，发布节奏还能帮助团队建立“版本心智”。读者、训练工程师和评审人员看到的，不再是随时变化的中间状态，而是一批有明确边界的教材版本。这样后续无论是回归问题、效果比较还是新增卷册，都会清楚得多。</p>
+<h3 id="_19">三、失败返工：把坏样本变成改进线索<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h3>
+<p>P04 这类项目最不应该浪费的资产，就是失败样本。因为失败样本往往最能揭示当前工厂的真实短板。</p>
+<p>失败返工通常至少要保留三类信息：</p>
+<ul>
+<li>失败发生在哪一层，是题目进化、PoT 生成、代码提取、沙箱执行还是打包环节；</li>
+<li>失败属于什么类型，是语法错误、逻辑错误、超时、答案不一致还是章节结构不合格；</li>
+<li>失败应由谁处理，是 prompt 迭代、模板调整、章节重排还是人工编辑补救。</li>
+</ul>
+<p>这样做的意义，在于把“返工”从一次性修补，变成下一轮优化的输入。随着失败样本积累，团队可以很容易看出：哪类题型总是容易超时，哪类解释总是过度冗长，哪类章节衔接总是生硬，哪类代码题在 PoT 阶段最容易出现变量幻觉。这些信息比单纯统计“通过率 100%”更能支撑后续优化。</p>
+<h3 id="_20">四、人工抽检：为什么还需要人<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>执行验证已经大幅提升了数据可信度，但它仍然不能替代人工抽检。原因很简单，教材并不只是“求对答案”，还要“教得明白”。</p>
+<p>人工抽检最适合关注以下问题：</p>
+<ul>
+<li>解释是否对目标难度友好；</li>
+<li>章节顺序是否自然；</li>
+<li>是否存在语言啰嗦、风格飘忽或术语不统一的问题；</li>
+<li>某些题虽然程序正确，但教学价值是否过低；</li>
+<li>代码示例是否具有误导性写法。</li>
+</ul>
+<p>从长期看，最稳妥的做法不是大规模全量人审，而是建立小比例、高代表性的抽检机制。比如每个版本抽取基础题、进阶题、数学题、代码题和高失败风险题型各若干条。这样既能控制人力成本，又能持续校准自动化流程。</p>
+<hr />
+<h2 id="_21">专题：从项目原型到学科平台的扩展路线<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h2>
+<p>P04 当前已经证明了一件事：数学与代码教材可以通过“种子采样—进化生成—程序验证—教材打包—训练封装”的链路稳定产出。下一步的问题不再是“能不能做”，而是“能扩到哪里、该怎么扩”。</p>
+<h3 id="stem">一、从双学科扩展到 STEM 组合教材<a class="headerlink" href="#stem" title="Permanent link">&para;</a></h3>
+<p>最自然的扩展方向，是把当前的数学与代码双线，扩展到更广的 STEM 组合教材。例如物理、统计、数据分析、算法与离散数学。对这些学科来说，P04 的核心方法仍然成立，因为它们都具有一个共同特点：很多关键步骤可以通过程序、公式或外部工具进行验证。</p>
+<p>但是，学科扩展不等于简单复制 prompt。不同学科至少会带来三类变化：</p>
+<ul>
+<li>验证器变化，例如物理题可能更依赖单位分析和数值仿真，统计题可能更依赖数据采样与分布检验；</li>
+<li>课程结构变化，例如编程教材更强调项目驱动，数学教材更强调概念递进；</li>
+<li>表达风格变化，例如算法题更偏重复杂度分析，数据分析题更偏重实验解释。</li>
+</ul>
+<p>因此，扩展路线里最应该复用的是“工厂骨架”，而不是某一个已经调好的生成模板。</p>
+<h3 id="_22">二、从纯文本教材扩展到多模态教材<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>当前项目的交付物主要还是文本型教材与代码型教材。但在真实教学场景里，图示、流程图、表格、示意图和可视化例题同样重要。后续如果要做多模态扩展，可以考虑引入：</p>
+<ul>
+<li>题目配图与解题流程图；</li>
+<li>代码执行结果可视化；</li>
+<li>图表理解与数据分析类章节；</li>
+<li>面向教师使用的板书示意或课堂讲解卡片。</li>
+</ul>
+<p>这一步的难点不在于生成图片本身，而在于保证图文一致和教学作用明确。只要图片沦为装饰，就会增加交付成本却不提升训练价值。反过来，如果图像资产被设计成章节理解的一部分，它就能成为下一阶段多模态教学数据的重要基础。</p>
+<h3 id="_23">三、从离线教材生产扩展到学习反馈回流<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h3>
+<p>教材工厂还有一个更值得期待的方向，是把学习反馈接回数据工厂。也就是说，未来不只是工厂单向产出教材，而是让读者或训练系统的使用结果，反过来指导下一轮教材升级。</p>
+<p>可回流的反馈大致包括：</p>
+<ul>
+<li>哪些题错误率最高；</li>
+<li>哪些章节被频繁跳过；</li>
+<li>哪些解释最容易引发误解；</li>
+<li>哪些题型对训练收益更高；</li>
+<li>哪些知识点虽然通过率高，但迁移效果差。</li>
+</ul>
+<p>一旦这些反馈被纳入结构化记录，教材工厂就会从“内容生产线”进一步升级为“教学数据飞轮”。从书稿角度看，这会显著增强项目的长期方法价值，因为它表明教材不是静态产物，而是可以围绕学习效果持续迭代的系统资产。</p>
+<hr />
+<h2 id="_24">专题：教材版本发布前的检查清单<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h2>
+<p>教材工厂在进入连续迭代之后，还需要一个务实的能力，就是版本发布清单。因为教材型数据一旦同时服务编辑、训练和评审三类角色，就不能只靠“看起来差不多”来决定是否发布。一个稳定的发布清单，能够把卷册质量、训练接口和工程一致性拉回到同一张表上。</p>
+<h3 id="_25">一、发布前先核对三类一致性<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<p>最基础的发布前检查，通常要先核对三类一致性：</p>
+<ul>
+<li>教材一致性：卷册目录、章节内容、课程地图和教师指南是否互相对齐；</li>
+<li>数据一致性：最终教材数据、train/val/smoke 切分和 manifest 是否互相匹配；</li>
+<li>报告一致性：指标、交付物清单和检查结果是否与当前版本真实产物一致。</li>
+</ul>
+<p>只要这三类一致性里有一项没有对齐，版本发布就很容易留下隐患。对教材工厂来说，最常见的问题不是“完全错了”，而是“各个文件都各自正确，但彼此之间对不上”。发布清单的意义，就是尽量把这种问题提前暴露出来。</p>
+<h3 id="_26">二、再核对教学可用性而不只是工程可用性<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<p>教材版本和普通数据版本的另一个区别，在于它必须额外核对教学可用性。也就是说，哪怕工程侧文件都齐全，也还需要确认：</p>
+<ul>
+<li>新增章节是否真的补足了课程结构，而不是重复旧题型；</li>
+<li>难度分布是否因为一次版本更新突然失衡；</li>
+<li>数学与代码两条线的教材风格是否仍然统一；</li>
+<li>教师指南中的使用说明是否仍然适配当前卷册内容。</li>
+</ul>
+<p>这一步看起来更像编辑工作，但其实它直接关系到训练侧和评审侧是否还能稳定理解当前版本。如果教学结构突然变化却没有同步说明，后续对版本效果的解释就会变得较为困难。</p>
+<h3 id="_27">三、最后确认问题台账是否被清空或显式继承<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>发布并不要求版本毫无问题，但要求问题要么被解决，要么被显式继承。一个更成熟的教材发布流程，通常会在版本说明里保留：</p>
+<ul>
+<li>本版本修复了哪些高频失败类型；</li>
+<li>哪些问题仍然存在，但已知不会阻断当前使用；</li>
+<li>哪些章节或题型仍处在观察期；</li>
+<li>下一版本优先会补哪些缺口。</li>
+</ul>
+<p>这样做的价值，在于让教材工厂逐步建立“版本记忆”。一旦版本记忆开始积累，团队就不再只是反复生产内容，而是在持续经营一套可解释、可比较、可复盘的教材资产体系。</p>
+<hr />
+<h2 id="_28">专题：教材工厂中的编辑评审机制<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h2>
+<p>教材型数据和普通训练数据最大的不同之一，在于它天然会面向“阅读体验”。因此，P04 这样的项目即使已经有执行验证，也仍然需要一层编辑评审机制。它的目标不是推翻自动化，而是专门补上自动化最难覆盖的那些教学质量问题。</p>
+<h3 id="_29">一、编辑评审重点看“是否值得学”<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h3>
+<p>工程验证更擅长回答“对不对”，编辑评审更擅长回答“值不值得这样教”。例如同样一道题，两种解法都正确，但一种解法过于跳跃，另一种解法更适合作为章节示范；再比如两道题都能训练循环，但其中一道更能体现变量更新逻辑，教学价值就更高。</p>
+<p>这说明编辑评审在教材工厂里不是装饰层，而是帮助团队完成最后一道筛选：哪些样本适合保留为教材正文，哪些更适合保留在练习、补充题或 replay 集中。</p>
+<h3 id="_30">二、评审机制让教材风格可以持续稳定<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h3>
+<p>当卷册越来越多时，如果没有编辑评审，最容易发生的不是代码错误，而是风格漂移。某一版可能偏口语化，另一版突然变成竞赛解析风格；某些章节强调一步一步讲清楚，另一些章节又默认读者已经懂很多前置概念。风格一旦漂移，训练资产虽然还能用，但教材资产的整体感会明显下降。</p>
+<p>评审机制存在的意义，就是让团队有机会持续校准：</p>
+<ul>
+<li>解释密度是否合适；</li>
+<li>章节内术语是否统一；</li>
+<li>题后总结是否真的起到教学作用；</li>
+<li>数学卷与代码卷是否仍保持同一套编辑语气。</li>
+</ul>
+<p>对于一本书来说，这种稳定性本身就是重要质量指标。</p>
+<h2 id="_31">本章小结<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h2>
+<p>本章以“合成数学与代码教材工厂”为案例，展示了用可验证的题目进化和解题链路生成数学与代码教材型数据的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。聚焦数学、代码和程序化推理样本，不替代完整课程教材编写与专家审稿流程。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_32">参考文献<a class="headerlink" href="#_32" title="Permanent link">&para;</a></h2>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.</p>
+<p>Hugging Face (2026) Datasets Documentation. https://huggingface.co/docs/datasets/.</p>
+<p>Ray Project (2026) Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.</p>
+<p>MLflow Authors (2026) MLflow Documentation. https://mlflow.org/docs/latest/.</p>
+<p>Great Expectations Contributors (2026) Great Expectations Documentation. https://docs.greatexpectations.io/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

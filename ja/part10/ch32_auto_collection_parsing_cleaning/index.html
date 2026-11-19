@@ -1,0 +1,1334 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part10/ch32_auto_collection_parsing_cleaning/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第32章：自动化采集、解析与清洗 Agent - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#32-agent" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第32章：自动化采集、解析与清洗 Agent
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part10/ch32_auto_collection_parsing_cleaning/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part10/ch32_auto_collection_parsing_cleaning/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景引入：数据源漂移风险
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="场景引入：数据源漂移风险">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景背后的核心工程痛点
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#321-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1 Agent 驱动的采集架构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.1 Agent 驱动的采集架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3211" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.1 四源采集的统一抽象
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3212" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.2 采集任务生成与失败重试
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3213" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.3 大规模采集的调度与限流策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3214" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.1.4 企业文档与数据库的特殊采集
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#322-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2 解析修复 Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.2 解析修复 Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3221" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.1 解析异常的检测与归因
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3222-parser" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.2 Parser 选择与修复规则生成
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3223" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.3 多模态内容的解析策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3224" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.4 多语言与编码问题的系统化处理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3225-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.2.5 采集清洗 Agent 的性能优化
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#323-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3 清洗规则生成 Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.3 清洗规则生成 Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3231" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.1 从抽检缺陷到规则候选
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3232" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.3.2 沙箱验证与差异报告
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#324" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4 质量过滤与人审触发
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.4 质量过滤与人审触发">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3241" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.1 质量不确定性分流
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3242" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.2 人工复核触发条件
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3243" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.3 质量过滤的自动化流水线设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3244" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.4.4 人工复核的优先级与时效管理
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#325-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.5 案例复盘：多源法律数据的 Agent 化采集清洗
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.5 案例复盘：多源法律数据的 Agent 化采集清洗">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键指标变化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      扩展案例：AI 公司多源数据采集 Agent 的生产化之路
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例教训总结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#326-checklist-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.6 Checklist：采集清洗 Agent 部署自查
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#327" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.7 章节回链
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#328-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      32.8 延伸阅读：采集清洗 Agent 的工程实践要点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="32.8 延伸阅读：采集清洗 Agent 的工程实践要点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      采集伦理与合规边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据溯源与可复现性
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      清洗规则的版本管理与回滚
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="32-agent">第32章：自动化采集、解析与清洗 Agent<a class="headerlink" href="#32-agent" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；汪志立；刘中一</div>
+
+<hr />
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>数据工程中最琐碎、最耗时的工作往往不在建模阶段，而在数据进门的那一刻——采集用什么方式、解析遇到异常格式如何处理、清洗规则谁来维护、数据质量谁来判断。当数据源从几十个膨胀到几百个，人工制定采集策略和清洗规则的模式迅速崩溃：要么规则维护 backlog 持续积压，要么质量门禁失效。自动化采集与清洗 Agent 的核心任务不是"替代数据工程师"，而是将工程师从重复的规则适配中解放出来，让他们专注于异常处理、规则优化和架构设计。</p>
+<p>本章从网页/PDF/API/代码仓库四种典型数据源的自动化采集出发，讨论 Agent 如何自动识别源结构、处理解析异常、生成清洗规则、执行质量过滤，并在必要时触发人工复核。重点落在 Agent 在不确定情况下该如何决策——解析失败时是跳过、修复还是上报？清洗规则冲突时以哪个为准？质量过滤阈值谁来定？本章承接 Ch04 数据采集、Ch05 清洗去重、Ch06 输入管道、Ch02 质量框架，将传统的数据工程实践升级为 Agent 驱动的自适应流水线。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>自动化采集；数据解析 Agent；清洗规则生成；质量过滤；人工复核；源结构漂移</p>
+<hr />
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>通过本章学习，读者应能够：</p>
+<ul>
+<li>理解多源异构数据场景中 Agent 驱动的采集架构设计原则。</li>
+<li>掌握四种典型数据源（网页、PDF、API、代码仓库）的 Agent 化采集策略。</li>
+<li>设计基于解析异常的自动修复与规则生成机制。</li>
+<li>构建多层质量过滤流水线，定义何时自动通过、何时触发人工复核。</li>
+<li>评估清洗 Agent 在不同场景下的成本收益比与异常处理效率。</li>
+</ul>
+<hr />
+<h2 id="_4">场景引入：数据源漂移风险<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以下为匿名化复合案例，用于说明源结构漂移的典型量级，不代表某个公开项目的实测统计。某 AI 团队需要为法律大模型构建训练数据集，数据源包括裁判文书网（网页）、法律法规 PDF 文件、司法 API 接口以及开源法律知识仓库。团队最初安排了 5 名工程师全职处理采集和清洗工作。三个月后，情况如下：</p>
+<p><strong>网页采集线</strong>：目标网站改版 3 次，每次改版都导致 70% 以上的爬虫规则失效。工程师平均每次需要 2 天修复规则，期间数据流水线空转。</p>
+<p><strong>PDF 解析线</strong>：2000+ 份 PDF 文件来自 30 多个不同法院，排版格式各异。工程师为每种排版编写了专门的解析规则，但仍有约 15% 的文件解析后出现字段错位。</p>
+<p><strong>API 采集线</strong>：司法 API 在两个月内发生 4 次字段结构变更，每次变更导致下游清洗模块报错，每次修复耗时约 1 天。</p>
+<p><strong>代码仓库线</strong>：多个开源法律知识库的目录结构、文件格式、编码方式各不相同，人工适配后仍然存在大量编码错误。</p>
+<p><strong>关键问题</strong>：问题不在于"工程师不够努力"，而在于<strong>规则维护的增长速度超过了工程师的处理能力</strong>。当数据源 N 增加时，维护成本是 O(N) 甚至 O(N²)，而人工是固定资源。团队需要的不是更多人力，而是一个能自动适应源结构变化的 Agent 系统。</p>
+<h3 id="_5">场景背后的核心工程痛点<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>源结构漂移</strong>：网页结构、API Schema、文件格式会随时间变化，固定规则无法持续工作。</li>
+<li><strong>解析异常多样化</strong>：PDF 排版不定、编码混乱、特殊字符等问题无法通过通用规则全部覆盖。</li>
+<li><strong>清洗规则冲突</strong>：不同数据源对同一字段的定义不一致（如日期格式 <code>yyyy-MM-dd</code> vs <code>dd/MM/yyyy</code>），Agent 需要决策以哪个为准。</li>
+<li><strong>质量过滤粒度难以把握</strong>：过滤过严导致数据量不足，过滤过松导致质量不达训练要求。</li>
+</ol>
+<hr />
+<h2 id="321-agent">32.1 Agent 驱动的采集架构<a class="headerlink" href="#321-agent" title="Permanent link">&para;</a></h2>
+<h3 id="3211">32.1.1 四源采集的统一抽象<a class="headerlink" href="#3211" title="Permanent link">&para;</a></h3>
+<p>所有数据源采集都可以抽象为三层结构：<strong>连接层 → 提取层 → 结构化层</strong>。Agent 在不同层扮演不同角色。</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="四源采集 Agent 统一架构" src="../../../images/part10/Yu-Chap32-Fig01.svg" /></a></p>
+<p>图32-1展示了本节讨论对象的结构、流程或样例，便于对照正文理解关键环节。</p>
+<p><em>图 32-1：四源采集 Agent 统一架构</em></p>
+<p>四源采集虽然访问方式各异，但 Agent 的处理逻辑可以统一。统一的抽象层让 Agent 不需要为每种数据源类型编写完全不同的处理逻辑，而是通过适配器模式将差异封装在连接层，提取层和结构化层共享同一套处理逻辑。大规模网页语料构建中的抽取、过滤和多源混合经验表明，统一流水线与源类型适配器的组合，比为每个来源单独维护规则更容易扩展（Barbaresi 2021; Wenzek et al. 2020; Gao et al. 2020）。</p>
+<p><strong>连接层的适配器设计：</strong></p>
+<p>每种数据源类型对应一个连接适配器，适配器负责处理连接建立、身份认证、数据获取和原始数据缓存。适配器的接口是统一的——<code>connect() → fetch() → cache_raw()</code>——上层逻辑不感知底层是网页、PDF 还是 API。</p>
+<p><strong>提取层的通用处理流程：</strong></p>
+<p>无论数据来自何种来源，提取层都遵循相同的处理流程：原始数据 → 格式识别 → 内容提取 → 结构映射 → 中间格式输出。差异仅在格式识别和内容提取环节——网页需要 DOM 解析、PDF 需要版面分析、API 响应需要 JSON Schema 验证。ROOTS、RefinedWeb、FineWeb、Dolma、CulturaX 等语料工作也都把来源记录、清洗流水线和质量过滤作为数据集可复用性的核心组成部分（Laurençon et al. 2022; Penedo et al. 2023; Penedo, Kydlíček et al. 2024; Soldaini et al. 2024; Nguyen et al. 2024）。</p>
+<p><strong>结构化层的统一输出规范：</strong></p>
+<p>所有数据源的结构化输出遵循统一 Schema——至少包含 <code>source_id</code>、<code>extraction_timestamp</code>、<code>content_fields</code>、<code>metadata_fields</code>、<code>quality_score</code> 五个标准字段。这确保下游的清洗 Agent 和质量过滤 Agent 可以无差别地处理所有来源的数据。</p>
+<h3 id="3212">32.1.2 采集任务生成与失败重试<a class="headerlink" href="#3212" title="Permanent link">&para;</a></h3>
+<p>采集 Agent 的第一个职责是<strong>自动生成采集任务</strong>。传统模式下，工程师需要为每个数据源手动编写采集配置；Agent 模式下，用户只需描述数据需求，Agent 自动完成以下步骤：</p>
+<ol>
+<li><strong>源结构探测</strong>：Agent 首先对目标源执行一次轻量探测，识别源类型（网页/PDF/API/仓库）、预估数据量、检测访问限制。</li>
+<li><strong>采集策略生成</strong>：根据探测结果，Agent 生成采集策略——分页策略、频率控制、并发数、失败重试策略。</li>
+<li><strong>来源存证</strong>：每次采集必须记录来源元数据——URL、采集时间、HTTP 响应头、文件哈希。这在合规审计和版权追溯时至关重要。</li>
+</ol>
+<p>失败重试策略的设计尤为关键：</p>
+<p>表32-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 32-1：采集失败分类与重试策略</em></p>
+<table>
+<thead>
+<tr>
+<th>失败类型</th>
+<th>检测方式</th>
+<th>重试策略</th>
+<th>最大重试次数</th>
+<th>超过上限后</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>网络超时</td>
+<td>HTTP 状态码 / 异常</td>
+<td>指数退避（1s, 2s, 4s, 8s）</td>
+<td>5</td>
+<td>标记为临时不可用，1h 后重试</td>
+</tr>
+<tr>
+<td>反爬拦截</td>
+<td>403 / 验证码页面</td>
+<td>降低速率，暂停采集并人工审批；必要时切换授权 API / 数据合作通道</td>
+<td>3</td>
+<td>暂停采集并人工审批</td>
+</tr>
+<tr>
+<td>结构变化</td>
+<td>解析结果字段缺失率 &gt; 50%</td>
+<td>触发结构重新探测</td>
+<td>2</td>
+<td>生成结构变更告警</td>
+</tr>
+<tr>
+<td>编码错误</td>
+<td>乱码检测</td>
+<td>自动编码检测 + 转码</td>
+<td>3</td>
+<td>保留原始字节，标记需人工处理</td>
+</tr>
+<tr>
+<td>数据量异常</td>
+<td>采集量偏离历史均值 &gt; 3σ</td>
+<td>暂停采集，生成报告</td>
+<td>1</td>
+<td>人工确认后恢复</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3213">32.1.3 大规模采集的调度与限流策略<a class="headerlink" href="#3213" title="Permanent link">&para;</a></h3>
+<p>当 Agent 管理数百个数据源时，采集任务调度不再是简单的"定时执行"，而是一个受多约束条件制约的优化问题——目标是在遵守访问限制的前提下最大化数据采集的吞吐量和新鲜度。</p>
+<p><strong>调度约束条件：</strong></p>
+<p>表32-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 32-2：采集调度约束条件</em></p>
+<table>
+<thead>
+<tr>
+<th>约束类型</th>
+<th>说明</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>频率限制</td>
+<td>目标网站/API 的请求频率上限</td>
+<td>每秒最多 10 个请求</td>
+</tr>
+<tr>
+<td>并发限制</td>
+<td>同时进行的采集任务数上限</td>
+<td>最多 50 个并发采集任务</td>
+</tr>
+<tr>
+<td>时间窗口</td>
+<td>目标源的可访问时间窗口</td>
+<td>仅工作日 8:00-20:00 开放</td>
+</tr>
+<tr>
+<td>数据量预估</td>
+<td>每次采集的预估数据量和耗时</td>
+<td>全量采集约 2 小时，增量采集约 10 分钟</td>
+</tr>
+<tr>
+<td>优先级</td>
+<td>不同数据源对下游的重要性</td>
+<td>训练数据源 &gt; 评测数据源 &gt; 实验数据源</td>
+</tr>
+</tbody>
+</table>
+<p>Agent 的调度策略应支持三种模式：</p>
+<p><strong>周期采集模式。</strong> 适用于更新频率可预期的数据源——如每日更新的新闻网站、每周更新的统计报告。Agent 根据历史更新模式自动设定采集周期，当检测到实际更新频率偏离预期时自动调整。</p>
+<p><strong>事件触发模式。</strong> 适用于需要快速响应变化的数据源——如 API Schema 变更通知、网页结构变化告警。Agent 订阅变更事件（webhook、RSS、监控告警），在收到事件后立即触发增量采集。</p>
+<p><strong>自适应采集模式。</strong> 适用于更新频率不可预期的数据源。Agent 以较低的探测频率（如每 6 小时一次）检查数据源是否有更新，根据探测结果动态调整采集频率——如果连续 3 次探测无更新，则降低探测频率；如果发现更新，则提高采集频率。</p>
+<h3 id="3214">32.1.4 企业文档与数据库的特殊采集<a class="headerlink" href="#3214" title="Permanent link">&para;</a></h3>
+<p>除网页/PDF/API/代码仓库，企业数据工程中还有两类重要的数据源需要特殊的 Agent 处理策略：</p>
+<p><strong>企业文档采集（SharePoint/Confluence/钉钉文档）。</strong> 企业文档通常存储在协作平台中，具有版本管理、权限控制和富文本格式。Agent 需要：</p>
+<ul>
+<li>通过平台 API 进行身份认证和权限检查。</li>
+<li>处理文档的版本历史——是采集最新版本还是所有历史版本。</li>
+<li>解析富文本中的表格、图片、附件和嵌入内容。</li>
+<li>遵循企业的数据分类和访问控制策略。</li>
+</ul>
+<p><strong>数据库直接采集。</strong> 许多企业的核心数据存储在关系型数据库中。Agent 需要：</p>
+<ul>
+<li>根据数据库 Schema 自动生成数据抽取查询。</li>
+<li>处理增量采集——通过时间戳或版本号字段识别变更数据。</li>
+<li>管理采集对生产数据库的性能影响——限制查询复杂度、使用只读副本、在业务低峰期执行。</li>
+<li>处理跨数据库的关联采集——当训练数据需要 JOIN 多个表时，Agent 需要理解表间关系并生成正确的查询。</li>
+</ul>
+<hr />
+<h2 id="322-agent">32.2 解析修复 Agent<a class="headerlink" href="#322-agent" title="Permanent link">&para;</a></h2>
+<h3 id="3221">32.2.1 解析异常的检测与归因<a class="headerlink" href="#3221" title="Permanent link">&para;</a></h3>
+<p>解析 Agent 的核心能力不是"解析成功"，而是"解析失败时知道为什么失败、该怎么做"。解析异常按类型可分为：</p>
+<p><strong>结构性异常</strong>：HTML DOM 结构变化导致选择器失效、PDF 排版变化导致区域识别错误、API 返回字段增删导致 Schema 不匹配。</p>
+<p><strong>编码性异常</strong>：文件编码声明与实际不符、混合编码（UTF-8 文件中混入 GBK 片段）、特殊字符转义错误。</p>
+<p><strong>语义性异常</strong>：解析出的字段值在语法上正确但语义不合理——如日期字段解析出"13 月 45 日"、金额字段出现负数但业务上不可能。</p>
+<p>Agent 的异常处理决策树：</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="解析异常处理决策流程" src="../../../images/part10/Yu-Chap32-Fig02.svg" /></a></p>
+<p>图32-2展示了本节讨论对象的结构、流程或样例，便于对照正文理解关键环节。</p>
+<p><em>图 32-2：解析异常处理决策流程</em></p>
+<h3 id="3222-parser">32.2.2 Parser 选择与修复规则生成<a class="headerlink" href="#3222-parser" title="Permanent link">&para;</a></h3>
+<p>当解析失败时，Agent 面临的选择不是二元的（修复 vs 跳过），而是一个包含多种策略的谱系：</p>
+<ol>
+<li><strong>备选 Parser 切换</strong>：PDF 文件可尝试 PyMuPDF → pdfplumber → Tesseract OCR 的降级链路；HTML 可尝试不同解析引擎（lxml → html5lib → BeautifulSoup）。</li>
+<li><strong>提取规则自动生成</strong>：当固定选择器失效时，Agent 可以根据目标字段的语义特征（如"看起来像日期的文本"、"包含'案号'关键词的行"）自动生成新的提取规则。</li>
+<li><strong>局部修复</strong>：对于只有部分字段解析异常的文件，Agent 可以保留正确解析的部分，仅对异常字段进行修复尝试。</li>
+</ol>
+<h3 id="3223">32.2.3 多模态内容的解析策略<a class="headerlink" href="#3223" title="Permanent link">&para;</a></h3>
+<p>现代数据工程中，越来越多的数据源包含多模态内容——图文混排的网页、包含表格和图片的 PDF、带有截图的文档。Agent 需要对这些内容制定专门的解析策略。</p>
+<p><strong>图文混排处理：</strong> 对于包含图片的文档，Agent 需要决策是保留图片引用、提取图片中的文字（OCR）、生成图片描述，还是忽略图片。决策取决于下游任务需求——多模态模型训练需要保留图片，纯文本模型训练可能只需要提取文字或生成描述。文档理解模型和版面数据集的研究表明，表格、公式、图片和版面结构会显著影响解析质量，不能简单压平成纯文本处理（Blecher et al. 2023; Huang et al. 2022; Kim et al. 2022; Pfitzmann et al. 2022）。</p>
+<p><strong>表格解析的鲁棒性策略：</strong> 表格是解析失败率最高的元素之一——合并单元格、嵌套表头、跨页表格、无边框表格都会导致解析器出错。Agent 应采用"多解析器投票 + 人工兜底"策略：</p>
+<ol>
+<li>使用 2-3 种不同的表格解析方法（基于边框检测、基于空格对齐、基于语义规则）分别解析同一表格。</li>
+<li>对比解析结果——如果多种方法结果一致（行列数相同、表头相同），则高置信度采用。</li>
+<li>如果结果不一致，标记为"解析不确定"，提交人工确认。</li>
+</ol>
+<p><strong>OCR 的适用条件与质量控制：</strong> OCR 不是免费的——它有额外的计算成本和时间开销。Agent 应在以下条件同时满足时才触发 OCR：</p>
+<ul>
+<li>主要解析方法（直接文本提取）的字符识别率 &lt; 85%。</li>
+<li>文档中包含不可复制文本（如扫描件、图片中的文字）。</li>
+<li>OCR 的预估处理时间在任务的时间预算内。</li>
+</ul>
+<p>Agent 还需对 OCR 结果进行质量评估——将 OCR 输出的文本与已知的元数据（如文档标题、作者、日期）进行比对，如果这些基准字段的识别率低于阈值，则标记该文档为"OCR 低质量"，建议人工处理。</p>
+<h3 id="3224">32.2.4 多语言与编码问题的系统化处理<a class="headerlink" href="#3224" title="Permanent link">&para;</a></h3>
+<p>数据工程 Agent 在多语言场景下面临两个层面的挑战：</p>
+<p><strong>语种识别与分流。</strong> Agent 需要在解析阶段识别文档的语种，为后续的清洗和标注提供上下文。语种识别不是简单的二分类（中/英），而是需要处理多语种混合的情况——一段文本中可能同时包含中文、英文、代码和数学公式。</p>
+<p><strong>编码检测与修复。</strong> 编码问题是数据工程中最顽固的问题之一——文件的声明编码与实际编码不符，或在同一文件中混用多种编码。Agent 的编码处理流程：</p>
+<ol>
+<li>读取文件原始字节，使用 chardet/cChardet 等工具检测实际编码。</li>
+<li>如果检测到的编码与声明编码不一致，使用检测到的编码重新解码。</li>
+<li>如果部分字节无法用任何已知编码正确解码，保留原始字节，标记为"编码不确定"，记录无法解码的位置和上下文。</li>
+<li>在 Lineage 中记录编码检测和转码的全过程——原始编码、检测结果、转码结果和无法解码的字节比例。</li>
+</ol>
+<h3 id="3225-agent">32.2.5 采集清洗 Agent 的性能优化<a class="headerlink" href="#3225-agent" title="Permanent link">&para;</a></h3>
+<p>当 Agent 管理数百个数据源、每天处理 TB 级数据时，性能优化从"锦上添花"变为"生存必需"。</p>
+<p><strong>增量采集与变更检测。</strong> 全量采集的成本随数据量线性增长。Agent 应优先采用增量采集——只采集自上次采集以来发生变化的数据。变更检测策略因数据源类型而异：API 数据源可通过 <code>Last-Modified</code> 头或 <code>updated_at</code> 字段检测变更；网页数据源可通过页面哈希对比检测变更；PDF 文件可通过文件哈希或版本号检测变更。</p>
+<p><strong>并行化与资源池管理。</strong> Agent 的采集任务应在资源池的约束下最大化并行度。资源池的管理策略：为每种数据源类型分配独立的资源池，避免一种数据源的大量采集任务挤占其他数据源的资源。当某资源池利用率超过 80% 时，Agent 应自动将低优先级任务延迟到低谷期执行。</p>
+<p><strong>本地缓存与去重。</strong> 相同内容的重复采集是计算资源和存储资源的双重浪费。Agent 应在采集前检查本地缓存——如果目标内容的哈希值已在缓存中存在，则直接使用缓存数据，跳过采集步骤。缓存策略需考虑数据的时效性要求——新闻数据缓存数小时，法规数据缓存数天。</p>
+<hr />
+<h2 id="323-agent">32.3 清洗规则生成 Agent<a class="headerlink" href="#323-agent" title="Permanent link">&para;</a></h2>
+<h3 id="3231">32.3.1 从抽检缺陷到规则候选<a class="headerlink" href="#3231" title="Permanent link">&para;</a></h3>
+<p>传统清洗规则维护的痛点在于：规则由人编写，但规则的触发条件由数据驱动——工程师不知道什么时候需要新规则，直到质量问题被下游发现。以 C4、PaLM、RefinedWeb 和 Data-Juicer 为代表的数据处理实践说明，去重、质量过滤、语言识别和有害内容过滤会直接影响下游模型表现，清洗规则本身也需要被版本化和复核（Raffel et al. 2020; Chowdhery et al. 2022; Penedo et al. 2023; Chen et al. 2024）。Agent 可以逆转这个流程：</p>
+<ol>
+<li><strong>缺陷发现</strong>：通过定期数据质量扫描或下游反馈，识别出质量不达标的字段和数据子集。</li>
+<li><strong>模式提取</strong>：Agent 分析缺陷数据的共性模式——是所有来自某数据源的记录都有问题，还是符合某种格式模式的数据有问题。</li>
+<li><strong>规则候选生成</strong>：基于提取的模式，Agent 生成清洗规则候选，包括规则的适用范围、转换逻辑和预期效果。</li>
+<li><strong>沙箱验证</strong>：规则候选在隔离的沙箱环境中对历史数据执行，生成差异报告。</li>
+<li><strong>人工批准</strong>：差异报告提交给数据 Owner 审批，批准后规则进入生产环境。</li>
+</ol>
+<h3 id="3232">32.3.2 沙箱验证与差异报告<a class="headerlink" href="#3232" title="Permanent link">&para;</a></h3>
+<p>沙箱验证是规则上线前的最后一道防线。沙箱环境应满足以下要求：</p>
+<ul>
+<li><strong>数据隔离</strong>：使用生产数据的快照副本，规则在沙箱中的执行不影响生产数据。</li>
+<li><strong>全量验证</strong>：规则在沙箱中应对全量匹配数据（而不只是抽检样本）执行，以发现边缘 case。</li>
+<li><strong>差异可视化</strong>：差异报告以 Before/After 对照形式展示，突出显示被修改的字段和修改量。</li>
+</ul>
+<p>表32-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 32-3：沙箱验证维度与通过条件</em></p>
+<table>
+<thead>
+<tr>
+<th>验证维度</th>
+<th>检查内容</th>
+<th>通过条件</th>
+<th>不通过时的动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>规则匹配范围</td>
+<td>规则影响了多少行数据</td>
+<td>影响行数在预期范围内（偏差 &lt; 20%）</td>
+<td>调整规则适用范围</td>
+</tr>
+<tr>
+<td>修改正确性</td>
+<td>修改后的字段值是否合法</td>
+<td>格式校验 100% 通过，语义校验 &gt; 95% 通过</td>
+<td>修正规则逻辑</td>
+</tr>
+<tr>
+<td>副作用检测</td>
+<td>是否影响了非目标字段</td>
+<td>非目标字段修改率为 0%</td>
+<td>收紧规则条件</td>
+</tr>
+<tr>
+<td>性能评估</td>
+<td>规则在大数据集上的执行时间</td>
+<td>执行时间 &lt; 预估时间的 150%</td>
+<td>优化规则实现或分批执行</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="324">32.4 质量过滤与人审触发<a class="headerlink" href="#324" title="Permanent link">&para;</a></h2>
+<h3 id="3241">32.4.1 质量不确定性分流<a class="headerlink" href="#3241" title="Permanent link">&para;</a></h3>
+<p>Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而是"判断自己不确定的程度"。一个设计良好的 Agent 应该在不确定时主动请求人工介入，而不是硬着头皮给一个可能错误的判断。</p>
+<p>质量不确定性分流表：</p>
+<p>表32-4汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 32-4：质量不确定性分流表</em></p>
+<table>
+<thead>
+<tr>
+<th>质量维度</th>
+<th>高确定性（自动通过）</th>
+<th>中确定性（标记 + 采样审核）</th>
+<th>低确定性（人工复核）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>格式正确性</td>
+<td>正则/约束 100% 匹配</td>
+<td>匹配率 80%-99%</td>
+<td>匹配率 &lt; 80%</td>
+</tr>
+<tr>
+<td>字段完整性</td>
+<td>缺失率 &lt; 1%</td>
+<td>缺失率 1%-5%</td>
+<td>缺失率 &gt; 5%</td>
+</tr>
+<tr>
+<td>语义合理性</td>
+<td>业务规则全部通过</td>
+<td>1-2 条业务规则告警</td>
+<td>3+ 条业务规则告警或多条阻断</td>
+</tr>
+<tr>
+<td>跨源一致性</td>
+<td>多源同字段值一致</td>
+<td>存在轻微差异（格式差异）</td>
+<td>存在实质性差异</td>
+</tr>
+<tr>
+<td>分布稳定性</td>
+<td>与历史分布偏差 &lt; 2σ</td>
+<td>偏差 2-3σ</td>
+<td>偏差 &gt; 3σ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3242">32.4.2 人工复核触发条件<a class="headerlink" href="#3242" title="Permanent link">&para;</a></h3>
+<p>以下情况必须触发人工复核，Agent 不得自动决策：</p>
+<ol>
+<li><strong>低确定性质量判断</strong>：Agent 对自身判断的置信度低于预设阈值时。</li>
+<li><strong>高风险字段修改</strong>：涉及金额、日期、主键、外键等关键字段的修改。</li>
+<li><strong>规则冲突</strong>：两个规则对同一数据给出了不同的清洗建议。</li>
+<li><strong>首次处理的数据源</strong>：对从未处理过的数据源类型，首批数据必须人工抽检。</li>
+<li><strong>质量指标异常波动</strong>：某批数据的质量指标相比上一批下降超过 20%。</li>
+<li><strong>Agent 连续修复失败</strong>：同一批次数据 Agent 连续修复 3 次未通过 Verifier。</li>
+</ol>
+<h3 id="3243">32.4.3 质量过滤的自动化流水线设计<a class="headerlink" href="#3243" title="Permanent link">&para;</a></h3>
+<p>质量过滤 Agent 的流水线设计应遵循"宽进严出、分级过滤"的原则。每一级过滤解决一个维度的质量问题，不合格的数据被分流到对应的处理管道，而非简单丢弃。</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap32-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="质量过滤分级流水线" src="../../../images/part10/Yu-Chap32-Fig03.svg" /></a></p>
+<p>图32-3展示了本节讨论对象的结构、流程或样例，便于对照正文理解关键环节。</p>
+<p><em>图 32-3：质量过滤分级流水线</em></p>
+<p>每一级的过滤阈值应根据业务需求和数据特征进行配置：</p>
+<ul>
+<li><strong>格式校验层</strong>：严格模式——格式不匹配直接拒绝进入下游。</li>
+<li><strong>完整性校验层</strong>：弹性模式——允许少量缺失但需标记，缺失率超阈值时触发告警。</li>
+<li><strong>语义校验层</strong>：规则模式——基于预定义的业务规则集进行校验。</li>
+<li><strong>一致性校验层</strong>：对比模式——跨源对比、历史对比、上下游对比。</li>
+</ul>
+<h3 id="3244">32.4.4 人工复核的优先级与时效管理<a class="headerlink" href="#3244" title="Permanent link">&para;</a></h3>
+<p>人工复核队列需要优先级管理，确保高风险和时效性强的样本优先处理：</p>
+<p>表32-5汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 32-5：人工复核优先级与时效管理</em></p>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>触发条件</th>
+<th>处理时效</th>
+<th>超时动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>影响下游关键流水线（如模型训练数据出口）</td>
+<td>1 小时内</td>
+<td>升级通知 + 暂停相关流水线</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>低确定性质量判断 + 高风险字段</td>
+<td>4 小时内</td>
+<td>升级通知</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>首次处理的新数据源类型</td>
+<td>24 小时内</td>
+<td>标记为"待确认"放行 + 后续追溯</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>质量指标轻微波动</td>
+<td>72 小时内</td>
+<td>自动加入下周质量回顾议程</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="325-agent">32.5 案例复盘：多源法律数据的 Agent 化采集清洗<a class="headerlink" href="#325-agent" title="Permanent link">&para;</a></h2>
+<p>某法律 AI 团队将前述手动采集流程改造为 Agent 驱动的自适应流水线，经历了以下阶段：</p>
+<p><strong>第一阶段：采集 Agent 上线。</strong> Agent 自动探测 50+ 数据源的结构，生成采集策略并执行。上线首月，网页采集的规则失效恢复时间从 2 天缩短至 4 小时（Agent 自动检测结构变化 + 人工确认新规则）。但 PDF 解析准确率仅从 85% 提升至 90%，仍有改进空间。</p>
+<p><strong>第二阶段：解析修复 Agent 引入。</strong> 为 PDF 解析配置了三层 Parser 降级链路（PyMuPDF → pdfplumber → OCR），并为 30 种法院排版训练了版面识别模型。解析准确率提升至 96%，但引入了新问题——OCR 降级链路的处理时间是正常解析的 20 倍，导致部分批次处理超时。</p>
+<p><strong>第三阶段：清洗规则生成 Agent 与质量分流。</strong> Agent 从抽检缺陷中自动生成了 40+ 条清洗规则候选，经沙箱验证后 35 条被批准上线。质量不确定性分流将人工复核量从日均 500+ 份降至 80 份，复核聚焦于真正有争议的 case。</p>
+<h3 id="_6">关键指标变化<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>表32-6列出了相关字段与出版复核口径。</p>
+<p><em>表32-6：指标、计算方式与解释</em></p>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>改造前（纯人工）</th>
+<th>改造后（Agent 辅助）</th>
+<th>变化</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新数据源接入时间</td>
+<td>3-5 天</td>
+<td>4-8 小时</td>
+<td>-80%</td>
+</tr>
+<tr>
+<td>解析准确率</td>
+<td>85%</td>
+<td>96%</td>
+<td>+11%</td>
+</tr>
+<tr>
+<td>规则维护人力</td>
+<td>5 人全职</td>
+<td>1.5 人全职</td>
+<td>-70%</td>
+</tr>
+<tr>
+<td>人工复核量</td>
+<td>100%（全量）</td>
+<td>15%（分流后）</td>
+<td>-85%</td>
+</tr>
+<tr>
+<td>数据上线周期</td>
+<td>2 周</td>
+<td>3 天</td>
+<td>-78%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ai-agent">扩展案例：AI 公司多源数据采集 Agent 的生产化之路<a class="headerlink" href="#ai-agent" title="Permanent link">&para;</a></h3>
+<p>除法律 AI 团队外，另一家 AI 公司的数据采集 Agent 经历了更复杂的生产化挑战。该公司需要从 200+ 数据源采集训练数据，涵盖新闻、学术论文、技术博客、政府公开数据和社交媒体内容。</p>
+<p><strong>遭遇的典型问题：</strong></p>
+<p><strong>反爬对抗升级。</strong> Agent 上线两个月后，约 30% 的新闻网站更新了反爬策略。Agent 的自动重试机制触发了更严格的封锁——部分网站将高频重试的 IP 列入黑名单，影响了公司其他正常业务的访问。教训：重试策略必须考虑"退避礼貌"，高频重试不仅无效，还会恶化关系。</p>
+<p><strong>数据漂移的隐蔽性。</strong> 某学术论文网站进行了前端改版，页面视觉风格不变，但 HTML 结构完全重构。Agent 的异常检测依赖"解析字段缺失率"，但本次改版中 Agent 的解析器仍能提取出文本——只是将正文内容和侧边栏推荐内容混在了一起。缺失率没有飙高，但数据质量静默下降。直到下游模型训练出现准确率下降，才回溯发现这个问题。</p>
+<p><strong>成本失控。</strong> 采集 Agent 的 OCR 调用量在第三个月增长了 3 倍——因为 Agent 对每个不确定的 PDF 都触发了 OCR，导致云计算成本从 $2000/月 飙升至 $6000/月。教训：OCR 等高价操作必须有预算上限和配额控制。</p>
+<p><strong>应对措施：</strong></p>
+<ul>
+<li>引入"反爬友好度评分"——对每个数据源维护一个反爬历史记录，对高频反爬的源降低采集频率，优先采用官方 API 或合作方式获取数据。</li>
+<li>引入"内容漂移检测"——不只监控字段缺失率，还监控字段内容的语义分布。当提取文本的主题分布发生显著变化时，触发结构重新探测。</li>
+<li>引入"操作成本配额"——每种高成本操作（OCR、大模型调用）设置每日/每周配额，超出配额后自动升级为人工审批。</li>
+</ul>
+<h3 id="_7">案例教训总结<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>采集 Agent 的策略必须"有礼貌"</strong>——尊重目标网站的访问限制，避免因激进采集导致 IP 被封或法律风险。</li>
+<li><strong>数据质量监控不能只依赖缺失率</strong>——语义漂移比字段缺失更难检测，但影响更大。</li>
+<li><strong>自动化不等于不计成本</strong>——Agent 的每个操作都有计算成本，必须在系统设计中内置成本控制机制。</li>
+<li><strong>来源存证不只是合规需求</strong>——完整的来源记录是故障排查和信任建立的基础。当数据出现问题时，能快速追溯来源比修复数据本身更重要。</li>
+</ol>
+<hr />
+<h2 id="326-checklist-agent">32.6 Checklist：采集清洗 Agent 部署自查<a class="headerlink" href="#326-checklist-agent" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] 是否支持网页/PDF/API/代码仓库四种数据源的统一采集抽象？</li>
+<li>[ ] 采集失败重试策略是否区分了不同失败类型（网络、反爬、结构变化、编码）？</li>
+<li>[ ] 是否为每种数据源类型配置了 Parser 降级链路？</li>
+<li>[ ] 解析异常检测是否覆盖了结构性、编码性和语义性三个维度？</li>
+<li>[ ] 清洗规则上线前是否经过沙箱验证并生成差异报告？</li>
+<li>[ ] 沙箱验证是否检查了规则匹配范围、修改正确性、副作用和性能？</li>
+<li>[ ] 是否定义了质量不确定性分流的三级模型（自动通过/标记/人工复核）？</li>
+<li>[ ] 低确定性、高风险字段、规则冲突、首次处理数据源是否触发了人工复核？</li>
+<li>[ ] 是否记录了每次采集的来源存证（URL、时间、哈希）？</li>
+<li>[ ] 质量指标异常波动时是否自动暂停采集？</li>
+</ul>
+<hr />
+<h2 id="327">32.7 章节回链<a class="headerlink" href="#327" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Ch02</strong>：数据质量框架——为本章的质量过滤和不确定性分流提供了理论基础。</li>
+<li><strong>Ch04</strong>：数据采集——本章在其基础上引入 Agent 驱动的自适应采集。</li>
+<li><strong>Ch05</strong>：数据清洗与去重——本章将清洗规则维护升级为 Agent 自动生成。</li>
+<li><strong>Ch06</strong>：输入管道与特征工程——本章采集管道是其上游。</li>
+<li><strong>Ch31</strong>：Agent 架构与任务边界——本章是六层架构在采集清洗场景的具体实现。</li>
+<li><strong>Ch33</strong>：标注、合成与评测 Agent——本章输出的清洗数据是其输入。</li>
+</ul>
+<hr />
+<h2 id="328-agent">32.8 延伸阅读：采集清洗 Agent 的工程实践要点<a class="headerlink" href="#328-agent" title="Permanent link">&para;</a></h2>
+<h3 id="_8">采集伦理与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>Agent 驱动的自动化采集带来了传统手动采集没有的伦理和合规挑战——当采集速率提升 10 倍、覆盖数据源扩大 10 倍时，原本"微不足道"的问题可能被放大。训练语料文档化、许可审计和隐私泄露研究都提醒我们，数据采集不是单纯的技术吞吐问题，还涉及来源说明、授权边界和可被模型记忆的敏感内容（Dodge et al. 2021; Longpre et al. 2024; Carlini et al. 2021）。</p>
+<p><strong>robots.txt 的自动遵守。</strong> Agent 在采集网页数据前，必须自动检查目标网站的 robots.txt 文件，遵守其爬取规则。对于禁止爬取的路径，Agent 应自动跳过并记录。对于已获得明确授权的数据源，Agent 只能在授权范围内采集，并保留授权记录。</p>
+<p><strong>版权与数据使用权的自动检测。</strong> Agent 在采集数据时，应自动检测数据的使用许可——网页的 Terms of Service、API 的使用条款、开源仓库的 License。Agent 不应只采集数据，还应采集"我能用这些数据做什么"的信息。对于使用许可不明确或存在冲突的数据源，Agent 应暂停采集并提交人工审批，必要时切换到授权 API 或数据合作通道。</p>
+<p><strong>对目标服务器的负载控制。</strong> Agent 的采集速率不应影响目标服务器的正常运行。Agent 应监控目标服务器的响应时间——如果响应时间因采集行为而显著增加，Agent 应自动降低采集速率；如果异常持续，应暂停采集并进入人工审批流程，而不是通过切换 User-Agent 或 IP 池规避限制。</p>
+<h3 id="_9">数据溯源与可复现性<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>数据工程的"可复现性"要求意味着任何一批训练数据都应该能被"重新生成"。这就要求 Agent 的采集过程具备完整的可追溯性：</p>
+<ol>
+<li><strong>采集配置快照</strong>：每次采集任务执行时，保存完整的采集配置快照（来源 URL、解析规则版本、清洗规则版本）。</li>
+<li><strong>数据指纹</strong>：为每批采集数据计算内容哈希，作为数据的"指纹"——当需要验证数据是否被篡改时，可以通过比对指纹。</li>
+<li><strong>版本关联</strong>：将数据批次与采集配置快照、数据指纹关联存储，确保任何一批数据都能追溯到"是如何产生的"。</li>
+</ol>
+<h3 id="_10">清洗规则的版本管理与回滚<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>Agent 自动生成的清洗规则需要版本管理——当规则出现问题需要回滚时，不能"想回到哪个版本就回到哪个版本"，而必须是精确的、可追溯的版本切换。数据去重、低资源语料构建和大规模预训练语料的实践表明，清洗规则变更会改变样本分布，必须能够追踪版本、复现实验并解释过滤策略的影响（Lee et al. 2022; Ortiz Suárez et al. 2020; Laurençon et al. 2022）。</p>
+<p><strong>规则版本管理策略：</strong></p>
+<ul>
+<li>每条规则上线时自动分配语义版本号（Major.Minor.Patch）。</li>
+<li>规则的每次修改都保留完整的变更记录——修改人、修改时间、修改内容、修改原因。</li>
+<li>规则回滚时，不仅回滚规则本身，还标记所有受该规则影响的数据批次为"需重新处理"。</li>
+</ul>
+<h2 id="_11">本章小结<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>本章把数据源漂移作为采集清洗自动化的核心威胁，沿"采集—解析—清洗—过滤"四段流程展开 Agent 设计。在采集环节，本章将网页、API、文档与数据库四类来源抽象为连接层、提取层、结构化层三层结构，用适配器封装来源差异，并讨论采集任务生成、失败重试、大规模调度与限流策略。在解析环节，重点是异常检测与归因、Parser 选择与修复规则生成，以及多模态、多语言与编码问题的系统化处理。</p>
+<p>清洗环节强调从抽检缺陷自动生成规则候选，先在沙箱验证并产出差异报告，再经人工批准上线，而非让 Agent 直接改写生产数据。质量过滤环节按质量不确定性分流，明确人工复核的触发条件、优先级与时效管理。本章同时界定采集的伦理与合规边界、数据溯源与可复现性要求，以及清洗规则的版本管理与回滚，使采集清洗 Agent 在提升吞吐的同时保持可审计、可回退。</p>
+<h2 id="_12">参考文献<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131. https://doi.org/10.18653/v1/2021.acl-demo.15.</p>
+<p>Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.</p>
+<p>Carlini N, Tramer F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson U, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In: Proceedings of the 30th USENIX Security Symposium, pp 2633-2650.</p>
+<p>Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449. https://doi.org/10.1145/3626246.3653385.</p>
+<p>Chowdhery A, Narang S, Devlin J, Bosma M, Mishra G, Roberts A, Barham P, Chung H W, Sutton C, Gehrmann S, Schuh P, Shi K, Tsvyashchenko S, Maynez J, Rao A, Barnes P, Tay Y, Shazeer N, Prabhakaran V, Reif E, Du N, Hutchinson B, Pope R, Bradbury J, Austin J, Isard M, Gur-Ari G, Yin P, Duke T, Levskaya A, Ghemawat S, Dev S, Michalewski H, Garcia X, Misra V, Robinson K, Fedus L, Zhou D, Ippolito D, Luan D, Lim H, Zoph B, Spiridonov A, Sepassi R, Dohan D, Agrawal S, Omernick M, Dai A M, Pillai T S, Pellat M, Lewkowycz A, Moreira E, Child R, Polozov O, Lee K, Zhou Z, Wang X, Saeta B, Diaz M, Firat O, Catasta M, Wei J, Meier-Hellstern K, Eck D, Dean J, Petrov S, Fiedel N (2022) PaLM: Scaling Language Modeling with Pathways. Journal of Machine Learning Research 24(240):1-113.</p>
+<p>Dodge J, Sap M, Marasović A, Agnew W, Ilharco G, Groeneveld D, Mitchell M, Gardner M (2021) Documenting Large Webtext Corpora: A Case Study on the Colossal Clean Crawled Corpus. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pp 1286-1305.</p>
+<p>Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.</p>
+<p>Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091. https://doi.org/10.1145/3503161.3548112.</p>
+<p>Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision, pp 498-517. https://doi.org/10.1007/978-3-031-19815-1_29.</p>
+<p>Laurençon H, Saulnier L, Wang T, Akiki C, del Moral A V, Le Scao T, Von Werra L, Mou C, González Ponferrada E, Nguyen H, Frohberg J, Šaško M, Lhoest Q, McMillan-Major A, Dupont G, Biderman S, Rogers A, Allal L B, De Toni F, Pistilli G, Nguyen O, Nikpoor S, Masoud M, Labbé S, Vial T, Reusch A, Yogatama D, Raffel C, Wolf T, BigScience Workshop (2022) The BigScience ROOTS Corpus: A 1.6TB Composite Multilingual Dataset. In: Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track.</p>
+<p>Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics, pp 8424-8445.</p>
+<p>Longpre S, Mahari R, Chen A, Obeng-Marnu N, Sileo D, Brannon W, Muennighoff N, Khazam N, Kabbara J, Perisetla K, Wu X, Shippole E, Bollacker K, Wu T, Villa L, Pentland S, Hooker S (2024) A large-scale audit of dataset licensing and attribution in AI. Nature Machine Intelligence 6(8):975-987.</p>
+<p>Nguyen T, et al. (2024) CulturaX: A Cleaned, Enormous, and Multilingual Dataset for Large Language Models in 167 Languages. In: Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation. https://doi.org/10.63317/5iz6z5g7eit3.</p>
+<p>Ortiz Suárez P J, Sagot B, Romary L (2020) A Monolingual Approach to Contextualized Word Embeddings for Mid-Resource Languages. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 1703-1714.</p>
+<p>Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.</p>
+<p>Penedo G, Kydlíček H, Allal L B, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. In: Advances in Neural Information Processing Systems 37, Datasets and Benchmarks Track.</p>
+<p>Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.</p>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. Journal of Machine Learning Research 21(140):1-67.</p>
+<p>Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.</p>
+<p>Wenzek G, Lachaux M-A, Conneau A, Chaudhary V, Guzmán F, Joulin A, Grave E (2020) CCNet: Extracting High Quality Monolingual Datasets from Web Crawl Data. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 4003-4012.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

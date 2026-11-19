@@ -1,0 +1,1660 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part8/ch25_data_versioning_experiment_tracking/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第25章：数据版本管理与实验追踪 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#25" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第25章：数据版本管理与实验追踪
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part8/ch25_data_versioning_experiment_tracking/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part8/ch25_data_versioning_experiment_tracking/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景引入
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1 为什么没有版本管理就没有可复盘的迭代
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.1 为什么没有版本管理就没有可复盘的迭代">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2511" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.1 数据变更对模型效果的影响为何最难追
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2512" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.2 从"文件夹管理"升级到"谱系管理"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2513" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.3 版本管理的核心价值主张
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2 数据版本粒度与命名规范
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.2 数据版本粒度与命名规范">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2521" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.1 五个层级的版本粒度
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2522" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.2 版本命名规范
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2523" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.3 分支、快照与回滚点
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#253" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3 实验追踪、结果回写与审计链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.3 实验追踪、结果回写与审计链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2531" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.1 实验卡片的字段设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2532" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.2 结果回写与双向关联
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2533" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.3 失败实验的价值与沉淀
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2534" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.4 审计链路的最小信息集合
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#254" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4 谱系可视化与治理规则
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.4 谱系可视化与治理规则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2541" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.1 数据血缘图的表示方式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2542" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.2 变更审计流程图
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2543" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.3 谱系治理规则
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#255" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.5 案例：一次失败实验如何快速回溯
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.5 案例：一次失败实验如何快速回溯">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例背景
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      回溯过程（有版本管理的情况下）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键成功因素总结
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      延伸阅读
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="25">第25章：数据版本管理与实验追踪<a class="headerlink" href="#25" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">杜文卓；王灿；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>"我们上周的模型效果比上上周差，但数据团队说数据没有变"——这句话在 LLM 项目中出现的频率，远远超出大多数团队的预期。数据工程的隐蔽性在于：数据变化往往不是单次的、显著的，而是累积的、渐进的。如果没有系统化的版本管理，团队就没有能力回答"变了什么"这个最基本的问题，更无法做到"为什么变了"的归因。</p>
+<p>本章面向负责数据版本、实验记录和可追溯性的团队，系统阐述如何把数据版本、样本变更和实验结果关联起来，构建一条完整的可追溯链路。生产机器学习系统的经验表明，数据依赖、配置漂移和实验记录缺失是技术债的重要来源，必须通过版本化和元数据管理显性治理。本章将从四个层面展开：首先分析为什么版本管理是可复盘迭代的前提；其次建立版本粒度体系与命名规范；第三，介绍实验追踪、结果回写与审计链路的工程实现；最后，讨论谱系可视化与治理规则的设计。</p>
+<p>完成本章后，应掌握一套完整的元数据设计方案、版本命名规则和实验卡片模板，并能够通过失败实验回溯案例，理解如何在真实工程中定位数据问题根因。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>数据版本管理；实验追踪；数据血缘；元数据治理；可复现性；审计链路</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>理解数据版本管理在模型迭代、问题回溯和合规审计中的作用。</li>
+<li>区分样本级、分片级、数据集级、实验级和发布包级版本粒度。</li>
+<li>设计实验卡片、结果回写和审计链路的关键字段。</li>
+<li>掌握数据血缘图、变更审计流程和失败实验沉淀的基本方法。</li>
+<li>评估版本保留策略、权限边界和平台治理成本之间的取舍。</li>
+</ul>
+<h2 id="_4">场景引入<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>某公司算法团队在某次大规模实验后发现，新版本模型的数学推理能力显著下降，比上一版本低了约 8 个百分点。算法负责人希望数据团队定位原因，数据负责人开始排查。</p>
+<p>第一步：查看训练集版本。数据负责人发现，当前版本和上一版本的训练集都存储在对象存储里，但没有版本标签，只有上传时间。两个文件夹的内容都已经被后续任务覆盖或删除了部分文件。</p>
+<p>第二步：尝试比对差异。数据负责人发现两个版本之间有约 3 万条样本差异，但无法判断这些差异是"增加"还是"修改"还是"删除"——因为文件的 MD5 校验码没有被记录。</p>
+<p>第三步：尝试追溯数据来源。这 3 万条差异样本里，有一部分来自新增的外包标注批次，有一部分是数据清洗逻辑调整导致的过滤结果变化，还有一部分是算法工程师手动添加的实验样本。这三类变更没有任何区分标记，混在一起，无从拆分。</p>
+<p>排查持续了整整五天，最终发现问题来源：数据清洗逻辑的一个边缘条件修改，意外地过滤掉了大量包含数学公式的高质量样本。这个修改是四周前的一次"小优化"，当时没有留下任何变更记录。</p>
+<p>这个案例揭示了缺乏版本管理的核心代价：<strong>问题发现的时间和排查的时间之间，存在一个巨大的信息缺口</strong>。没有版本管理，就没有可复盘的迭代。实验管理系统和机器学习生命周期平台的设计，正是为了解决模型、数据、参数和结果之间难以追踪的问题（Vartak et al. 2016; Zaharia et al. 2018）。</p>
+<hr />
+<h2 id="251">25.1 为什么没有版本管理就没有可复盘的迭代<a class="headerlink" href="#251" title="Permanent link">&para;</a></h2>
+<h3 id="2511">25.1.1 数据变更对模型效果的影响为何最难追<a class="headerlink" href="#2511" title="Permanent link">&para;</a></h3>
+<p>在一个 LLM 项目的完整链路中，影响模型效果的变量有很多：模型架构、超参数、训练代码、评测代码、数据。工业界 ML 实践研究也指出，模型效果变化经常来自数据、特征、训练配置和服务环境的共同变化，而不是某一个可以看到的代码提交（Amershi et al. 2019）。前四类变量通常都有完善的版本管理工具（Git 管理代码，配置文件记录超参数），唯独数据变更最难追踪，原因有三：</p>
+<ol>
+<li>
+<p><strong>变更的粒度不统一</strong>。代码变更可以精确到行；数据变更可以是一条样本、一个批次、一类来源，或者一条清洗规则——不同粒度的变更对模型的影响差异巨大，但很难用统一的方式记录。</p>
+</li>
+<li>
+<p><strong>变更的因果链路复杂</strong>。数据变更不总是主动触发的，有时是被动发生的：外包商的标注风格发生漂移、爬虫源站修改了内容、清洗工具升级了版本——这些变化都可能改变最终的训练数据，但没有人主动"提交"这次变更。</p>
+</li>
+<li>
+<p><strong>变更的影响存在延迟</strong>。一次数据变更可能在三个版本之后才对模型效果产生可见影响，因为变更的数据需要经过批量处理、混合、再训练才能体现。这种延迟让根因分析变得极其困难。</p>
+</li>
+</ol>
+<p>从工程管理角度看，数据变更难追踪的根本原因在于它同时具有"资产属性"和"过程属性"。作为资产，数据集表现为可被训练、评测和复用的文件集合；作为过程，数据集又是采集、清洗、标注、过滤、合并和审批等一系列活动的结果。如果团队只保存最终文件，就丢失了过程信息；如果只保存处理日志，却没有把日志与具体数据版本绑定，也无法解释最终模型效果的变化。版本管理的任务正是把资产状态和生成过程统一起来。</p>
+<p>LLM 数据尤其需要这种统一。预训练语料、SFT 指令数据、偏好数据、评测集和线上反馈数据的变更频率不同，质量标准不同，对模型的影响路径也不同。预训练语料的微小分布变化可能在整体指标上不明显，却影响长尾知识；SFT 数据的标签口径变化可能直接改变模型回答风格；偏好数据的排序标准变化可能影响安全性、礼貌性和拒答边界；评测集的污染则可能让模型效果被高估。没有版本记录，这些影响很难被拆开分析。</p>
+<p>因此，数据版本管理不是简单地把每次数据交付打一个标签，而是要让团队能够回答四类问题：第一，某个数据版本包含什么；第二，它相对于上一个版本改变了什么；第三，这些改变为什么发生；第四，这些改变被哪些实验和模型消费。只有四类问题都能回答，数据变更才具备可解释性。</p>
+<h3 id="2512">25.1.2 从"文件夹管理"升级到"谱系管理"<a class="headerlink" href="#2512" title="Permanent link">&para;</a></h3>
+<p>大多数数据团队的版本管理起点是"文件夹管理"：用日期命名文件夹，新数据放新文件夹，遇到问题就去历史文件夹中逐条确认。这种方式的问题不是不记录，而是记录的信息不够。日期告诉你"什么时候"，但无法告诉你：</p>
+<ul>
+<li><strong>什么变了</strong>：哪些样本是新增的，哪些被删除了，哪些被修改了</li>
+<li><strong>为什么变</strong>：这次变更的业务原因是什么，谁做了决策</li>
+<li><strong>谁做的变更</strong>：哪个角色、哪个工具触发了这次变更</li>
+<li><strong>变更的下游影响</strong>：这次变更被哪些实验使用了，产生了什么结果</li>
+</ul>
+<p>谱系管理（Lineage Management）是对文件夹管理的系统升级。数据溯源研究长期区分“为什么出现这条结果”和“这条结果从哪里来”，并通过过程、实体和活动关系描述数据生成链路（Buneman, Khanna and Tan 2001; Moreau and Missier 2013）。它不仅记录数据的"存在状态"，还记录数据的"生成历史"：这个数据集是从哪些数据源加工而来，经过了哪些处理步骤，每个步骤产生了什么样的变化，最终被哪些下游任务消费。谱系管理让数据集不再是一个孤立的文件，而是一个带有完整历史记录的全面数据资产。</p>
+<p>文件夹管理之所以在早期常见，是因为它足够直观、成本低，并且适合小团队的短周期探索。但随着项目进入多团队协作阶段，文件夹命名会迅速失效。不同成员可能使用不同命名规则，如 <code>final</code>、<code>final_v2</code>、<code>cleaned_new</code>、<code>for_train_latest</code> 等，这些名称在创建当天也许能被理解，数周后就会失去上下文。更严重的是，文件夹无法表达依赖关系：一个训练集可能由多个来源合并而来，某个来源又经过多轮过滤和标注，单纯保存最终目录无法还原这些关系。</p>
+<p>谱系管理要求团队把数据对象视为图结构中的节点，而不是文件系统中的孤立目录。原始数据、清洗分片、标注批次、训练集、实验、模型和发布包之间，都应通过明确的边连接起来。边代表某种转化、引用或消费关系。例如，"分片 A 经过清洗脚本 B 生成分片 C"，"数据集 D 引用了分片 C"，"实验 E 使用了数据集 D"，"模型 F 由实验 E 产出"。这种表达方式让影响分析和根因分析成为可能。</p>
+<p>从能力演进看，文件夹管理主要记录文件位置、创建日期和人工命名，适合小团队探索或临时实验，但难以表达差异、原因和下游影响。清单管理进一步记录数据集名称、规模、负责人和说明，适合多项目共享初期，但仍缺少处理过程和实验关联。版本管理开始记录数据状态、变更日志、快照和回滚点，适合稳定训练和评测阶段，但如果缺少谱系关系，仍然难以开展系统性影响分析。谱系管理则进一步记录来源、处理、消费、审批和结果之间的关系，适合平台化 DataOps 阶段，其建设成本更高，但能够支撑自动化查询、审计和治理规则执行。</p>
+<h3 id="2513">25.1.3 版本管理的核心价值主张<a class="headerlink" href="#2513" title="Permanent link">&para;</a></h3>
+<p>建立版本管理体系，最直接的价值体现在三个场景：</p>
+<p><strong>场景一：实验可重现</strong>。算法团队六个月后想重跑一个历史实验，需要找到当时的数据版本。计算科学中的可复现实践强调，应将原始数据、处理脚本、运行环境和结果一起纳入记录，而不是只保存最终输出（Stodden, Leisch and Peng 2014）。如果有版本管理，可以直接通过实验 ID 找到对应的数据集版本号，进而还原训练环境。</p>
+<p><strong>场景二：问题可回溯</strong>。发现模型问题后，可以通过数据谱系快速定位：从"哪个模型版本有问题"→"这个模型版本用了哪批数据"→"这批数据和上一版本有什么差异"→"差异来自哪个处理步骤"→"这个步骤的变更是什么时候发生的、为什么发生"。</p>
+<p><strong>场景三：合规可审计</strong>。监管机构要求提供某个模型的训练数据来源，有版本管理就能生成完整的审计报告，包括数据来源、处理记录和授权信息。</p>
+<p>除上述三类场景外，版本管理还有一个容易被低估的价值：它能够支撑团队进行长期知识积累。没有版本管理时，经验往往以口头形式存在，例如"上次加某类数据好像效果不好"。有版本管理后，团队可以把经验落到具体证据上：哪个数据版本、哪些样本、哪个实验、什么指标、什么结论。经验从模糊记忆变成可查询记录，组织学习才有稳定基础。</p>
+<p>版本管理还可以降低协作摩擦。算法团队提出模型退化时，数据团队不必从头解释所有处理细节，而可以通过版本差异报告展示变更范围；质量团队发现异常时，可以直接定位受影响分片；合规团队审查数据来源时，可以看到来源授权和处理记录；平台团队维护存储和计算资源时，也能根据版本热度决定归档策略。换言之，版本管理为不同角色提供了共同事实基础。</p>
+<p>需要强调的是，版本管理的价值并不等同于保存所有中间文件。无限制保存会造成存储成本、检索成本和治理成本的膨胀。成熟的版本体系应当区分必须永久保留的冻结版本、需要阶段性保留的过程版本和可按策略清理的临时产物。这里的“永久保留”特指已进入正式冻结或发布链路、承担复现与审计职责的版本；候选版本、实验分支和临时中间产物不属于这一范围。版本管理的目标是保留足以支持复现、回溯和审计的信息，而不是把所有文件都永远保留。</p>
+<hr />
+<h2 id="252">25.2 数据版本粒度与命名规范<a class="headerlink" href="#252" title="Permanent link">&para;</a></h2>
+<h3 id="2521">25.2.1 五个层级的版本粒度<a class="headerlink" href="#2521" title="Permanent link">&para;</a></h3>
+<p>数据版本管理不是一个单一粒度的问题，而是需要在五个层级上同时维护版本信息。</p>
+<p>图25-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part8/Du-Chap25-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图25-1：版本管理体系全景图" src="../../../images/part8/Du-Chap25-Fig01-EN.svg" /></a></p>
+<p><em>图25-1：版本管理体系全景图</em></p>
+<p>数据管理知识体系通常把数据资产、元数据、血缘、质量和生命周期作为共同治理对象，因此版本粒度也应覆盖从样本到发布包的多个层级（DAMA International 2017）：</p>
+<p><strong>样本级（Sample）</strong>：单条训练样本。版本信息包括样本 ID、来源 URL/文档 ID、创建时间、最后修改时间、当前状态（active/deprecated/under_review）。样本级的版本主要用于标注质量追溯和合规审计。</p>
+<p><strong>分片级（Shard）</strong>：一批逻辑相关的样本集合，通常是一个标注任务的产出或一次清洗批次的输出。版本信息包括分片 ID、包含的样本数量、处理脚本版本、处理时间、质量摘要。</p>
+<p><strong>数据集级（Dataset）</strong>：一个完整的、可用于训练的数据集。版本信息包括数据集 ID、组成的分片列表、版本号（语义化版本）、创建原因、质量报告。数据集级是最常用的版本粒度。</p>
+<p><strong>实验级（Experiment）</strong>：一次具体的训练实验。版本信息包括实验 ID、使用的数据集版本、模型架构、超参数配置、评测结果。实验级版本把数据和模型联系起来。</p>
+<p><strong>发布包级（Release）</strong>：对外发布的模型版本。版本信息包括发布版本号、对应的模型 checkpoint、使用的数据集版本、通过的评测集列表、发布审批记录。</p>
+<p>表25-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-1：数据版本粒度与适用场景表</em></p>
+<table>
+<thead>
+<tr>
+<th>版本粒度</th>
+<th>主要用途</th>
+<th>关键字段</th>
+<th>保留策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>样本级</td>
+<td>合规审计、标注追溯</td>
+<td>sample_id, source, status</td>
+<td>永久保留</td>
+</tr>
+<tr>
+<td>分片级</td>
+<td>质量分析、处理追溯</td>
+<td>shard_id, script_version, quality_summary</td>
+<td>保留6个月</td>
+</tr>
+<tr>
+<td>数据集级</td>
+<td>实验对照、版本发布</td>
+<td>dataset_id, version, shards, quality_report</td>
+<td>冻结版本永久保留；候选/临时版本按策略归档或清理</td>
+</tr>
+<tr>
+<td>实验级</td>
+<td>结果归因、效果追踪</td>
+<td>experiment_id, dataset_version, results</td>
+<td>保留18个月</td>
+</tr>
+<tr>
+<td>发布包级</td>
+<td>部署管理、合规审查</td>
+<td>release_version, model_checkpoint, approval</td>
+<td>永久保留</td>
+</tr>
+</tbody>
+</table>
+<p>这五个层级之间并不是平行关系，而是层层汇聚的关系。样本级记录解决"这条数据从哪里来"的问题，分片级记录解决"这批数据如何生成"的问题，数据集级记录解决"本次训练使用了什么组合"的问题，实验级记录解决"数据如何影响模型"的问题，发布包级记录解决"最终对外交付了什么"的问题。任何一层缺失，都会让回溯链路出现断点。</p>
+<p>在实际建设中，团队不一定一开始就实现所有粒度的自动化管理，但必须明确每个粒度的责任边界。样本级信息通常由采集和标注系统产生，分片级信息由数据管线和标注平台维护，数据集级信息由版本管理工具维护，实验级信息由实验追踪系统维护，发布包级信息由模型注册和发布系统维护。如果这些系统之间没有统一 ID 或关联表，数据仍然会停留在局部可追踪状态。</p>
+<p>粒度设计还需要考虑成本。样本级版本最精细，但存储和索引成本最高；数据集级版本最常用，但不足以解释细粒度质量问题；发布包级版本最适合合规审计，但无法直接回答处理过程中的细节。因此，团队应采用"关键链路细粒度、普通链路适度粒度"的策略。对于正式训练集、评测集、高敏感数据和线上反馈数据，应尽量保留样本级或分片级记录；对于一次性探索数据，可以只保留数据集级和实验级记录，但必须标记其不可用于正式发布。</p>
+<p>表25-2汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-2：不同数据类型的推荐版本粒度</em></p>
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>推荐最低粒度</th>
+<th>原因</th>
+<th>可简化的记录</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正式训练集</td>
+<td>分片级 + 数据集级</td>
+<td>需要解释数据配方和质量变化</td>
+<td>临时清洗中间文件可按策略清理</td>
+</tr>
+<tr>
+<td>关键评测集</td>
+<td>样本级 + 数据集级</td>
+<td>需要防止污染并支持逐条审查</td>
+<td>无关实验日志可不长期保留</td>
+</tr>
+<tr>
+<td>偏好数据</td>
+<td>样本级 + 分片级</td>
+<td>标注者、偏好标准和争议样本需要重点关注</td>
+<td>低价值草稿样本可归档</td>
+</tr>
+<tr>
+<td>线上反馈数据</td>
+<td>样本级</td>
+<td>涉及用户请求、权限和删除要求</td>
+<td>聚合统计可长期保留，原始内容需期限控制</td>
+</tr>
+<tr>
+<td>探索性合成数据</td>
+<td>数据集级 + 实验级</td>
+<td>主要用于验证假设，风险较低</td>
+<td>可不保留每条生成过程，但需保留生成配置</td>
+</tr>
+<tr>
+<td>对外发布包</td>
+<td>发布包级 + 实验级</td>
+<td>需要回答模型来源和审批链路</td>
+<td>训练中间 checkpoint 可按策略压缩</td>
+</tr>
+</tbody>
+</table>
+<p>粒度过细会带来操作负担，粒度过粗会削弱追溯能力。一个实用判断是：当问题发生时，团队是否能在合理时间内定位到责任范围。如果只能知道"某个数据集有问题"，却无法定位到分片、来源或处理步骤，粒度就偏粗；如果每一次微小字段变动都需要复杂审批，导致团队绕过流程，粒度和治理强度就偏细。版本粒度应当服务于真实的排查、复现和审计需求。</p>
+<h3 id="2522">25.2.2 版本命名规范<a class="headerlink" href="#2522" title="Permanent link">&para;</a></h3>
+<p>版本命名规范应该遵循三个原则：可读性（人看得懂）、可排序性（能推断时间先后）、可唯一标识性（不会重复）。DVC 等数据版本工具的实践也表明，清晰的版本标识、元数据和远端存储约定，是团队共享实验和回滚数据状态的基础（DVC Documentation 2024）。</p>
+<p><strong>数据集版本：语义化版本（Semantic Versioning）</strong></p>
+<p>采用 <code>MAJOR.MINOR.PATCH</code> 格式，规则如下：</p>
+<ul>
+<li><code>MAJOR</code>：发生重大数据重构，如更换核心数据来源、大规模重新标注、数据格式不兼容变更</li>
+<li><code>MINOR</code>：新增了新类别的数据或新增了超过 10% 的样本量</li>
+<li><code>PATCH</code>：修复了已有样本的质量问题，或对小比例样本进行了更新</li>
+</ul>
+<p>示例：<code>dialogue-sft-zh_v2.3.1</code></p>
+<ul>
+<li><code>dialogue-sft-zh</code>：数据集名称（任务类型-训练阶段-语言）</li>
+<li><code>v2.3.1</code>：第2个大版本，第3个功能版本，第1次补丁</li>
+</ul>
+<p><strong>分片版本：时间戳 + 来源标识</strong></p>
+<p>格式：<code>{source_tag}_{YYYYMMDD}_{sequence}_{hash}</code></p>
+<p>示例：<code>vendor_a_annotation_20240315_001_a3f7b2</code></p>
+<ul>
+<li><code>vendor_a_annotation</code>：来源标识（供应商A的标注结果）</li>
+<li><code>20240315</code>：处理日期</li>
+<li><code>001</code>：当日第1批</li>
+<li><code>a3f7b2</code>：内容 hash 的前6位，用于快速验证完整性</li>
+</ul>
+<p><strong>实验版本：项目缩写 + 日期 + 序号</strong></p>
+<p>格式：<code>{project}_{YYYYMMDD}_{seq_num}</code></p>
+<p>示例：<code>edu-math_20240315_exp003</code></p>
+<ul>
+<li><code>edu-math</code>：项目简称（教育数学子任务）</li>
+<li><code>20240315</code>：实验启动日期</li>
+<li><code>exp003</code>：当日第3个实验</li>
+</ul>
+<p>命名规范的难点不在规则本身，而在于长期一致执行。许多团队制定过命名规则，但缺少自动校验和治理责任，最终仍会出现多个变体。为了避免这种情况，版本命名应尽量由系统生成，人只负责填写必要语义字段。例如，数据集名称可以由任务类型、训练阶段、语言和数据域组合生成，版本号由发布流程自动递增，内容 hash 由系统计算。人工输入越少，命名越稳定。</p>
+<p>命名还应避免包含会频繁变化或主观解释过强的信息。例如，<code>best_dataset</code>、<code>high_quality_v1</code>、<code>new_cleaned</code> 这类名称在短期内可读，但长期不可解释。"best" 是相对于哪次实验而言，"high quality" 按什么标准判断，"new" 相对于哪个旧版本而言，这些问题都无法从名称中得到答案。更合理的做法是把质量等级、适用场景和实验表现写入元数据，而不是塞进版本名。</p>
+<p>版本命名还需要与分支和环境区分。生产主线、实验分支、沙箱数据和归档版本不应混用同一命名空间。否则，算法工程师可能误用探索性数据训练正式模型，质量评估员也可能把沙箱数据纳入正式质量统计。推荐在元数据中显式记录 <code>environment</code> 或 <code>lifecycle_stage</code> 字段，如 <code>sandbox</code>、<code>candidate</code>、<code>frozen</code>、<code>archived</code>。名称负责唯一标识，生命周期字段负责表达状态。</p>
+<p>命名规范一旦建立，就应被写入数据发布流程。发布前系统自动检查名称是否符合规则、版本号是否递增、hash 是否匹配、元数据是否完整。对于不符合规范的数据，系统可以允许进入沙箱环境，但不允许进入正式训练或发布链路。这样，规范不再依赖人工提醒，而成为版本管理系统的入口条件。</p>
+<p>此外，命名规范还应考虑跨团队可读性。数据工程师通常关注来源和处理批次，算法工程师关注任务、训练阶段和实验编号，合规团队关注授权状态和敏感级别，平台团队关注存储位置和生命周期状态。一个好的版本名不可能承载所有信息，但应当提供足够稳定的入口，使不同角色能够进一步查询完整元数据。因此，命名规范与元数据管理必须配套设计：名称用于定位对象，元数据用于解释对象。</p>
+<p>在大型企业中，还应避免不同部门自行定义相互冲突的缩写。例如，<code>cs</code> 在客服项目中可能表示 customer service，在计算科学团队中可能表示 computer science，在内容安全团队中又可能表示 content safety。项目缩写、任务缩写和语言缩写应进入统一词表，避免长期积累后造成歧义。词表治理看似细小，却直接影响版本检索、自动化脚本和跨团队沟通。</p>
+<h3 id="2523">25.2.3 分支、快照与回滚点<a class="headerlink" href="#2523" title="Permanent link">&para;</a></h3>
+<p>版本管理中需要区分三种不同的操作类型。现代湖仓表格式也通过事务日志、快照和时间旅行能力支持数据版本回溯与增量变更审计（Armbrust et al. 2020）：</p>
+<p><strong>分支（Branch）</strong>：在不影响主线数据集的情况下，对数据进行实验性的修改或扩展。例如，想测试"增加 20% 合成数据对效果的影响"，可以从当前主线数据集创建一个分支，在分支上添加合成数据，实验完成后决定是否合并回主线。</p>
+<p>分支适用于场景：不确定一个数据决策是否有效、需要同时维护多个数据配方给不同算法实验使用。</p>
+<p><strong>快照（Snapshot）</strong>：在某个时间点对数据集当前状态的精确记录。快照是只读的，创建后不能修改。季度版本冻结就是一种典型的快照操作。快照适用于场景：合规审计需要留存历史状态、给外部合作方提供稳定的参考版本。</p>
+<p><strong>回滚点（Rollback Point）</strong>：在已知"这个版本是好的"的时间点创建的标记，当发现问题后可以快速恢复到这个状态。回滚点通常在重大数据变更之前手动设置。回滚点适用于场景：大规模数据清洗规则变更前的安全备份、外包标注批次合并前的状态保存。</p>
+<p>分支、快照和回滚点分别服务于不同的风险控制目标。分支支持探索，允许团队在不影响主线的情况下尝试新的数据配方；快照支持审计，保证某一时间点的数据状态不可变；回滚点支持恢复，帮助团队在发现问题后迅速回到已知稳定状态。三者混用会造成治理混乱。例如，如果把分支当作快照使用，实验数据可能被继续修改，导致复现失败；如果把快照当作普通分支修改，就会破坏审计可信度。</p>
+<p>分支管理还需要明确合并标准。一个数据分支能否合并回主线，不应只看模型指标是否提升，还要看质量、合规、覆盖度和长期维护成本。某个分支加入大量合成数据后短期指标提升，但如果数据来源不可解释、样本风格单一或与真实用户场景偏离，就不一定适合进入主线。版本管理体系应要求合并请求附带差异报告、质量报告和实验结果，而不是只提供最终指标。</p>
+<p>快照则应坚持只读原则。冻结后的快照如果发现问题，原则上不直接修改，而是创建新版本并记录修复原因。这样做看似麻烦，却能保护历史可解释性。审计关注的不只是"现在的数据是否正确"，还包括"当时的决策是在什么数据状态下做出的"。如果历史快照被悄悄修改，组织就失去了证明和复盘能力。</p>
+<p>回滚点的设置应当前置到高风险变更之前，而不是出问题后才临时寻找可恢复状态。高风险变更包括新增大规模数据源、更换清洗规则、合并外包标注批次、修改标签体系、删除样本以及改变数据混合权重。每一次高风险变更前创建回滚点，可以显著降低试错成本，使团队敢于做必要改进，同时保留安全边界。</p>
+<hr />
+<h2 id="253">25.3 实验追踪、结果回写与审计链路<a class="headerlink" href="#253" title="Permanent link">&para;</a></h2>
+<h3 id="2531">25.3.1 实验卡片的字段设计<a class="headerlink" href="#2531" title="Permanent link">&para;</a></h3>
+<p>实验追踪的核心工具是<strong>实验卡片（Experiment Card）</strong>。ModelDB 和 MLflow 等系统都把实验参数、代码版本、数据版本、指标和产物统一记录为实验管理的核心对象（Vartak et al. 2016; Zaharia et al. 2018）。一张完整的实验卡片需要记录足够的信息，使得任何人在六个月后都能重现这次实验，并理解当时的决策上下文。</p>
+<p>以下是一套标准的实验卡片字段设计：</p>
+<p><strong>基础信息</strong></p>
+<p>表25-3列出了相关字段与出版复核口径。</p>
+<p><em>表25-3：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>experiment_id</td>
+<td>string</td>
+<td>唯一实验标识符</td>
+</tr>
+<tr>
+<td>experiment_name</td>
+<td>string</td>
+<td>人类可读的实验名称</td>
+</tr>
+<tr>
+<td>project</td>
+<td>string</td>
+<td>所属项目名</td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>string</td>
+<td>实验发起人</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>datetime</td>
+<td>实验创建时间</td>
+</tr>
+<tr>
+<td>status</td>
+<td>enum</td>
+<td>pending / running / completed / failed / abandoned</td>
+</tr>
+</tbody>
+</table>
+<p><strong>数据配置</strong></p>
+<p>表25-4列出了相关字段与出版复核口径。</p>
+<p><em>表25-4：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset_id</td>
+<td>string</td>
+<td>使用的数据集 ID</td>
+</tr>
+<tr>
+<td>dataset_version</td>
+<td>string</td>
+<td>数据集版本号</td>
+</tr>
+<tr>
+<td>data_splits</td>
+<td>object</td>
+<td>train/val/test 的样本数量</td>
+</tr>
+<tr>
+<td>data_filters</td>
+<td>list</td>
+<td>本次实验应用的额外过滤条件（如果有）</td>
+</tr>
+<tr>
+<td>data_mixing_weights</td>
+<td>object</td>
+<td>多数据集混合时各数据集的权重</td>
+</tr>
+</tbody>
+</table>
+<p><strong>模型配置</strong></p>
+<p>表25-5列出了相关字段与出版复核口径。</p>
+<p><em>表25-5：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>base_model</td>
+<td>string</td>
+<td>基座模型名称和版本</td>
+</tr>
+<tr>
+<td>training_framework</td>
+<td>string</td>
+<td>训练框架（如 DeepSpeed、Megatron）</td>
+</tr>
+<tr>
+<td>hyperparams</td>
+<td>object</td>
+<td>完整超参数配置（学习率、batch size 等）</td>
+</tr>
+<tr>
+<td>training_code_commit</td>
+<td>string</td>
+<td>训练代码的 Git commit hash</td>
+</tr>
+</tbody>
+</table>
+<p><strong>运行环境配置</strong></p>
+<p>表25-6列出了相关字段与出版复核口径。</p>
+<p><em>表25-6：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>runtime_env</td>
+<td>object</td>
+<td>Python、操作系统、训练框架和关键运行时版本</td>
+</tr>
+<tr>
+<td>container_image</td>
+<td>string</td>
+<td>容器镜像名称、版本或 digest，用于锁定运行环境</td>
+</tr>
+<tr>
+<td>dependency_lock</td>
+<td>string</td>
+<td>依赖锁文件路径或包版本快照（如 requirements.lock、conda-lock、poetry.lock）</td>
+</tr>
+<tr>
+<td>hardware_profile</td>
+<td>object</td>
+<td>GPU/加速器型号、数量、显存、CPU 和内存配置</td>
+</tr>
+<tr>
+<td>cuda_driver</td>
+<td>string</td>
+<td>CUDA、GPU 驱动、cuDNN/NCCL 等关键底层依赖版本</td>
+</tr>
+<tr>
+<td>random_seed</td>
+<td>int</td>
+<td>本次实验使用的随机种子</td>
+</tr>
+<tr>
+<td>determinism_flags</td>
+<td>object</td>
+<td>确定性训练相关设置，如 deterministic 算子、benchmark 开关和随机性控制</td>
+</tr>
+</tbody>
+</table>
+<p><strong>评测结果</strong></p>
+<p>表25-7列出了相关字段与出版复核口径。</p>
+<p><em>表25-7：字段说明与复核口径</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eval_datasets</td>
+<td>list</td>
+<td>使用的评测集列表</td>
+</tr>
+<tr>
+<td>metrics</td>
+<td>object</td>
+<td>各评测集上的指标结果（键值对）</td>
+</tr>
+<tr>
+<td>eval_code_commit</td>
+<td>string</td>
+<td>评测代码的 Git commit hash</td>
+</tr>
+<tr>
+<td>eval_timestamp</td>
+<td>datetime</td>
+<td>评测完成时间</td>
+</tr>
+</tbody>
+</table>
+<p><strong>实验记录</strong></p>
+<p>表25-8汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-8：实验卡片字段示例表</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hypothesis</td>
+<td>string</td>
+<td>实验假设（这次实验想验证什么）</td>
+</tr>
+<tr>
+<td>motivation</td>
+<td>string</td>
+<td>数据或配置调整的业务动机</td>
+</tr>
+<tr>
+<td>notes</td>
+<td>string</td>
+<td>实验过程中的观察和异常记录</td>
+</tr>
+<tr>
+<td>conclusion</td>
+<td>string</td>
+<td>实验结论</td>
+</tr>
+<tr>
+<td>next_actions</td>
+<td>list</td>
+<td>基于本次实验结果的后续动作</td>
+</tr>
+</tbody>
+</table>
+<p>特别强调 <code>hypothesis</code>（实验假设）字段的重要性。很多团队只记录"做了什么"，却不记录"为什么这么做"。六个月后，实验结果还在，但做这个实验的原因已经无处可查。填写 <code>hypothesis</code> 字段，强制要求实验发起人在启动前明确实验目的，这本身就能显著提升实验设计的质量。</p>
+<p>实验卡片的设计应当避免两个极端。一个极端是字段过少，只记录实验编号、模型版本和指标结果，这会让实验失去解释力；另一个极端是字段过多，要求研究人员填写大量低价值信息，最终导致记录质量下降。较好的做法是区分必填字段、条件必填字段和可选字段。必填字段用于保证复现和审计，条件必填字段用于特定类型实验，可选字段用于补充观察和分析。</p>
+<p>必填字段通常包括实验假设、数据集版本、训练代码版本、基座模型版本、关键超参数、评测集版本、核心指标和结论。条件必填字段则取决于实验性质：如果实验改变了数据配比，就必须填写数据混合权重；如果实验使用了新数据源，就必须填写合规审批记录；如果实验涉及偏好数据，就必须填写标注指南版本和偏好采样策略。通过这种分层设计，实验卡片既能保证严谨性，也能避免无谓负担。</p>
+<p>实验卡片还应记录负面条件。很多实验失败并不是因为假设错误，而是因为训练资源不足、评测集不适合、数据预处理出错或日志缺失。如果只记录最终指标，后续审阅者无法判断失败原因。记录异常、限制和不确定性，可以帮助团队区分“方向无效”与“执行条件不足”。这一区分对长期研发很重要，因为错误地否定一个方向，可能比重复一次失败实验造成更大的机会成本。</p>
+<p>具体而言，复现字段应作为必填项，包括数据集版本、代码 commit、基座模型、关键超参数和随机种子，用于保证实验可重跑；解释字段也应作为必填项，包括 <code>hypothesis</code>、<code>motivation</code> 和数据变更摘要，用于解释为什么做这次实验；结果字段包括指标、评测集版本、结论和下一步动作，用于支持实验比较和决策。风险字段与过程字段则可设为条件必填：当实验涉及新数据源、敏感数据或合规限制时，应记录审批与使用边界；当训练过程中出现资源中断、日志缺失或异常波动时，应记录过程限制，帮助后续判断结果可信度。补充字段可以保持可选，用于记录人工观察、图表链接和评审意见。</p>
+<p>为了提高实验卡片质量，团队可以建立实验启动前检查和实验结束后检查。启动前检查确保实验假设清晰、数据版本已冻结或可追踪、评测集版本明确；结束后检查确保指标写入、结论明确、失败原因被记录、下一步动作可执行。两类检查不需要复杂审批，可以嵌入实验平台的提交界面。其目标不是阻碍实验，而是让每次实验都成为可复用知识。</p>
+<h3 id="2532">25.3.2 结果回写与双向关联<a class="headerlink" href="#2532" title="Permanent link">&para;</a></h3>
+<p>实验卡片只记录了从"数据"到"结果"的单向关系。完整的追踪体系还需要从"结果"反向追溯到"数据"的能力，这就是<strong>结果回写（Result Write-back）</strong>机制。</p>
+<p>结果回写的含义是：当一次实验的评测结果出来后，不只是把结果写入实验卡片，还要把结果"回写"到数据集的元数据中，形成双向关联。生产级 ML 平台通常要求训练流水线、元数据存储、验证组件和模型注册系统形成闭环，否则实验结果无法稳定反哺数据治理（Baylor et al. 2017; Kreuzberger, Kühl and Hirschl 2023）：</p>
+<ul>
+<li>从数据集角度：可以查询"这个数据集被用在哪些实验里，产生了什么效果"</li>
+<li>从实验角度：可以查询"这次实验用了哪些数据集版本"</li>
+</ul>
+<p>这种双向关联的价值在于：当团队面对一个新的数据改动决策时，可以快速查询"之前用这类数据配置的实验效果如何"，从已有实验中学习，而不是每次都从零开始。</p>
+<p>结果回写的技术实现有多种方案：</p>
+<ul>
+<li>基于 MLflow 的实验追踪 API，将数据集版本作为实验的 artifact 参数记录</li>
+<li>基于 DVC 的 <code>dvc params diff</code> 和 <code>dvc metrics diff</code> 命令，对比不同数据版本的实验结果差异</li>
+<li>自建元数据服务，维护 <code>(dataset_version, experiment_id)</code> 的多对多关联表</li>
+</ul>
+<p>无论选择哪种技术方案，结果回写应该是自动化的，不能依赖人工手动填写。实验启动时自动记录数据集版本，实验完成后自动读取评测结果写入，减少人工干预的环节就是减少遗漏的机会。</p>
+<p>结果回写还应区分"指标回写"和"解释回写"。指标回写记录数值结果，例如准确率、胜率、困惑度、安全评测通过率等；解释回写记录为什么出现这些结果，例如哪些样本类型改善，哪些场景退化，哪些数据变更可能造成影响。只做指标回写，团队可以比较实验，却难以学习；加入解释回写，数据团队才能根据实验结果调整采集、清洗和标注策略。</p>
+<p>解释回写尤其适用于数据驱动的模型优化。当实验结果显示数学推理评测提升时，团队需要知道提升是否来自新增数学题、改进标注指南、调整数据混合权重，还是训练配置变化。若实验卡片能够把结果与具体数据变更摘要关联起来，数据团队就可以复用有效策略。相反，如果所有改动同时发生且没有记录，团队即使获得更好指标，也无法确定应该保留哪些做法。</p>
+<p>结果回写还可以支持数据资产价值评估。某个数据集如果被多次实验使用，并在多个项目中带来稳定收益，它就应被标记为高价值数据资产，进入更严格的版本冻结、质量维护和权限管理流程。某些数据集如果长期没有带来效果提升，或只在特定实验中有效，则应被标记为低复用或场景限定资产。这样，实验追踪不仅服务算法团队，也反哺数据资产治理。</p>
+<p>在技术实现上，双向关联应尽量使用稳定 ID，而不是依赖名称匹配。数据集名称可能变更，实验名称可能重复，文件路径可能迁移，但唯一 ID 和版本号应保持稳定。元数据服务可以维护数据集、分片、实验、模型和发布包之间的关系表，并提供查询接口。这样，当某个数据源被判定存在风险时，团队可以自动列出所有受影响实验和模型，而不需要人工搜索。</p>
+<h3 id="2533">25.3.3 失败实验的价值与沉淀<a class="headerlink" href="#2533" title="Permanent link">&para;</a></h3>
+<p>一个常见的误区是：失败实验没有价值，不需要认真记录。这样的观点会造成巨大的知识浪费。生产就绪度评估框架强调，失败案例、数据异常、测试覆盖和监控信号都是降低 ML 技术债的重要证据，而不应在实验结束后丢失（Breck et al. 2017）。</p>
+<p>失败实验的价值体现在三个方面：</p>
+<ol>
+<li>
+<p><strong>排除空间</strong>：一次失败的实验证明了这种方法没有达到预期效果，避免团队在同一个方向上重复犯同类错误。如果失败实验没有被记录，三个月后换了一个算法工程师，很可能会重新做同样的实验，浪费宝贵的计算资源。</p>
+</li>
+<li>
+<p><strong>异常信号</strong>：失败实验往往包含了有价值的异常信号。Loss 曲线的异常抖动、某类样本上的极端误差、评测集上某个指标的意外上升——这些信号即使在"失败"的整体背景下，也可能是重要的发现。</p>
+</li>
+<li>
+<p><strong>对照基线</strong>：当后续的实验尝试新的数据配方时，历史失败实验提供了有意义的对照组。没有对照组，就无法评估改进是否真的有效。</p>
+</li>
+</ol>
+<p>失败实验的沉淀要求：</p>
+<ol>
+<li>必须填写 <code>conclusion</code> 字段，明确记录为什么认定这次实验是失败的</li>
+<li>必须填写 <code>next_actions</code> 字段，记录基于失败结论的下一步动作</li>
+<li>失败实验的 <code>status</code> 必须标记为 <code>failed</code> 或 <code>abandoned</code></li>
+<li>对于已知失败方向，应建立一个共享列表，标注哪类实验已经被证明无效</li>
+</ol>
+<p>失败实验的沉淀还需要区分不同失败类型。资源中断导致的失败、数据质量导致的失败、假设不成立导致的失败、评测口径不匹配导致的失败，其后续处理完全不同。如果团队只把这些实验统一标记为 <code>failed</code>，后续审阅者仍然无法理解其价值。更细致的做法是增加失败分类字段，并要求填写证据。</p>
+<p>例如，某次实验因为训练过程中显存不足而终止，这不意味着数据配方无效；某次实验因为评测集污染而结果异常，也不意味着模型能力真实提升；某次实验因为新增数据与任务目标不匹配而退化，则可以明确排除该数据方向。失败分类让团队能够决定是否重跑、是否修复数据、是否调整评测，或者是否把方向列入禁区。</p>
+<p>表25-9汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-9：失败实验类型与沉淀要求</em></p>
+<table>
+<thead>
+<tr>
+<th>失败类型</th>
+<th>典型表现</th>
+<th>是否应重跑</th>
+<th>应沉淀的信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>执行失败</td>
+<td>训练中断、日志缺失、资源不足</td>
+<td>通常应重跑</td>
+<td>资源配置、故障原因、重跑条件</td>
+</tr>
+<tr>
+<td>数据失败</td>
+<td>质量异常、分布偏差、标签口径错误</td>
+<td>修复数据后重跑</td>
+<td>受影响数据版本、问题样本、修复策略</td>
+</tr>
+<tr>
+<td>假设失败</td>
+<td>指标无改善或关键场景退化</td>
+<td>通常不立即重跑</td>
+<td>实验假设、对照结果、排除结论</td>
+</tr>
+<tr>
+<td>评测失败</td>
+<td>评测集污染、评测代码错误、指标口径变化</td>
+<td>修复评测后重跑</td>
+<td>评测版本、错误口径、影响范围</td>
+</tr>
+<tr>
+<td>合规失败</td>
+<td>数据授权不足、用途不符、敏感信息未处理</td>
+<td>不应重跑，需先处置风险</td>
+<td>合规结论、隔离措施、权限回收</td>
+</tr>
+</tbody>
+</table>
+<p>失败实验还可以形成组织层面的"反模式库"。例如，某类合成数据反复导致模型输出风格机械化，某种过滤规则反复误删历史业务流程样本，某个评测集无法区分真实能力提升和模板记忆。这些经验如果只散落在个人笔记中，就无法阻止团队重复犯同类错误。反模式库不需要很复杂，但应包含问题描述、触发条件、证据、避免方式和适用边界。</p>
+<p>对于研发团队而言，认真记录失败也有文化意义。它传递的信号是：实验的价值不只来自成功指标，也来自缩小不确定性。只奖励成功实验会鼓励团队选择保守方案，甚至隐藏不利结果；承认失败实验的知识价值，则能鼓励更诚实的实验记录和更系统的探索。DataOps 视角下的实验追踪，正是把这种探索过程制度化。</p>
+<h3 id="2534">25.3.4 审计链路的最小信息集合<a class="headerlink" href="#2534" title="Permanent link">&para;</a></h3>
+<p>完整的审计链路需要能够回答以下核心问题。数据集说明书和模型卡的研究都强调，数据来源、使用边界、评测条件和模型行为必须被文档化，才能支撑审计和责任追踪（Gebru et al. 2021; Mitchell et al. 2019）：</p>
+<p>表25-10汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-10：审计链路信息需求</em></p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>需要的信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>这个模型用了什么数据训练？</td>
+<td>发布包 → 实验 → 数据集版本</td>
+</tr>
+<tr>
+<td>这批数据是从哪里来的？</td>
+<td>数据集 → 分片 → 样本来源</td>
+</tr>
+<tr>
+<td>谁对这批数据做了什么处理？</td>
+<td>处理脚本版本 + 操作人 + 时间戳</td>
+</tr>
+<tr>
+<td>这批数据通过了什么质量检查？</td>
+<td>质量评估记录 + 评估人 + 时间</td>
+</tr>
+<tr>
+<td>数据的使用是否经过合规审批？</td>
+<td>数据合规审核记录 + 审核人 + 审核结论</td>
+</tr>
+<tr>
+<td>如果需要删除某用户的数据，波及范围是什么？</td>
+<td>样本级来源索引 → 关联的分片 → 关联的数据集 → 关联的实验</td>
+</tr>
+</tbody>
+</table>
+<p>对于审计而言，不是"记录越多越好"，而是"关键信息必须有"。上表中的每一列信息都是审计的最小必要集合，缺少任何一项都会让审计链路出现断点。</p>
+<p>审计链路还应覆盖"删除与更正"场景。对于包含用户数据或受限业务数据的训练样本，团队可能收到删除请求、授权撤回或数据更正要求。此时，审计系统必须能够从样本级索引出发，找到该样本进入过哪些分片、哪些数据集、哪些实验和哪些发布模型。只有这样，团队才能判断需要删除原始数据、重建数据集、重新训练模型，还是仅在后续版本中排除相关样本。</p>
+<p>审计链路还需要区分内部审计和外部审计。内部审计更关注问题定位和流程改进，可以保留较丰富的技术细节；外部审计更关注来源、授权、用途、审批和风险处置，需要形成结构化报告。数据团队应避免在外部审计时临时拼接材料，而应在日常版本管理中持续积累证据。这样，当出现监管、客户或合作方审查需求时，团队能够从系统中生成报告，而不是依靠临时人工整理。</p>
+<p>最小信息集合还应有质量门槛。某些字段虽然存在，但内容过于模糊，仍然无法支持审计。例如，变更原因写成“数据优化”，质量结论写成“已检查”，合规意见写成“无问题”，都不能真正解释决策。审计记录应尽量具体：优化了什么，检查了哪些指标，合规依据是什么，限制条件有哪些。审计的关键不是填满表单，而是让后续审阅者能够理解当时的判断。</p>
+<p>审计链路还应有访问控制。并不是所有审计信息都适合向所有团队开放，例如用户级来源索引、外部供应商合同信息、敏感数据授权文件和安全事件记录，都可能需要更严格权限。版本管理系统应支持不同粒度的可见性：普通研发人员可以查看数据版本、质量摘要和实验关联；数据 Owner 可以查看完整变更记录；合规和安全角色可以查看授权、访问日志和敏感字段处理记录。这样既能保证协作透明，又不扩大敏感信息暴露面。</p>
+<hr />
+<h2 id="254">25.4 谱系可视化与治理规则<a class="headerlink" href="#254" title="Permanent link">&para;</a></h2>
+<h3 id="2541">25.4.1 数据血缘图的表示方式<a class="headerlink" href="#2541" title="Permanent link">&para;</a></h3>
+<p>数据血缘图（Data Lineage Graph）是数据谱系的可视化表达。血缘图本质上是对数据实体、处理活动和责任主体之间关系的可视化表达，这与 W3C PROV 模型中的实体、活动和代理三类核心概念一致（Moreau and Missier 2013）。它以有向无环图（DAG）的形式，展示数据资产之间的依赖关系和转化关系。</p>
+<p>在 LLM 数据工程中，一张典型的数据血缘图包含以下节点类型：</p>
+<ul>
+<li><strong>数据源节点</strong>：原始数据来源，如"网络爬取 - CommonCrawl 2024Q1"、"外包商 A 标注批次 202403"</li>
+<li><strong>处理节点</strong>：数据转化步骤，如"去重过滤"、"语言识别"、"标注质量审核"</li>
+<li><strong>数据集节点</strong>：某个版本的数据集，如"dialogue-sft-zh_v2.3.1"</li>
+<li><strong>实验节点</strong>：使用某个数据集的实验，如"edu-math_exp003"</li>
+<li><strong>模型节点</strong>：训练产出的模型，如"edu-math-7B-v1.2"</li>
+</ul>
+<p>节点之间的有向边表示"从这个节点产生了那个节点"，边上可以标注转化规则（如清洗脚本版本）和转化时间。</p>
+<p>数据血缘图有三种典型的查询视角：</p>
+<p><strong>正向追踪</strong>：从一个数据源开始，追踪它的所有下游——这批爬取数据最终进入了哪些训练集，用于了哪些实验，产出了哪些模型。正向追踪用于影响分析（如果这个数据源出了问题，波及哪些产物）。</p>
+<p><strong>反向追踪</strong>：从一个模型或实验开始，追溯它的所有上游——这个模型的训练数据来自哪里，经过了哪些处理，质量评估是谁做的。反向追踪用于根因分析。</p>
+<p><strong>差异比对</strong>：对比两个不同版本的数据集在谱系上的差异——哪些数据源变了，哪些处理步骤变了，差异的规模有多大。差异比对用于变更审计。</p>
+<p>血缘图的价值不只在于"画出来"，更在于能被查询和解释。许多团队在文档中画过数据流向图，但图一旦脱离实际系统，很快就会过期。真正有治理价值的血缘图，应当由数据管线、版本工具、实验追踪系统和发布系统自动或半自动生成，并随着数据对象变化而更新。人工维护的图可以用于培训和沟通，但不能作为审计和回溯的唯一依据。</p>
+<p>血缘图还需要控制复杂度。LLM 数据链路往往包含大量数据源、处理步骤和实验节点，如果把所有节点一次性展示，图会变得难以阅读。因此，谱系可视化应支持按视角过滤：质量排查时显示数据源、处理步骤和质量报告；实验分析时显示数据集、实验和模型指标；合规审计时显示来源、授权、审批和使用范围。不同角色看到的不是同一张大图，而是同一套血缘数据的不同视图。</p>
+<p>在设计血缘图时，还应注意边的语义。边不只是"连接关系"，还应说明关系类型。例如，<code>derived_from</code> 表示派生，<code>filtered_by</code> 表示过滤，<code>annotated_by</code> 表示标注，<code>evaluated_with</code> 表示评测，<code>approved_by</code> 表示审批，<code>released_as</code> 表示发布。边的语义越清楚，查询就越准确。否则，血缘图只能展示路径，无法解释路径上的治理含义。</p>
+<p>图25-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part8/Du-Chap25-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图25-2：数据谱系与实验追踪图" src="../../../images/part8/Du-Chap25-Fig02-EN.svg" /></a></p>
+<p><em>图25-2：数据谱系与实验追踪图</em></p>
+<h3 id="2542">25.4.2 变更审计流程图<a class="headerlink" href="#2542" title="Permanent link">&para;</a></h3>
+<p>每一次数据集版本变更都应该经过规范的审计流程，确保变更被授权、被记录、被验证。</p>
+<p>标准变更审计流程如下：</p>
+<ol>
+<li><strong>变更申请</strong>：提出方（通常是数据工程师或标注工程师）填写变更申请表，说明变更内容、变更原因和预期影响</li>
+<li><strong>影响评估</strong>：评估这次变更会影响哪些下游数据集和实验</li>
+<li><strong>合规审查</strong>：如果变更涉及数据来源或数据类型的变化，需要法务合规专员审核</li>
+<li><strong>技术审查</strong>：数据 Owner 或高级数据工程师审查变更的技术实现方案</li>
+<li><strong>变更执行</strong>：在创建回滚点后执行变更</li>
+<li><strong>变更验证</strong>：运行自动化质量检查，与变更申请中的预期影响对比</li>
+<li><strong>变更记录</strong>：将变更日志写入数据集的元数据，更新血缘图</li>
+</ol>
+<p>表25-11汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-11：数据变更审计流程表</em></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>执行者</th>
+<th>工具</th>
+<th>产出物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>变更申请</td>
+<td>申请方</td>
+<td>变更申请表单</td>
+<td>填写完整的申请单</td>
+</tr>
+<tr>
+<td>影响评估</td>
+<td>数据工程师</td>
+<td>血缘图查询工具</td>
+<td>影响范围列表</td>
+</tr>
+<tr>
+<td>合规审查</td>
+<td>法务合规</td>
+<td>合规审查清单</td>
+<td>审查结论（通过/拒绝/条件通过）</td>
+</tr>
+<tr>
+<td>技术审查</td>
+<td>数据Owner</td>
+<td>Code Review</td>
+<td>审批意见</td>
+</tr>
+<tr>
+<td>变更执行</td>
+<td>数据工程师</td>
+<td>处理脚本 + 版本工具</td>
+<td>新版本数据集</td>
+</tr>
+<tr>
+<td>变更验证</td>
+<td>质量评估员</td>
+<td>自动化质量检查工具</td>
+<td>质量报告</td>
+</tr>
+<tr>
+<td>变更记录</td>
+<td>自动化</td>
+<td>元数据服务</td>
+<td>更新的血缘图和变更日志</td>
+</tr>
+</tbody>
+</table>
+<p>变更审计的重点是把"变更前判断"和"变更后验证"连接起来。变更申请阶段提出的是预期影响，例如新增数据源将提升某类任务覆盖率，或修改过滤规则将降低重复率；变更验证阶段则需要检查实际结果是否符合预期。如果预期与实际明显不一致，团队不应简单发布新版本，而应重新评估变更假设。这样，变更审计就不只是审批流程，而是一个小型实验闭环。</p>
+<p>影响评估尤其重要。一次看似局部的清洗规则修改，可能影响多个下游数据集；一次标注标签调整，可能让历史实验与新实验不可直接比较；一次删除样本操作，可能影响已经冻结的评测集。影响评估应当通过血缘图自动生成初步范围，再由数据工程师和数据 Owner 判断业务影响。完全依赖人工记忆进行影响评估，是版本管理体系尚未成熟的典型表现。</p>
+<p>变更记录也应包含"未采纳方案"。很多重要决策并不是只有一个技术方案，而是在多个方案之间权衡。例如，发现某批数据有质量问题后，可以选择删除、修复、降权或隔离；新增数据源时，可以选择直接合并、先进入实验分支或仅用于评测。记录为什么选择当前方案、为什么放弃其他方案，有助于后续复盘，也能避免团队在几个月后重复讨论同一问题。</p>
+<h3 id="2543">25.4.3 谱系治理规则<a class="headerlink" href="#2543" title="Permanent link">&para;</a></h3>
+<p>谱系治理规则是数据团队约定的一套"数据行为准则"，规定了哪些操作是被允许的、哪些需要审批、哪些是被禁止的。数据溯源综述指出，血缘信息只有与查询、审计、调试和复现需求结合，才会真正产生工程价值（Simmhan, Plale and Gannon 2005）。任何进入模型训练的数据版本，必须经过自动化质量检查。自动化数据验证系统通过统计约束、schema 检查和异常检测帮助团队在训练前发现数据质量问题（Breck et al. 2019）。</p>
+<p>以下是一套参考治理规则：</p>
+<p><strong>允许自由操作（无需审批）</strong></p>
+<ul>
+<li>在沙箱环境中创建数据分支用于本地实验</li>
+<li>查看和导出数据集的统计摘要</li>
+<li>添加或修改数据集的非关键元数据（如标签、注释）</li>
+</ul>
+<p><strong>需要申请审批（轻量审批，数据工程师或 Tech Lead 审批）</strong></p>
+<ul>
+<li>将新的数据分片合并到主线数据集</li>
+<li>修改数据清洗规则</li>
+<li>添加新的数据来源类别</li>
+</ul>
+<p><strong>需要正式审批（Data Owner + 法务合规审批）</strong></p>
+<ul>
+<li>变更数据集的核心来源（如更换标注供应商、新增爬取站点）</li>
+<li>删除未冻结的候选数据集版本或临时版本</li>
+<li>将内部数据集共享给外部合作方</li>
+<li>对已发布版本数据集进行修改（原则上禁止，特殊情况需要完整记录）</li>
+</ul>
+<p><strong>永远禁止</strong></p>
+<ul>
+<li>在没有版本记录的情况下修改已冻结的数据集</li>
+<li>以常规运维或成本清理为由删除已冻结或已发布的数据集版本</li>
+<li>在没有合规审核的情况下使用第三方版权数据</li>
+<li>直接修改他人提交的数据而不留下修改记录</li>
+</ul>
+<p>这里需要特别区分“已有版本”和“冻结版本”。前者可以包括候选版本、实验版本、临时快照和正式冻结版本；后者特指已经进入正式训练、评测、发布或审计链路、需要长期复现和问责的数据版本。治理上允许正式审批后删除的，应限定为尚未冻结的候选版本、临时版本或确认无审计义务的重复副本；一旦某个版本被标记为 <code>frozen</code> 或已经被发布包、审计记录或关键实验引用，就不应进入常规删除流程。若确因法律删除义务、授权撤回或严重合规风险必须处置冻结版本，应采用“保留版本标识与审计记录、隔离或失效内容实体、并重建后继版本”的例外流程，而不是直接把该版本从历史中抹除。</p>
+<p>治理规则还应与数据生命周期绑定。数据从采集、清洗、标注、训练、评测、发布到归档，每个阶段允许的操作不同。采集阶段可以较灵活地探索来源，但必须记录授权和来源；清洗阶段可以反复调整规则，但应保留处理脚本版本；标注阶段可以修订指南，但必须记录生效时间；训练阶段需要稳定数据版本；发布后则应强调冻结、审计和回滚。把同一套规则套用到所有阶段，会让早期探索过重，也会让发布阶段过轻。</p>
+<p>治理规则的执行方式也应分层。低风险操作可以通过系统提示和自动记录完成；中风险操作需要轻量审批；高风险操作需要正式审批和审计；禁止操作应由系统直接阻断。仅靠制度文字无法保证执行，因为人在高压项目中容易绕过流程。把规则嵌入工具，例如冻结版本只读、未通过质量检查不能发布、未审批数据源不能进入主线，才能真正降低违规概率。</p>
+<p>表25-12汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-12：数据生命周期阶段的谱系治理规则</em></p>
+<table>
+<thead>
+<tr>
+<th>生命周期阶段</th>
+<th>允许重点</th>
+<th>关键约束</th>
+<th>主要证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>采集</td>
+<td>探索数据来源、建立样本池</td>
+<td>来源、授权和敏感级别必须记录</td>
+<td>来源清单、授权记录、采集日志</td>
+</tr>
+<tr>
+<td>清洗</td>
+<td>调整规则、生成分片</td>
+<td>脚本版本和过滤结果必须可追溯</td>
+<td>处理脚本、质量摘要、差异报告</td>
+</tr>
+<tr>
+<td>标注</td>
+<td>任务分发、指南校准、结果回收</td>
+<td>指南版本和标注者信息必须记录</td>
+<td>标注日志、指南版本、一致性报告</td>
+</tr>
+<tr>
+<td>训练</td>
+<td>组合数据集、启动实验</td>
+<td>数据集版本必须稳定且可引用</td>
+<td>实验卡片、数据版本、参数配置</td>
+</tr>
+<tr>
+<td>评测</td>
+<td>对比模型表现、分析错误</td>
+<td>评测集版本和评测代码必须固定</td>
+<td>指标记录、错误样本、评测 commit</td>
+</tr>
+<tr>
+<td>发布</td>
+<td>冻结模型和数据证据</td>
+<td>审批、质量、合规链路必须完整</td>
+<td>发布包、审批记录、审计报告</td>
+</tr>
+<tr>
+<td>归档</td>
+<td>降低存储成本、保留必要证据</td>
+<td>不得破坏复现和审计所需信息</td>
+<td>归档策略、索引记录、恢复说明</td>
+</tr>
+</tbody>
+</table>
+<p>谱系治理还需要定期检查。常见检查项包括：是否存在没有来源记录的数据分片，是否存在没有实验关联的正式模型，是否存在已冻结但仍被修改的数据集，是否存在使用过期评测集的实验，是否存在未关闭的合规例外。通过定期检查，团队可以发现治理链路中的系统性漏洞，而不是等到事故发生后再追查。</p>
+<p>最后，治理规则应保持可解释性。团队成员愿意遵守规则，往往不是因为规则数量多，而是因为他们理解规则背后的风险。如果数据负责人能够说明某条规则如何帮助复现、回滚或合规，执行阻力会显著降低。相反，如果规则只表现为额外审批和表单，团队就可能把它视为负担。版本管理与实验追踪的治理，必须服务于工程效率和风险控制的统一。</p>
+<p>谱系治理还应与存储成本治理结合。随着版本数量增加，训练数据、分片、中间结果和模型 checkpoint 会迅速占用大量存储。如果缺少生命周期策略，团队要么无限保存导致成本失控，要么随意删除导致复现失败。较合理的做法是为不同对象设置不同保留策略：冻结数据集和发布包长期保存，候选版本保留到下一个稳定版本后再归档，临时中间结果在确认无审计价值后清理。清理动作本身也应记录，以便未来解释某些中间产物为何不再可用。</p>
+<p>对于存储成本较高的多模态数据，还可以采用分层存储策略。热数据保留在高性能存储中，支持近期实验和质量排查；温数据转入较低成本对象存储，保留索引和元数据；冷数据进入归档存储，只在审计或复现实验时恢复。无论采用哪种策略，元数据和版本索引都应保持在线可查，否则归档会变成另一种形式的数据丢失。</p>
+<hr />
+<h2 id="255">25.5 案例：一次失败实验如何快速回溯<a class="headerlink" href="#255" title="Permanent link">&para;</a></h2>
+<h3 id="_5">案例背景<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>某公司正在训练一个客服对话大模型。在第三次大版本迭代（<code>v3.0.0</code>）发布后，线上评测发现模型在"退款流程"类问题上的准确率从 82% 骤降至 67%，引发客户投诉。</p>
+<p>算法团队立即向数据团队发出回溯请求：<strong>在过去 6 周内，"退款流程"相关数据发生了什么变化？</strong></p>
+<p>这个问题表面上是模型效果退化，实质上是一次数据变更归因测试。客服场景的数据具有明显的业务时效性：政策、流程、话术和异常处理规则都会随时间变化。对于这类数据，"过时"并不一定意味着"无价值"，因为线上用户可能仍然咨询历史订单、旧版权益或迁移期间的特殊流程。如果质量审核只按当前流程判断样本有效性，就可能误删具有历史解释价值的数据。</p>
+<p>该公司在前一季度刚完成基础版本管理建设，已经能够把模型发布包、训练实验、数据集版本、分片来源、质量审核和标注记录关联起来。因此，数据团队没有先去人工翻找文件夹，而是从发布包和实验卡片入手，沿着谱系链路反向回溯。这一点决定了问题排查的起点是确定的，而不是依赖个人记忆。</p>
+<h3 id="_6">回溯过程（有版本管理的情况下）<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p><strong>步骤一：定位模型版本对应的数据集版本</strong>（用时：5分钟）</p>
+<p>通过实验追踪系统查询模型 <code>v3.0.0</code> 对应的训练实验 ID：<code>cs-dialog_20240401_exp012</code>。</p>
+<p>查询实验卡片，找到数据集版本：<code>cs-dialog-sft-zh_v2.8.0</code></p>
+<p>在这一阶段，团队还确认了训练代码、评测代码和基座模型版本均未发生重大变化。这个动作关键，因为它先排除了非数据因素的主要干扰。如果训练代码和数据同时变化，归因将更加困难；如果评测代码发生变化，准确率下降可能只是评测口径改变。实验卡片中的代码 commit、评测集版本和超参数记录，使团队能够快速缩小排查范围。</p>
+<p><strong>步骤二：对比当前版本与上一稳定版本的差异</strong>（用时：15分钟）</p>
+<p>使用血缘查询工具，对比 <code>v2.8.0</code> 与 <code>v2.6.0</code>（上一次效果良好的版本）的差异：</p>
+<ul>
+<li>总样本量：<code>v2.6.0</code> 有 18.2 万条，<code>v2.8.0</code> 有 21.4 万条</li>
+<li>新增样本：32,156 条（来自两个新增分片）</li>
+<li>删除样本：1,823 条（被质量过滤移除）</li>
+</ul>
+<p>差异报告还显示，两个新增分片主要来自外包商 B 的新一轮标注任务，目标是补充售后类问题；被删除样本则集中在质量过滤步骤，而不是采集或标注阶段。这说明问题可能不在新增数据本身，而在质量审核或过滤规则上。团队据此没有立即回滚整个 <code>v2.8.0</code>，而是继续缩小范围，避免因粗暴回滚损失其他有效改进。</p>
+<p><strong>步骤三：分析"退款流程"标签数据的变化</strong>（用时：20分钟）</p>
+<p>按业务标签过滤，查看"退款流程"类样本在两个版本中的分布：</p>
+<ul>
+<li><code>v2.6.0</code>：退款流程样本 6,847 条</li>
+<li><code>v2.8.0</code>：退款流程样本 4,102 条（减少了40%）</li>
+</ul>
+<p>进一步分析发现，退款流程样本减少并不是均匀发生的。当前流程相关样本基本保持稳定，减少最多的是旧版流程、历史订单、跨系统退款和人工客服介入等子类。这些子类在总体样本中占比不高，却恰好对应线上投诉中最容易出错的场景。这个发现说明，单看总样本量或整体质量指标不足以发现风险，必须结合业务标签和子场景进行分布对比。</p>
+<p><strong>步骤四：追踪减少原因</strong>（用时：30分钟）</p>
+<p>查询"退款流程"样本减少的原因，定位到分片 <code>vendor_b_annotation_20240318_003</code>：</p>
+<ul>
+<li>这批分片中有 3,201 条"退款流程"样本被打了"低质量"标签</li>
+<li>追溯到具体的质量审核记录：审核人 <code>QA_王工</code> 在 2024-03-20 进行了批量审核</li>
+</ul>
+<p>查询 <code>QA_王工</code> 的审核记录，发现：他在 3 月 20 日将一批关于"旧版退款流程"的样本统一标记为低质量（原因是"流程已更新，描述过时"），然后被质量过滤步骤移除。</p>
+<p>审核记录中还保留了当时的判断依据：新版客服知识库已经替换退款流程说明，质量审核指南中写有"过时流程不进入正式训练集"。从单条规则看，审核人员并没有违反流程；真正的问题在于指南没有区分"已经失效且不应回答的流程"与"仍需解释的历史流程"。这类问题如果没有审核记录，很容易被误判为个人操作失误，而不是质量标准设计不完整。</p>
+<p><strong>步骤五：确认根因与制定修复方案</strong>（用时：15分钟）</p>
+<p>根因：质量审核人员按照当前业务流程判断数据质量，将描述"旧版退款流程"的样本视为低质量数据，但实际上旧版流程的处理场景（历史订单退款）仍在线上存在，这些样本对模型理解"退款流程演变"具有重要价值。</p>
+<p>修复方案：</p>
+<ol>
+<li>短期：从 <code>v2.6.0</code> 中取回被删除的退款流程样本，加入"历史退款流程"标签重新入库</li>
+<li>中期：更新质量审核指南，明确"历史流程数据"的保留原则</li>
+<li>长期：在标注任务中增加"是否适用于历史场景"的标注维度</li>
+</ol>
+<p>整个回溯过程共用时约 85 分钟，从"问题反馈"到"根因确认"。这与前述案例中"无版本管理下耗时 5 天"形成了鲜明对比。</p>
+<p>如果没有版本管理，这次排查很可能会走向另一条路径：算法团队先怀疑训练参数，重新检查训练日志；数据团队再翻找最近几周的数据文件夹，尝试判断哪些文件被用于 <code>v3.0.0</code>；质量团队需要人工询问审核人员是否处理过退款样本；业务团队则需要回忆退款流程何时更新。每一步都依赖人记忆，而且不同人员给出的时间线可能不一致。最终即使找到原因，也难以证明哪次操作导致了效果下降。</p>
+<p>有版本管理时，排查路径是从模型到实验，从实验到数据集，从数据集到分片，从分片到质量审核，再从审核记录回到业务规则。这是一条结构化证据链。它不仅缩短了排查时间，也改变了团队讨论问题的方式：讨论不再围绕"谁可能改过数据"，而是围绕"证据链显示哪一处规则产生了非预期影响"。</p>
+<p>表25-13汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 25-13：有无版本管理时的回溯方式对比</em></p>
+<table>
+<thead>
+<tr>
+<th>回溯环节</th>
+<th>无版本管理下的典型做法</th>
+<th>有版本管理下的做法</th>
+<th>差异</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>定位训练数据</td>
+<td>询问实验负责人、查找文件夹</td>
+<td>通过实验卡片找到数据集版本</td>
+<td>起点从记忆变为记录</td>
+</tr>
+<tr>
+<td>对比数据差异</td>
+<td>人工比较目录和文件名</td>
+<td>自动生成版本差异报告</td>
+<td>差异从粗略变为结构化</td>
+</tr>
+<tr>
+<td>查找问题样本</td>
+<td>临时写脚本扫描历史文件</td>
+<td>按标签和分片查询血缘</td>
+<td>范围从全量缩小到相关子集</td>
+</tr>
+<tr>
+<td>确认操作原因</td>
+<td>询问审核人员或查聊天记录</td>
+<td>查看审核记录和规则版本</td>
+<td>原因从口头解释变为证据</td>
+</tr>
+<tr>
+<td>制定修复方案</td>
+<td>回滚整个数据集或重新清洗</td>
+<td>精准恢复受影响样本并更新规则</td>
+<td>修复从粗暴变为定向</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_7">关键成功因素总结<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>这次快速回溯之所以成功，依赖于以下几个关键的版本管理设计。可复现计算研究反复强调，只有把数据、代码、环境和结果绑定记录，失败实验才能成为可分析资产，而不是一次性事故（Peng 2011; Stodden, Leisch and Peng 2014）：</p>
+<ol>
+<li><strong>实验到数据的双向关联</strong>：知道 <code>v3.0.0</code> 对应哪个数据集版本</li>
+<li><strong>分片级的来源追踪</strong>：能够定位到具体的标注批次</li>
+<li><strong>审核记录的完整保留</strong>：知道谁在什么时间做了什么审核操作</li>
+<li><strong>业务标签的版本维护</strong>：能够按标签过滤历史版本数据</li>
+</ol>
+<p>缺少其中任何一个，回溯链路就会中断。</p>
+<p>这次案例还说明，版本管理并不只是技术系统，更是一种组织协作方式。实验卡片需要算法团队认真填写，分片来源需要数据工程团队规范维护，质量审核记录需要评估人员完整记录，业务标签需要产品或业务专家参与定义，修复方案需要多个角色共同确认。任何角色把记录视为额外负担，都会削弱整条链路的可信度。</p>
+<p>从治理角度看，案例中的根因不是"错误删除样本"，而是"质量规则没有表达业务时间维度"。因此，修复方案不能停留在恢复样本，还应更新标注和审核指南：对历史流程、过渡流程、已废弃流程和仍需解释的旧流程进行分类；为每类流程设定不同处理策略；在数据 schema 中增加适用时间范围或业务状态字段。这样，版本管理产生的发现才能转化为数据标准的改进。</p>
+<p>从实验追踪角度看，后续还应补做一组对照实验。第一组使用 <code>v2.8.0</code> 原始数据，第二组恢复历史退款样本，第三组恢复样本并增加历史流程标签。通过对照实验，团队可以判断准确率恢复来自样本数量增加，还是来自标签维度改进。若只修复数据而不做实验对照，团队虽然解决了眼前问题，却无法沉淀更一般的方法。</p>
+<p>最后，案例也提醒团队建立"业务时效性数据"的特殊治理规则。客服、政策、金融、教育、医疗和企业知识库等场景中，数据是否过时并不是简单的是非问题。某些旧信息必须删除，某些旧信息必须保留但加上时间边界，某些旧信息只能用于解释历史而不能指导当前操作。版本管理能够帮助团队看见这些差异，但真正的治理仍需要业务语义、质量规则和实验反馈共同参与。</p>
+<p>在企业落地时，第 25 章讨论的版本管理体系可以按照"先记录、再关联、后治理"的路径推进。先记录，指的是为数据集、分片、实验和发布包建立稳定 ID，并记录最小必要字段；再关联，指的是把数据版本与实验结果、模型版本、质量报告和审批记录连接起来；后治理，指的是在具备证据链之后，逐步加入审批、回滚、归档和权限控制。这个顺序很重要。如果一开始就追求完整治理，而底层对象没有稳定记录，流程会变成空转；如果只记录不关联，数据仍然难以解释模型效果。</p>
+<p>第一阶段的目标应当是让团队停止使用不可解释的文件夹命名。即使暂时没有复杂平台，也可以先建立统一的版本号、数据集说明书和实验卡片。只要每次实验都能说明使用了哪个数据版本、数据版本由哪些分片组成、分片来自哪些来源，团队就已经跨过了从口头记忆到结构化记录的门槛。这个阶段不需要过多自动化，但需要严格执行最小字段。</p>
+<p>第二阶段的目标是把版本记录接入真实工作流。数据发布时自动生成版本说明，实验启动时自动绑定数据版本，实验结束后自动回写指标，质量检查结果自动进入数据集元数据。此时，版本管理不再是额外填写文档，而是团队完成工作所必须经过的路径。只有进入工作流，版本记录才会稳定、完整、及时。</p>
+<p>第三阶段的目标是让版本体系产生治理能力。团队可以基于血缘关系做影响分析，基于实验回写评估数据资产价值，基于审计链路回应合规问题，基于回滚点降低高风险变更成本。这个阶段的版本管理已经不只是工程辅助工具，而成为组织决策基础。数据 Owner 可以据此判断哪些数据值得长期维护，算法负责人可以据此判断哪些实验结论可靠，合规团队可以据此判断风险边界是否清晰。</p>
+<p>还需要注意，版本管理并不天然保证正确性。一个错误的数据版本也可以被完整记录，一个质量不足的实验也可以被准确追踪。版本体系提供的是可解释性和可追溯性，而不是自动判断所有决策正确。因此，它必须与质量评估、实验设计、合规审查和业务专家判断结合使用。只有当这些机制共同运转，版本管理才能真正支撑可靠迭代。</p>
+<p>从长期看，数据版本管理的成熟度会直接影响大模型团队的研发节奏。没有版本管理，团队每次模型波动都要重新侦查现场；有基础版本管理，团队可以复现实验；有实验追踪和结果回写，团队可以比较数据策略；有谱系治理和审计链路，团队可以在更大组织范围内共享数据资产。成熟度越高，团队越能把一次次实验转化为组织知识，而不是让经验随项目周期流失。</p>
+<p>因此，本章的核心并不是推荐某一种具体工具，而是强调一种工程化原则：凡是会影响模型结果、合规边界和组织决策的数据变化，都应当留下可查询、可解释、可验证的记录。工具可以不同，平台形态可以不同，但这个原则不能缺席。</p>
+<hr />
+<h2 id="_8">本章小结<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>本章系统阐述了 LLM 数据工程中版本管理与实验追踪的核心设计。</p>
+<p>在理念层面，本章分析了数据变更难以追踪的三个根本原因（粒度不统一、因果链复杂、影响有延迟），以及从“文件夹管理”升级到“谱系管理”的必要性。版本管理的核心价值在于：实验可重现、问题可回溯、合规可审计。</p>
+<p>在版本粒度层面，本章定义了从样本、分片、数据集、实验到发布包的五层版本体系，以及语义化版本命名规范和分支、快照、回滚点三种版本操作类型。</p>
+<p>在实验追踪层面，我们设计了完整的实验卡片字段（基础信息、数据配置、模型配置、运行环境配置、评测结果、实验记录），强调了失败实验的沉淀价值，以及结果回写形成双向关联的重要性。</p>
+<p>在谱系治理层面，本章介绍了数据血缘图的三种查询视角（正向追踪、反向追踪、差异比对），以及标准化的变更审计流程和分级治理规则。</p>
+<p>最后，通过一次失败实验的完整回溯案例，展示了版本管理体系在真实场景中将回溯时间从 5 天压缩到 85 分钟的实际价值。</p>
+<hr />
+<h2 id="_9">延伸阅读<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p><strong>工具推荐</strong></p>
+<p>DVC（Data Version Control）是常用的数据版本控制工具之一，与 Git 深度集成，支持大文件的版本管理和数据血缘追踪。其文档中的"Data Registry"模式是多项目数据共享的参考实现。MLflow 是开源的机器学习实验追踪平台，支持实验参数、指标、artifact 的统一记录，以及版本对比的可视化界面。LakeFS 是面向数据湖的版本控制工具，提供了类似 Git 的分支、合并和回滚操作，适合大规模数据集的版本管理。</p>
+<p><strong>深度阅读</strong></p>
+<p>Zaharia 等人的《Accelerating the Machine Learning Lifecycle with MLflow》（2018）是 MLflow 的原始论文，系统介绍了 ML 生命周期管理的挑战和解决思路。Google 发布的《Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI》（2022）提供了数据集文档化的推荐实践，对实验卡片的设计有重要参考价值。</p>
+<hr />
+<h2 id="_10">参考文献<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.</p>
+<p>Armbrust M, Ghodsi A, Xin R, Zaharia M (2020) Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores. Proceedings of the VLDB Endowment 13(12):3411-3424.</p>
+<p>Baylor D, Breck E, Cheng H-T, Fiedel N, Foo C Y, Haque Z, Haykal S, Ispir M, Jain V, Koc L, Koo C Y, Lew L, Mewald C, Modi A N, Polyzotis N, Ramesh S, Roy S, Whang S E, Wicke M, Wilkiewicz J, Zhang X, Zinkevich M (2017) TFX: A TensorFlow-Based Production-Scale Machine Learning Platform. In: Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 1387-1395.</p>
+<p>Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: IEEE International Conference on Big Data, pp 1123-1132.</p>
+<p>Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.</p>
+<p>Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316-330. https://doi.org/10.1007/3-540-44503-x_20.</p>
+<p>DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.</p>
+<p>DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.</p>
+<p>Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.</p>
+<p>Moreau L, Missier P (eds.) (2013) PROV-DM: The PROV Data Model. W3C Recommendation.</p>
+<p>Peng R D (2011) Reproducible Research in Computational Science. Science 334(6060):1226-1227. https://doi.org/10.1126/science.1213847.</p>
+<p>Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.</p>
+<p>Sandve G K, Nekrutenko A, Taylor J, Hovig E (2013) Ten Simple Rules for Reproducible Computational Research. PLOS Computational Biology 9(10):e1003285. https://doi.org/10.1371/journal.pcbi.1003285.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.</p>
+<p>Simmhan Y L, Plale B, Gannon D (2005) A Survey of Data Provenance in e-Science. ACM SIGMOD Record 34(3):31-36. https://doi.org/10.1145/1084805.1084812.</p>
+<p>Stodden V, Leisch F, Peng R D (eds.) (2014) Implementing Reproducible Research. CRC Press. https://doi.org/10.1201/b16868.</p>
+<p>Vartak M, Subramanyam H, Lee W-E, Viswanathan S, Husnoo S, Madden S, Zaharia M (2016) ModelDB: A System for Machine Learning Model Management. In: Proceedings of the Workshop on Human-In-the-Loop Data Analytics (HILDA), Article 14.</p>
+<p>Zaharia M, Chen A, Davidson A, Ghodsi A, Hong S A, Konwinski A, Murching S, Nykodym T, Ogilvie P, Parkhe M, Xie F (2018) Accelerating the Machine Learning Lifecycle with MLflow. IEEE Data Engineering Bulletin 41(4):39-45.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
