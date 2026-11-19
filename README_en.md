@@ -33,7 +33,7 @@ Beyond in-depth theoretical explanations, the Chinese mainline includes **15 end
 
 ![Book Architecture](images/Yu-Book-Fig02-EN.png)
 
-*The complete data engineering pipeline and DataOps flywheel, from raw data to end-to-end applications.*
+<p align="center"><em>The complete data engineering pipeline and DataOps flywheel, from raw data to end-to-end applications.</em></p>
 
 ## Table of Contents
 
