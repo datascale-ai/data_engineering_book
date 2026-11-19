@@ -4,7 +4,7 @@
 
 ![《大模型数据工程》全书详细架构图](../images/Yu-Book-Fig01.png)
 
-*从原始数据到端到端应用的完整数据工程流水线与DataOps飞轮*
+<p align="center" style="text-align: center;"><em>从原始数据到端到端应用的完整数据工程流水线与DataOps飞轮</em></p>
 
 ## 全书目录概览
 
