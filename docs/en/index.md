@@ -4,7 +4,7 @@
 
 ![Detailed architecture of Data Engineering for Large Foundation Models](../images/Yu-Book-Fig02-EN.png)
 
-*The complete data engineering pipeline, from raw data to end-to-end applications.*
+*The complete data engineering pipeline and DataOps flywheel, from raw data to end-to-end applications.*
 
 ## Full Table of Contents Overview
 
