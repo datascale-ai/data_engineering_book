@@ -29,6 +29,10 @@ Beyond in-depth theoretical explanations, the Chinese mainline includes **15 end
 
 **Read Online**: [https://datascale-ai.github.io/data_engineering_book/en/](https://datascale-ai.github.io/data_engineering_book/en/)
 
+### Scan to Visit the GitHub Repository
+
+![GitHub repository QR code](qr_helper.png)
+
 ## Book Architecture
 
 ![Book Architecture](images/Yu-Book-Fig02-EN.png)
