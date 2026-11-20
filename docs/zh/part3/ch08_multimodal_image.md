@@ -1,4 +1,4 @@
-# 第8章 图文对数据工程
+# 第8章：图文对数据工程
 
 <div class="chapter-authors">於俊；王柯；王聪</div>
 
@@ -81,7 +81,7 @@
 - **适用场景**：这是当今**生成式 VLM 预训练**的重要数据形态。它教会模型如何根据“前文”和“图片 1”，去推断“后文”或“图片 2”应该是什么。
 - **采集挑战与 DOM 解析工程**：交错图文的工程难度庞大。传统的文本爬虫遇到 `<img>` 标签直接跳过，而为了组装交错格式，爬虫需要解析复杂的文档对象模型（Document Object Model，DOM）树，并进行**“基于渲染坐标的相对距离计算”**。
   因为在很多现代网页的复杂级联样式（CSS）中，代码文档树的顺序往往并不是用户眼里的视觉排版顺序。如果仅按照 HTML 标签顺序提取，很可能把页面底部的免责声明错误绑定到顶部配图。
-  
+
   为此，工程团队通常会使用带渲染引擎的无头浏览器（Headless Browser，如 Playwright）运行 JavaScript 生成页面快照，利用类似于下面的规则提取元素。
 
   代码清单8-1展示了 DOM 交错节点提取的示意逻辑。
@@ -92,7 +92,7 @@
   # 简化的 DOM 交错节点提取伪代码
   text_nodes, img_nodes = get_rendered_nodes(page)
   interleaved_sequence = []
-  
+
   for node in all_nodes_sorted_by_y_axis():
       if node.type == 'TEXT':
           if len(node.content.split()) > 5: # 抛弃过短文本，如导航栏
@@ -210,11 +210,11 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
         # 提取融合后的特征并计算点积相似度
         image_embeds = outputs.image_embeds / outputs.image_embeds.norm(p=2, dim=-1, keepdim=True)
         text_embeds = outputs.text_embeds / outputs.text_embeds.norm(p=2, dim=-1, keepdim=True)
-        
+
         # 获取受模型温度系数缩放的 Logit，转化为客观置信度
         logits_per_image = image_embeds @ text_embeds.T * model.logit_scale.exp()
         similarity = logits_per_image.item()
-        
+
     return similarity >= threshold, similarity
 ```
 
@@ -313,7 +313,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 针对复杂的语义对齐问题，本章以图解形式说明了“CLIP Score 过滤”与“VLM 重标注”的组合流程（见图8-2）。最后，本章通过配比调参和匿名化复合案例，说明了企业级视觉语言模型训练中需要持续维护的质量边界。
 
-虽然图文交错是当前多模态训练的重要形态，但在复杂的 B 端工业应用场景（财报解析、复杂发票查验、手写医疗单识别）中，仅依靠自然景物图仍难以应对高密度字符和版面结构挑战。下一章将进入**第9章 重标注与文档理解**，讨论 OCR、版面解析和长文档理解数据工程。
+虽然图文交错是当前多模态训练的重要形态，但在复杂的 B 端工业应用场景（财报解析、复杂发票查验、手写医疗单识别）中，仅依靠自然景物图仍难以应对高密度字符和版面结构挑战。下一章将进入**第9章：重标注与文档理解**，讨论 OCR、版面解析和长文档理解数据工程。
 
 ## 参考文献
 
